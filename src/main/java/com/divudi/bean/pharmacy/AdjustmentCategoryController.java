@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.AdjustmentCategory;
-import com.divudi.facade.AdjustmentCategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.AdjustmentCategory;
+import com.divudi.core.facade.AdjustmentCategoryFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

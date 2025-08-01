@@ -10,10 +10,10 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" />
-        <cc:attribute name="startbill" />  
+        <cc:attribute name="startbill" />
         <cc:attribute name="additions" type="java.lang.Double"/>
         <cc:attribute name="deductions" type="java.lang.Double"/>
     </cc:interface>
@@ -40,13 +40,13 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="SHIFT END FUND BILL"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="SHIFT END FUND BILL"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -141,7 +141,7 @@
             </h:panelGroup>
 
 
-           
+
 
 
 

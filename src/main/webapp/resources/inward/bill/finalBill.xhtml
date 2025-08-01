@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"    
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
@@ -9,9 +9,9 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />  
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
-        <cc:attribute name="hosCopy" />   	 
+        <cc:attribute name="hosCopy" />
         <cc:attribute name="showProfessional"  type="java.lang.Boolean" default="true"/>
     </cc:interface>
 
@@ -20,15 +20,15 @@
         <h:outputStylesheet library="css" name="printing.css"/>
 
         <h:panelGroup id="gpBillPreview" >
-            <div  class="container-fluid" style="width: 214mm!important; margin-bottom: 2.5cm!important"> 
+            <div  class="container-fluid" style="width: 214mm!important; margin-bottom: 2.5cm!important">
                 <div  style="margin-top: #{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Margin-Top Space','4cm')}"></div>
-                
+
                 <div style="font-family: verdana ">
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
                             <div class="col-12">
-                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}" 
+                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}"
                                               escape="false"
                                               >
                                 </h:outputText>
@@ -55,7 +55,7 @@
                         <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
                             <tr >
                                 <td colspan="4">
-                                    <h:graphicImage 
+                                    <h:graphicImage
                                         style="width: 100%;"
                                         class="mb-4"
                                         url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
@@ -96,7 +96,7 @@
                             <div class="col-6 W-100 ">
                                 <div class="col-6 d-flex justify-content-between">
                                     <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Bill NO" />
+                                        <h:outputLabel value="Bill No" />
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                     </div>
                                     <div class="col-7 d-flex w-100">
@@ -109,7 +109,7 @@
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
                                 <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="Patient Name" />  
+                                    <h:outputLabel value="Patient Name" />
                                     <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                 </div>
                                 <div class="col-7" >
@@ -132,7 +132,7 @@
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Gender/Age on Final Bill',false)}">
                                 <div class="row col-6 d-flex justify-content-between">
                                     <div class="col-5 d-flex justify-content-between">
-                                        <h:outputLabel value="Patient Age/Sex" />  
+                                        <h:outputLabel value="Patient Age/Sex" />
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                     </div>
                                     <div class="col-7" >
@@ -156,7 +156,7 @@
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Phone Number on Final Bill',false)}">
                                 <div class="row col-6 d-flex justify-content-between">
                                     <div class="col-5 d-flex justify-content-between">
-                                        <h:outputLabel value="Phone No" />  
+                                        <h:outputLabel value="Phone No" />
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                     </div>
                                     <div class="col-7" >
@@ -220,7 +220,7 @@
 
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
-                                <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null}">
+                                <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
                                     <div class="col-5 d-flex justify-content-between">
                                         <h:outputLabel value="Credit Company " />
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
@@ -240,7 +240,7 @@
                                                                     <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                                                 </div>
                                                                 <div class="col-7 d-flex w-100">
-                            
+
                                                                 </div>
                                                             </div>
                                                         </div>-->
@@ -252,7 +252,7 @@
                         <table class=" w-100"  >
                             <tr style="t">
                                 <td style="text-align: left; font-weight: bold; font-size: 14px;">
-                                    <h:outputLabel value="Discription" />
+                                    <h:outputLabel value="Description" />
                                 </td>
                                 <td>
                                     <h:outputLabel value="" />
@@ -264,7 +264,7 @@
                             <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Organized Final Bill Charge Types',false)}" >
                                 <h:panelGroup rendered="#{(bip.adjustedValue!=0 and  bip.inwardChargeType ne 'ProfessionalCharge' )
                                                           or
-                                                          (bip.adjustedValue!=0 and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}" 
+                                                          (bip.adjustedValue!=0 and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}"
                                               style="font-size: 12px;">
                                     <tr style="width: 100%; font-weight: 400; line-height: 18px;" >
                                         <td style="text-align: left;font-size: 13px!important; margin-top: -10px;">
@@ -278,15 +278,15 @@
                                                     &nbsp;
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' }">
-                                                    <table>                                        	 
+                                                    <table>
                                                         <ui:repeat value="#{bip.proFees}" var="fe">
                                                             <h:panelGroup rendered="#{fe.feeAdjusted ne 0
                                                                                       and fe.bill.cancelled eq false
-                                                                                      and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}" style="">
+                                                                                      and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}" style="">
                                                                 <tr>
 
                                                                     <td style="text-align: left;font-size: 10px!important;">
-                                                                        <h:panelGroup>                  	 
+                                                                        <h:panelGroup>
                                                                             #{fe.staff.person.nameWithTitle}
                                                                         </h:panelGroup>
                                                                     </td>
@@ -299,11 +299,11 @@
                                                                     </td>
                                                                 </tr>
                                                             </h:panelGroup>
-                                                        </ui:repeat>   
+                                                        </ui:repeat>
                                                     </table>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Room Charges Details in Final Bill',false)}" >
-                                                    <table>                                          	 
+                                                    <table>
                                                         <ui:repeat value="#{bip.billFees}" var="fe">
                                                             <h:panelGroup >
                                                                 <tr>
@@ -337,12 +337,12 @@
                                                                     </td>
                                                                 </tr>
                                                             </h:panelGroup>
-                                                        </ui:repeat>   
+                                                        </ui:repeat>
                                                     </table>
                                                 </h:panelGroup>
-                                            </h:panelGroup>                                	 
+                                            </h:panelGroup>
                                         </td>
-                                        <td  style="width: 30%;text-align: right;font-size: 13px!important;">                                   	 
+                                        <td  style="width: 30%;text-align: right;font-size: 13px!important;">
                                             <h:outputLabel  value="#{bip.adjustedValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -528,7 +528,7 @@
                                                     <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge'}">
                                                         <table>
                                                             <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                     <tr>
                                                                         <td style="text-align: left; font-size: 10px!important;">
                                                                             <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
@@ -658,7 +658,7 @@
                                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                                                             <table>
                                                                 <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                    <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                    <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
                                                                                 <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
@@ -741,7 +741,7 @@
                                 </tr>
 
 
-                                <h:panelGroup >                        	 
+                                <h:panelGroup >
                                     <tr style="width: 100%;">
                                         <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel value="Total"/>
@@ -751,15 +751,15 @@
 
                                             <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.grantTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
 
                                             <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
 
                                         </td>
                                     </tr>
-                                </h:panelGroup>                      	 
+                                </h:panelGroup>
 
                             </h:panelGroup>
 
@@ -792,11 +792,11 @@
                                     <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                         <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
 
                                         <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
 
                                     </td>
                                 </tr>
@@ -821,13 +821,13 @@
                                             <table>
                                                 <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
                                                     <h:panelGroup rendered="#{(b.netTotal ne 0 )
-                                                                              and                                                                   	 
+                                                                              and
                                                                               ((b.cancelled eq false
-                                                                              and b.billClass eq 'class com.divudi.entity.BilledBill')
+                                                                              and b.billClass eq 'class com.divudi.core.entity.BilledBill')
                                                                               or
                                                                               (b.cancelled eq false
                                                                               and b.refundedBill eq null
-                                                                              and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                                              and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel value="#{b.comments}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false)}"/>
                                                             <h:outputLabel value="#{b.deptId}"/>
@@ -865,11 +865,11 @@
                                                     <h:panelGroup rendered="#{(b.netTotal ne 0 )
                                                                               and
                                                                               ((b.cancelled eq false
-                                                                              and b.billClass eq 'class com.divudi.entity.BilledBill')
+                                                                              and b.billClass eq 'class com.divudi.core.entity.BilledBill')
                                                                               or
                                                                               (b.cancelled eq false
                                                                               and b.refundedBill eq null
-                                                                              and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                                              and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel  value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">

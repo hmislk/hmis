@@ -8,13 +8,12 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,8 +41,7 @@ public class DealerController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private InstitutionFacade ejbFacade;
     private Institution current;
@@ -64,6 +62,20 @@ public class DealerController implements Serializable {
         m.put("q", "%" + query.toUpperCase() + "%");
         institutionList = getEjbFacade().findByJpql(sql, m);
         //////// // System.out.println("suggestions = " + suggestions);
+
+        return institutionList;
+    }
+
+    public List<Institution> completeActiveDealor(String query) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where c.retired=false and c.inactive=false and "
+                + " c.institutionType =:t and (c.name) like :q order by c.name ";
+        m.put("t", InstitutionType.Dealer);
+        m.put("q", "%" + query.toUpperCase() + "%");
+        institutionList = getEjbFacade().findByJpql(sql, m);
 
         return institutionList;
     }
@@ -263,14 +275,4 @@ public class DealerController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
-
 }

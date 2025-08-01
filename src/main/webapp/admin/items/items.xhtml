@@ -137,16 +137,12 @@
                                                     maxResults="20"
                                                     id="cat"
                                                     >                                    
-                                                    <p:column style="padding: 6px; width: 250px;" headerText="Name">#{pta.name}</p:column>
-                                                    <p:column style="padding: 6px; width: 8em;" headerText="parent Category">#{pta.parentCategory}</p:column>                                        
                                                 </p:autoComplete>
 
 
                                                 <h:outputText value="Financial Category" ></h:outputText>
                                                 <p:autoComplete 
-                                                    required="true"
-                                                    requiredMessage="Must Enter a Finance Category"
-                                                    completeMethod="#{categoryController.completeCategory}" 
+                                                    completeMethod="#{categoryController.completeFinancialCategory}" 
                                                     var="fpta" 
                                                     itemLabel="#{fpta.name}"
                                                     itemValue="#{fpta}" 

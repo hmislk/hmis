@@ -71,6 +71,16 @@
                                         action="#{drawerEntryController.navigateToMyDrawerEntry()}">
                                     </p:commandButton>
 
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="Record Shift End Cash in Hand"
+                                        icon="pi pi-wallet"
+                                        ajax="false"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Recording Shift End Cash is Required Before Viewing Shift Reports')}"
+                                        action="#{financialTransactionController.navigateToRecordShiftEndCash()}" />
+
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
                                         value="Handover Current Shift"
@@ -299,7 +309,7 @@
                                             ajax="false" 
                                             action="#{financialTransactionController.navigateToMyCashierSummary()}" >
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton 
                                             class="my-1 w-100"
                                             value="My Department All Cashier SUmmary"
@@ -315,15 +325,15 @@
                                             ajax="false" 
                                             action="#{financialTransactionController.navigateToMyServiceDepartmentRevenueReportByPeriod()}" >
                                         </p:commandButton>
-                                        
-                                         <p:commandButton 
+
+                                        <p:commandButton 
                                             class="my-1 w-100"
                                             value="My Professional Payments"
                                             icon=""
                                             ajax="false" 
                                             action="#{searchController.navigateToMyProfessionalPayments()}" >
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton 
                                             class="my-1 w-100"
                                             value="Cashier Summary"

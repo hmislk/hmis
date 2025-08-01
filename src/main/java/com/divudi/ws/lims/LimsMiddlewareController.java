@@ -5,20 +5,18 @@
  */
 package com.divudi.ws.lims;
 
-import ca.uhn.fhir.context.FhirContext;
 import com.divudi.bean.common.SecurityController;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientSampleComponantFacade;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
-import com.divudi.data.LoginRequest;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.LoginRequest;
+import com.divudi.core.util.JsfUtil;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -28,18 +26,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
-
 import ca.uhn.hl7v2.model.*;
-import com.divudi.bean.common.util.HL7Utils;
+import com.divudi.core.util.HL7Utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
 import ca.uhn.hl7v2.*;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.lab.Priority;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.lab.Priority;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,28 +44,25 @@ import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
-
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.data.lab.SysMex;
-import com.divudi.data.lab.SysMexTypeA;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.SysMex;
+import com.divudi.core.data.lab.SysMexTypeA;
 import com.divudi.ejb.PatientReportBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.lab.DepartmentMachine;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.lab.DepartmentMachine;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientReportItemValueFacade;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -96,8 +90,6 @@ public class LimsMiddlewareController {
     //FOR UNIT TESTING
 
     @EJB
-    InvestigationItemFacade investigationItemFacade;
-    @EJB
     PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     PatientSampleFacade patientSampleFacade;
@@ -111,8 +103,7 @@ public class LimsMiddlewareController {
     WebUserFacade webUserFacade;
     @EJB
     ItemFacade itemFacade;
-    @EJB
-    private PatientReportItemValueFacade ptRivFacade;
+
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
@@ -1035,7 +1026,7 @@ public class LimsMiddlewareController {
 
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
                             && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
-                        
+
                         System.out.println("image found");
 
                         System.out.println("priv.getInvestigationItem().getTest() = " + priv.getInvestigationItem().getTest());
@@ -1061,10 +1052,17 @@ public class LimsMiddlewareController {
                                     System.out.println("0 result = " + result);
                                     priv.setLobValue(result);
                                     priv.setBaImage(base64TextToByteArray(result));
-                                    priv.setFileName(testCodeFromDatabase + sid );
-                                    priv.setFileType("BMP");
 
-                                   
+                                    String fileType = extractImageTypeFromResult(result);
+                                    System.out.println("fileType = " + fileType);
+                                    priv.setFileType(fileType);
+
+                                    String fileName = testCodeFromDatabase + sid;
+                                    if (!fileName.toLowerCase().matches(".*\\.(bmp|png|jpg|jpeg|jpe)$")) {
+                                        fileName += "." + fileType.toLowerCase();
+                                    }
+                                    priv.setFileName(fileName);
+
                                     if (priv.getId() == null) {
                                         patientReportItemValueFacade.create(priv);
                                     } else {
@@ -1074,8 +1072,6 @@ public class LimsMiddlewareController {
                                     valueToSave = true;
                                 }
                             }
-
-                           
 
                         }
 
@@ -1233,7 +1229,8 @@ public class LimsMiddlewareController {
         if (base64Text == null || base64Text.isEmpty()) {
             return new byte[0];
         }
-        String cleanedBase64 = base64Text.replaceFirst("^\\^Image\\^BMP\\^Base64\\^", "");
+        // Remove the prefix regardless of image type
+        String cleanedBase64 = base64Text.replaceFirst("^\\^Image\\^[A-Z]+\\^Base64\\^", "");
         return java.util.Base64.getDecoder().decode(cleanedBase64);
     }
 
@@ -1421,6 +1418,24 @@ public class LimsMiddlewareController {
             number.append(matcher.group());
         }
         return number.toString();
+    }
+
+    private String extractImageTypeFromResult(String result) {
+        System.out.println("Received result = " + result);
+        if (result == null || result.isEmpty()) {
+            System.out.println("Result is null or empty. Defaulting to BMP.");
+            return "BMP";
+        }
+        Pattern pattern = Pattern.compile("^\\^Image\\^([A-Z]+)\\^Base64\\^");
+        Matcher matcher = pattern.matcher(result);
+        if (matcher.find()) {
+            String type = matcher.group(1);
+            System.out.println("Extracted image type = " + type);
+            return type;
+        } else {
+            System.out.println("No image type pattern matched. Defaulting to BMP.");
+        }
+        return "BMP";
     }
 
     public class MyTestResult {
@@ -1622,7 +1637,7 @@ public class LimsMiddlewareController {
 //                    ////// // // // System.out.println("New value added to pr teport" + ptReport);
 //
 //                } else {
-//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
+//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
 //                    val = ptRivFacade.findFirstByJpql(sql);
 //                    if (val == null) {
 //                        val = new PatientReportItemValue();
@@ -1652,7 +1667,7 @@ public class LimsMiddlewareController {
         String sql;
         dl = ii.getName();
 
-        long ageInDays = com.divudi.java.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
+        long ageInDays = com.divudi.core.util.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
@@ -1894,19 +1909,19 @@ public class LimsMiddlewareController {
     }
 
     public List<String> generateTestCodesForAnalyzer(String sampleId, String sendingAnalyzerName) {
-        // // System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
-        // // System.out.println("generateTestCodesForAnalyzer");
+        System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
+        System.out.println("generateTestCodesForAnalyzer");
         PatientSample ps = patientSampleFromId(sampleId);
-        // // System.out.println("ps = " + ps);
+        System.out.println("ps = " + ps);
         if (ps == null) {
-            // // System.out.println("No PS");
+            System.out.println("No PS");
             return null;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        // // System.out.println("pscs = " + pscs);
+        System.out.println("pscs = " + pscs);
         if (pscs == null || pscs.isEmpty()) {
-            // // System.out.println("PSCS NULL OR EMPTY");
+            System.out.println("PSCS NULL OR EMPTY");
             return null;
         }
 
@@ -1927,14 +1942,14 @@ public class LimsMiddlewareController {
             }
 
             for (InvestigationItem tii : myIx.getReportItems()) {
-//                // // System.out.println("tii = " + tii.getName());
+                System.out.println("tii = " + tii.getName());
                 if (tii.getIxItemType() == InvestigationItemType.Value) {
-//                    // // System.out.println("value");
+                    System.out.println("value");
                     String sampleTypeName;
                     String samplePriority;
 
                     if (tii.getItem() == null) {
-                        // // System.out.println("tii is NULL " + tii);
+                        System.out.println("tii is NULL " + tii);
                         continue;
                     }
 
@@ -1951,35 +1966,35 @@ public class LimsMiddlewareController {
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);
                     if (tii.getItem().isHasMoreThanOneComponant()) {
-                        // // System.out.println("more than one componant");
-                        // // System.out.println("tii = " + tii.getName());
-                        // // System.out.println("tii.getTest() = " + tii.getTest());
+                        System.out.println("more than one componant");
+                        System.out.println("tii = " + tii.getName());
+                        System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            // // System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
-                            // // System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
+                            System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
+                            System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
                             if (tii.getSampleComponent().equals(c.getInvestigationComponant())) {
-                                // // System.out.println("going to check analyzer equal");
+                                System.out.println("going to check analyzer equal");
                                 if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
-                                    // // System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
-                                    // // System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
+                                    System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
                                     tests.add(tii.getTest().getCode());
                                     updateStatusToPeformed(c);
-                                    // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                                 }
 //                                tests.add(tii.getTest().getName());
 
                             }
                         }
                     } else {
-                        // // System.out.println("one componant");
-                        // // System.out.println("tti = " + tii.getName());
-                        // // System.out.println("tii.getTest() = " + tii.getTest());
+                        System.out.println("one componant");
+                        System.out.println("tti = " + tii.getName());
+                        System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            // // System.out.println("going to check analyzer equal");
+                            System.out.println("going to check analyzer equal");
                             if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
                                 tests.add(tii.getTest().getCode());
                                 updateStatusToPeformed(c);
-                                // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                             }
 
                         }
@@ -1987,7 +2002,7 @@ public class LimsMiddlewareController {
                 }
             }
         }
-        // // System.out.println("tests = " + tests);
+        System.out.println("tests = " + tests);
         Set<String> uniqueTests = new HashSet<>(tests);
         List<String> uniqueTestList = new ArrayList<>(uniqueTests);
         return uniqueTestList;

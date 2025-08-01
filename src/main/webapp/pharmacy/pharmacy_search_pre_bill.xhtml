@@ -20,64 +20,121 @@
                             <div class="col-2">
 
                                 <h:outputLabel class="my-1"  value="From Date"/>
-                                <p:calendar 
-                                    class="my-1 w-100" 
+                                <p:calendar
+                                    class="my-1 w-100"
                                     inputStyleClass="form-control"
-                                    id="fromDate" 
+                                    id="fromDate"
                                     value="#{searchController.fromDate}"
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                    maxdate="#{commonFunctionsController.endOfDay}">    
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}">
 
                                 </p:calendar>
                                 <h:outputLabel class="my-1"  value="To Date"/>
-                                <p:calendar 
-                                    class="my-1 w-100"  
+                                <p:calendar
+                                    class="my-1 w-100"
                                     inputStyleClass="form-control"
                                     id="toDate"
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                    maxdate="#{commonFunctionsController.endOfDay}">                                                                                
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
 
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
-                                <h:outputLabel value="Patient Name"/>    
+                                <h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" value="Token Number"/>
+                                <p:inputText autocomplete="off" class="w-100" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" value="#{searchController.searchKeyword.tokenNumber}" />
+                                <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
                                 <h:outputLabel value="Total"/>
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.total}" />
-                                <h:outputLabel value="Net Total"/>   
+                                <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel value="Pharmacy"/>   
-                                <p:selectOneMenu 
+<!--                                <h:outputLabel value="Pharmacy"/>-->
+<!--                                <p:selectOneMenu
                                     class="w-100"
                                     value="#{searchController.reportKeyWord.department}">
                                     <f:selectItem itemLabel="Select Department"/>
                                     <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                </p:selectOneMenu>-->
 
-                                <p:commandButton  
-                                    id="btnSearch" 
-                                    class="ui-button-success w-100 mt-3" 
-                                    icon="fas fa-search" 
-                                    ajax="false" 
-                                    value="Search All" 
+                                <p:commandButton
+                                    id="btnSearch"
+                                    class="ui-button-success w-100 mt-3"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value="Search Normal Bills"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}"/>
 
-                                <p:commandButton 
-                                    ajax="false" 
-                                    class=" ui-button-warning w-100 my-1" 
-                                    icon="fas fa-search" 
-                                    value="Search Not Paid Only" 
+                                <p:commandButton
+
+                                    class="ui-button-success w-100 mt-3"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value="Search Token Bills"
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Paid Only Tokens"
+                                    action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(true)}"/>
+                                
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Not Paid Tokens"
+                                    action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(false)}"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Not Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierNotPaid()}"/>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    class=" ui-button-warning w-100" 
-                                    icon="fas fa-search" 
-                                    value="Search Paid Only" 
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100"
+                                    icon="fas fa-search"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value="Search Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
+
+                                <p:commandButton
+                                    ajax="false"            
+                                    class="ui-button-secondary w-100 my-4"
+                                    icon="fa-solid fa-desktop"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value=" View In Display"
+                                    action="/token/pharmacy_tokens_called_sale_for_cashier?faces-redirect=true"
+                                    actionListener="#{tokenController.fillSaleForCashierCalledBillsTokens()}"
+                                    style="font-size: 20px; font-weight: bold"
+                                    >
+
+                                </p:commandButton>
+
+                                <!--                                <h:outputScript>
+                                                                    function openFullScreen() {
+                                                                        var url = "#{request.contextPath}/faces/token/pharmacy_tokens_called_sale_for_cashier.xhtml";
+                                                                        var newWindow = window.open(url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=yes');
+                                                                        if (newWindow) {
+                                                                            newWindow.moveTo(0, 0);
+                                                                            newWindow.resizeTo(screen.width, screen.height);
+                                                                        }
+                                                                    }
+                                                                </h:outputScript>-->
+
+
 
                                 <p:defaultCommand target="btnSearch"/>
 
@@ -87,11 +144,11 @@
                             </div>
                             <div class="col-10">
 
-                                <p:dataTable 
+                                <p:dataTable
                                     rowIndexVar="i"
-                                    id="tblBills" 
-                                    value="#{searchController.bills}" 
-                                    var="bill" 
+                                    id="tblBills"
+                                    value="#{searchController.bills}"
+                                    var="bill"
                                     rows="10"
                                     paginator="true"
                                     paginatorPosition="bottom"
@@ -106,10 +163,10 @@
 
                                     <p:column headerText="Bill No" >
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
-                                    </p:column>   
+                                    </p:column>
                                     <p:column headerText="Department" >
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
-                                    </p:column>   
+                                    </p:column>
                                     <p:column headerText="Billed At" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -117,22 +174,27 @@
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}"
                                                            value="#{bill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
-                                        </h:panelGroup>                             
-                                    </p:column>                 
+                                        </h:panelGroup>
+                                    </p:column>
                                     <p:column headerText="Billed By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column>                                                          
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column width="8em" headerText="Token Number" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                        <p:tag class="px-3" style="font-size: 15px" value="#{pharmacyPreSettleController.findTokenFromBill(bill).tokenNumber}" severity="success"></p:tag>                                        
+
+                                    </p:column>
+
                                     <p:column headerText="Net Value" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
@@ -141,18 +203,98 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Accept" width="10%">
-                                        <p:commandButton 
-                                            ajax="false"  
-                                            value="Accept Payment" 
-                                            action="#{pharmacyPreSettleController.toSettle(bill)}" 
-                                            disabled="#{bill.referenceBill ne null or bill.cancelled}">   
+                                    <p:column headerText="Accept" width="10%" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Accept Payment"
+                                            action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                            disabled="#{bill.referenceBill ne null or bill.cancelled}">
                                         </p:commandButton>
                                     </p:column>
+
+                                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
+
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-center align-items-center">
+                                                <p:commandButton
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
+                                                    icon="fa-solid fa-phone"
+                                                    title="Call Customer"
+                                                    class="ui-button-warning mx-1"
+                                                    action="#{pharmacyPreSettleController.markToken(bill)}"                                   
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
+
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
+                                                    icon="fa-solid fa-phone-slash"
+                                                    class="ui-button-danger mx-1"
+                                                    title="Cancel Calling"
+                                                    action="#{pharmacyPreSettleController.unmarkToken(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+
+                                                </p:commandButton>
+
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    class="ui-button-warning mx-1"
+                                                    icon="fas fa-pen" 
+                                                    disabled="#{bill.referenceBill ne null || bill.cancelled eq true}"
+                                                    rendered="#{bill ne null and configOptionApplicationController.getBooleanValueByKey('Enable bill edit in sale for cashier token management system', false)}"
+                                                    title="Edit Bill" 
+                                                    action="#{tokenController.navigateToSaleForCashierToEditBillWithToken(pharmacyPreSettleController.findTokenFromBill(bill))}">
+
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
+                                                    class="ui-button-success mx-1"
+                                                    title="Accept Payment"
+                                                    icon="fa-solid fa-money-bill"
+                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                    actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+                                                </p:commandButton> 
+
+                                                <p:commandButton
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"               
+                                                    title="Display Token"
+                                                    class="d-flex justify-content-center align-item-center mx-1"
+                                                    style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
+                                                    icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-eye': 'fa fa-eye-slash'}"
+                                                    iconPos="center"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}"
+                                                    action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
+                                                    >
+
+                                                </p:commandButton> 
+                                            </div>
+
+
+                                        </div>
+
+
+
+                                        <!--                                        <p:commandButton
+                                                                                    ajax="false"
+                                                                                    value="Accept Payment"
+                                                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                                                </p:commandButton>-->
+                                    </p:column>
                                     <p:column width="35%">
-                                        <p:dataTable value="#{bill.cashBillsPre}" var="rb">
-                                            <p:column  >                                                               
-                                                <h:outputLabel  value="#{rb.deptId}"/>                                   
+                                        <p:dataTable value="#{searchController.getRefreshCashBills(bill)}" var="rb">
+                                            <p:column  >
+                                                <h:outputLabel  value="#{rb.deptId}"/>
                                             </p:column>
                                             <p:column >
                                                 <h:outputLabel value="#{rb.createdAt}" >
@@ -165,29 +307,29 @@
                                                                    value="#{rb.cancelledBill.createdAt}" >
                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputLabel>
-                                                </h:panelGroup>                               
-                                            </p:column> 
-                                            <p:column >                               
-                                                <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
-                                                </h:outputLabel>                                
+                                                </h:panelGroup>
+                                            </p:column>
+                                            <p:column >
+                                                <h:outputLabel value="#{rb.creater.webUserPerson.name}" >
+                                                </h:outputLabel>
                                                 <br/>
                                                 <h:panelGroup rendered="#{rb.cancelled}" >
                                                     <h:outputLabel style="color: red;" value="Cancelled by " />
                                                     <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
-                                                                   value="#{rb.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                                   value="#{rb.cancelledBill.creater.webUserPerson.name}" >
                                                     </h:outputLabel>
-                                                </h:panelGroup> 
-                                            </p:column>                                                     
+                                                </h:panelGroup>
+                                            </p:column>
                                             <p:column >
                                                 <h:outputLabel value="#{rb.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>                                  
+                                                </h:outputLabel>
                                             </p:column>
                                             <p:column width="15%">
-                                                <p:commandButton 
-                                                    ajax="false" 
-                                                    value="View Payment Bill" 
-                                                    action="pharmacy_reprint_bill_sale_cashier" 
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="View Payment Bill"
+                                                    action="pharmacy_reprint_bill_sale_cashier?faces-redirect=true"
                                                     disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>

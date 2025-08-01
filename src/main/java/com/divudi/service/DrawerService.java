@@ -1,36 +1,20 @@
 package com.divudi.service;
 
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.IOU;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.None;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.PatientPoints;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.Voucher;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.cashTransaction.DrawerEntry;
-import com.divudi.facade.DrawerEntryFacade;
-import com.divudi.facade.DrawerFacade;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
+import com.divudi.core.facade.DrawerEntryFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -44,8 +28,8 @@ public class DrawerService {
     DrawerEntryFacade ejbFacade;
     @EJB
     DrawerFacade drawerFacade;
-    @EJB
-    ConfigurationService configurationService;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     DrawerEntry drawerEntry;
 
     // <editor-fold defaultstate="collapsed" desc="UP">
@@ -162,7 +146,7 @@ public class DrawerService {
         }
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Down">
     public void updateDrawerForOuts(List<Payment> payments, WebUser webUser) {
         for (Payment payment : payments) {
@@ -174,7 +158,7 @@ public class DrawerService {
         updateDrawer(payment, -Math.abs(payment.getPaidValue()), webUser);
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     public Drawer reloadDrawer(Drawer drawer) {
         if (drawer == null) {
             return null;
@@ -191,7 +175,7 @@ public class DrawerService {
         }
         System.out.println("Draver & Draver Entry Updated...");
     }
-    
+
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
         drawerEntryUpdate(payment, currentDrawer,payment.getCreater() );
     }
@@ -303,8 +287,8 @@ public class DrawerService {
 
         //System.out.println("Drawer Entry Created = " + drawerEntry);
     }
-    
-    
+
+
     public void drawerEntryUpdate(Bill bill, Drawer currentDrawer, PaymentMethod paymentMethod, WebUser user, Double value) {
         System.out.println("Drawer Entry Update");
         if (bill == null) {
@@ -411,7 +395,7 @@ public class DrawerService {
 
         //System.out.println("Drawer Entry Created = " + drawerEntry);
     }
-    
+
 
     public void updateDrawerForOuts(List<Payment> payments) {
         for (Payment payment : payments) {
@@ -654,7 +638,7 @@ public class DrawerService {
             default:
                 break;
         }
-        if (!configurationService.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
             canReturn = true;
         }
         return canReturn;

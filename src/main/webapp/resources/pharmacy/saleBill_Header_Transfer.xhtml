@@ -28,17 +28,17 @@
                     <h:outputLabel value="#{cc.attrs.bill.institution.name}"></h:outputLabel><br/>
                     <h:outputLabel style="font-size: 10px!important;" value="#{cc.attrs.bill.institution.address}"></h:outputLabel><br/>
                     <h:outputLabel value="#{cc.attrs.bill.department.printingName}"></h:outputLabel><br/>
-                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "></h:outputLabel><br/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "></h:outputLabel><br/>
                 </div>
             </div> 
-            
-<!--            <div class="institutionName" style="text-align: center!important;
-                 font-weight: bold!important;
-                 font-size: 15px!important;
-                 font-weight: bold;">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-            </div>-->
-        
+
+            <!--            <div class="institutionName" style="text-align: center!important;
+                             font-weight: bold!important;
+                             font-size: 15px!important;
+                             font-weight: bold;">
+                            <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                        </div>-->
+
 
             <div class="headingBill1" style="text-align: center">
                 <h:outputLabel class="SaleBillheader" value="TRANSFER ISSUE BILL"   />   
@@ -60,7 +60,7 @@
                     <div>
                         <h:panelGrid columns="3">
                             <h:outputLabel value="Time" class="billDetails1"/>
-                             <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails1">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
@@ -75,96 +75,91 @@
                     </h:panelGrid>
                 </div>
                 <h:panelGroup >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Location To" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Location To" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" class="billDetails1" />
+                        </h:panelGrid>
+                    </div>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.creater ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Requested Person" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Requested Person" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" class="billDetails1" />
+                        </h:panelGrid>
+                    </div>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Request No" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Request No" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetails1" />
+                        </h:panelGrid>
+                    </div>
                 </h:panelGroup>
                 <h:panelGroup  >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Issued Person" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Issued Person" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="billDetails1" />
+                        </h:panelGrid>
+                    </div>
                 </h:panelGroup>
                 <h:panelGroup  >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Issue No" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Issue No" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
+                        </h:panelGrid>
+                    </div>
                 </h:panelGroup>
-                 <h:panelGroup  >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Transporter" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
+                <h:panelGroup  >
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Transporter" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
+                        </h:panelGrid>
+                    </div>
                 </h:panelGroup>
             </div>
-
 
             <div class="billline1" style="width: 100%;">
-                    <hr/>
+                <hr/>
             </div>
-
 
             <div >
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td style="width: 40%; ">
+                        <td style="width: 25%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings1" ></h:outputLabel>
                         </td>
-                        <td  style="width:20%;text-align: right;">
+                        <td  style="width:25%;text-align: right;">
                             <h:outputLabel value="QTY"  styleClass="itemHeadings1" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:20%;text-align: right;">
+                        <td  style="width:25%;text-align: right;">
                             <h:outputLabel value="RATE"  styleClass="itemHeadings1" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:20%;text-align: right;">
+                        <td  style="width:25%;text-align: right;">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadings1" ></h:outputLabel>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="4" style="width: 100%">
-                            <div class="billline1">
-                                    <hr/>
-                            </div>
+                            <hr/>
                         </td>
 
                     </tr>
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-
+                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
                         <tr>
                             <td colspan="4" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock1" style="text-transform: capitalize!important;"  >
@@ -172,57 +167,41 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="width: 40%">
+                            <td style="width: 25%">
 
                             </td>
-                            <td  style="width: 20%; text-align: right;">
-                                <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock1"   style="text-align: right;" >
+                            <td  style="width: 25%; text-align: right; font-size: 10px;">
+                                <h:outputLabel    value="#{bip.qty}"    styleClass="totalsBlock1"   style="text-align: right;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
-                            <td   style="text-align: right; width: 20%" >
-                                <h:outputLabel  styleClass="itemsBlockRight1"   value="#{bip.rate}" >
+                            <td   style="text-align: right; width: 25%; font-size: 10px;" >
+                                <h:outputLabel  styleClass="totalsBlock1"   value="#{bip.rate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-                            <td  style="text-align: right; width: 20%" >
-                                <h:outputLabel styleClass="itemsBlockRight1"   value="#{bip.grossValue}"    >
+                            <td  style="text-align: right; width: 25%; font-size: 10px;" >
+                                <h:outputLabel styleClass="totalsBlock1"   value="#{bip.netValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-
                         </tr>
-
-
-
-
                     </ui:repeat>
-
-
-
-
                 </table>
-
-
             </div>
 
-
-            <div class="billline1" style="width: 100%;">
-               <hr/>                          
+            <div style="width: 100%;">
+                <hr/>                          
             </div>
-
-
 
             <div  >
-
                 <table style="width: 100%;">
-
                     <tr>
                         <td class="totalsBlock1" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Total" />
                         </td>
                         <td  class="totalsBlock1" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -249,7 +228,6 @@
                     </tr>
 
                     <tr>
-
                         <td  class="totalsBlock1" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0 and cc.attrs.bill.discount ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
                         </td>
@@ -258,34 +236,8 @@
                             <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0 and cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
                                 <f:convertNumber pattern="#,##0.0" />
                             </h:outputLabel>
-
-
                         </td>
                     </tr>
-
-                    <h:panelGroup rendered="#{(configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale' or cc.attrs.bill.billType eq 'PharmacyWholeSale') and cc.attrs.bill.paymentMethod eq 'Cash'}">
-                        <tr >
-                            <td  class="totalsItemBlock1" style="text-align: left;">
-                                <h:outputLabel   value="Tendered" />
-                            </td>
-                            <td  class="totalsItemBlock1" style="text-align: right; ">
-                                <h:outputLabel   value="#{cc.attrs.bill.cashPaid}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td  class="totalsItemBlock1" style="text-align: left;">
-                                <h:outputLabel   value="Balance" />
-                            </td>
-                            <td  class="totalsItemBlock1" style="text-align: right;">
-                                <h:outputLabel   value="#{cc.attrs.bill.balance}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
 
                     <tr>
                         <td  class="totalsItemBlock1" style="text-align: left;">
@@ -293,21 +245,10 @@
                         </td>
                         <td  class="totalsItemBlock1" style="text-align: right; ">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0.00" />
+                                <f:convertNumber pattern="#,##0" />
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
-                    <tr>
-                        <td  class="totalsItemBlock1" style="text-align: left;">
-                            <h:outputLabel   value="Payment Method" />
-                        </td>
-                        <td  class="totalsItemBlock1" style="text-align: right; ">
-                            <h:outputLabel   value="#{cc.attrs.bill.paymentMethod}">
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
 
                     <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
                         <tr >
@@ -321,12 +262,9 @@
                             </td>
                         </tr>
                     </h:panelGroup>
-
-
                 </table>
 
             </div>
-
 
             <div class="footer1">
                 <br/>
@@ -341,34 +279,32 @@
                 <h:outputLabel style="font-size: 9px" value="Software By CareCode Solutions (Pvt) Ltd"/>
             </div>
 
-
-
         </div>
-<script>
-function printBill() {
-    // Get the HTML content of the section with ID "printAll"
-    var billContent = document.getElementById('printAll').innerHTML;
+        <script>
+            function printBill() {
+                // Get the HTML content of the section with ID "printAll"
+                var billContent = document.getElementById('printAll').innerHTML;
 
-    // Open a new window for printing
-    var printWindow = window.open('', '_blank');
+                // Open a new window for printing
+                var printWindow = window.open('', '_blank');
 
-    // Write the HTML content along with CSS styles into the print window
-    printWindow.document.open();
-    printWindow.document.write('<html>');
-    printWindow.document.write('<link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>');
-    // Include your custom CSS files here if any
-    // printWindow.document.write('<link rel="stylesheet" href="your_custom_stylesheet.css"/>');
-    printWindow.document.write('<body>' + billContent + '</body></html>');
-    printWindow.document.close();
+                // Write the HTML content along with CSS styles into the print window
+                printWindow.document.open();
+                printWindow.document.write('<html>');
+                printWindow.document.write('<link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>');
+                // Include your custom CSS files here if any
+                // printWindow.document.write('<link rel="stylesheet" href="your_custom_stylesheet.css"/>');
+                printWindow.document.write('<body>' + billContent + '</body></html>');
+                printWindow.document.close();
 
-    // Add an event listener to close the print window after printing
-    printWindow.onafterprint = function() {
-        printWindow.close();
-    };
+                // Add an event listener to close the print window after printing
+                printWindow.onafterprint = function () {
+                    printWindow.close();
+                };
 
-    // Trigger the print functionality for the print window
-    printWindow.print();
-}
-</script>
+                // Trigger the print functionality for the print window
+                printWindow.print();
+            }
+        </script>
     </cc:implementation>
 </html>

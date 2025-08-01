@@ -8,8 +8,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Vocabulary;
-import com.divudi.facade.VocabularyFacade;
+import com.divudi.core.entity.Vocabulary;
+import com.divudi.core.facade.VocabularyFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +27,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 
 /**
  *
@@ -47,7 +47,7 @@ public class VocabularyController implements Serializable {
     private Vocabulary current;
     private List<Vocabulary> items = null;
     String selectText = "";
-    
+
     public String navigateToManageVocabularies(){
         getItems();
         return "/emr/admin/vocabularies";
@@ -90,7 +90,7 @@ public class VocabularyController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;
         c = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
@@ -241,5 +241,5 @@ public class VocabularyController implements Serializable {
         }
     }
 
-    
+
 }

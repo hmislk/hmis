@@ -9,13 +9,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ public class VtmController implements Serializable {
     boolean billedAs;
     boolean reportedAs;
     List<Vtm> vtmList;
+    private boolean editable;
 
     public String navigateToListAllVtms() {
         String jpql = "Select vtm "
@@ -189,7 +191,7 @@ public class VtmController implements Serializable {
         if (nvtm == null) {
             nvtm = new Vtm();
             nvtm.setName(name);
-            nvtm.setCode(CommonController.nameToCode("vtm_" + name));
+            nvtm.setCode(CommonFunctions.nameToCode("vtm_" + name));
             getFacade().create(nvtm);
         }
         return nvtm;
@@ -245,6 +247,20 @@ public class VtmController implements Serializable {
 
     public void prepareAdd() {
         current = new Vtm();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void bulkUpload() {
@@ -307,6 +323,7 @@ public class VtmController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void save() {
@@ -387,6 +404,7 @@ public class VtmController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private VtmFacade getFacade() {
@@ -408,6 +426,14 @@ public class VtmController implements Serializable {
 
     public void setSpecialityFacade(SpecialityFacade specialityFacade) {
         this.specialityFacade = specialityFacade;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

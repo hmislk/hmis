@@ -7,28 +7,28 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Form;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.HrForm;
-import com.divudi.entity.hr.LeaveForm;
-import com.divudi.entity.hr.LeaveFormSystem;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffLeaveEntitle;
-import com.divudi.entity.hr.StaffLeaveSystem;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftExtra;
-import com.divudi.facade.LeaveFormFacade;
-import com.divudi.facade.StaffLeaveEntitleFacade;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Form;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.HrForm;
+import com.divudi.core.entity.hr.LeaveForm;
+import com.divudi.core.entity.hr.LeaveFormSystem;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.entity.hr.StaffLeaveEntitle;
+import com.divudi.core.entity.hr.StaffLeaveSystem;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftExtra;
+import com.divudi.core.facade.LeaveFormFacade;
+import com.divudi.core.facade.StaffLeaveEntitleFacade;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,8 +59,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
     @Inject
     SessionController sessionController;
 
-
-    CommonFunctions commonFunctions;
     List<LeaveForm> leaveForms;
     Staff approvedStaff;
     Staff staff;
@@ -189,7 +187,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
 //        hm.put("date", staffShift.getShiftDate());
-        hm.put("fd",commonFunctions.getFirstDayOfYear());
+        hm.put("fd", CommonFunctions.getFirstDayOfYear());
         hm.put("td", staffShift.getShiftDate());
         hm.put("dtp", DayType.Normal);
         hm.put("cls", StaffShiftExtra.class);
@@ -242,7 +240,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
 //        hm.put("date", staffShift.getShiftDate());
-        hm.put("fd", commonFunctions.getFirstDayOfYear());
+        hm.put("fd", CommonFunctions.getFirstDayOfYear());
         hm.put("td", staffShift.getShiftDate());
         hm.put("dtp", DayType.Normal);
         hm.put("cls", StaffShiftExtra.class);
@@ -324,8 +322,8 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         }
 
         leaved = humanResourceBean.calStaffLeave(getCurrentLeaveForm().getStaff(), leaveTypeLocal,
-                getCommonFunctions().getFirstDayOfYear(new Date()),
-                getCommonFunctions().getLastDayOfYear(new Date()));
+                CommonFunctions.getFirstDayOfYear(new Date()),
+                CommonFunctions.getLastDayOfYear(new Date()));
 
     }
 
@@ -393,7 +391,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 JsfUtil.addErrorMessage("Please Select Shift That Lie Entitled");
                 return true;
             }
-//            Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
+//            Long datRang = CommonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
 
 //            if (datRang != 1) {
 //                JsfUtil.addErrorMessage("Date range should be 1");
@@ -587,7 +585,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.setLeaveType(leaveType);
         ss.calLeaveTime();
         ss.setLeaveForm(form);
-        // ss.setLeaveType(leaveType); move to up 
+        // ss.setLeaveType(leaveType); move to up
         ss.setAutoLeave(true);
         staffShiftFacade.edit(ss);
 
@@ -760,14 +758,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         this.leaveFormFacade = leaveFormFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Staff getApprovedStaff() {
         return approvedStaff;
     }
@@ -786,7 +776,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -797,7 +787,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

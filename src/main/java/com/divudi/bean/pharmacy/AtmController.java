@@ -9,10 +9,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.AtmFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.AtmFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,6 +47,7 @@ public class AtmController implements Serializable {
     private List<Atm> items;
     List<Atm> atmList;
     String selectText;
+    private boolean editable;
 
     public String navigateToListAllAtms() {
         String jpql = "Select atm "
@@ -157,6 +158,20 @@ public class AtmController implements Serializable {
 
     public void prepareAdd() {
         current = new Atm();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void setSelectedItems(List<Atm> selectedItems) {
@@ -184,6 +199,7 @@ public class AtmController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void saveAtm(Atm atm) {
@@ -244,6 +260,7 @@ public class AtmController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private AtmFacade getFacade() {
@@ -261,6 +278,14 @@ public class AtmController implements Serializable {
 
     public void setItems(List<Atm> items) {
         this.items = items;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

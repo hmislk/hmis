@@ -17,91 +17,91 @@
             <ui:define name="content">
 
                 <h:form id="bill" >
-                    <p:defaultCommand  target="btnAdd" />  
+                    <p:defaultCommand  target="btnAdd" />
                     <h:panelGroup
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >
 
                         <p:panel
-                            rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">                                        
+                            rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">
                             <f:facet name="header">
                                 <h:outputLabel value="Start Pharmacy Request for Inpatients"/>
                                 <p:commandButton
                                     ajax="false"
                                     icon="fa-solid fa-address-card"
-                                    class="ui-button-secondary " 
+                                    class="ui-button-secondary "
                                     value="Inpatient Dashboard"
                                     style="float: right;"
-                                    action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                    action="#{admissionController.navigateToAdmissionProfilePage}"
                                     >
                                     <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
                                 </p:commandButton>
                             </f:facet>
                             <div class="d-flex gap-3">
                                 <h:outputLabel value="Requesting Department"/>
-                                <p:autoComplete  
-                                    value="#{pharmacyRequestForBhtController.department}" 
+                                <p:autoComplete
+                                    value="#{pharmacyRequestForBhtController.department}"
                                     required="true"
                                     class=" col-md-3 mx-2"
                                     inputStyleClass="form-control"
-                                    forceSelection="true" 
+                                    forceSelection="true"
                                     disabled="#{pharmacyRequestForBhtController.department ne null}"
-                                    completeMethod="#{departmentController.completeDeptPharmacy}" 
-                                    var="vt" 
-                                    itemLabel="#{vt.name}" 
+                                    completeMethod="#{departmentController.completeDeptPharmacy}"
+                                    var="vt"
+                                    itemLabel="#{vt.name}"
                                     itemValue="#{vt}" >
-                                    <p:ajax 
-                                        event="itemSelect" 
-                                        process="@this" 
+                                    <p:ajax
+                                        event="itemSelect"
+                                        process="@this"
                                         update="@this acPt2" />
                                 </p:autoComplete>
 
-                                <h:outputLabel value="Patient Name or BHT or PHN No" class="mt-2"/> 
-                                <p:autoComplete 
-                                    widgetVar="aPt2"  
-                                    id="acPt2" 
-                                    forceSelection="true" 
-                                    value="#{pharmacyRequestForBhtController.patientEncounter}" 
+                                <h:outputLabel value="Patient Name or BHT or PHN No" class="mt-2"/>
+                                <p:autoComplete
+                                    widgetVar="aPt2"
+                                    id="acPt2"
+                                    forceSelection="true"
+                                    value="#{pharmacyRequestForBhtController.patientEncounter}"
                                     completeMethod="#{admissionController.completePatient}"
                                     var="apt2"
                                     disabled="#{pharmacyRequestForBhtController.department eq null}"
                                     itemLabel="#{apt2.bhtNo}"
-                                    itemValue="#{apt2}" 
-                                    size="30" 
+                                    itemValue="#{apt2}"
+                                    size="30"
                                     class=" col-md-3"
                                     inputStyleClass="form-control"
                                     >
                                     <p:column >
-                                        <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                        <h:outputLabel value="#{apt2.bhtNo}"/>
                                     </p:column>
                                     <p:column >
-                                        <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                        <h:outputLabel value="#{apt2.patient.person.name}"/>
                                     </p:column>
                                     <p:column >
-                                        <h:outputLabel value="#{apt2.patient.phn}"/> 
+                                        <h:outputLabel value="#{apt2.patient.phn}"/>
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
                                     <p:ajax event="itemSelect" process="acPt2" />
-                                </p:autoComplete> 
+                                </p:autoComplete>
 
-                                <p:commandButton 
-                                    ajax="false"  
+                                <p:commandButton
+                                    ajax="false"
                                     class=""
                                     value="Proceed" >
                                 </p:commandButton>
                             </div>
                         </p:panel>
 
-                        <p:panel 
-                            id="sale" 
-                            class="alignTop" 
+                        <p:panel
+                            id="sale"
+                            class="alignTop"
                             style="width: fit-content;"
                             rendered="#{pharmacyRequestForBhtController.patientEncounter ne null and pharmacyRequestForBhtController.department ne null}"
                             >
                             <f:facet name="header" >
-                                <div class="d-flex justify-content-between"> 
+                                <div class="d-flex justify-content-between">
                                     <div class="d-flex mt-2">
                                         <i class="fas fa-exclamation-circle mt-2" />
                                         <p:spacer width="10" height="1" ></p:spacer>
@@ -113,54 +113,54 @@
                                         <p:commandButton
                                             ajax="false"
                                             icon="fa-solid fa-address-card"
-                                            class="ui-button-secondary " 
+                                            class="ui-button-secondary "
                                             value="Inpatient Dashboard"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                         </p:commandButton>
 
-                                        <p:commandButton 
-                                            value="Lookup" 
+                                        <p:commandButton
+                                            value="Lookup"
                                             ajax="false"
                                             icon="fa fa-search"
-                                            class="ui-button-warning " 
-                                            action="#{patientController.navigateToSearchPatients()}" 
+                                            class="ui-button-warning "
+                                            action="#{patientController.navigateToSearchPatients()}"
                                             >
                                         </p:commandButton>
-                                        <p:commandButton 
-                                            value="Profile" 
+                                        <p:commandButton
+                                            value="Profile"
                                             ajax="false"
                                             icon="fa fa-user"
-                                            class="ui-button-warning" 
-                                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                                            class="ui-button-warning"
+                                            action="#{patientController.navigateToOpdPatientProfile()}"
                                             >
-                                            <f:setPropertyActionListener 
-                                                value="#{pharmacyRequestForBhtController.patientEncounter.patient}" 
+                                            <f:setPropertyActionListener
+                                                value="#{pharmacyRequestForBhtController.patientEncounter.patient}"
                                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
 
-                                        <p:commandButton 
-                                            accesskey="n" 
-                                            value="New Bill" 
+                                        <p:commandButton
+                                            accesskey="n"
+                                            value="New Bill"
                                             ajax="false"
                                             icon="fas fa-file-invoice"
-                                            class="ui-button-warning" 
+                                            class="ui-button-warning"
                                             action="pharmacy_bill_issue_bht"
                                             actionListener="#{pharmacyRequestForBhtController.resetAll}"  >
                                         </p:commandButton>
 
                                         <p:commandButton
-                                            value="Settle" 
-                                            class="ui-button-success" 
+                                            value="Settle"
+                                            class="ui-button-success"
                                             icon="fa fa-check"
                                             ajax="false"
-                                            action="#{pharmacyRequestForBhtController.settlePharmacyBhtIssueRequest}" 
+                                            action="#{pharmacyRequestForBhtController.settlePharmacyBhtIssueRequest}"
                                             actionListener="#{pharmacyRequestForBhtController.calculateAllRates}"  >
                                         </p:commandButton>
                                     </div>
                                 </div>
 
                                 <h:panelGroup id="panelError" >
-                                    <h:panelGroup  
+                                    <h:panelGroup
                                         rendered="#{pharmacyRequestForBhtController.errorMessage ne null and pharmacyRequestForBhtController.errorMessage ne ''}"
                                         style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
                                         <p:outputLabel value="#{pharmacyRequestForBhtController.errorMessage}" ></p:outputLabel>
@@ -178,18 +178,24 @@
                                         </f:facet>
                                         <bill:bhtDetail admission="#{pharmacyRequestForBhtController.patientEncounter}"/>
                                     </p:panel>
+                                    <p:panel class="w-100 my-2">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Comment" />
+                                        </f:facet>
+                                        <p:inputText value="#{pharmacyRequestForBhtController.comment}" class="w-70" styleClass="w-70" size="100" />
+                                    </p:panel>
                                 </div>
                                 <div class="col-6">
                                     <p:panel>
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus"  />
                                             <h:outputLabel value="Add items" class="mx-4"/>
-<!--                                            <p:commandButton 
+<!--                                            <p:commandButton
                                                 id="btnSave"
-                                                ajax="false" 
-                                                value="Save" 
+                                                ajax="false"
+                                                value="Save"
                                                 action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
-                                                icon="pi pi-save" 
+                                                icon="pi pi-save"
                                                 class="ui-button-success m-1"
                                                 style="float: right;"/>-->
                                         </f:facet>
@@ -202,30 +208,31 @@
 
                                         <div class="row mt-1">
                                             <div class="col-md-8">
-                                                <p:autoComplete 
+                                                <p:autoComplete
                                                     class= "w-100"
-                                                    accesskey="i"  
-                                                    forceSelection="true" 
-                                                    id="acStock" 
-                                                    value="#{pharmacyRequestForBhtController.item}" 
-                                                    completeMethod="#{itemController.completeAmpAndVmpItem}" 
-                                                    var="i" 
+                                                    accesskey="i"
+                                                    forceSelection="true"
+                                                    id="acStock"
+                                                    value="#{pharmacyRequestForBhtController.item}"
+                                                    completeMethod="#{itemController.completeAmpAndVmpItem}"
+                                                    var="i"
                                                     inputStyleClass="form-control"
-                                                    itemLabel="#{i.name}" 
-                                                    itemValue="#{i}" 
+                                                    itemLabel="#{i.name}"
+                                                    itemValue="#{i}"
+                                                    maxResults="10"
                                                     >
                                                     <p:ajax event="focus" process="acStock" ></p:ajax>
                                                     <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
-                                                    <p:ajax event="itemSelect"   
-                                                            listener="#{pharmacyRequestForBhtController.handleSelect}"  
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{pharmacyRequestForBhtController.handleSelect}"
                                                             update="focusQty" ></p:ajax>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-2">
-                                                <p:inputText 
-                                                    autocomplete="off"  
-                                                    accesskey="q"   
-                                                    id="txtQty" 
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    accesskey="q"
+                                                    id="txtQty"
                                                     class="w-100"
                                                     value="#{pharmacyRequestForBhtController.qty}">
                                                     <p:ajax event="keyup"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
@@ -233,15 +240,15 @@
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
-                                                <p:commandButton  
-                                                    accesskey="a" 
-                                                    id="btnAdd" 
+                                                <p:commandButton
+                                                    accesskey="a"
+                                                    id="btnAdd"
                                                     style="float: right;"
-                                                    value="Add" 
+                                                    value="Add"
                                                     icon="fa fa-plus"
-                                                    class="ui-button-success"       
-                                                    action="#{pharmacyRequestForBhtController.addBillItem}" 
-                                                    process="@this acStock txtQty" 
+                                                    class="ui-button-success"
+                                                    action="#{pharmacyRequestForBhtController.addBillItem}"
+                                                    process="@this acStock txtQty"
                                                     update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty"   >
                                                 </p:commandButton>
                                             </div>
@@ -265,14 +272,14 @@
                                                 <p:column headerText="Directions" style="color: red;" width="7%">
                                                     <p:inputText placeholder="bd/tds/6 hourly" autocomplete="off" id="ipTblDis" value="#{bi.descreption}" style="width:96%">
                                                         <p:ajax event="blur" process="@this"/>
-                                                    </p:inputText> 
+                                                    </p:inputText>
                                                 </p:column>
                                                 <p:column headerText="Remove" width="10%">
-                                                    <p:commandButton 
-                                                        value="Remove" 
+                                                    <p:commandButton
+                                                        value="Remove"
                                                         icon="fa-solid fa-trash"
                                                         class="ui-button-danger"
-                                                        action="#{pharmacyRequestForBhtController.removeBillItem(bi)}" 
+                                                        action="#{pharmacyRequestForBhtController.removeBillItem(bi)}"
                                                         ajax="false"   >
 
                                                     </p:commandButton>
@@ -321,10 +328,10 @@
 
                                         </h:panelGroup>
 
-                                        <p:dataTable id="lstReplaceableBatch" 
+                                        <p:dataTable id="lstReplaceableBatch"
                                                      selection="#{pharmacyRequestForBhtController.replacableStock}"
-                                                     value="#{pharmacyRequestForBhtController.replaceableStocks}" 
-                                                     var="ri" 
+                                                     value="#{pharmacyRequestForBhtController.replaceableStocks}"
+                                                     var="ri"
                                                      selectionMode="single"
                                                      rowKey="#{ri.id}"
                                                      emptyMessage="System can not detect suitable replacements.">
@@ -347,12 +354,12 @@
                                                 </p:outputLabel>
                                             </p:column>
                                             <p:column headerText="Expiry">
-                                                <h:panelGroup rendered="#{commonController.currentDateTime > ri.itemBatch.dateOfExpire}" >
+                                                <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime > ri.itemBatch.dateOfExpire}" >
                                                     <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </p:outputLabel>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonController.currentDateTime}" >
+                                                <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonFunctionsProxy.currentDateTime}" >
                                                     <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" >
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </p:outputLabel>
@@ -360,10 +367,10 @@
                                             </p:column>
                                         </p:dataTable>
 
-                                        <p:dataTable id="lstSelectItems" 
+                                        <p:dataTable id="lstSelectItems"
                                                      selection="#{pharmacyRequestForBhtController.selectedAvailableAmp}"
-                                                     value="#{pharmacyRequestForBhtController.itemsWithoutStocks}" 
-                                                     var="si" 
+                                                     value="#{pharmacyRequestForBhtController.itemsWithoutStocks}"
+                                                     var="si"
                                                      selectionMode="single"
                                                      rowKey="#{si.id}"
                                                      emptyMessage="No items with that name without stocks.">
@@ -395,18 +402,18 @@
                                     <h:outputLabel value="View Bill" class="mt-2"/>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        accesskey="p" 
-                                        id="btnPrint" 
-                                        value="Print" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        accesskey="p"
+                                        id="btnPrint"
+                                        value="Print"
+                                        ajax="false"
                                         class="ui-button-info"
                                         icon="fa fa-print"> <!-- Font Awesome icon -->
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        accesskey="n" 
-                                        value="New Medicine Request for BHT" 
+                                    <p:commandButton
+                                        accesskey="n"
+                                        value="New Medicine Request for BHT"
                                         ajax="false"
                                         class="ui-button-success"
                                         action="pharmacy_bill_issue_request"
@@ -414,31 +421,31 @@
                                         icon="fa fa-plus-circle"> <!-- Font Awesome icon -->
                                     </p:commandButton>
                                     <p:commandButton
-                                        value="Lookup" 
+                                        value="Lookup"
                                         ajax="false"
                                         icon="fa fa-search"
-                                        class="ui-button-warning " 
-                                        action="#{patientController.navigateToSearchPatients()}" 
+                                        class="ui-button-warning "
+                                        action="#{patientController.navigateToSearchPatients()}"
                                         >
                                     </p:commandButton>
                                     <p:commandButton
-                                        value="Patient Profile" 
+                                        value="Patient Profile"
                                         ajax="false"
                                         icon="fa fa-user"
-                                        class="ui-button-warning" 
-                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                        class="ui-button-warning"
+                                        action="#{patientController.navigateToOpdPatientProfile()}"
                                         >
-                                        <f:setPropertyActionListener 
-                                            value="#{admissionController.current.patient}" 
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current.patient}"
                                             target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                     <p:commandButton
                                         ajax="false"
                                         icon="fa-solid fa-address-card"
-                                        class="ui-button-secondary " 
+                                        class="ui-button-secondary "
                                         value="Inpatient Dashboard"
                                         style="float: right;"
-                                        action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                        action="#{admissionController.navigateToAdmissionProfilePage}"
                                         >
                                         <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
                                     </p:commandButton>
@@ -461,27 +468,27 @@
                             </div>
                         </div>
 
-                        <h:panelGroup   id="gpBillPreview" > 
+                        <h:panelGroup   id="gpBillPreview" >
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
                                         <phe:issueBill bill="#{pharmacyRequestForBhtController.printBill}"/>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
                                         <phi:saleBill_five_five bill="#{pharmacyRequestForBhtController.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
-                                </div>                                
-                            </h:panelGroup>    
+                                </div>
+                            </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'A4Paper'}">
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
                                         <phe:A4_paper_with_headings bill="#{pharmacyRequestForBhtController.printBill}"/>
                                     </h:panelGroup>
                                 </div>

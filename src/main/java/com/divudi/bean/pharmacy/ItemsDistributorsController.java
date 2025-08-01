@@ -8,18 +8,17 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PackageFee;
-import com.divudi.entity.pharmacy.ItemsDistributors;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PackageFeeFacade;
-import com.divudi.facade.PackegeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PackageFee;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PackageFeeFacade;
+import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,8 +55,6 @@ public class ItemsDistributorsController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
     private List<ItemsDistributors> items = null;
@@ -65,17 +62,17 @@ public class ItemsDistributorsController implements Serializable {
     private SearchKeyword searchKeyword;
 //    private List<PackageFee> charges;
     //private List<Packege> packegeList = null;
-    Institution currentInstituion;
+    Institution currentInstitution;
     private Item currentItem;
     private PackageFee currentFee;
     private Double total = 0.0;
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
     }
 
     /**
@@ -85,8 +82,15 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     private boolean checkItem() {
+        if (getCurrentInstitution() == null) {
+            return false;
+        }
+        if (getCurrentItem() == null) {
+            return false;
+        }
+        
         String sql = "Select i from ItemsDistributors i where i.retired=false"
-                + " and i.institution.id= " + getCurrentInstituion().getId() + " and "
+                + " and i.institution.id= " + getCurrentInstitution().getId() + " and "
                 + " i.item.id=" + getCurrentItem().getId();
         ItemsDistributors tmp = getFacade().findFirstByJpql(sql);
         if (tmp != null) {
@@ -111,7 +115,7 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     public void addItemToDistributor() {
-        if (getCurrentInstituion() == null) {
+        if (getCurrentInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
@@ -127,7 +131,7 @@ public class ItemsDistributorsController implements Serializable {
 
         ItemsDistributors pi = new ItemsDistributors();
 
-        pi.setInstitution(getCurrentInstituion());
+        pi.setInstitution(getCurrentInstitution());
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
         pi.setCreater(getSessionController().getLoggedUser());
@@ -140,7 +144,7 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     public void removeFromPackage() {
-        if (getCurrentInstituion() == null) {
+        if (getCurrentInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
@@ -236,6 +240,11 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     public void listItemForDistributer(){
+        if (getCurrentInstitution() == null) {
+            items = new ArrayList<>();
+            return;
+        }
+        
         String temSql;
         HashMap hm = new HashMap();
 
@@ -245,7 +254,7 @@ public class ItemsDistributorsController implements Serializable {
                 + " and i.institution=:ins "
                 + " order by i.item.name";
 
-        hm.put("ins", getCurrentInstituion());
+        hm.put("ins", getCurrentInstitution());
 
         items = getFacade().findByJpql(temSql, hm);
 
@@ -494,14 +503,6 @@ public class ItemsDistributorsController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + ItemsDistributorsController.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

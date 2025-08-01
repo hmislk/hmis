@@ -9,12 +9,12 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.channel.AppointmentActivity;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.entity.channel.SessionInstanceActivity;
-import com.divudi.facade.SessionInstanceActivityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.channel.AppointmentActivity;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.channel.SessionInstanceActivity;
+import com.divudi.core.facade.SessionInstanceActivityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

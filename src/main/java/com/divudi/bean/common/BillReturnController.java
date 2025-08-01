@@ -1,41 +1,35 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
 
-import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.Drawer;
 
-import com.divudi.facade.BillFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.service.BillService;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
-import com.divudi.service.StaffService;
+
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -58,6 +52,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     DrawerService drawerService;
     @EJB
     ProfessionalPaymentService professionalPaymentService;
+    @EJB
+    BillService billService;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -75,6 +71,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     DrawerController drawerController;
     @Inject
     AgentAndCcApplicationController agentAndCcApplicationController;
+    @Inject
+    WebUserController webUserController;
 
     private ConfigOptionApplicationController configOptionApplicationController;
 
@@ -92,7 +90,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
-    private boolean returningStarted = false;
+    private final AtomicBoolean returningStarted = new AtomicBoolean(false);
 
     private double refundingTotalAmount;
     private String refundComment;
@@ -107,7 +105,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        returningStarted = false;
+        returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
@@ -121,7 +119,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //System.out.println("Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
-        returningStarted = false;
+        returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         System.out.println("Method = " + paymentMethod);
         return "/collecting_centre/bill_return?faces-redirect=true";
@@ -238,33 +236,51 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleOpdReturnBill() {
-        if (returningStarted) {
+        if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
         }
         if (originalBillToReturn == null) {
             JsfUtil.addErrorMessage("Already Returning Started");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected to return");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
+
+        if (!webUserController.hasPrivilege("OpdReturn")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Refund OPD Bills. Please Contact System Administrator.");
+            returningStarted.set(false);
+            return null;
+        }
+        
+        Bill backward = originalBillToReturn.getBackwardReferenceBill();
+        
+        if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
+            if (items != null && !items.isEmpty()) {
+                returningStarted.set(false);
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be Refund.");
+                return null;
+            }
+        }
+
         calculateRefundingAmount();
 
         Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
         if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
             JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -272,7 +288,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -286,11 +302,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
@@ -315,6 +331,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         double returningNetTotal = 0.0;
         double returningHospitalTotal = 0.0;
         double returningStaffTotal = 0.0;
+        double returningReagentTotal = 0.0;
+        double returningOtherTotal = 0.0;
         double returningDiscount = 0.0;
 
         newlyReturnedBillItems = new ArrayList<>();
@@ -327,6 +345,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningNetTotal += selectedBillItemToReturn.getNetValue();
             returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
             returningStaffTotal += selectedBillItemToReturn.getStaffFee();
+            returningReagentTotal += selectedBillItemToReturn.getReagentFee();
+            returningOtherTotal += selectedBillItemToReturn.getOtherFee();
             returningDiscount += selectedBillItemToReturn.getDiscount();
 
             BillItem newlyCreatedReturningItem = new BillItem();
@@ -391,7 +411,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
-        returningStarted = false;
+        returningStarted.set(false);
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
@@ -409,24 +429,24 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleCCReturnBill() {
-        if (returningStarted) {
+        if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
         }
         if (originalBillToReturn == null) {
             JsfUtil.addErrorMessage("Already Returning Started");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected to return");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -435,17 +455,17 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);
@@ -453,7 +473,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.setReferenceBill(originalBillToReturn);
-        newlyReturnedBill.invertValueOfThisBill();
+        newlyReturnedBill.setBillDate(new Date());
+        newlyReturnedBill.setBillTime(new Date());
+//        newlyReturnedBill.invertValueOfThisBill();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL_REFUND);
         newlyReturnedBill.setDeptId(deptId);
@@ -519,29 +541,50 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             }
         }
 
-        newlyReturnedBill.setGrantTotal(0 - returningTotal);
-        newlyReturnedBill.setNetTotal(0 - returningNetTotal);
-        newlyReturnedBill.setTotal(0 - returningTotal);
-        newlyReturnedBill.setHospitalFee(0 - returningHospitalTotal);
-        newlyReturnedBill.setCollctingCentreFee(0 - returningCCTotal);
-        newlyReturnedBill.setProfessionalFee(0 - returningStaffTotal);
-        newlyReturnedBill.setDiscount(0 - returningDiscount);
+// Print the original values
+        System.out.println("Original returningTotal: " + returningTotal);
+        System.out.println("Original returningNetTotal: " + returningNetTotal);
+        System.out.println("Original returningHospitalTotal: " + returningHospitalTotal);
+        System.out.println("Original returningCCTotal: " + returningCCTotal);
+        System.out.println("Original returningStaffTotal: " + returningStaffTotal);
+        System.out.println("Original returningDiscount: " + returningDiscount);
 
-        newlyReturnedBill.setTotalHospitalFee(0 - returningHospitalTotal);
-        newlyReturnedBill.setTotalCenterFee(0 - returningCCTotal);
-        newlyReturnedBill.setTotalStaffFee(0 - returningStaffTotal);
+// Convert all values to negative absolute amounts
+        returningTotal = -Math.abs(returningTotal);
+        returningNetTotal = -Math.abs(returningNetTotal);
+        returningHospitalTotal = -Math.abs(returningHospitalTotal);
+        returningCCTotal = -Math.abs(returningCCTotal);
+        returningStaffTotal = -Math.abs(returningStaffTotal);
+        returningDiscount = -Math.abs(returningDiscount);
+
+// Print the adjusted values
+        System.out.println("Adjusted returningTotal: " + returningTotal);
+        System.out.println("Adjusted returningNetTotal: " + returningNetTotal);
+        System.out.println("Adjusted returningHospitalTotal: " + returningHospitalTotal);
+        System.out.println("Adjusted returningCCTotal: " + returningCCTotal);
+        System.out.println("Adjusted returningStaffTotal: " + returningStaffTotal);
+        System.out.println("Adjusted returningDiscount: " + returningDiscount);
+
+// Assign the adjusted values to newlyReturnedBill
+        newlyReturnedBill.setGrantTotal(returningTotal);
+        newlyReturnedBill.setNetTotal(returningNetTotal);
+        newlyReturnedBill.setTotal(returningTotal);
+        newlyReturnedBill.setHospitalFee(returningHospitalTotal);
+        newlyReturnedBill.setCollctingCentreFee(returningCCTotal);
+        newlyReturnedBill.setProfessionalFee(returningStaffTotal);
+        newlyReturnedBill.setDiscount(returningDiscount);
+
+// Print the values before setting
+        System.out.println("Setting TotalHospitalFee: " + returningHospitalTotal);
+        System.out.println("Setting TotalCenterFee: " + returningCCTotal);
+        System.out.println("Setting TotalStaffFee: " + returningStaffTotal);
+
+// Assign the values
+        newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);
+        newlyReturnedBill.setTotalCenterFee(returningCCTotal);
+        newlyReturnedBill.setTotalStaffFee(returningStaffTotal);
 
         billController.save(newlyReturnedBill);
-
-        System.out.println("CC Balance Update ");
-        //Update Centre Balanace
-//        System.out.println("Institution = " + originalBillToReturn.getCollectingCentre());
-//        System.out.println("Hospital Fee = " + newlyReturnedBill.getHospitalFee());
-//        System.out.println("CollctingCentre Fee = " + newlyReturnedBill.getCollctingCentreFee());
-//        System.out.println("Professional Fee = " + newlyReturnedBill.getProfessionalFee());
-//        System.out.println("Net Total = " + newlyReturnedBill.getNetTotal());
-//        System.out.println("History Type = " + HistoryType.CollectingCentreBillingRefund);
-//        System.out.println("Bill = " + newlyReturnedBill);
 
         agentAndCcApplicationController.updateCcBalance(
                 originalBillToReturn.getCollectingCentre(),
@@ -552,9 +595,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 HistoryType.CollectingCentreBillingRefund,
                 newlyReturnedBill);
 
-        // drawer Update (No Need Update Drawer)
-//      drawerController.updateDrawerForOuts(returningPayment);
-        returningStarted = false;
+        returningStarted.set(false);
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
 
     }
@@ -625,11 +666,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public boolean isReturningStarted() {
-        return returningStarted;
+        return returningStarted.get();
     }
 
     public void setReturningStarted(boolean returningStarted) {
-        this.returningStarted = returningStarted;
+        this.returningStarted.set(returningStarted);
     }
 
     public PaymentMethod getPaymentMethod() {

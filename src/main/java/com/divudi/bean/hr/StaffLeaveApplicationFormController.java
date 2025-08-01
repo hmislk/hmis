@@ -5,29 +5,28 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Form;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.LeaveForm;
-import com.divudi.entity.hr.LeaveFormSystem;
-import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffLeaveEntitle;
-import com.divudi.entity.hr.StaffSalary;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.LeaveFormFacade;
-import com.divudi.facade.StaffLeaveEntitleFacade;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Form;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.LeaveForm;
+import com.divudi.core.entity.hr.LeaveFormSystem;
+import com.divudi.core.entity.hr.SalaryCycle;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.entity.hr.StaffLeaveEntitle;
+import com.divudi.core.entity.hr.StaffSalary;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.LeaveFormFacade;
+import com.divudi.core.facade.StaffLeaveEntitleFacade;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,11 +58,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
     SessionController sessionController;
     @Inject
     StaffAdditionalFormController staffAdditionalFormController;
-    @Inject
-    CommonController commonController;
 
-    @EJB
-    CommonFunctions commonFunctions;
     List<LeaveForm> leaveForms;
     Staff approvedStaff;
     Staff staff;
@@ -251,7 +246,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         return stf;
 
-        //Need to Add toLogicTo Date  
+        //Need to Add toLogicTo Date
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType, Date frm) {
@@ -270,7 +265,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         return stf;
 
-        //Need to Add toLogicTo Date  
+        //Need to Add toLogicTo Date
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
@@ -287,7 +282,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         return stf;
 
-        //Need to Add toLogicTo Date  
+        //Need to Add toLogicTo Date
     }
 
     public void calLeaveCount() {
@@ -309,8 +304,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 getCurrentLeaveForm().getToDate());
         ////System.out.println("getCurrentLeaveForm().getStaff() = " + getCurrentLeaveForm().getStaff());
         ////System.out.println("getCurrentLeaveForm().getLeaveType() = " + getCurrentLeaveForm().getLeaveType());
-        ////System.out.println("commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
-        ////System.out.println("commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()));
+        ////System.out.println("CommonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()) = " + CommonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
+        ////System.out.println("CommonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()) = " + CommonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()));
         ////System.out.println("staffLeaveEntitle = " + staffLeaveEntitle);
         ////System.out.println("leaveTypeLocal.isExceptionalLeave() = " + leaveTypeLocal.isExceptionalLeave());
 
@@ -414,7 +409,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()) != null) {
             SalaryCycle s = staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate());
             //System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
-            Date nowDate = com.divudi.java.CommonFunctions.getEndOfDay();
+            Date nowDate = com.divudi.core.util.CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                 if (d > 3) {
@@ -424,7 +419,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 }
             }
         }
-        
+
         if (staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()) != null) {
             StaffSalary s=humanResourceBean.getStaffSalary(currentLeaveForm.getStaff(), staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()));
             if (s.getId()!=null) {
@@ -449,7 +444,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 return true;
             }
 
-            Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
+            Long datRang = CommonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
 
 //            if (datRang != 1) {
 //                JsfUtil.addErrorMessage("Date range should be 1");
@@ -629,7 +624,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void createStaffleaveTable() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -675,8 +670,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("td", toDate);
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        
-        
+
+
 
     }
 
@@ -710,7 +705,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 //    }
     public void createStaffleaveTablebyLeaveDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -756,8 +751,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("td", toDate);
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        
-        
+
+
 
     }
 
@@ -961,14 +956,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
         this.leaveFormFacade = leaveFormFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Staff getApprovedStaff() {
         return approvedStaff;
     }
@@ -987,7 +974,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -998,7 +985,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -1046,14 +1033,4 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public void setWithOutretRierd(boolean withOutretRierd) {
         this.withOutretRierd = withOutretRierd;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }

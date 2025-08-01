@@ -1,0 +1,274 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form>
+                    <p:panel header="Agent Channel Bookings Print View" styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Agent Channel Bookings Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="agent_channel_bookings?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen {
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm !important;
+                                    zoom: 2.0;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px !important;
+                                    margin-top: 1mm !important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px !important;
+                                    margin: 2px !important;
+                                    text-align: left;
+                                    margin-left: 10mm !important;
+                                }
+
+                                .header {
+                                    font-size: 16px !important;
+                                }
+
+                                tfoot {
+                                    font-weight: 700 !important;
+                                    font-size: 11px !important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 portrait !important;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm !important;
+
+
+                                }
+
+                                .header {
+                                    line-height: 1.1;
+                                    margin: 0mm !important;
+                                    font-size: 13px !important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px !important;
+                                    margin-top: 1mm !important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px !important;
+                                    margin: 2px !important;
+                                    text-align: left;
+                                    margin-left: 10mm !important;
+                                }
+
+                                th {
+
+                                }
+
+                                tfoot {
+                                    font-weight: 700 !important;
+                                    font-size: 11px !important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="Agent Channel Bookings"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From Date - "/>
+                                        <h:outputText value="#{searchController.fromDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To Date - "/>
+                                        <h:outputText value="#{searchController.toDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: center;">Serial</th>
+                                                <th style="text-align: center;">Date/Time</th>
+                                                <th style="text-align: center;">Bill No</th>
+                                                <th style="text-align: center;">Patient</th>
+                                                <th style="text-align: center;">Agent</th>
+                                                <th style="text-align: center;">Ref No</th>
+                                                <th style="text-align: center;">Cashier</th>
+                                                <th style="text-align: center;">Hospital Fee</th>
+                                                <th style="text-align: center;">Staff Fee</th>
+                                                <th style="text-align: center;">Gross Total</th>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                    <th style="text-align: center;">Discount</th>
+                                                    <th style="text-align: center;">Net Total</th>
+                                                </h:panelGroup>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat varStatus="status" value="#{searchController.bills}" var="b">
+                                                <tr>
+                                                    <td><h:outputText value="#{status.index +1}"/></td>
+                                                    <td>
+                                                        <h:outputText value="#{b.createdAt}">
+                                                            <f:convertDateTime
+                                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{b.deptId}"/>
+                                                        <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
+                                                        <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
+                                                    </td>
+                                                    <td><h:outputText value="#{b.patient.person.nameWithTitle}"/></td>
+                                                    <td><h:outputText value="#{b.creditCompany.name}"/></td>
+                                                    <td><h:outputText value="#{b.agentRefNo}"/></td>
+                                                    <td><h:outputText value="#{b.creater.name}"/></td>
+                                                    <td style="text-align: right" >
+                                                        <h:outputText value="#{b.hospitalFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText value="#{b.staffFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText value="#{b.hospitalFee + b.staffFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                        <td style="text-align: right">
+                                                            <h:outputText value="#{b.discount}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align: right">
+                                                            <h:outputText value="#{b.netTotal}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="7" style="text-align: left; font-weight: 700;">
+                                                    <h:outputText value="Total"/>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputText value="#{searchController.hosTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputText value="#{searchController.staffTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputText value="#{searchController.grossTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{searchController.discountTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{searchController.amountTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

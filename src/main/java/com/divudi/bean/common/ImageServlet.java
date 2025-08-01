@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
+import com.divudi.core.entity.Patient;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ public class ImageServlet extends HttpServlet {
 
     @Inject
     PatientController patientController;
-    
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -37,7 +37,7 @@ public class ImageServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ImageServlet</title>");            
+            out.println("<title>Servlet ImageServlet</title>");
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet ImageServlet at " + request.getContextPath() + "</h1>");

@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
@@ -21,10 +21,10 @@
             </h:panelGroup>
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
                 <p:inputText
-                    autocomplete="off" 
+                    autocomplete="off"
                     onfocus="this.select();"
-                    value="#{cc.attrs.paymentMethodData.slip.totalValue}" 
-                    style="width: 6em;" 
+                    value="#{cc.attrs.paymentMethodData.slip.totalValue}"
+                    style="width: 6em;"
                     id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                     <f:convertNumber pattern="#,##0.00" />
@@ -32,23 +32,23 @@
             </h:panelGroup>
             <h:outputLabel value="Staff" ></h:outputLabel>
             <p:autoComplete  forceSelection="true" id="staff"
-                             value="#{cc.attrs.paymentMethodData.iou.toStaff}" 
-                             completeMethod="#{staffController.completeStaff}" 
+                             value="#{cc.attrs.paymentMethodData.iou.toStaff}"
+                             completeMethod="#{staffController.completeStaff}"
                              var="mys" class="w-100" inputStyleClass="w-100"
-                             itemLabel="#{mys.person.nameWithTitle}" 
+                             itemLabel="#{mys.person.nameWithTitle}"
                              itemValue="#{mys}"
                              >
             </p:autoComplete>
 
             <h:outputLabel value="Date" ></h:outputLabel>
-            <p:calendar 
-                value="#{cc.attrs.paymentMethodData.iou.date}" 
-                placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">                            
+            <p:calendar
+                value="#{cc.attrs.paymentMethodData.iou.date}"
+                placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">
                 <p:ajax process="@this" ></p:ajax>
             </p:calendar>
 
             <h:outputLabel value="Referance" ></h:outputLabel>
-            <p:inputText value="#{cc.attrs.paymentMethodData.iou.referenceNo}" 
+            <p:inputText value="#{cc.attrs.paymentMethodData.iou.referenceNo}"
                          placeholder="Referance No" class="w-100" ></p:inputText>
 
             <h:outputLabel value="Comments" ></h:outputLabel>

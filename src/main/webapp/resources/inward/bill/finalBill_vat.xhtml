@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"    
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
@@ -8,10 +8,10 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
-    <cc:interface>      
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />  
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" />
-        <cc:attribute name="hosCopy" />        
+        <cc:attribute name="hosCopy" />
         <cc:attribute name="showProfessional" />
     </cc:interface>
 
@@ -72,12 +72,12 @@
                 <div class="row text-center">
                     <div class="col-12">
                         <h2>
-                            <h:outputLabel class="mark" value="Final Bill Original" 
+                            <h:outputLabel class="mark" value="Final Bill Original"
                                            rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>
                         </h2>
                     </div>
                 </div>
-               
+
 
 
                 <div class="m-2 m-2 px-1" style="">
@@ -185,21 +185,21 @@
                                         </td>
                                         <td>
                                             <h:panelGroup >
-                                                <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' 
+                                                <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge'
                                                                           and bip.inwardChargeType eq 'RoomCharges' )}">
                                                     &nbsp;
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' }">
-                                                    <table>                                             
+                                                    <table>
                                                         <ui:repeat value="#{bip.proFees}" var="fe">
-                                                            <h:panelGroup rendered="#{fe.feeAdjusted ne 0 
-                                                                                      and fe.bill.cancelled eq false 
-                                                                                      and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}" style="">
+                                                            <h:panelGroup rendered="#{fe.feeAdjusted ne 0
+                                                                                      and fe.bill.cancelled eq false
+                                                                                      and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}" style="">
                                                                 <tr>
 
                                                                     <td style="text-align: left;font-size: 8px!important;">
-                                                                        <h:panelGroup>                       
-                                                                            #{fe.staff.person.nameWithTitle} 
+                                                                        <h:panelGroup>
+                                                                            #{fe.staff.person.nameWithTitle}
                                                                         </h:panelGroup>
                                                                     </td>
                                                                     <td  style="text-align: right;font-size: 8px!important;">
@@ -211,11 +211,11 @@
                                                                     </td>
                                                                 </tr>
                                                             </h:panelGroup>
-                                                        </ui:repeat>   
+                                                        </ui:repeat>
                                                     </table>
                                                 </h:panelGroup>
                                                 <h:panelGroup>
-                                                    <table>                                               
+                                                    <table>
                                                         <ui:repeat value="#{bip.billFees}" var="fe">
                                                             <h:panelGroup >
                                                                 <tr>
@@ -249,12 +249,12 @@
                                                                     </td>
                                                                 </tr>
                                                             </h:panelGroup>
-                                                        </ui:repeat>   
+                                                        </ui:repeat>
                                                     </table>
                                                 </h:panelGroup>
-                                            </h:panelGroup>                                     
+                                            </h:panelGroup>
                                         </td>
-                                        <td  style="width: 30%;text-align: right;font-size: 13px!important;">                                        
+                                        <td  style="width: 30%;text-align: right;font-size: 13px!important;">
                                             <h:outputLabel  value="#{bip.adjustedValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -273,7 +273,7 @@
                                 </tr>
 
 
-                                <h:panelGroup >                             
+                                <h:panelGroup >
                                     <tr style="width: 100%;">
                                         <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel value="Total"/>
@@ -283,15 +283,15 @@
 
                                             <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.grantTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
 
                                             <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
 
                                         </td>
                                     </tr>
-                                </h:panelGroup>                           
+                                </h:panelGroup>
 
                             </h:panelGroup>
 
@@ -325,11 +325,11 @@
                                     <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                         <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
 
                                         <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
 
                                     </td>
                                 </tr>
@@ -351,18 +351,18 @@
                                     <td>
                                         <table>
                                             <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
-                                                <h:panelGroup  rendered="#{(b.netTotal ne 0 )                                                                       
-                                                                           and                                                                        
-                                                                           ((b.cancelled eq false 
-                                                                           and b.billClass eq 'class com.divudi.entity.BilledBill')
-                                                                           or 
-                                                                           (b.cancelled eq false 
+                                                <h:panelGroup  rendered="#{(b.netTotal ne 0 )
+                                                                           and
+                                                                           ((b.cancelled eq false
+                                                                           and b.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                                           or
+                                                                           (b.cancelled eq false
                                                                            and b.refundedBill eq null
-                                                                           and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >                                            
+                                                                           and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}" >
                                                     <tr>
                                                         <td>
                                                             #{b.deptId}
-                                                        </td>                                                   
+                                                        </td>
                                                         <td>
                                                             <h:outputLabel value="#{b.netTotal}">
                                                                 <f:convertNumber pattern="#,##0.00" />

@@ -1,13 +1,13 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.ItemLight;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemMapping;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemMappingFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemMapping;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemMappingFacade;
+import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -316,7 +316,7 @@ public class ItemMappingController implements Serializable {
 
     public List<ItemLight> fillItemLightByInstitution(Institution institution) {
         List<ItemLight> results;
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "im.item.id, "
                 + "im.item.department.name, "
                 + "im.item.name, "
@@ -347,7 +347,7 @@ public class ItemMappingController implements Serializable {
 
     public List<ItemLight> fillItemLightByDepartment(Department dept) {
         List<ItemLight> results;
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "im.item.id, "
                 + "im.item.department.name, "
                 + "im.item.name, "

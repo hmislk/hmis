@@ -5,33 +5,32 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.DateType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.DateType;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.StaffSalary;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.PaysheetComponentFacade;
-import com.divudi.facade.RosterFacade;
-import com.divudi.facade.SalaryCycleFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.StaffSalaryComponantFacade;
-import com.divudi.facade.StaffSalaryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.SalaryCycle;
+import com.divudi.core.entity.hr.StaffSalary;
+import com.divudi.core.entity.hr.StaffSalaryComponant;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.PaysheetComponentFacade;
+import com.divudi.core.facade.RosterFacade;
+import com.divudi.core.facade.SalaryCycleFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.facade.StaffSalaryComponantFacade;
+import com.divudi.core.facade.StaffSalaryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,15 +63,12 @@ public class SalaryCycleController implements Serializable {
     @EJB
     RosterFacade rosterFacade;
 
-    CommonFunctions commonFunctions;
     @Inject
     private SessionController sessionController;
     @Inject
     StaffController staffController;
     @Inject
     StaffSalaryController staffSalaryController;
-    @Inject
-    CommonController commonController;
     @Inject
     HrReportController hrReportController;
     List<SalaryCycle> salaryCycles;
@@ -135,7 +131,7 @@ public class SalaryCycleController implements Serializable {
                 + " order by c.id desc";
         salaryCycles = getFacade().findByJpql(sql);
 
-        
+
     }
 
     double brVal = 0.0;
@@ -253,7 +249,7 @@ public class SalaryCycleController implements Serializable {
             return true;
         }
 
-        //Check Salry Date        
+        //Check Salry Date
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
             JsfUtil.addErrorMessage("Salary Date Already Exist");
             return true;
@@ -641,7 +637,7 @@ public class SalaryCycleController implements Serializable {
 //
 //        for (Staff s : staffes) {
 //            StaffAndSalarySalaryComponent sc = new StaffAndSalarySalaryComponent();
-//            sc.setStaff(s);          
+//            sc.setStaff(s);
 //            for (PaysheetComponent psc : paysheetComponents) {
 //                jpql = "select spc from StaffSalaryComponant spc "
 //                        + " where spc.staffSalary.staff=:st"
@@ -806,7 +802,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false);
 
-        
+
     }
 
     public void fillStaffPayRollNew() {
@@ -816,7 +812,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(false);
 
-        
+
     }
 
     public void fillStaffPayRollSelectedStaff() {
@@ -826,7 +822,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false, staffController.getSelectedList());
 
-        
+
     }
 
     public void fillStaffPayRollDepartmentWise() {
@@ -840,7 +836,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(false, fetchSalaryRosters());
 
-        
+
     }
 
     public void fillStaffPayRollBlocked() {
@@ -850,7 +846,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true);
 
-        
+
     }
 
     public void fillStaffPayRollBlockedNew() {
@@ -860,7 +856,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(true);
 
-        
+
     }
 
     public void fillStaffPayRollBlockedSelectedStaff() {
@@ -870,7 +866,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true, staffController.getSelectedList());
 
-        
+
     }
 
     public void fillStaffPayRollBlockedDepartmentWise() {
@@ -884,7 +880,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(true, fetchSalaryRosters());
 
-        
+
     }
 
     public void fillStaffPayRoll(boolean blocked) {
@@ -1003,9 +999,9 @@ public class SalaryCycleController implements Serializable {
             cal.setTime(s.getSalaryCycle().getDayOffPhToDate());
             cal.add(Calendar.DATE, 1);
             s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
-            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
+            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), CommonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
+            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), CommonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
 
             if (checkDateRange(s.getStaff().getDateLeft())) {
                 s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
@@ -1029,10 +1025,10 @@ public class SalaryCycleController implements Serializable {
                         && s.getSalaryCycle().getSalaryToDate().getTime() >= s.getStaff().getDateJoined().getTime())) {
                     long extraDays;
                     if (s.getStaff().getDateJoined().getTime() > s.getSalaryCycle().getDayOffPhToDate().getTime()) {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     extraDays -= (int) (extraDays / 7);
@@ -1184,9 +1180,9 @@ public class SalaryCycleController implements Serializable {
             cal.setTime(s.getSalaryCycle().getDayOffPhToDate());
             cal.add(Calendar.DATE, 1);
             s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
-            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
+            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), CommonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
+            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), CommonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
 
             if (checkDateRange(s.getStaff().getDateLeft(), s.getSalaryCycle())) {
                 s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
@@ -1210,10 +1206,10 @@ public class SalaryCycleController implements Serializable {
                         && s.getSalaryCycle().getSalaryToDate().getTime() >= s.getStaff().getDateJoined().getTime())) {
                     long extraDays;
                     if (s.getStaff().getDateJoined().getTime() > s.getSalaryCycle().getDayOffPhToDate().getTime()) {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     extraDays -= (int) (extraDays / 7);
@@ -1728,7 +1724,7 @@ public class SalaryCycleController implements Serializable {
         staffSalary = staffSalaryFacade.findByJpql(jpql, m);
         allStaffSalaryTotal(staffSalary);
 
-        
+
     }
 
     public List<Department> fetchSalaryDepartment() {
@@ -1989,7 +1985,7 @@ public class SalaryCycleController implements Serializable {
         }
         allStaffSalaryByDepartmentTotal(salaryByDepartments);
 
-        
+
     }
 
     public Object[] fillStaffSalaryByDepartment(Department d) {
@@ -2440,7 +2436,7 @@ public class SalaryCycleController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             SalaryCycleController controller = (SalaryCycleController) facesContext.getApplication().getELResolver().
@@ -2453,7 +2449,7 @@ public class SalaryCycleController implements Serializable {
             try {
                 key = Long.valueOf(value);
             } catch (NumberFormatException exception) {
-                key = 0l;
+                key = 0L;
             }
             return key;
         }
@@ -2478,14 +2474,4 @@ public class SalaryCycleController implements Serializable {
             }
         }
     }
-
-   
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

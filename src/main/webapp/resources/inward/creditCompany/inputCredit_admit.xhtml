@@ -67,8 +67,14 @@
                 <p:column style="font-weight:bolder;">
                     <h:outputText value="#{ecc.institution.name}" />
                 </p:column>
-                <p:column style="font-weight:bolder;">
-                    <h:outputText value="#{ecc.creditLimit}" />
+                <p:column style="font-weight:bolder;" headerText="Credit Limit">
+                    <p:inputText value="#{ecc.creditLimit}" />
+                </p:column>
+                <p:column style="font-weight:bolder;" headerText="Policy No">
+                    <p:inputText value="#{ecc.policyNo}" />
+                </p:column>
+                <p:column style="font-weight:bolder;" headerText="Reference No">
+                    <p:inputText value="#{ecc.referanceNo}" />
                 </p:column>
                 <p:column style="text-align: right;font-weight: bolder">
 

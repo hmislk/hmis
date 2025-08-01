@@ -1,138 +1,40 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body class="w-100 border">
-
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
-            <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Inward Due Age Detail" class="w-100">
-                        <h:panelGrid columns="8" class="w-100 ">
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+<h:body class="w-100 border">
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="Inward Due Age Detail" class="w-100">
+                    <h:panelGrid columns="8" class="w-100 ">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
                                 value="#{creditCompanyDueController.institutionOfDepartment}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
-                                               itemValue="#{ins}"/>
-                                <!--                            <p:ajax process="cmbIns" update="cmbDept"/>-->
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <!--                            <p:ajax process="cmbIns" update="cmbDept"/>-->
+                        </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+                        <p:spacer width="20"/>
 
-                            <h:outputLabel value="**Site and Department Filtering Functions Not Available Yet**" class="m-3"/>
+                        <h:outputLabel value="**Site and Department Filtering Functions Not Available Yet**"
+                                       class="m-3"/>
+                    </h:panelGrid>
 
-                            <!--                        <h:panelGroup layout="block" styleClass="form-group">
-                                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>  FontAwesome map marker icon 
-                                                        <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
-                                                    </h:panelGroup>
-                                                    <p:selectOneMenu
-                                                            id="siteMenu"
-                                                            styleClass="w-100 form-control"
-                                                            value="#{creditCompanyDueController.site}"
-                                                            filter="true">
-                                                        <f:selectItem itemLabel="All Sites"/>
-                                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                                                       itemValue="#{site}"/>
-                                                        <p:ajax process="siteMenu" update="cmbDept"/>
-                                                    </p:selectOneMenu>
-                            
-                                                    <p:spacer width="20"/>
-                            
-                                                    <h:panelGroup layout="block" styleClass="form-group">
-                                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>  FontAwesome sitemap icon 
-                                                        <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup id="cmbDept">
-                            
-                                                         Component 1: Without Institution and Site 
-                                                        <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                            <f:selectItem itemLabel="All Departments"/>
-                                                            <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                        </p:selectOneMenu>
-                            
-                                                         Component 2: With Site Only 
-                                                        <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                            <f:selectItem itemLabel="All Departments"/>
-                                                            <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                        </p:selectOneMenu>
-                            
-                                                         Component 3: With Institution Only 
-                                                        <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                            <f:selectItem itemLabel="All Departments"/>
-                                                            <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                        </p:selectOneMenu>
-                            
-                                                         Component 4: With Both Institution and Site 
-                                                        <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                            <f:selectItem itemLabel="All Departments"/>
-                                                            <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                        </p:selectOneMenu>
-                            
-                                                        <p:selectOneMenu
-                                                                rendered="false"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filter="true">
-                                                            <f:selectItem itemLabel="All Departments"/>
-                                                            <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                        </p:selectOneMenu>
-                                                    </h:panelGroup>-->
-
-                        </h:panelGrid>
-
-                        <p:commandButton
+                    <p:commandButton
                             id="btnSearch"
                             class="ui-button-warning my-4 mx-2"
                             style="width: 200px"
@@ -140,496 +42,614 @@
                             value="Process Due Age"
                             icon="fas fa-cogs"
                             action="#{creditCompanyDueController.createInwardAgeTableWithFilters()}">
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:commandButton
-                            id="btnProcess"
-                            class="ui-button-success my-4 mx-2"
-                            style="width: 220px"
-                            icon="fas fa-file-excel"
-                            ajax="false"
-                            value="Process Due Age (Excel)"
-                            action="#{creditCompanyDueController.createInwardAgeDetailAnalysisWithFilters}">
-                        </p:commandButton>
-
-                        <p:commandButton
+                    <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel"
-                            actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysisWithFilters}">
-                            <p:dataExporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx"/>
-                        </p:commandButton>
+                            action="#{creditCompanyDueController.exportCreditCompanyDueAgeDetailToExcel()}">
+                    </p:commandButton>
 
-                        <p:defaultCommand target="btnSearch"/>
+                    <!--                        <p:commandButton-->
+                    <!--                            id="btnProcess"-->
+                    <!--                            class="ui-button-success my-4 mx-2"-->
+                    <!--                            style="width: 220px"-->
+                    <!--                            icon="fas fa-file-excel"-->
+                    <!--                            ajax="false"-->
+                    <!--                            value="Process Due Age (Excel)"-->
+                    <!--                            action="#{creditCompanyDueController.createInwardAgeDetailAnalysisWithFilters}">-->
+                    <!--                        </p:commandButton>-->
 
-                        <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
-                                     rendered="#{creditCompanyDueController.creditCompanyAge.size() > 0.0}">
-                            <p:column headerText="Credit Company" filterBy="#{i.institution.name}" width="10rem">
-                                <h:outputLabel id="colComDetailDue" value="#{i.institution.name}"/>
-                                <p:tooltip for="colComDetailDue">
-                                    <h:outputLabel value="Address : #{i.institution.address}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Tel : #{i.institution.mobile}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Fax : #{i.institution.fax}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="E-Mail : #{i.institution.email}">
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-                            <p:column headerText="0-30" width="30rem">
-                                <p:panel style="float: top;">
-                                    <p:dataTable value="#{i.value1PatientEncounters}" var="p1">
-                                        <p:column>
-                                            <p:commandLink id="colp1Detail" value="#{p1.bhtNo}"
-                                                           action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                                <f:setPropertyActionListener value="#{p1}"
-                                                                             target="#{bhtSummeryFinalizedController.patientEncounter}"/>
-                                            </p:commandLink>
-                                            <p:tooltip for="colp1Detail">
-                                                <h:outputLabel value="Duration Days : #{p1.transDayCount}">
-                                                </h:outputLabel>
-                                                <br/>
-                                                <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
-                                                </h:outputLabel>
-                                                <br/>
-                                                <h:outputLabel value="Referance Number : #{p1.referanceNo}">
-                                                </h:outputLabel>
-                                                <br/>
-                                                <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
-                                                </h:outputLabel>
-                                            </p:tooltip>
-                                        </p:column>
-                                        <p:column>
-                                            #{p1.patient.person.name}
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{p1.dateOfAdmission}">
-                                                <f:convertDateTime pattern="dd/MM/yy"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{p1.dateOfDischarge}">
-                                                <f:convertDateTime pattern="dd/MM/yy"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column>
-<!--                                            <h:outputLabel-->
-<!--                                                value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
+                    <!--                        <p:commandButton-->
+                    <!--                            class="ui-button-success my-4 mx-2"-->
+                    <!--                            style="width: 150px"-->
+                    <!--                            icon="fas fa-file-excel"-->
+                    <!--                            ajax="false"-->
+                    <!--                            value="Excel"-->
+                    <!--                            actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysisWithFilters}">-->
+                    <!--                            <p:dataExporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx"/>-->
+                    <!--                        </p:commandButton>-->
+
+                    <p:defaultCommand target="btnSearch"/>
+
+                    <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
+                                 rendered="#{creditCompanyDueController.creditCompanyAge.size() > 0.0}">
+                        <p:column headerText="Credit Company" filterBy="#{i.institution.name}" width="10rem">
+                            <h:outputLabel id="colComDetailDue" value="#{i.institution.name}"/>
+                            <p:tooltip for="colComDetailDue">
+                                <h:outputLabel value="Address : #{i.institution.address}">
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Tel : #{i.institution.mobile}">
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Fax : #{i.institution.fax}">
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="E-Mail : #{i.institution.email}">
+                                </h:outputLabel>
+                            </p:tooltip>
+                        </p:column>
+                        <p:column headerText="0-30" width="30rem">
+                            <p:panel style="float: top;">
+                                <p:dataTable value="#{i.value1Bills}" var="b">
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="BHT No"/>
+                                        </f:facet>
+                                        <p:commandLink id="colp1Detail" value="#{b.patientEncounter.bhtNo}"
+                                                       action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                            <f:setPropertyActionListener value="#{b.patientEncounter}"
+                                                                         target="#{bhtSummeryFinalizedController.patientEncounter}"/>
+                                        </p:commandLink>
+                                        <p:tooltip for="colp1Detail">
+                                            <!--                                            <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">-->
+                                            <!--                                            </h:outputLabel>-->
+                                            <!--                                            <br/>-->
                                             <h:outputLabel
-                                                    value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{i.value1}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-
-                                    </p:dataTable>
-                                </p:panel>
-
-                            </p:column>
-                            <p:column headerText="30-60" style="text-align: left;" width="30rem">
-
-                                <p:dataTable value="#{i.value2PatientEncounters}" var="p1">
-                                    <p:column>
-                                        <p:commandLink id="colp2Detail" value="#{p1.bhtNo}"
-                                                       action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                            <f:setPropertyActionListener value="#{p1}"
-                                                                         target="#{bhtSummeryFinalizedController.patientEncounter}"/>
-                                        </p:commandLink>
-                                        <p:tooltip for="colp2Detail">
-                                            <h:outputLabel value="Duration Days : #{p1.transDayCount}">
+                                                    value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                             </h:outputLabel>
                                             <br/>
-                                            <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
+                                            <h:outputLabel
+                                                    value="Reference Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                             </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Referance Number : #{p1.referanceNo}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
-                                            </h:outputLabel>
+                                            <!--                                            <br/>-->
+                                            <!--                                            <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">-->
+                                            <!--                                            </h:outputLabel>-->
                                         </p:tooltip>
                                     </p:column>
-                                    <p:column>
-                                        #{p1.patient.person.name}
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Patient Name"/>
+                                        </f:facet>
+                                        <h:outputText value="#{b.patientEncounter.patient.person.name}"/>
                                     </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{p1.dateOfAdmission}">
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Policy No"/>
+                                        </f:facet>
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                    </p:column>
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Reference No"/>
+                                        </f:facet>
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                    </p:column>
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Admission Date"/>
+                                        </f:facet>
+                                        <h:outputText value="#{b.patientEncounter.dateOfAdmission}">
                                             <f:convertDateTime pattern="dd/MM/yy"/>
-                                        </h:outputLabel>
+                                        </h:outputText>
                                     </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{p1.dateOfDischarge}">
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Discharge Date"/>
+                                        </f:facet>
+                                        <h:outputText value="#{b.patientEncounter.dateOfDischarge}">
                                             <f:convertDateTime pattern="dd/MM/yy"/>
-                                        </h:outputLabel>
+                                        </h:outputText>
                                     </p:column>
-                                    <p:column>
-<!--                                        <h:outputLabel-->
-<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
-                                        <h:outputLabel
-                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
+                                    <p:column width="5em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Amount"/>
+                                        </f:facet>
+                                        <h:outputText
+                                                value="#{b.netTotal - b.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
+                                        </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{i.value2}" style="float:  right;">
+                                            <h:outputText value="#{i.value1}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </f:facet>
                                     </p:column>
-
                                 </p:dataTable>
-                            </p:column>
-                            <p:column headerText="60-90" style="text-align: left;" width="30rem">
-                                <p:dataTable value="#{i.value3PatientEncounters}" var="p1">
-                                    <p:column>
-                                        <p:commandLink id="colp3Detail" value="#{p1.bhtNo}"
-                                                       action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                            <f:setPropertyActionListener value="#{p1}"
-                                                                         target="#{bhtSummeryFinalizedController.patientEncounter}"/>
-                                        </p:commandLink>
-                                        <p:tooltip for="colp3Detail">
-                                            <h:outputLabel value="Duration Days : #{p1.transDayCount}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Referance Number : #{p1.referanceNo}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
-                                            </h:outputLabel>
-                                        </p:tooltip>
-                                    </p:column>
-                                    <p:column>
-                                        #{p1.patient.person.name}
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{p1.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{p1.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column>
-<!--                                        <h:outputLabel-->
-<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
+                            </p:panel>
+                        </p:column>
+                        <p:column headerText="30-60" style="text-align: left;" width="30rem">
+
+                            <p:dataTable value="#{i.value2Bills}" var="b">
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="BHT No"/>
+                                    </f:facet>
+                                    <p:commandLink id="colp2Detail" value="#{b.patientEncounter.bhtNo}"
+                                                   action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                        <f:setPropertyActionListener value="#{b.patientEncounter}"
+                                                                     target="#{bhtSummeryFinalizedController.patientEncounter}"/>
+                                    </p:commandLink>
+                                    <p:tooltip for="colp2Detail">
+                                        <!--                                        <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">-->
+                                        <!--                                        </h:outputLabel>-->
+                                        <!--                                        <br/>-->
                                         <h:outputLabel
-                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                                value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.value3}" style="float:  right;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                </p:dataTable>
-                            </p:column>
-                            <p:column headerText="90 More" style="text-align: left;" width="30rem">
-                                <h:outputLabel value="#{i.value4}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <p:dataTable value="#{i.value4PatientEncounters}" var="p1">
-                                    <p:column>
-                                        <p:commandLink id="colp4Detail" value="#{p1.bhtNo}"
-                                                       action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                            <f:setPropertyActionListener value="#{p1}"
-                                                                         target="#{bhtSummeryFinalizedController.patientEncounter}"/>
-                                        </p:commandLink>
-                                        <p:tooltip for="colp4Detail">
-                                            <h:outputLabel value="Duration Days : #{p1.transDayCount}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Referance Number : #{p1.referanceNo}">
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
-                                            </h:outputLabel>
-                                        </p:tooltip>
-                                    </p:column>
-                                    <p:column>
-                                        #{p1.patient.person.name}
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{p1.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{p1.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column>
-<!--                                        <h:outputLabel-->
-<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
+                                        <br/>
                                         <h:outputLabel
-                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                                value="Reference Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.value4}" style="float:  right;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
+                                        <!--                                        <br/>-->
+                                        <!--                                        <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">-->
+                                        <!--                                        </h:outputLabel>-->
+                                    </p:tooltip>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Patient Name"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.patient.person.name}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Policy No"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Reference No"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Admission Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.dateOfAdmission}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Discharge Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.dateOfDischarge}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Amount"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{b.netTotal - b.paidAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{i.value2}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:column>
+                        <p:column headerText="60-90" style="text-align: left;" width="30rem">
+                            <p:dataTable value="#{i.value3Bills}" var="b">
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="BHT No"/>
+                                    </f:facet>
+                                    <p:commandLink id="colp3Detail" value="#{b.patientEncounter.bhtNo}"
+                                                   action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                        <f:setPropertyActionListener value="#{b.patientEncounter}"
+                                                                     target="#{bhtSummeryFinalizedController.patientEncounter}"/>
+                                    </p:commandLink>
+                                    <p:tooltip for="colp3Detail">
+                                        <!--                                        <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">-->
+                                        <!--                                        </h:outputLabel>-->
+                                        <!--                                        <br/>-->
+                                        <h:outputLabel
+                                                value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel
+                                                value="Reference Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
+                                        </h:outputLabel>
+                                        <!--                                        <br/>-->
+                                        <!--                                        <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">-->
+                                        <!--                                        </h:outputLabel>-->
+                                    </p:tooltip>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Patient Name"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.patient.person.name}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Policy No"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Reference No"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Admission Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.dateOfAdmission}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Discharge Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.dateOfDischarge}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Amount"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{b.netTotal - b.paidAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{i.value3}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:column>
+                        <p:column headerText="90 More" style="text-align: left;" width="30rem">
+                            <h:outputLabel value="#{i.value4}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <p:dataTable value="#{i.value4Bills}" var="b">
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="BHT No"/>
+                                    </f:facet>
+                                    <p:commandLink id="colp4Detail" value="#{b.patientEncounter.bhtNo}"
+                                                   action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                        <f:setPropertyActionListener value="#{b.patientEncounter}"
+                                                                     target="#{bhtSummeryFinalizedController.patientEncounter}"/>
+                                    </p:commandLink>
+                                    <p:tooltip for="colp4Detail">
+                                        <!--                                        <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">-->
+                                        <!--                                        </h:outputLabel>-->
+                                        <!--                                        <br/>-->
+                                        <h:outputLabel
+                                                value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel
+                                                value="Reference Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
+                                        </h:outputLabel>
+                                        <!--                                        <br/>-->
+                                        <!--                                        <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">-->
+                                        <!--                                        </h:outputLabel>-->
+                                    </p:tooltip>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Patient Name"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.patient.person.name}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Policy No"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Reference No"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}"/>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Admission Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.dateOfAdmission}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Discharge Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{b.patientEncounter.dateOfDischarge}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Amount"/>
+                                    </f:facet>
+                                    <h:outputText
+                                            value="#{b.netTotal - b.paidAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{i.value4}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:column>
+                    </p:dataTable>
 
-                                </p:dataTable>
-                            </p:column>
-                        </p:dataTable>
+                    <!--                        <p:dataTable id="lstDue" value="#{creditCompanyDueController.dealerDueDetailRows}"-->
+                    <!--                                     var="r"-->
+                    <!--                                     rendered="#{creditCompanyDueController.dealerDueDetailRows.size() > 0.0}">-->
+                    <!--                            <p:columnGroup type="header">-->
+                    <!--                                <p:row>-->
+                    <!--                                    <p:column rowspan="2" headerText="Credit Company"/>-->
+                    <!--                                    <p:column rowspan="2" headerText="Credit Company NetTotal"/>-->
+                    <!--                                    <p:column colspan="6" headerText="0-30"/>-->
+                    <!--                                    <p:column colspan="6" headerText="30-60"/>-->
+                    <!--                                    <p:column colspan="6" headerText="60-90"/>-->
+                    <!--                                    <p:column colspan="6" headerText="90 more"/>-->
+                    <!--                                </p:row>-->
+                    <!--                                <p:row>-->
+                    <!--                                    <p:column headerText="Credit Company Total"/>-->
+                    <!--                                    <p:column headerText="BHT No"/>-->
+                    <!--                                    <p:column headerText="Patient"/>-->
+                    <!--                                    <p:column headerText="Admit Date"/>-->
+                    <!--                                    <p:column headerText="Discharge Date"/>-->
+                    <!--                                    <p:column headerText="Total"/>-->
+
+                    <!--                                    <p:column headerText="Credit Company Total"/>-->
+                    <!--                                    <p:column headerText="BHT No"/>-->
+                    <!--                                    <p:column headerText="Patient"/>-->
+                    <!--                                    <p:column headerText="Admit Date"/>-->
+                    <!--                                    <p:column headerText="Discharge Date"/>-->
+                    <!--                                    <p:column headerText="Total"/>-->
+
+                    <!--                                    <p:column headerText="Credit Company Total"/>-->
+                    <!--                                    <p:column headerText="BHT No"/>-->
+                    <!--                                    <p:column headerText="Patient"/>-->
+                    <!--                                    <p:column headerText="Admit Date"/>-->
+                    <!--                                    <p:column headerText="Discharge Date"/>-->
+                    <!--                                    <p:column headerText="Total"/>-->
+
+                    <!--                                    <p:column headerText="Credit Company Total"/>-->
+                    <!--                                    <p:column headerText="BHT No"/>-->
+                    <!--                                    <p:column headerText="Patient"/>-->
+                    <!--                                    <p:column headerText="Admit Date"/>-->
+                    <!--                                    <p:column headerText="Discharge Date"/>-->
+                    <!--                                    <p:column headerText="Total"/>-->
+                    <!--                                </p:row>-->
+                    <!--                            </p:columnGroup>-->
 
 
-                        <p:dataTable id="lstDue" value="#{creditCompanyDueController.dealerDueDetailRows}"
-                                     var="r"
-                                     rendered="#{creditCompanyDueController.dealerDueDetailRows.size() > 0.0}">
-                            <p:columnGroup type="header">
-                                <p:row>
-                                    <p:column rowspan="2" headerText="Credit Company"/>
-                                    <p:column rowspan="2" headerText="Credit Company NetTotal"/>
-                                    <p:column colspan="6" headerText="0-30"/>
-                                    <p:column colspan="6" headerText="30-60"/>
-                                    <p:column colspan="6" headerText="60-90"/>
-                                    <p:column colspan="6" headerText="90 more"/>
-                                </p:row>
-                                <p:row>
-                                    <p:column headerText="Credit Company Total"/>
-                                    <p:column headerText="BHT No"/>
-                                    <p:column headerText="Patient"/>
-                                    <p:column headerText="Admit Date"/>
-                                    <p:column headerText="Discharge Date"/>
-                                    <p:column headerText="Total"/>
+                    <!--                            <p:column headerText="Credit Company">-->
+                    <!--                                <h:outputLabel id="colComDetailDue" value="#{r.dealer.name}"/>-->
+                    <!--                                <p:tooltip for="colComDetailDue">-->
+                    <!--                                    <h:outputLabel value="Address : #{r.dealer.address}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Tel : #{r.dealer.mobile}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Fax : #{r.dealer.fax}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="E-Mail : #{r.dealer.email}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                </p:tooltip>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column headerText="0-30" style="color: blue;" styleClass="numberCol">-->
+                    <!--                                <h:outputLabel value="#{r.zeroToThirty+r.thirtyToSixty+r.sixtyToNinty+r.moreThanNinty}"-->
+                    <!--                                               rendered="#{(r.zeroToThirty+r.thirtyToSixty+r.sixtyToNinty+r.moreThanNinty)ne 0.0}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column headerText="0-30" style="color: blue;" styleClass="numberCol">-->
+                    <!--                                <h:outputLabel value="#{r.zeroToThirty}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
-                                    <p:column headerText="Credit Company Total"/>
-                                    <p:column headerText="BHT No"/>
-                                    <p:column headerText="Patient"/>
-                                    <p:column headerText="Admit Date"/>
-                                    <p:column headerText="Discharge Date"/>
-                                    <p:column headerText="Total"/>
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel id="colp1DetailDue" value="#{r.zeroToThirtyEncounter.bhtNo}"/>-->
+                    <!--                                <p:tooltip for="colp1DetailDue">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.zeroToThirtyEncounter.policyNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Referance Number : #{r.zeroToThirtyEncounter.referanceNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Credit Limit : #{r.zeroToThirtyEncounter.creditLimit}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                </p:tooltip>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <p:outputLabel value="#{r.zeroToThirtyEncounter.patient.person.name}">-->
+                    <!--                                </p:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.zeroToThirtyEncounter.dateOfAdmission}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.zeroToThirtyEncounter.dateOfDischarge}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel-->
+                    <!--                                    value="#{r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount)}"-->
+                    <!--                                    rendered="#{(r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount))ne 0.0}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
-                                    <p:column headerText="Credit Company Total"/>
-                                    <p:column headerText="BHT No"/>
-                                    <p:column headerText="Patient"/>
-                                    <p:column headerText="Admit Date"/>
-                                    <p:column headerText="Discharge Date"/>
-                                    <p:column headerText="Total"/>
+                    <!--                            <p:column styleClass="numberCol">-->
+                    <!--                                <h:outputLabel value="#{r.thirtyToSixty}" style="color: blue;">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
-                                    <p:column headerText="Credit Company Total"/>
-                                    <p:column headerText="BHT No"/>
-                                    <p:column headerText="Patient"/>
-                                    <p:column headerText="Admit Date"/>
-                                    <p:column headerText="Discharge Date"/>
-                                    <p:column headerText="Total"/>
-                                </p:row>
-                            </p:columnGroup>
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel id="colp1DetailDue2" value="#{r.thirtyToSixtyEncounter.bhtNo}"/>-->
+                    <!--                                <p:tooltip for="colp1DetailDue2">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.thirtyToSixtyEncounter.policyNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Referance Number : #{r.thirtyToSixtyEncounter.referanceNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Credit Limit : #{r.thirtyToSixtyEncounter.creditLimit}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                </p:tooltip>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <p:outputLabel value="#{r.thirtyToSixtyEncounter.patient.person.name}">-->
+                    <!--                                </p:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.thirtyToSixtyEncounter.dateOfAdmission}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.thirtyToSixtyEncounter.dateOfDischarge}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel-->
+                    <!--                                    value="#{r.thirtyToSixtyEncounter.finalBill.netTotal-(r.thirtyToSixtyEncounter.finalBill.paidAmount+r.thirtyToSixtyEncounter.creditPaidAmount)}"-->
+                    <!--                                    rendered="#{(r.thirtyToSixtyEncounter.finalBill.netTotal-(r.thirtyToSixtyEncounter.finalBill.paidAmount+r.thirtyToSixtyEncounter.creditPaidAmount))ne 0.0}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
+                    <!--                            <p:column styleClass="numberCol">-->
+                    <!--                                <h:outputLabel value="#{r.sixtyToNinty}" style="color: blue;">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
-                            <p:column headerText="Credit Company">
-                                <h:outputLabel id="colComDetailDue" value="#{r.dealer.name}"/>
-                                <p:tooltip for="colComDetailDue">
-                                    <h:outputLabel value="Address : #{r.dealer.address}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Tel : #{r.dealer.mobile}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Fax : #{r.dealer.fax}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="E-Mail : #{r.dealer.email}">
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-                            <p:column headerText="0-30" style="color: blue;" styleClass="numberCol">
-                                <h:outputLabel value="#{r.zeroToThirty+r.thirtyToSixty+r.sixtyToNinty+r.moreThanNinty}"
-                                               rendered="#{(r.zeroToThirty+r.thirtyToSixty+r.sixtyToNinty+r.moreThanNinty)ne 0.0}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="0-30" style="color: blue;" styleClass="numberCol">
-                                <h:outputLabel value="#{r.zeroToThirty}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel id="colp1DetailDue3" value="#{r.sixtyToNintyEncounter.bhtNo}"/>-->
+                    <!--                                <p:tooltip for="colp1DetailDue3">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.sixtyToNintyEncounter.policyNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Referance Number : #{r.sixtyToNintyEncounter.referanceNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Credit Limit : #{r.sixtyToNintyEncounter.creditLimit}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                </p:tooltip>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <p:outputLabel value="#{r.sixtyToNintyEncounter.patient.person.name}">-->
+                    <!--                                </p:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.sixtyToNintyEncounter.dateOfAdmission}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.sixtyToNintyEncounter.dateOfDischarge}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column styleClass="numberCol">-->
+                    <!--                                <h:outputLabel-->
+                    <!--                                    value="#{r.sixtyToNintyEncounter.finalBill.netTotal-(r.sixtyToNintyEncounter.finalBill.paidAmount+r.sixtyToNintyEncounter.creditPaidAmount)}"-->
+                    <!--                                    rendered="#{(r.sixtyToNintyEncounter.finalBill.netTotal-(r.sixtyToNintyEncounter.finalBill.paidAmount+r.sixtyToNintyEncounter.creditPaidAmount))ne 0.0}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
-                            <p:column>
-                                <h:outputLabel id="colp1DetailDue" value="#{r.zeroToThirtyEncounter.bhtNo}"/>
-                                <p:tooltip for="colp1DetailDue">
-                                    <h:outputLabel value="Ploicy Number : #{r.zeroToThirtyEncounter.policyNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Referance Number : #{r.zeroToThirtyEncounter.referanceNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Credit Limit : #{r.zeroToThirtyEncounter.creditLimit}">
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-                            <p:column>
-                                <p:outputLabel value="#{r.zeroToThirtyEncounter.patient.person.name}">
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.zeroToThirtyEncounter.dateOfAdmission}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.zeroToThirtyEncounter.dateOfDischarge}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel
-                                    value="#{r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount)}"
-                                    rendered="#{(r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount))ne 0.0}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
+                    <!--                            <p:column styleClass="numberCol">-->
+                    <!--                                <h:outputLabel value="#{r.moreThanNinty}" style="color: blue;">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
 
-                            <p:column styleClass="numberCol">
-                                <h:outputLabel value="#{r.thirtyToSixty}" style="color: blue;">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column>
-                                <h:outputLabel id="colp1DetailDue2" value="#{r.thirtyToSixtyEncounter.bhtNo}"/>
-                                <p:tooltip for="colp1DetailDue2">
-                                    <h:outputLabel value="Ploicy Number : #{r.thirtyToSixtyEncounter.policyNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Referance Number : #{r.thirtyToSixtyEncounter.referanceNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Credit Limit : #{r.thirtyToSixtyEncounter.creditLimit}">
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-                            <p:column>
-                                <p:outputLabel value="#{r.thirtyToSixtyEncounter.patient.person.name}">
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.thirtyToSixtyEncounter.dateOfAdmission}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.thirtyToSixtyEncounter.dateOfDischarge}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel
-                                    value="#{r.thirtyToSixtyEncounter.finalBill.netTotal-(r.thirtyToSixtyEncounter.finalBill.paidAmount+r.thirtyToSixtyEncounter.creditPaidAmount)}"
-                                    rendered="#{(r.thirtyToSixtyEncounter.finalBill.netTotal-(r.thirtyToSixtyEncounter.finalBill.paidAmount+r.thirtyToSixtyEncounter.creditPaidAmount))ne 0.0}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column styleClass="numberCol">
-                                <h:outputLabel value="#{r.sixtyToNinty}" style="color: blue;">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column>
-                                <h:outputLabel id="colp1DetailDue3" value="#{r.sixtyToNintyEncounter.bhtNo}"/>
-                                <p:tooltip for="colp1DetailDue3">
-                                    <h:outputLabel value="Ploicy Number : #{r.sixtyToNintyEncounter.policyNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Referance Number : #{r.sixtyToNintyEncounter.referanceNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Credit Limit : #{r.sixtyToNintyEncounter.creditLimit}">
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-                            <p:column>
-                                <p:outputLabel value="#{r.sixtyToNintyEncounter.patient.person.name}">
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.sixtyToNintyEncounter.dateOfAdmission}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.sixtyToNintyEncounter.dateOfDischarge}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column styleClass="numberCol">
-                                <h:outputLabel
-                                    value="#{r.sixtyToNintyEncounter.finalBill.netTotal-(r.sixtyToNintyEncounter.finalBill.paidAmount+r.sixtyToNintyEncounter.creditPaidAmount)}"
-                                    rendered="#{(r.sixtyToNintyEncounter.finalBill.netTotal-(r.sixtyToNintyEncounter.finalBill.paidAmount+r.sixtyToNintyEncounter.creditPaidAmount))ne 0.0}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column styleClass="numberCol">
-                                <h:outputLabel value="#{r.moreThanNinty}" style="color: blue;">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column>
-                                <h:outputLabel id="colp1DetailDue4" value="#{r.moreThanNintyEncounter.bhtNo}"/>
-                                <p:tooltip for="colp1DetailDue4">
-                                    <h:outputLabel value="Ploicy Number : #{r.moreThanNintyEncounter.policyNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Referance Number : #{r.moreThanNintyEncounter.referanceNo}">
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Credit Limit : #{r.moreThanNintyEncounter.creditLimit}">
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-                            <p:column>
-                                <p:outputLabel value="#{r.moreThanNintyEncounter.patient.person.name}">
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.moreThanNintyEncounter.dateOfAdmission}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{r.moreThanNintyEncounter.dateOfDischarge}">
-                                    <f:convertDateTime pattern="dd MM yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column styleClass="numberCol">
-                                <h:outputLabel
-                                    value="#{r.moreThanNintyEncounter.finalBill.netTotal-(r.moreThanNintyEncounter.finalBill.paidAmount+r.moreThanNintyEncounter.creditPaidAmount)}"
-                                    rendered="#{(r.moreThanNintyEncounter.finalBill.netTotal-(r.moreThanNintyEncounter.finalBill.paidAmount+r.moreThanNintyEncounter.creditPaidAmount))ne 0.0}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel id="colp1DetailDue4" value="#{r.moreThanNintyEncounter.bhtNo}"/>-->
+                    <!--                                <p:tooltip for="colp1DetailDue4">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.moreThanNintyEncounter.policyNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Referance Number : #{r.moreThanNintyEncounter.referanceNo}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <br/>-->
+                    <!--                                    <h:outputLabel value="Credit Limit : #{r.moreThanNintyEncounter.creditLimit}">-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                </p:tooltip>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <p:outputLabel value="#{r.moreThanNintyEncounter.patient.person.name}">-->
+                    <!--                                </p:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.moreThanNintyEncounter.dateOfAdmission}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column>-->
+                    <!--                                <h:outputLabel value="#{r.moreThanNintyEncounter.dateOfDischarge}">-->
+                    <!--                                    <f:convertDateTime pattern="dd MM yy"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                            <p:column styleClass="numberCol">-->
+                    <!--                                <h:outputLabel-->
+                    <!--                                    value="#{r.moreThanNintyEncounter.finalBill.netTotal-(r.moreThanNintyEncounter.finalBill.paidAmount+r.moreThanNintyEncounter.creditPaidAmount)}"-->
+                    <!--                                    rendered="#{(r.moreThanNintyEncounter.finalBill.netTotal-(r.moreThanNintyEncounter.finalBill.paidAmount+r.moreThanNintyEncounter.creditPaidAmount))ne 0.0}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </p:column>-->
+                    <!--                        </p:dataTable>-->
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

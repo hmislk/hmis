@@ -31,7 +31,7 @@
                                             icon="fa fa-plus"
                                             class="ui-button-success float-end"
                                             process="btnAdd cmdPayment paymentDetails"
-                                            update="tblPayments totals cmdPayment paymentDetails"
+                                            update="tblPayments totals cmdPayment paymentDetails txtTotalDepositValue"
                                             action="#{financialTransactionController.addPaymentToFundDepositBill()}" >
                                         </p:commandButton>
                                     </f:facet>
@@ -246,6 +246,7 @@
 
                                     <p:outputLabel value="Total Deposit Value" ></p:outputLabel>
                                     <p:inputText 
+                                        id="txtTotalDepositValue"
                                         class="w-100 text-end"
                                         readonly="true"
                                         value="#{financialTransactionController.currentBill.netTotal}" >

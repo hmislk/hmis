@@ -62,9 +62,7 @@
                                 ajax="false" 
                                 icon="fas fa-print"
                                 class="ui-button-info"
-                                action="#" >
-
-                                <p:printer target="gpBillPreviewPrinting" ></p:printer>
+                                action="pharmacy_report_bht_issue_bill_print?faces-redirect=true" >
                             </p:commandButton>
 
 
@@ -121,6 +119,20 @@
                                     <h:outputLabel value="#{i.createdAt}" style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Purchase Value" style="padding: 0px!important; margin: 0px!important;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.billFinanceDetails.totalPurchaseValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>  
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.netTotalPurchaseValues}" style="padding: 0px!important; margin: 0px!important;" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Gross Value" style="padding: 0px!important; margin: 0px!important;" styleClass="averageNumericColumn">
@@ -191,9 +203,6 @@
                                         action="#{reportsTransfer.navigateToBillPreview(i)}">
                                     </p:commandButton>  
                                 </p:column>
-
-
-
                             </p:dataTable>
                         </h:panelGroup>
                         
@@ -223,7 +232,6 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No" style="padding: 0px!important; margin: 0px!important;"/>
                                     </f:facet>
-                                    #{i.billType}
                                     <h:outputLabel value="#{i.patientEncounter.bhtNo}" style="padding: 0px!important; margin: 0px!important;" ></h:outputLabel>
                                 </p:column>
 

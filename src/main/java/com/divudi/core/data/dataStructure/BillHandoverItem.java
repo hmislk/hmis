@@ -1,0 +1,53 @@
+/*
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
+ */
+package com.divudi.core.data.dataStructure;
+
+import com.divudi.core.entity.Bill;
+
+/**
+ *
+ * @author ruhunu
+ */
+public class BillHandoverItem {
+    Bill bill;
+    double professionalFee;
+    double institutionFee;
+    double totalFee;
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public double getProfessionalFee() {
+        return professionalFee;
+    }
+
+    public void setProfessionalFee(double professionalFee) {
+        this.professionalFee = professionalFee;
+    }
+
+    public double getInstitutionFee() {
+        return institutionFee;
+    }
+
+    public void setInstitutionFee(double institutionFee) {
+        this.institutionFee = institutionFee;
+    }
+
+    public double getTotalFee() {
+        return totalFee;
+    }
+
+    public void setTotalFee(double totalFee) {
+        this.totalFee = totalFee;
+    }
+
+
+
+}

@@ -10,16 +10,16 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.*;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.*;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.*;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
+import com.divudi.core.entity.*;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
 import com.divudi.service.PaymentService;
 
 import java.io.Serializable;

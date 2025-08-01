@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -19,7 +19,7 @@
         <h:form>
             <p:commandButton value="Print" class="ui-button-info mx-2" icon="fas fa-print" ajax="false" action="#" >
                 <p:printer target="gpBillPreview" ></p:printer>
-            </p:commandButton> 
+            </p:commandButton>
             <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
             <h:panelGroup id="gpBillPreview">
                 <div class="fiveinchbill" style="page-break-after: always" >
@@ -37,19 +37,19 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Refund Receipt"   /> 
+                <h:outputLabel value="Refund Receipt"   />
                 <br />
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -208,17 +208,17 @@
                             <h:outputLabel value="Refund Amount" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
                         <td  style="float: right;text-align: right; padding-right: 30px!important">
-                             
+
                              <div class="d-flex align-items-center">
                                  <div>
                                      <h:outputLabel value="Rs. &nbsp;" style="font-size: 18px!important;"/>
                                  </div>
                                  <div>
-                                     
+
                                      <h:outputLabel value="#{cc.attrs.bill.netTotal}"  styleClass="itemHeadingsFiveFive" >
                                  <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
-                             
+
                                  </div>
                                  <div>
                                      <h:outputLabel value=" /=" style="font-size: 16px!important;"/>
@@ -233,7 +233,7 @@
                     </tr>
                 </table>
 
-                
+
                 <div style=" top: 5%!important;
                          left: 5%!important;
                          bottom:  20%!important;

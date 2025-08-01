@@ -1,0 +1,241 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Stock History"/>
+                        </f:facet>
+
+                        <p:tabView>
+
+                            <p:tab title="General Info">
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Item"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.item.name}"/>
+
+                                    <p:outputLabel value="Stock Date"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.stockAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+
+                                    <p:outputLabel value="History Type"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.historyType}"/>
+
+                                    <p:outputLabel value="Created at"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+
+                                    <p:outputLabel value="Institution"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.institution.name}"/>
+
+                                    <p:outputLabel value="Department"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.department.name}"/>
+
+                                    <p:outputLabel value="Staff"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.staff.person.name}"/>
+
+                                    <p:outputLabel value="Year"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.hxYear}"/>
+
+                                    <p:outputLabel value="Month"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.hxMonth}"/>
+
+                                    <p:outputLabel value="Date"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.hxDate}"/>
+
+                                    <p:outputLabel value="Week"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.hxWeek}"/>
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab
+                                id="tabQuantitiesAndRates"
+                                title="Quantities and Rate">
+                                <p:panelGrid 
+                                    columns="4" layout="tabular" columnClasses="text-start , text-end , text-end , text-end">
+                                    <p:outputLabel value="Description" ></p:outputLabel>
+                                    <p:outputLabel value="Pharmaceutical Bill Item" ></p:outputLabel>
+                                    <p:outputLabel value="Bill Item" ></p:outputLabel>
+                                    <p:outputLabel value="Financial Bill Item" ></p:outputLabel>
+
+                                    <p:outputLabel value="Quantity"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.qty}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.qty}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.quantity}"/>
+
+                                    <p:outputLabel value="Free Quantity"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.freeQty}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.freeQuantity}"/>
+
+                                    <p:outputLabel value="Gross Rate"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.rate}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.lineGrossRate}"/>
+
+                                    <p:outputLabel value="Net Rate"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.netRate}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.lineNetRate}"/>
+
+
+                                    <p:outputLabel value="Purchase Rate"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.purchaseRate}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Purchase Rate in packs"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.purchaseRatePack}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Purchase Rate in Units"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.purchaseRateInUnit}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Retail Rate"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.retailRate}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Retail Rate in Packs"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.retailRatePack}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Retail Rate in Units"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.retailRateInUnit}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+
+                                    <p:outputLabel value="Wholesale Rate"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.wholesaleRate}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Cost Rate"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.totalCostRate}"/>                                    
+
+
+
+                                    <p:outputLabel value="Purchase Value"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.purchaseValue}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Retail Value"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.retailValue}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Wholesale Value"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.wholesaleRate * stockHistoryController.current.pbItem.qty}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Gross Value"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.grossValue}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.lineGrossTotal}"/>
+
+                                    <p:outputLabel value="Net Value"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.netValue}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.lineNetTotal}"/>
+
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab title="Item Batch Details">
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Batch No"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.itemBatch.batchNo}"/>
+
+                                    <p:outputLabel value="Expiry Date"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.itemBatch.dateOfExpire}"/>
+
+                                    <p:outputLabel value="Manufacture Date"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.itemBatch.dateOfManufacture}"/>
+
+                                    <p:outputLabel value="Retail Sale Rate"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.itemBatch.retailsaleRate}"/>
+
+                                    <p:outputLabel value="Wholesale Rate"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.itemBatch.wholesaleRate}"/>
+
+                                    <p:outputLabel value="Manufacturer"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.itemBatch.manufacturer.name}"/>
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab title="Backend Details">
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="History ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.id}"/>
+
+                                    <p:outputLabel value="Pharmaceutical Bill Item ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.id}"/>
+
+                                    <p:outputLabel value="Bill Item ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.id}"/>
+
+                                    <p:outputLabel value="Bill ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.bill.id}"/>                                    
+
+                                    <p:outputLabel value="Item ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.item.id}"/>
+
+                                    <p:outputLabel value="Stock ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.stock.id}"/>
+
+                                    <p:outputLabel value="Department ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.stock.department.name}"/>
+
+                                    <p:outputLabel value="Locator ID"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.stock.stockLocator}"/>
+
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab title="Audit">
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Created At"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.createdAt}"/>
+
+                                    <p:outputLabel value="Created By"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.creater.webUserPerson.name}"/>
+
+                                    <p:outputLabel value="Retired"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.retired}"/>
+
+                                    <p:outputLabel value="Retired At"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.retiredAt}"/>
+
+                                    <p:outputLabel value="Retired By"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.retirer.webUserPerson.name}"/>
+
+                                    <p:outputLabel value="Retire Comments"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.retireComments}"/>
+                                </p:panelGrid>
+                            </p:tab>
+
+                        </p:tabView>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

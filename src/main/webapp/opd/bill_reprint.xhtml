@@ -211,28 +211,34 @@
                                                         <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                
+
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePrintedPaper')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="ffpp">
                                                         <prints:five_five_paper_without_headings bill="#{ffpp}"  duplicate="true"/>
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                
+
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is PosPaper')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="pp">
                                                         <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                
+
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePaperCoustom1')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="ffb" >
-                                                        <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true" payments="1"/>                        
+                                                        <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true" payments="1"/>       
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                
+
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFiveCustom3')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="pp">
                                                         <prints:five_five_custom_3 bill="#{pp}" duplicate="true"/>                        
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is 5x8 inch Paper')}" >
+                                                    <ui:repeat value="#{billSearch.bill}" var="pp">
+                                                        <prints:five_eight_opd_bill bill="#{pp}" duplicate="true"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
                                             </h:panelGroup>
@@ -271,7 +277,14 @@
                                                             <p:spacer />
                                                             <p:spacer />
                                                         </ui:repeat>
+                                                    </h:panelGroup>
 
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is 5x8 inch Paper')}" >
+                                                        <ui:repeat value="#{billSearch.refuendedBills}" var="pp">
+                                                            <prints:five_eight_opd_bill bill="#{pp}" duplicate="true"/>   
+                                                            <p:spacer />
+                                                            <p:spacer />
+                                                        </ui:repeat>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
                                             </h:panelGroup>

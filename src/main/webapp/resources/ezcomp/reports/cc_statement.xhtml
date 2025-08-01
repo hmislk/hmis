@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -19,10 +20,10 @@
                         <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                         <h:outputLabel value="From Date"  class="mx-3"/>
                     </h:panelGroup>
-                    <p:datePicker  
-                        showTime="true" 
+                    <p:calendar  
                         class="w-100"
                         inputStyleClass="w-100"
+                        navigator="true"
                         value="#{reportController.fromDate}" 
                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
@@ -30,8 +31,8 @@
                         <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                         <h:outputLabel value="To Date"  class="mx-3"/>
                     </h:panelGroup>
-                    <p:datePicker 
-                        showTime="true" 
+                    <p:calendar 
+                        navigator="true"
                         class="w-100"
                         inputStyleClass="w-100"
                         value="#{reportController.toDate}" 
@@ -94,6 +95,8 @@
                     class="mx-2 ui-button-warning"
                     action="#{reportController.processCollectingCentreStatementReportNew()}"  />
 
+
+
                 <p:commandButton 
                     icon="fa-solid fa-print"
                     style="width: 150px"
@@ -124,7 +127,23 @@
                     <p:dataExporter type="pdf" target="tbl"  fileName="cc_statement.pdf" ></p:dataExporter>
                 </p:commandButton>
 
+                <div  style="float: right;">
 
+
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process for Selected Centre Errors"
+                        icon="fas fa-cogs"
+                        class="mx-2 ui-button-dark"
+                        action="#{reportController.processCollectingCentreBalanceContinuationErrors()}"  />
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process for All Errors"
+                        icon="fas fa-cogs"
+                        class="mx-2 ui-button-dark"
+                        action="#{reportController.processAllCollectingCentresBalanceContinuationErrors()}"  />
+
+                </div>
                 <h:panelGrid columns="2" styleClass="mt-4">
                     <h:outputLabel value="From Date :" />
                     <h:outputLabel value="#{reportController.fromDate}">
@@ -161,14 +180,19 @@
                     filterBy="#{agentHx.bill.deptId}"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
                     filterMatchMode="contains">
-                    <p:commandLink 
-                        value="#{agentHx.bill.deptId}" 
-                        ajax="false"
-                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
-                    </p:commandLink>
-                    <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
-                    <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
+                    <h:outputText value="#{agentHx.bill.deptId}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    width="7em" 
+                    headerText="Ref Bill Nos" 
+                    sortBy="#{agentHx.bill.deptId}" 
+                    filterBy="#{agentHx.bill.deptId}"
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.bill.cancelledBill.deptId}"  rendered="#{agentHx.bill.cancelled}"></h:outputText>
+<!--                    <ui:repeat var="rb" value="#{agentHx.bill.refundBills}" >
+                        <h:inputText value="#{rb.deptId}" ></h:inputText>
+                    </ui:repeat>-->
                 </p:column>
 
                 <p:column  
@@ -177,12 +201,11 @@
                     exportable="false"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
                     rendered="#{webUserController.hasPrivilege('Developers')}">
-                    <p:commandButton 
-                        ajax="false"
-                        value="Edit"
-                        action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
-                    </p:commandButton>
+                    <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
+                    <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
                 </p:column>
+
+
 
                 <p:column 
                     width="5rem" 
@@ -203,9 +226,9 @@
                     headerText="Bill Type" 
                     sortBy="#{agentHx.bill.billTypeAtomic.label}" 
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
-                    filterBy="#{agentHx.bill.billTypeAtomic.label}" 
+                    filterBy="#{agentHx.bill.billTypeAtomic}" 
                     filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
+                    <h:outputText value="#{agentHx.bill.billTypeAtomic}" />
                 </p:column>
 
                 <p:column 
@@ -350,6 +373,47 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
+
+
+                <p:column
+                    width="10em"
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    headerText="Developers" >
+                    <p:commandLink 
+                        ajax="false"
+                        value="Edit Balance History"
+                        class="mx-1"
+                        action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
+                    </p:commandLink>
+                    <p:commandButton 
+                        title="View" 
+                        icon="fa fa-eye" 
+                        class="m-1 ui-button-info"
+                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                        ajax="false">
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        title="Manage" 
+                        icon="fa fa-tools" 
+                        class="m-1 ui-button-warning" 
+                        action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                        ajax="false">
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        title="Admin" 
+                        icon="fa fa-shield-alt" 
+                        class="m-1 ui-button-danger" 
+                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                        ajax="false" 
+                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
+                </p:column>
+
 
             </p:dataTable>
 

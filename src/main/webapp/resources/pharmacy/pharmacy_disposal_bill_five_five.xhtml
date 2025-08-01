@@ -26,8 +26,8 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} ,"/>
+                    <h:outputLabel value=" #{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
@@ -35,19 +35,19 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Disposal Bill #{sessionController.loggedUser.department.name}"   />    
+                <h:outputLabel value="Disposal Bill -  #{sessionController.loggedUser.department.name}"   />
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
-                <h:outputLabel value="--------------------------------------------------------------------------------"   />                           
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
-                <table >
+                <table style="margin-left: 10px">
                     <tr>
-                        <td style="text-align: left;" >
+                        <td style="text-align: left;font-weight: bold" >
                             <h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
@@ -77,7 +77,7 @@
                     </tr>
 
                     <tr>
-                        <td style="text-align: left;" >
+                        <td style="text-align: left;font-weight: bold" >
                             <h:outputLabel class="billDetailsFiveFive" value="Inv.No" ></h:outputLabel>
                         </td>
                         <td></td>
@@ -104,7 +104,7 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.invoiceNumber ne null}" >
                         <tr>
-                            <td style="text-align: left;" >
+                            <td style="text-align: left;font-weight: bold" >
                                 <h:outputLabel class="billDetailsFiveFive" value="Request No" ></h:outputLabel>
                             </td>
                             <td></td>
@@ -185,7 +185,7 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
-                            <td style="text-align: left;" >
+                            <td style="text-align: left;font-weight: bold" >
                                 <h:outputLabel value="To Unit" ></h:outputLabel>
                             </td>
                             <td></td>
@@ -229,7 +229,7 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.comments ne null}" >
                         <tr>
-                            <td style="text-align: left;" >
+                            <td style="text-align: left;font-weight: bold" >
                                 <h:outputLabel value="Comment" ></h:outputLabel>
                             </td>
                             <td></td>
@@ -253,7 +253,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="--------------------------------------------------------------------------------"   />                           
+                <hr/>
             </div>
 
 
@@ -280,7 +280,7 @@
 
                     <tr>
                         <td colspan="4" style="text-align: center;" >
-                            <h:outputLabel value="------------------------------------------------------"   />                           
+                            <hr/>
                         </td>
                     </tr>
 
@@ -402,7 +402,7 @@
 
 
             <div class="billline">
-                <h:outputLabel value="--------------------------------------------------------------------------------"   />                           
+                <hr/>
             </div>
 
             <div  >

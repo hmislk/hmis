@@ -8,13 +8,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Title;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.facade.DoctorFacade;
-import com.divudi.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.Title;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.facade.DoctorFacade;
+import com.divudi.core.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,8 +49,6 @@ public class DoctorController implements Serializable {
     SessionController sessionController;
     @Inject
     SpecialityController specialityController;
-    @Inject
-    CommonController commonController;
     @EJB
     private DoctorFacade ejbFacade;
     @EJB
@@ -106,7 +104,7 @@ public class DoctorController implements Serializable {
         return suggestions;
     }
 
-   
+
 
     public void listDoctors() {
         Date startTime = new Date();
@@ -156,7 +154,7 @@ public class DoctorController implements Serializable {
         m.put("ret", false);
         selectedItems = getFacade().findByJpql(j, m);
     }
-    
+
     public List<Doctor> fillDoctorsIncludingConsultantsWithSpeciality(Speciality speciality) {
         String j;
         Map m = new HashMap();
@@ -166,12 +164,12 @@ public class DoctorController implements Serializable {
         if(speciality != null){
            j += " and c.speciality=:sp";
            m.put("sp", speciality);
-        }        
+        }
         j += " order by c.person.name";
-       
+
         m.put("ret", false);
        List<Doctor> docList = getFacade().findByJpql(j, m);
-       
+
        return docList;
     }
 
@@ -430,7 +428,7 @@ public class DoctorController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             DoctorController controller = (DoctorController) facesContext.getApplication().getELResolver().
@@ -445,9 +443,7 @@ public class DoctorController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -464,13 +460,4 @@ public class DoctorController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

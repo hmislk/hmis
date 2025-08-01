@@ -25,66 +25,83 @@
                                     <h:outputLabel value="Service Reprint" />
                                 </div>
                                 <div >
-                                    
-                                     <p:commandButton 
-                                                        value="To Sample Management" 
-                                                        icon="fas fa-flask"
-                                                        class="ui-button-raised mx-1"
-                                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(inwardSearch.bill)}"
-                                                        ajax="false">
-                                                    </p:commandButton>
 
-                                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" action="#"  >
+                                    <p:commandButton 
+                                        value="To Sample Management" 
+                                        icon="fas fa-flask"
+                                        class="ui-button-raised mx-1"
+                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(inwardSearch.bill)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="ui-button-info mx-2" 
+                                        icon="fas fa-print" 
+                                        value="Reprint" 
+                                        ajax="false" 
+                                        action="#"  >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
-                                    <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint(Cancel/Refund)" ajax="false" action="#" rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
+                                    <p:commandButton 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        value="Reprint(Cancel/Refund)" 
+                                        ajax="false" 
+                                        action="#" 
+                                        rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
                                         <p:printer target="gpBillPreview2" ></p:printer>
                                     </p:commandButton>
 
-                                    <p:commandButton ajax="false" 
-                                                     value="Cancel" 
-                                                     icon="fa fa-ban"
-                                                     action="inward_cancel_bill_service?faces-redirect=true"
-                                                     disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
-                                                     class="m-2 ui-button-danger">                           
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Cancel" 
+                                        icon="fa fa-ban"
+                                        action="inward_cancel_bill_service?faces-redirect=true"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
+                                        class="m-2 ui-button-danger">                           
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" 
-                                                     value="Return" 
-                                                     icon="fa fa-undo"
-                                                     actionListener="#{billSearch.recreateModel()}"
-                                                     action="inward_bill_service_refund?faces-redirect=true"
-                                                     disabled="#{inwardSearch.bill.cancelled}"
-                                                     class="m-2 "
-                                                     >    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Return" 
+                                        icon="fa fa-undo"
+                                        actionListener="#{billSearch.recreateModel()}"
+                                        action="inward_bill_service_refund?faces-redirect=true"
+                                        disabled="#{inwardSearch.bill.cancelled}"
+                                        class="m-2 "
+                                        >    
                                         <f:setPropertyActionListener  
                                             value="#{inwardSearch.bill}" 
                                             target="#{billSearch.bill}"  />
                                     </p:commandButton>
 
-                                    <p:commandButton ajax="false" 
-                                                     value="Mark As Checked"
-                                                     icon="fa fa-check-square"
-                                                     action="#{inwardSearch.markAsChecked()}"
-                                                     rendered="#{webUserController.hasPrivilege('InwardCheck')}"  
-                                                     class="m-2 ui-button-success"/>
-                                    <p:commandButton ajax="false" 
-                                                     value="Mark As Uncheck"
-                                                     icon="fa fa-square"
-                                                     action="#{inwardSearch.markAsUnChecked()}"
-                                                     rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  
-                                                     class="m-2 ui-button-warning"/>
-                                    <p:commandButton ajax="false" 
-                                                     value="Back To View" 
-                                                     icon="fa fa-backward"
-                                                     action="/inward/inward_edit_bill_item_view?faces-redirect=true"  
-                                                     class="m-2 "/>
-                                    <p:commandButton ajax="false" 
-                                                     value="Back To Interim" 
-                                                     icon="fa fa-arrow-circle-left"
-                                                     action="/inward/inward_bill_intrim?faces-redirect=true" 
-                                                     actionListener="#{bhtSummeryController.createTables()}"
-                                                     class="m-2 ui-button-warning"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Mark As Checked"
+                                        icon="fa fa-check-square"
+                                        action="#{inwardSearch.markAsChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  
+                                        class="m-2 ui-button-success"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Mark As Uncheck"
+                                        icon="fa fa-square"
+                                        action="#{inwardSearch.markAsUnChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  
+                                        class="m-2 ui-button-warning"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To View" 
+                                        icon="fa fa-backward"
+                                        action="/inward/inward_edit_bill_item_view?faces-redirect=true"  
+                                        class="m-2 "/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To Interim" 
+                                        icon="fa fa-arrow-circle-left"
+                                        action="/inward/inward_bill_intrim?faces-redirect=true" 
+                                        actionListener="#{bhtSummeryController.createTables()}"
+                                        class="m-2 ui-button-warning"/>
                                 </div>
 
                             </div>
@@ -192,6 +209,13 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
                                     <print:five_five_custom_3_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>

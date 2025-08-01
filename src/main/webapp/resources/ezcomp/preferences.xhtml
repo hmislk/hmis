@@ -8,11 +8,11 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="institution" type="com.divudi.entity.Institution" />
-        <cc:attribute name="department" type="com.divudi.entity.Department" />        
-        <cc:attribute name="webUser" type="com.divudi.entity.WebUser"/>
-        <cc:attribute name="application" type="boolean"/>  
-        <cc:attribute name="idValue" />  
+        <cc:attribute name="institution" type="com.divudi.core.entity.Institution" />
+        <cc:attribute name="department" type="com.divudi.core.entity.Department" />
+        <cc:attribute name="webUser" type="com.divudi.core.entity.WebUser"/>
+        <cc:attribute name="application" type="boolean"/>
+        <cc:attribute name="idValue" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -48,7 +48,7 @@
                 </p:row>
                 <p:row >
                     <p:column >
-                        <p:commandButton id="btnSave" ajax="false" value="Save" 
+                        <p:commandButton id="btnSave" ajax="false" value="Save"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
                     </p:column>
                     <p:column >
@@ -78,9 +78,9 @@
                                 value="#{sessionController.currentPreference.themeName}" />
 
 
-                            <p:commandButton id="btnWeb" 
-                                             ajax="false" 
-                                             value="Save" 
+                            <p:commandButton id="btnWeb"
+                                             ajax="false"
+                                             value="Save"
                                              action="#{applicationController.setHasAwebsiteAsFrontEnd(null)}" ></p:commandButton>
 
 
@@ -93,16 +93,16 @@
                         <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Pharmacy Bill Header" ></h:outputLabel>
                             <p:inputTextarea value="#{sessionController.currentPreference.pharmacyBillHeader}" />
-                            
+
                             <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
                             <p:inputTextarea value="#{sessionController.currentPreference.pharmacyBillFooter}" />
-                            
+
                             <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
                                 <f:selectItem itemLabel="Please Select Paper Type" />
                                 <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                             </p:selectOneMenu>
-                            
+
                             <h:outputLabel value="GRN Detaied" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.grnBillDetailed}" />
 
@@ -241,7 +241,7 @@
 
 
                             <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" disabled="true" />
 
                             <h:outputLabel value="Inward Add Service Bill Time With Out Check"></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardAddServiceBillTimeCheck}"/>
@@ -291,8 +291,8 @@
                             <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
                             <h:outputLabel value="Default Payment Method"></h:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
-                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                            <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">
+                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                             </p:selectOneMenu>
 
 
@@ -315,7 +315,7 @@
 
                             <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
                             <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
-                            
+
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>

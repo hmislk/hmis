@@ -1,8 +1,8 @@
 package com.divudi.bean.web;
 
-import com.divudi.entity.web.WebTemplate;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.facade.web.WebTemplateFacade;
+import com.divudi.core.entity.web.WebTemplate;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.facade.web.WebTemplateFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -31,7 +31,7 @@ public class WebTemplateController implements Serializable {
 
     public String navigateToListWebTemplates() {
         listAllWebTemplates();
-        return "/webcontent/templates?faces-redirect=true;";
+        return "/webcontent/templates?faces-redirect=true";
     }
 
     private void listAllWebTemplates() {
@@ -42,7 +42,7 @@ public class WebTemplateController implements Serializable {
 
     public String navigateToAddNewTemplate() {
         current = new WebTemplate();
-        return "/webcontent/template?faces-redirect=true;";
+        return "/webcontent/template?faces-redirect=true";
     }
 
     public String navigateToEditTemplate() {
@@ -50,7 +50,7 @@ public class WebTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to Edit");
             return "";
         }
-        return "/webcontent/template?faces-redirect=true;";
+        return "/webcontent/template?faces-redirect=true";
     }
 
     public void saveCurrent() {

@@ -29,8 +29,8 @@
                     <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel  value="Department" />
-                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{commonReport1.department}" 
-                                    completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{commonReport1.department}"
+                                    completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}"
                                     itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                     requiredMessage="You must select a department" >
                     </p:autoComplete>
@@ -43,22 +43,22 @@
                     </p:selectOneRadio>
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2">
-                    <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-refresh" value="Process" ajax="false" 
+                    <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-refresh" value="Process" ajax="false"
                                      action="#{commonReport1.createWithCreditbyDepartmentBilled()}">
                     </p:commandButton>
                     <p:defaultCommand target="btnRefresh"/>
 
                     <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
                         <p:printer target="panelReport" />
-                    </p:commandButton> 
+                    </p:commandButton>
                     <p:commandButton ajax="false" value="Excel" class="ui-button-success" icon="fas fa-file-excel" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
                     </p:commandButton>
-                </h:panelGrid> 
+                </h:panelGrid>
 
                 <p:panel id="panelReport" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl" value="#{commonReport1.biledBills}" var="b"  
-                                 rowStyleClass="#{b.billClass eq 'class com.divudi.entity.RefundBill' ? 'redText' :b.billClass eq 'class com.divudi.entity.CancelledBill' ? 'greenText' :b.cancelled eq true ? 'blueText':''}"
+                    <p:dataTable id="tbl" value="#{commonReport1.biledBills}" var="b"
+                                 rowStyleClass="#{b.billClass eq 'class com.divudi.core.entity.RefundBill' ? 'redText' :b.billClass eq 'class com.divudi.core.entity.CancelledBill' ? 'greenText' :b.cancelled eq true ? 'blueText':''}"
                                  >
 
                         <f:facet name="header">
@@ -78,17 +78,17 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Bill ID"/>
                             </f:facet>
-                            <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
+                            <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}" />
 
-                            <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
+                            <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.core.entity.BilledBill'}" />
                         </p:column>
                         <p:column headerText="BillId" >
                             <f:facet name="header">
                                 <h:outputLabel value="Bill ID"/>
                             </f:facet>
-                            <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
+                            <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}" />
 
-                            <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
+                            <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.core.entity.BilledBill'}" />
                         </p:column>
 
                         <p:column headerText="Date and Time" >

@@ -1,54 +1,67 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body>
-        <ui:composition template="#{reportController.reportTemplateFileIndexName}">
-            <ui:define name="subcontent">
-                <h:form>
-                    <p:panel header="Collection Center Book Wise Detail">
+<h:body>
+    <ui:composition template="#{reportController.reportTemplateFileIndexName}">
+        <ui:define name="subcontent">
+            <h:form>
+                <p:panel header="Collection Center Book Wise Detail">
+                    <p:panelGrid columns="4" layout="tabular" class="w-100" style="border: none;
+                    border-collapse: collapse;">
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <p:outputLabel value="From Date" class="mx-3"/>
+                        </h:panelGroup>
 
-                        <p:panelGrid columns="5" layout="tabular" class="w-100">
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                <p:outputLabel value="From Date" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar
-                                class="w-100 "
+                        <p:calendar
+                                class="w-100"
                                 inputStyleClass="w-100"
                                 id="fromDate"
                                 value="#{reportsController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                disabled="#{reportsController.withoutDateRange}">
+                        </p:calendar>
 
-                            <p:spacer width="5em"/>
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <p:outputLabel value="To Date" class="mx-3"/>
+                        </h:panelGroup>
 
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                <p:outputLabel value="To Date" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar
-                                class="w-100 "
+                        <p:calendar
+                                class="w-100"
                                 inputStyleClass="w-100"
                                 id="toDate"
                                 value="#{reportsController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                disabled="#{reportsController.withoutDateRange}">
+                        </p:calendar>
 
-                            <h:panelGroup class="col-md-2">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Collecting Centre" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:autoComplete
+                        <h:panelGroup/>
+
+                        <h:panelGroup>
+                            <p:selectBooleanCheckbox
+                                    id="withoutDateRange"
+                                    value="#{reportsController.withoutDateRange}">
+                                <p:ajax update="fromDate toDate"/>
+                            </p:selectBooleanCheckbox>
+                            <h:outputLabel value="Without Date Range" class="mx-3"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup/>
+                        <h:panelGroup/>
+
+                        <h:panelGroup class="col-md-2">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="Collecting Centre" class="mx-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:autoComplete
                                 converter="deal"
                                 value="#{reportsController.collectingCentre}"
                                 forceSelection="true" id="acColl"
@@ -57,112 +70,233 @@
                                 maxResults="15"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:column style="padding: 6px;">#{vt.code}</p:column>
-                                <p:column style="padding: 6px;">#{vt.name}</p:column>
-                            </p:autoComplete>
+                            <p:column style="padding: 6px;">#{vt.code}</p:column>
+                            <p:column style="padding: 6px;">#{vt.name}</p:column>
+                        </p:autoComplete>
 
-                            <p:spacer width="5em"/>
+                        <h:panelGroup class="col-md-2">
+                            <i class="fa fa-object-group"/>
+                            <p:outputLabel value="Book Number" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:inputText value="#{reportsController.cashBookNumber}" class="w-100"/>
+                        <h:panelGroup/>
 
-                            <h:panelGroup class="col-md-2">
-                                <i class="fa fa-object-group"/>
-                                <p:outputLabel value="Book Number" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:inputText value="#{reportsController.cashBookNumber}" class="w-100"/>
-                        </p:panelGrid>
+                        <h:panelGroup>
+                            <p:selectBooleanCheckbox value="#{reportsController.withDeletedBooks}"/>
+                            <p:outputLabel value="With Deleted Books" class="mx-3"/>
+                        </h:panelGroup>
 
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-                                <p:commandButton ajax="false"
-                                                 value="Process"
-                                                 icon="fas fa-cogs"
-                                                 class="ui-button-warning"
-                                                 style="width: 150px"
-                                                 action="#{reportsController.generateCollectionCenterBookWiseDetailReport()}">
-                                </p:commandButton>
+                        <h:panelGroup/>
 
-                                <p:commandButton
+                        <h:panelGroup>
+                            <p:selectBooleanCheckbox value="#{reportsController.withInactiveBooks}"/>
+                            <p:outputLabel value="With Inactive Books" class="mx-3"/>
+                        </h:panelGroup>
+                    </p:panelGrid>
+
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <p:commandButton ajax="false"
+                                             value="Process"
+                                             icon="fas fa-cogs"
+                                             class="ui-button-warning"
+                                             style="width: 150px"
+                                             action="#{reportsController.generateCollectionCenterBookWiseDetailReport()}">
+                            </p:commandButton>
+
+                            <p:commandButton
                                     icon="fa-solid fa-print"
                                     class="mx-1 ui-button-info mx-2"
                                     ajax="false"
                                     style="width: 150px"
-                                    value="Print">
-                                    <p:printer target="tblPrint"/>
-                                </p:commandButton>
-                                <p:commandButton
+                                    value="Print"
+                                    onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
+                            </p:commandButton>
+                            <h:outputScript>
+                                function hidePaginatorBeforePrint() {
+                                    let paginators = document.querySelectorAll('.ui-paginator');
+                                    paginators.forEach(el => el.style.display = 'none');
+
+                                    let filters = document.querySelectorAll('.ui-column-filter, .ui-filter-row');
+                                    filters.forEach(el => el.style.display = 'none');
+                                }
+
+                                function restorePaginatorAfterPrint() {
+                                    let paginators = document.querySelectorAll('.ui-paginator');
+                                    paginators.forEach(el => el.style.display = '');
+
+                                    let filters = document.querySelectorAll('.ui-column-filter, .ui-filter-row');
+                                    filters.forEach(el => el.style.display = '');
+                                }
+
+                                window.onafterprint = function () {
+                                    restorePaginatorAfterPrint();
+                                };
+                            </h:outputScript>
+                            <p:commandButton
                                     id="btnExcel" class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     style="width: 150px"
-                                    ajax="false" value="Excel">
-                                    <p:dataExporter type="xlsx" target="tbl"
-                                                    fileName="collection_center_book_wise_detail_report"/>
-                                </p:commandButton>
-                                <p:commandButton
+                                    ajax="false" value="Excel"
+                                    action="#{reportsController.exportCollectionCenterBookWiseDetailToExcel}">
+                            </p:commandButton>
+                            <p:commandButton
                                     class="m-2 ui-button-danger"
                                     icon="fa-solid fa-file-pdf"
                                     ajax="false"
                                     style="width: 150px"
-                                    value="PDF">
-                                    <p:dataExporter type="pdf" target="tbl"
-                                                    fileName="collection_center_book_wise_detail_report"/>
-                                </p:commandButton>
-                            </div>
+                                    value="PDF"
+                                    action="#{reportsController.exportCollectionCenterBookWiseDetailToPdf}">
+                            </p:commandButton>
                         </div>
+                    </div>
 
+                    <h:panelGroup id="printPanel">
                         <p:dataTable id="tbl"
                                      class="w-100 m-2"
                                      value="#{reportsController.bundle.reportTemplateRows}"
+                                     filteredValue="#{reportsController.filteredReportTemplateRows}"
                                      var="c"
-                                     rowIndexVar="b">
-                            <p:column 
-                                headerText="Bill No" 
-                                width="5rem" 
-                                sortBy="#{c.bill.deptId}" 
-                                filterBy="#{c.bill.deptId}" 
-                                filterMatchMode="contains">
+                                     rowIndexVar="b"
+                                     paginator="true"
+                                     paginatorAlwaysVisible="true"
+                                     rows="10"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20"
+                                     paginatorPosition="bottom">
+                            <f:facet name="header">
+                                <h:outputLabel value="Collection Center Book Wise Detail" style="font-weight: bold;"
+                                               styleClass="w-100"/>
+                            </f:facet>
+
+                            <p:column
+                                    headerText="Bill No"
+                                    width="5rem"
+                                    sortBy="#{c.bill.deptId}"
+                                    filterBy="#{c.bill.deptId}"
+                                    filterMatchMode="contains">
                                 <h:outputText value="#{c.bill.deptId}"/>
                             </p:column>
-                            <p:column 
-                                headerText="Book Reference No" 
-                                width="5rem"
-                                sortBy="#{c.bill.referenceNumber}" 
-                                filterBy="#{c.bill.referenceNumber}" 
-                                filterMatchMode="contains">
-                                <h:outputText value="#{c.bill.referenceNumber}"/>
+                            <p:column
+                                    headerText="Book No"
+                                    width="5rem"
+                                    rendered="#{c.bill.billClassType eq 'CancelledBill' or c.bill.billClassType eq 'RefundBill'}"
+                                    sortBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.billedBill.referenceNumber)}"
+                                    filterBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.billedBill.referenceNumber)}"
+                                    filterMatchMode="contains">
+                                <h:outputText
+                                        value="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.billedBill.referenceNumber)}"/>
                             </p:column>
-                            <p:column 
-                                headerText="Patient" 
-                                width="5rem"
-                                sortBy="#{c.bill.patient.person.nameWithTitle}" 
-                                filterBy="#{c.bill.patient.person.nameWithTitle}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                    headerText="Book No"
+                                    width="5rem"
+                                    rendered="#{c.bill.billClassType ne 'CancelledBill' and c.bill.billClassType ne 'RefundBill'}"
+                                    sortBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"
+                                    filterBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"
+                                    filterMatchMode="contains">
+                                <h:outputText
+                                        value="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"/>
+                            </p:column>
+                            <p:column headerText="Book Reference No" width="5rem" sortBy="#{c.bill.referenceNumber}"
+                                      filterBy="#{c.bill.referenceNumber}" filterMatchMode="contains"
+                                      rendered="#{c.bill.billClassType ne 'CancelledBill' and c.bill.billClassType ne 'RefundBill'}">
+                                <table style="border: none; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <h:outputText value="#{c.bill.referenceNumber}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq false and c.agentReferenceBook.retired eq false}"
+                                                    value="Deactivated" size="small" severity="warning"
+                                                    styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq true and c.agentReferenceBook.retired eq false}"
+                                                    value="Active" size="small" severity="success" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge rendered="#{c.agentReferenceBook.retired eq true}"
+                                                     value="Deleted" size="small" severity="danger" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </p:column>
+                            <p:column headerText="Book Reference No" width="5rem"
+                                      sortBy="#{c.bill.billedBill.referenceNumber}"
+                                      filterBy="#{c.bill.billedBill.referenceNumber}" filterMatchMode="contains"
+                                      rendered="#{c.bill.billClassType eq 'CancelledBill' or c.bill.billClassType eq 'RefundBill'}">
+                                <table style="border: none; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <h:outputText value="#{c.bill.billedBill.referenceNumber}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq false and c.agentReferenceBook.retired eq false}"
+                                                    value="Deactivated" size="small" severity="warning"
+                                                    styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq true and c.agentReferenceBook.retired eq false}"
+                                                    value="Active" size="small" severity="success" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge rendered="#{c.agentReferenceBook.retired eq true}"
+                                                     value="Deleted" size="small" severity="danger" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </p:column>
+                            <p:column
+                                    headerText="Patient"
+                                    width="5rem"
+                                    sortBy="#{c.bill.patient.person.nameWithTitle}"
+                                    filterBy="#{c.bill.patient.person.nameWithTitle}"
+                                    filterMatchMode="contains">
                                 <h:outputText value="#{c.bill.patient.person.nameWithTitle}"/>
                             </p:column>
-                            <p:column 
-                                headerText="Creater" 
-                                width="5rem"
-                                sortBy="#{c.bill.creater.webUserPerson.name}" 
-                                filterBy="#{c.bill.creater.webUserPerson.name}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                    headerText="Creater"
+                                    width="5rem"
+                                    sortBy="#{c.bill.creater.webUserPerson.name}"
+                                    filterBy="#{c.bill.creater.webUserPerson.name}"
+                                    filterMatchMode="contains">
                                 <h:outputText value="#{c.bill.creater.webUserPerson.name}"/>
                             </p:column>
-                            <p:column 
-                                headerText="Created Date" 
-                                width="5rem"
-                                sortBy="#{c.bill.createdAt}" 
-                                filterBy="#{c.bill.createdAt}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                    headerText="Created Date"
+                                    width="5rem"
+                                    sortBy="#{c.bill.createdAt}"
+                                    filterBy="#{c.bill.createdAt}"
+                                    filterMatchMode="contains">
                                 <h:outputText value="#{c.bill.createdAt}">
                                     <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column 
-                                headerText="Bill Value" 
-                                width="5rem" 
-                                style="text-align: right;"
-                                sortBy="#{c.bill.netTotal}" 
-                                filterBy="#{c.bill.netTotal}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                    headerText="Bill Value"
+                                    width="5rem"
+                                    style="text-align: right;"
+                                    sortBy="#{c.bill.netTotal}"
+                                    filterBy="#{c.bill.netTotal}"
+                                    filterMatchMode="contains">
                                 <h:outputText value="#{c.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -173,65 +307,10 @@
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
-
-                        <div class="printingOnly">
-                            <p:dataTable id="tblPrint"
-                                         class="w-100 m-2"
-                                         value="#{reportsController.bundle.reportTemplateRows}"
-                                         var="c"
-                                         rowIndexVar="b">
-                                <p:column 
-                                    headerText="Bill No" 
-                                    width="5rem" 
-                                    sortBy="#{c.bill.deptId}" >
-                                    <h:outputText value="#{c.bill.deptId}"/>
-                                </p:column>
-                                <p:column 
-                                    headerText="Book Reference No" 
-                                    width="5rem"
-                                    sortBy="#{c.bill.referenceNumber}" >
-                                    <h:outputText value="#{c.bill.referenceNumber}"/>
-                                </p:column>
-                                <p:column 
-                                    headerText="Patient" 
-                                    width="5rem"
-                                    sortBy="#{c.bill.patient.person.nameWithTitle}" >
-                                    <h:outputText value="#{c.bill.patient.person.nameWithTitle}"/>
-                                </p:column>
-                                <p:column 
-                                    headerText="Creater" 
-                                    width="5rem"
-                                    sortBy="#{c.bill.creater.webUserPerson.name}" >
-                                    <h:outputText value="#{c.bill.creater.webUserPerson.name}"/>
-                                </p:column>
-                                <p:column 
-                                    headerText="Created Date" 
-                                    width="5rem"
-                                    sortBy="#{c.bill.createdAt}" >
-                                    <h:outputText value="#{c.bill.createdAt}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column 
-                                    headerText="Bill Value" 
-                                    width="5rem" 
-                                    style="text-align: right;"
-                                    sortBy="#{c.bill.netTotal}" >
-                                    <h:outputText value="#{c.bill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{reportsController.bundle.grossTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </f:facet>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                    </h:panelGroup>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

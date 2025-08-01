@@ -1,15 +1,13 @@
 package com.divudi.service;
 
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.facade.ItemFacade;
-import java.util.ArrayList;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.facade.ItemFacade;
+
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.TemporalType;
 
 /**
  *

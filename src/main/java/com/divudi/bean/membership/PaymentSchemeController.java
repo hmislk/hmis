@@ -8,21 +8,27 @@
  */
 package com.divudi.bean.membership;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.membership.AllowedPaymentMethod;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.AllowedPaymentMethodFacade;
-import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.membership.AllowedPaymentMethod;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.AllowedPaymentMethodFacade;
+import com.divudi.core.facade.PaymentSchemeFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -31,6 +37,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ejb.EJBException;
+import javax.transaction.Transactional;
 
 /**
  *
@@ -42,12 +50,17 @@ import javax.inject.Named;
 public class PaymentSchemeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(PaymentSchemeController.class.getName());
     @Inject
     SessionController sessionController;
     @EJB
     private PaymentSchemeFacade ejbFacade;
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    @EJB
+    PriceMatrixFacade priceMatrixFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     MembershipScheme membershipScheme;
     AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
     List<PaymentScheme> selectedItems;
@@ -93,7 +106,13 @@ public class PaymentSchemeController implements Serializable {
         this.membershipScheme = membershipScheme;
     }
 
+    @Deprecated // Use method with the same name in the Payment Service
     public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        return checkPaymentMethodError(paymentMethod, paymentMethodData, null, null);
+    }
+
+    @Deprecated // Use method with the same name in the Payment Service
+    public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Double cashPaid) {
         if (paymentMethod == PaymentMethod.Cheque) {
             if (paymentMethodData.getCheque().getInstitution() == null
                     || paymentMethodData.getCheque().getNo() == null
@@ -126,6 +145,21 @@ public class PaymentSchemeController implements Serializable {
                     || paymentMethodData.getEwallet().getNo() == null) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
+            if (paymentMethod == PaymentMethod.Cash) {
+                if (cashPaid != null && netTotal != null) {
+                    if (cashPaid == 0.0) {
+                        JsfUtil.addErrorMessage("Please enter the paid amount");
+                        return true;
+                    }
+                    if (cashPaid < netTotal) {
+                        JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -288,6 +322,78 @@ public class PaymentSchemeController implements Serializable {
         getCurrent();
     }
 
+    @Transactional
+    public void duplicateSelected() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Nothing to Duplicate");
+            return;
+        }
+
+        PaymentScheme dup = new PaymentScheme();
+        dup.setName("a copy of " + paymentScheme.getName());
+        dup.setPrintingName(paymentScheme.getPrintingName());
+        dup.setOrderNo(paymentScheme.getOrderNo());
+        dup.setValidForPharmacy(paymentScheme.isValidForPharmacy());
+        dup.setValidForBilledBills(paymentScheme.isValidForBilledBills());
+        dup.setValidForInpatientBills(paymentScheme.isValidForInpatientBills());
+        dup.setValidForChanneling(paymentScheme.isValidForChanneling());
+        dup.setStaffMemberRequired(paymentScheme.isStaffMemberRequired());
+        dup.setMembershipRequired(paymentScheme.isMembershipRequired());
+        dup.setStaffRequired(paymentScheme.isStaffRequired());
+        dup.setStaffOrFamilyRequired(paymentScheme.isStaffOrFamilyRequired());
+        dup.setMemberRequired(paymentScheme.isMemberRequired());
+        dup.setMemberOrFamilyRequired(paymentScheme.isMemberOrFamilyRequired());
+        dup.setSeniorCitizenRequired(paymentScheme.isSeniorCitizenRequired());
+        dup.setPregnantMotherRequired(paymentScheme.isPregnantMotherRequired());
+        dup.setCliantType(paymentScheme.getCliantType());
+        dup.setInstitution(paymentScheme.getInstitution());
+        dup.setPerson(paymentScheme.getPerson());
+        dup.setDepartment(paymentScheme.getDepartment());
+        dup.setCreatedAt(new Date());
+        dup.setCreater(getSessionController().getLoggedUser());
+
+        getFacade().create(dup);
+
+        HashMap hm = new HashMap();
+        hm.put("ps", paymentScheme);
+        String jpql = "select pm from PriceMatrix pm where pm.retired=false and pm.paymentScheme=:ps";
+        List<PriceMatrix> matrices = priceMatrixFacade.findByJpql(jpql, hm);
+
+        for (PriceMatrix pm : matrices) {
+            try {
+                PriceMatrix npm = new PriceMatrix();
+                npm.setBillType(pm.getBillType());
+                npm.setCategory(pm.getCategory());
+                npm.setInstitution(pm.getInstitution());
+                npm.setDepartment(pm.getDepartment());
+                npm.setItem(pm.getItem());
+                npm.setFromPrice(pm.getFromPrice());
+                npm.setToPrice(pm.getToPrice());
+                npm.setMargin(pm.getMargin());
+                npm.setRoomLocation(pm.getRoomLocation());
+                npm.setMembershipScheme(pm.getMembershipScheme());
+                npm.setPaymentScheme(dup);
+                npm.setPaymentMethod(pm.getPaymentMethod());
+                npm.setInwardChargeType(pm.getInwardChargeType());
+                npm.setDiscountPercent(pm.getDiscountPercent());
+                npm.setAdmissionType(pm.getAdmissionType());
+                npm.setRoomCategory(pm.getRoomCategory());
+                npm.setToInstitution(pm.getToInstitution());
+                npm.setCreatedAt(new Date());
+                npm.setCreater(getSessionController().getLoggedUser());
+                priceMatrixFacade.create(npm);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to duplicate PriceMatrix", e);
+                JsfUtil.addErrorMessage("Failed to duplicate PriceMatrix entries");
+                throw new EJBException(e);
+            }
+        }
+
+        createPaymentSchemes();
+        paymentScheme = dup;
+        JsfUtil.addSuccessMessage("Duplicated Successfully");
+    }
+
     private PaymentSchemeFacade getFacade() {
         return ejbFacade;
     }
@@ -326,24 +432,33 @@ public class PaymentSchemeController implements Serializable {
         return createPaymentSchemes(false, true, false);
     }
 
-    public List<PaymentScheme> createPaymentSchemes(boolean opd, boolean pharmacy, boolean channel) {
-        String temSql;
-        temSql = "SELECT i FROM PaymentScheme i "
-                + " where  i.retired=false ";
+    public List<PaymentScheme> createPaymentSchemes(boolean includeOpd, boolean includePharmacy, boolean includeChannel) {
+        StringBuilder jpql = new StringBuilder("SELECT i FROM PaymentScheme i WHERE i.retired = false");
+        Map<String, Object> parameters = new HashMap<>();
 
-        if (pharmacy) {
-            temSql += " and i.validForPharmacy=true ";
+        if (includePharmacy) {
+            jpql.append(" AND i.validForPharmacy = true");
         }
-        if (channel) {
-            temSql += " and i.validForChanneling=true ";
+        if (includeChannel) {
+            jpql.append(" AND i.validForChanneling = true");
         }
-        if (opd) {
-            temSql += " and i.validForBilledBills=true ";
+        if (includeOpd) {
+            jpql.append(" AND i.validForBilledBills = true");
         }
 
-        temSql += " order by i.orderNo, i.name";
+        if (sessionController.getDepartment() != null) {
+            boolean departmentSpecific = configOptionApplicationController.getBooleanValueByKey(
+                    "Department Specific Discount Schemes for " + sessionController.getDepartment().getName(), false
+            );
+            if (departmentSpecific) {
+                jpql.append(" AND i.department = :dep");
+                parameters.put("dep", sessionController.getDepartment());
+            }
+        }
 
-        return getFacade().findByJpql(temSql);
+        jpql.append(" ORDER BY i.orderNo, i.name");
+
+        return getFacade().findByJpql(jpql.toString(), parameters);
     }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {

@@ -8,10 +8,11 @@
       xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
+        <cc:attribute name="cancelled" type="java.lang.Boolean"/>
     </cc:interface>
 
     <h:head>
@@ -25,6 +26,8 @@
             <!-- Attributes passed to the component -->
             <cc:attribute name="bill" required="true" />
             <cc:attribute name="duplicate" required="false" />
+            <cc:attribute name="cancelled" type="java.lang.Boolean"/>
+
         </cc:interface>
 
         <!-- Composite Component Implementation -->
@@ -34,6 +37,65 @@
             </h:panelGroup>
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
+                <style>
+                    @font-face {
+                        font-family: 'OCR-B';
+                        src: url('../../fonts/OCR-B.ttf') format('truetype');
+                        /* Add other font properties like font-weight, font-style if necessary */
+                    }
+
+                    @media print {
+                        .receipt-container {
+                            border: none;
+                            width: 10cm!important;
+                            height: 9.5cm!important;
+                            margin-left: 0cm!important;
+                            margin-right: 2.5cm!important;
+                            margin-bottom: 1.0cm!important;
+                            margin-top: 0.7cm!important;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            padding-left: 0.25cm;
+                            /*        font-family: sans-serif !important;
+                                    border: none;
+                                    width: 11cm!important;
+                                    height: 14cm!important;
+                                    margin-left: 0cm!important;
+                                    margin-right: 1.5cm!important;
+                                    margin-top: 1cm!important;
+                                    margin-bottom: 0cm!important;
+                                    padding: 2px!important;
+                                    line-height: 1.2!important;*/
+                        }
+
+                        .hospital-name {
+                            font-size: 12px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                        
+                        .hospital-details {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .receipt-table th,
+                        .receipt-table td {
+                            padding: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                        
+                        .total-table th,
+                        .total-table td {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .separator {
+                            margin: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                    }
+                </style>
             </h:panelGroup>
 
 
@@ -53,7 +115,7 @@
                                                 <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
                         </div>
                         <div >
-                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />                                                
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />
                         </div>
                     </div>
                     <div class="separator"></div>
@@ -62,8 +124,8 @@
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                     <br/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled}" />
                 </div>
 
                 <!-- Separator Line -->
@@ -153,34 +215,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
-                                <tr>
-                                    <!-- Display the item number across all items -->
-                                    <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                    <td>#{item.item.name}</td>
-                                    <td style="text-align: right">
-                                        <h:outputLabel value="#{item.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </ui:repeat>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                            <ui:repeat value="#{billSearch.groupBillItemByName(cc.attrs.bill.billItems)}" var="item" varStatus="s">
-                                <tr>
-                                    <!-- Display the item number across all items -->
-                                    <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                    <td>#{item.item.name}</td>
-                                    <td style="text-align: right">
-                                        <h:outputLabel value="#{item.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </ui:repeat>
-                        </h:panelGroup>
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
+                            <tr>
+                                <!-- Display the item number across all items -->
+                                <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
+                                <td>#{item.item.name}</td>
+                                <td style="text-align: right">
+                                    <h:outputLabel value="#{item.netValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
                     </tbody>
                 </table>
 
@@ -218,28 +264,14 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                        <tr>
-                            <td >No of Items:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-                    
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                        <tr>
-                            <td >No of Items:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{billSearch.billItemSize}">
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-
+                    <tr>
+                        <td >No of Items:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{billBeanController.fetchBillItems(cc.attrs.bill).size()}">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
 
                 <table  style="font-size: 8pt;">
@@ -270,7 +302,7 @@
                             </table>
                         </td>
                     </tr>
-                </table> 
+                </table>
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate eq true}" >
                     <table >
@@ -286,7 +318,7 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </h:panelGroup>
 
             </div>

@@ -18,7 +18,7 @@
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Institution :"/>
                             <p:autoComplete  value="#{hrReportController.institution}"
-                                            completeMethod="#{institutionController.completeCompany}" 
+                                            completeMethod="#{institutionController.completeCompany}"
                                             forceSelection="true"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                         </h:panelGrid>
@@ -28,7 +28,7 @@
                         </p:commandButton>
                         <p:commandButton actionListener="#{hrReportController.crateDepartmentList}" ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="hr_report_department"  />
-                        </p:commandButton> 
+                        </p:commandButton>
 
 
                         <p:panel id="reportPrint" styleClass="noBorder summeryBorder"  >
@@ -69,7 +69,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

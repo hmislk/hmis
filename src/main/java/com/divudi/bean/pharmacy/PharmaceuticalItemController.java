@@ -4,8 +4,8 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.facade.PharmaceuticalItemFacade;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;

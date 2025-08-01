@@ -9,10 +9,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,8 +55,8 @@ public class SymptomController implements Serializable {
     public String navigateToManageSymptoms(){
         return "/emr/admin/symptoms";
     }
-    
-    
+
+
     public List<ClinicalEntity> completeDiagnosis(String qry) {
         List<ClinicalEntity> c;
         Map m = new HashMap();
@@ -118,7 +118,7 @@ public class SymptomController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
 
     public void prepareAdd() {
         current = new ClinicalEntity();
@@ -217,6 +217,21 @@ public class SymptomController implements Serializable {
             items = getFacade().findByJpql(sql, m);
         }
         return items;
+    }
+
+    public List<ClinicalEntity> completeSymptom(String query) {
+        List<ClinicalEntity> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t  and c.name like :q";
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            hm.put("t", SymanticType.Symptom);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
+        }
+        return suggestions;
     }
 
     /**

@@ -17,16 +17,31 @@
                 <h:form  >
                     <p:panel rendered="#{!supplierPaymentController.printPreview}" class="m-1">
                         <f:facet name="header" >
-                            <h:outputLabel value="Check Supplier Payment" ></h:outputLabel>
-                            <p:commandButton
-                                id="btnSettle" 
-                                value="Mark as Checked"
-                                icon="pi pi-check"
-                                action="#{supplierPaymentController.settleCheckingSupplierPayment}"
-                                ajax="false" 
-                                class="me-5 ui-button-success"
-                                style="float: right">
-                            </p:commandButton>
+                            <div class="d-flex justify-content-between align-item-center">
+                                <div>
+                                    <h:outputLabel value="Check Supplier Payment" ></h:outputLabel>
+                                </div>
+                                <div class="gap-2">
+                                    <p:commandButton value="Save Bill"
+                                                     action="#{supplierPaymentController.saveSupplierPayment(supplierPaymentController.current)}"
+                                                     id="saveSupplierPayment"
+                                                     ajax="false"
+                                                     class="ui-button-warning mx-1"
+                                                     icon="fa fa-save"
+                                                     style="width: 150px; padding: 1px; margin: auto;"
+                                    >
+                                    </p:commandButton>
+                                    <p:commandButton
+                                            id="btnSettle"
+                                            value="Mark as Checked"
+                                            icon="pi pi-check"
+                                            action="#{supplierPaymentController.settleCheckingSupplierPayment}"
+                                            disabled="#{supplierPaymentController.changed}"
+                                            ajax="false"
+                                            class="me-5 ui-button-success">
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
 
 
@@ -52,12 +67,13 @@
                             </p:outputLabel>
 
                             <p:outputLabel value="Discount" />
-                            <p:outputLabel 
+                            <p:inputText
                                 id="txtDiscount"  
                                 class="text-end w-100"
                                 value="#{supplierPaymentController.current.discount}">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
+                                <p:ajax process="@this" update="@all" event="change" listener="#{supplierPaymentController.calTotal(supplierPaymentController.current)}"/>
+                            </p:inputText>
 
                             <p:outputLabel value="Net Total" />
                             <p:outputLabel 
@@ -100,7 +116,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="GRN No"/>                                  
                                 </f:facet> 
-                                <p:outputLabel value=" #{b.referenceBill.invoiceNumber}" ></p:outputLabel>
+                                <p:outputLabel value=" #{b.referenceBill.deptId}" ></p:outputLabel>
                             </p:column> 
                             <p:column >  
                                 <f:facet name="header">
@@ -129,20 +145,29 @@
                                 </p:outputLabel>
                             </p:column>
                             <p:column class="text-end" headerText="Paying Amount">
-                                <p:outputLabel 
+                                <p:inputText
                                     class="w-100 text-end"
                                     value="#{b.netValue}">    
                                     <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                    <p:ajax process="@this" update="@all" event="change" listener="#{supplierPaymentController.calTotal(supplierPaymentController.current)}"/>
+                                </p:inputText>
                             </p:column>
                             <p:column width="8em" class="text-center" headerText="Actions">
                                 <p:commandButton 
                                     value="View" 
                                     icon="pi pi-eye"
                                     style="width: 6em;"
-                                    class="ui-button-primary mx-1"
+                                    class="ui-button-primary mx-1 my-2"
                                     action="#{supplierPaymentController.navigateToViewProcurementBill(b.referenceBill)}" 
                                     ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class="ui-button-danger mx-1"
+                                    icon="pi pi-trash"
+                                    style="width: 7em;"
+                                    action="#{supplierPaymentController.removeFromCurrent(b)}" 
+                                    value="Remove">
                                 </p:commandButton>
                             </p:column>
 

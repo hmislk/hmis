@@ -17,10 +17,10 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint Return Bill" ></h:outputLabel>
                             <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                            <p:commandButton value="Reprint" icon="pi pi-print" style="margin-right: 10px;" ajax="false">
+                                <p:printer target="gpBillPreview" />
                             </p:commandButton>
-                            <p:commandButton value="Back" ajax="false" action="/store/store_search_issue_bill_return" />
+                            <p:commandButton value="Back" icon="pi pi-arrow-left" style="margin-left: 10px;" ajax="false" action="/store/store_search_issue_bill_return" />
                         </f:facet>
 
                     </p:panel>

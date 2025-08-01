@@ -10,11 +10,11 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>/>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData"/>/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -37,19 +37,20 @@
                         <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                     </div>
                     <div style="margin-top: -1mm;">
-                        <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                        <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                     </div>
                 </div>
             </h:panelGroup>
 
 
             <div style="font-size: 14px; text-align: center;font-weight: bold;">
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}"/>
                 <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.ref eq true}" />
             </div>
 
             <table style="margin-left: 6%;font-size: 12px; margin-top: -2mm" >
+                
                 <tr style="font-size: 12pt;">
                     <td>
                         <b>
@@ -61,7 +62,7 @@
                         <p:spacer width="10" ></p:spacer>
                     </td>
                     <td>
-                        <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
+                        <h:outputLabel value=":" style="width: 5mm; text-align: center"></h:outputLabel>
                     </td>
                     <td>
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
@@ -76,6 +77,28 @@
                     </td>
 
                 </tr>
+                
+                <tr>
+                    <td>
+                        <h:outputLabel value="Booking Type"></h:outputLabel>
+                    </td>
+                    
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }"
+                                       value="Online Booking from #{cc.attrs.bill.referenceBill.onlineBooking.agency.name}"
+                                       ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null and cc.attrs.bill.billType ne 'ChannelAgent'}" value="System Booking"></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billType eq 'ChannelAgent' and cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT'}"
+                                       value="Agent Booking from #{cc.attrs.bill.creditCompany.name}"
+                                       ></h:outputLabel>
+                    </td>
+                </tr>
                 <tr>
                     <td>
                         <h:outputLabel value="Name" ></h:outputLabel>
@@ -87,7 +110,8 @@
                         <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" value="#{cc.attrs.bill.referenceBill.onlineBooking.title}. #{cc.attrs.bill.referenceBill.onlineBooking.patientName}" style="text-transform: capitalize!important;" ></h:outputLabel>
                     </td>
 
                 </tr>
@@ -102,7 +126,8 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" value="#{cc.attrs.bill.referenceBill.onlineBooking.phoneNo}" style="text-transform: capitalize!important;" ></h:outputLabel>
                     </td>
                 </tr>
                 <tr>
@@ -176,7 +201,7 @@
                 </tr>
 
 
-                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
+                <ui:repeat rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" value="#{cc.attrs.bill.referenceBill.billFeesWIthoutZeroValue}" var="cbif" >
                     <tr>
                         <td>
                             <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
@@ -194,6 +219,47 @@
                         </td>
                     </tr>
                 </ui:repeat>
+                
+                <ui:repeat rendered="#{cc.attrs.bill.referenceBill eq null}" value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cbif.feeGrossValue}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </ui:repeat>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Agent fee" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel  value="#{cc.attrs.bill.referenceBill.onlineBooking.onlineBookingPayment}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+ 
+                        </td>
+
+                    </tr>
+
+                </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
                     <tr>
@@ -207,7 +273,11 @@
                             <h:outputLabel value=":" ></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel style="font-weight: bolder" value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" style="font-weight: bolder" value="#{cc.attrs.bill.referenceBill.onlineBooking.netTotalForOnlineBooking}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                            
+                            <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" style="font-weight: bolder" value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                         </td>
@@ -357,7 +427,7 @@
                         <p:spacer height="1" width="10" ></p:spacer>
                         <h:outputLabel value="#{sessionController.currentDate}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>     
+                        </h:outputLabel>
                     </td>
                 </tr>
 
@@ -382,9 +452,9 @@
 
             <h:panelGroup rendered="#{sessionController.departmentPreference.showBarCodeInChannelBookingBill}" >
                 <div class="d-flex justify-content-center">
-                    <p:graphicImage 
-                        cache="false" 
-                        value="#{barcodeController.createBarcodeCode128}" 
+                    <p:graphicImage
+                        cache="false"
+                        value="#{barcodeController.createBarcodeCode128}"
                         style="max-width: 12cm; padding: 10px; margin: 10px;" >
                         <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
                     </p:graphicImage>
@@ -403,29 +473,29 @@
                 </div>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="Paid by : Credit Card :"/>
                     <h:outputText
                         class="mx-1"
-                        style="font-size: 8pt"  
+                        style="font-size: 8pt"
                         value="#{cc.attrs.bill.paidAmount}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Agent' }" >
                     <h:outputText
                         class="mx-1"
-                        style="font-size: 8pt"  
+                        style="font-size: 8pt"
                         value="#{cc.attrs.bill.creditCompany.name}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
                 </h:panelGroup>
 

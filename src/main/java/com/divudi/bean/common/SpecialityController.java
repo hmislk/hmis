@@ -1,18 +1,18 @@
 /*
  * Open Hospital Management Information System
- * 
- * Dr M H B Ariyaratne 
- * Acting Consultant (Health Informatics) 
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DualListModel;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 
 /**
  *

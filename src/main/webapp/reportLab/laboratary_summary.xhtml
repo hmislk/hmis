@@ -1,0 +1,492 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reportLab/lab_summeries_index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Laboratory Summary">
+
+
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{opdReportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                >
+                            </p:calendar>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{opdReportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                >
+                            </p:calendar>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Billing Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{opdReportController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Billing Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{opdReportController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Billing Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.institution eq null and opdReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.institution eq null and opdReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.institution ne null and opdReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(opdReportController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.institution ne null and opdReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.institution, opdReportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
+                            <!-- Additional block for toInstitution, toSite, and toDepartment -->
+
+                            <!-- toInstitution -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Service Institution" for="toCmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="toCmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{opdReportController.toInstitution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="toCmbIns" update="toCmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <!-- toSite -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Service Site" for="toSiteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="toSiteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{opdReportController.toSite}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="toSiteMenu" update="toCmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <!-- toDepartment -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Service Department" for="toCmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="toCmbDept">
+
+                                <!-- Component 1: Without toInstitution and toSite -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.toInstitution eq null and opdReportController.toSite eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.toDepartment}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With toSite Only -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.toInstitution eq null and opdReportController.toSite ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.toDepartment}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.toSite)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With toInstitution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.toInstitution ne null and opdReportController.toSite eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.toDepartment}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(opdReportController.toInstitution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both toInstitution and toSite -->
+                                <p:selectOneMenu
+                                    rendered="#{opdReportController.toInstitution ne null and opdReportController.toSite ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.toDepartment}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.toInstitution, opdReportController.toSite)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Admission Type" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="cmbAdmissionType"
+                                class="w-100"
+                                autoWidth="false"
+                                value="#{opdReportController.admissionType}" 
+                                rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                                <f:selectItem itemLabel="All Admission Type"/>
+                                <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:spacer ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Discount Scheme" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="cmdDiscount"
+                                class="w-100"
+                                autoWidth="false"
+                                value="#{opdReportController.paymentScheme}" >
+                                <f:selectItem itemLabel="Select"/>
+                                <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <p:commandButton 
+                            value="Process" 
+                            ajax="false"
+                            action="#{opdReportController.processOpdIncomeSummaryByDate()}" 
+                            styleClass="ui-button-success m-1" 
+                            icon="pi pi-cog">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download" 
+                            ajax="false"
+                            class="ui-button-warning m-1"
+                            icon="pi pi-download">
+                            <p:dataExporter fileName="pharmacy_income_report.xlsx" target="tbl" type="xlsx" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                                    icon="fa-solid fa-print"
+                                    class="mx-2 ui-button-info m-1"
+                                    style="width: 150px"
+                                    ajax="false"
+                                    action="laboratary_summary_print?faces-redirect=true"
+                                    value="To Print">
+                                </p:commandButton>
+                        
+                       
+                        <style>
+                            @media print{
+                                .table{
+                                    width: 210mm!important;
+                                    font-size: 14px!important;
+                                }
+                            }
+                            @media screen{
+                                .table{
+                                    font-size: 16px!important;
+                                    
+                                }
+                            }
+                        </style>
+                        
+                        
+                        <p:dataTable
+                            id="tbl"
+                            value="#{opdReportController.bundle.rows}"
+                            var="row"
+                            rows="20"
+                            style="zoom:1.8;"
+                            paginator="true"
+                            rowsPerPageTemplate="20,50,100,500,1000,2000,5000,10000"
+                            paginatorPosition="bottom"
+                            styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable table">
+                            
+                            <f:facet name="header"  >
+                                    <div style="padding: 8px!important; margin: 6px!important; line-height: 0.8">
+                                        <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
+                                            <h:outputText value="#{sessionController.institution.name}"/>
+                                        </div>
+                                        <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                            <h:outputText value="Laboratory Summary"/>
+                                            <h:panelGroup  rendered="#{opdReportController.department ne null}">
+                                                <div class="d-flex gap-2">
+                                                    <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
+                                                    <h:outputText value="#{opdReportController.department.name}"/>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
+                                            <div class="d-flex gap-3">
+                                                <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
+                                                <h:outputText value="#{opdReportController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+                                            </div>
+                                            <p:spacer width="50" ></p:spacer>
+                                            <div class="d-flex gap-3">
+                                                <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
+                                                <h:outputText value="#{opdReportController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+                                            </div>
+                                            <div></div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText 
+                                                    rendered="#{opdReportController.toInstitution ne null}"
+                                                    value="#{opdReportController.toInstitution.name}" 
+                                                    style="font-weight: 600;">
+                                                </h:outputText>
+                                                <h:outputText 
+                                                    value="-" 
+                                                    rendered="#{opdReportController.toInstitution ne null and opdReportController.toDepartment ne null}"
+                                                    style="width: 2em!important; font-weight: 600; text-align: center;"/>
+                                                <h:outputText 
+                                                    rendered="#{opdReportController.toInstitution ne null or opdReportController.toDepartment ne null}"
+                                                    value="#{opdReportController.toDepartment.name}" 
+                                                    style="font-weight: 600;">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                            <p:column headerText="Date" style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.date}" style="margin: 6px!important;">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total Amounts" 
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold"/>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Cash" width="7em" class="text-end"
+                                      style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.cashValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.cashValue}"
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Card" width="7em" class="text-end"
+                                      style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.cardValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.cardValue}"
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Credit" width="7em"
+                                      class="text-end"
+                                      style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.inpatientCreditValue + row.opdCreditValue + row.staffValue + row.agentValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.inpatientCreditValue + opdReportController.bundle.summaryRow.opdCreditValue + opdReportController.bundle.summaryRow.staffValue + opdReportController.bundle.summaryRow.agentValue}"
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total" width="7em" class="text-end"
+                                      style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.grossTotal}"
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="7em" class="text-end"
+                                      style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.discount}"
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Actual Total" width="7em" class="text-end"
+                                      style="padding: 8px!important; margin: 6px!important;">
+                                <h:outputText value="#{row.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}"
+                                                  style="padding: 8px!important; margin: 6px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

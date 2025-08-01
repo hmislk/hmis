@@ -10,11 +10,11 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>/>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData"/>/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -37,15 +37,15 @@
                         <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                     </div>
                     <div style="margin-top: -1mm;">
-                        <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                        <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                     </div>
                 </div>
             </h:panelGroup>
 
 
             <div style="font-size: 14px; text-align: center;font-weight: bold;">
-                <h:outputLabel value="Channel Payment Receipt"   /><br/>    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="Channel Payment Receipt"   /><br/>
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}"/>
                 <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.ref eq true}" />
             </div>
@@ -56,7 +56,7 @@
                         <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:30px !important; font-weight: bold; color: red; text-align: center;" ></h:outputLabel>
                     </ui:repeat>
                 </b>
-            </div> 
+            </div>
 
             <table style="margin-left: 6%;font-size: 12px; margin-top: -2mm" >
 
@@ -357,7 +357,7 @@
                         <p:spacer height="1" width="10" ></p:spacer>
                         <h:outputLabel value="#{sessionController.currentDate}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>     
+                        </h:outputLabel>
                     </td>
                 </tr>
 
@@ -382,9 +382,9 @@
 
             <h:panelGroup rendered="#{sessionController.departmentPreference.showBarCodeInChannelBookingBill}" >
                 <div class="d-flex justify-content-center">
-                    <p:graphicImage 
-                        cache="false" 
-                        value="#{barcodeController.createBarcodeCode128}" 
+                    <p:graphicImage
+                        cache="false"
+                        value="#{barcodeController.createBarcodeCode128}"
                         style="max-width: 12cm; padding: 10px; margin: 10px;" >
                         <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
                     </p:graphicImage>
@@ -403,29 +403,29 @@
                 </div>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="Paid by : Credit Card :"/>
                     <h:outputText
                         class="mx-1"
-                        style="font-size: 8pt"  
+                        style="font-size: 8pt"
                         value="#{cc.attrs.bill.paidAmount}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Agent' }" >
                     <h:outputText
                         class="mx-1"
-                        style="font-size: 8pt"  
+                        style="font-size: 8pt"
                         value="#{cc.attrs.bill.creditCompany.name}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
                 </h:panelGroup>
 

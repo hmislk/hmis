@@ -26,7 +26,7 @@
                 </f:facet>
 
 
-                <h:panelGrid columns="9" class="w-100" id="grn">
+                <h:panelGrid columns="9" class="w-100 my-2" id="grn">
                     <h:outputLabel value="Supplier"/>
                     <p:autoComplete 
                         converter="deal" 
@@ -37,7 +37,7 @@
                         itemLabel="#{vt.name}" 
                         itemValue="#{vt}" />
                     <h:outputLabel value="GRN Institution"/>
-                    <p:autoComplete  
+                    <p:autoComplete                         
                         value="#{grnController.referenceInstitution}"
                         completeMethod="#{institutionController.completeCompany}" 
                         forceSelection="true"
@@ -99,12 +99,13 @@
                         styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
                     <p:column 
                         headerText="Item Name" 
-                        width="25em"
+                        width="20em"
                         styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
                         <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
                     </p:column>  
                     <p:column 
                         headerText="Code" 
+                        width="4em"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used', true)}"
                         styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"> 
                         <h:outputText id="code" value="#{bi.item.code}" >                                   
@@ -162,6 +163,7 @@
                         headerText="Purchase Rate"
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
+                            disabled="#{!configOptionApplicationController.getBooleanValueByKey('GRN Purchase Rate is Editable', true)}"
                             autocomplete="off" 
                             class="text-end text-primary w-100"
                             value="#{bi.pharmaceuticalBillItem.purchaseRate}" 
@@ -222,6 +224,7 @@
                     </p:column>  
                     <p:column 
                         headerText="Comments"
+                        width="5em"
                         styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             class="w-100"

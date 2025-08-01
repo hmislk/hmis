@@ -1,12 +1,12 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Institution;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -41,8 +42,6 @@ public class InstitutionController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     /**
      * EJBs
      */
@@ -72,9 +71,10 @@ public class InstitutionController implements Serializable {
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex = -1;
     private List<Institution> sites;
+    private List<InstitutionDuplicateGroup> duplicateGroups;
 
     public void fillAllSites() {
-        sites = new ArrayList();
+        sites = new ArrayList<>();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
@@ -85,26 +85,26 @@ public class InstitutionController implements Serializable {
         hm.put("type", InstitutionType.Site);
         sites = getFacade().findByJpql(sql, hm);
     }
-    
+
     private List<Institution> institutions;
     private InstitutionType institutionType;
-    
+
     public void fillRetiredInstitution() {
-        institutions = new ArrayList();
+        institutions = new ArrayList<>();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
                 + " where c.retired=true ";
-        
+
         if(institutionType != null){
             sql += " and c.institutionType =:type ";
             hm.put("type", institutionType);
         }
-        
+
         sql += " order by c.name";
         institutions = getFacade().findByJpql(sql, hm);
     }
-    
+
     public void reactivateRetiredInstitution(Institution institution) {
         Institution currentRetiredInstitution = getFacade().find(institution.getId());
 
@@ -116,7 +116,7 @@ public class InstitutionController implements Serializable {
             JsfUtil.addErrorMessage("Already Active");
             return;
         }
-        
+
         currentRetiredInstitution.setRetired(false);
         getFacade().edit(currentRetiredInstitution);
 
@@ -131,7 +131,7 @@ public class InstitutionController implements Serializable {
         fillItems();
         return "/admin/institutions/institutions?faces-redirect=true";
     }
-    
+
     public String navigatetoActivateInstitutions() {
         return "/admin/institutions/activate_institutions?faces-redirect=true";
     }
@@ -167,6 +167,10 @@ public class InstitutionController implements Serializable {
     public String saveSelectedInstitution() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (isDuplicateName(current)) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
             return "";
         }
         if (current.getId() == null) {
@@ -392,54 +396,61 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {
-        if (name == null) {
+        if (name == null || type == null) {
             return null;
         }
-        if (type == null) {
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("n", name.toUpperCase());
+
+        String sql = "select i from Institution i where upper(i.name)=:n and i.institutionType=:t";
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", cleanedName.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
         Institution i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Institution();
-            i.setName(name);
+            i.setName(cleanedName);
             i.setInstitutionType(type);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Institution findAndSaveInstitutionByName(String name) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Institution i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Institution i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Institution i = getFacade().findFirstByJpql(sql, m);
 
         if (i == null) {
             i = new Institution();
-            i.setName(name);
+            i.setName(cleanedName);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
@@ -548,6 +559,10 @@ public class InstitutionController implements Serializable {
     }
 
     public void save(Institution ins) {
+        if (!ins.isRetired() && isDuplicateName(ins)) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
+            return;
+        }
         if (ins.getId() == null) {
             getFacade().create(ins);
         } else {
@@ -558,6 +573,11 @@ public class InstitutionController implements Serializable {
     public void saveSelectedSite() {
         if (getCurrent().getInstitutionType() != InstitutionType.Site) {
             JsfUtil.addErrorMessage("Invalid Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(getCurrent())) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
             return;
         }
 
@@ -591,6 +611,11 @@ public class InstitutionController implements Serializable {
             return;
         }
 
+        if (isDuplicateName(getCurrent())) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
+            return;
+        }
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
 //
 //            if (getCurrent().getCode() != null) {
@@ -618,6 +643,11 @@ public class InstitutionController implements Serializable {
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
             JsfUtil.addErrorMessage("Select Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(getAgency())) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
             return;
         }
 
@@ -838,6 +868,21 @@ public class InstitutionController implements Serializable {
         return ejbFacade;
     }
 
+    private boolean isDuplicateName(Institution ins) {
+        if (ins == null || ins.getName() == null) {
+            return false;
+        }
+        String name = ins.getName().trim();
+        if (name.isEmpty()) {
+            return false;
+        }
+        String jpql = "select i from Institution i where i.retired=false and upper(trim(i.name))=:n";
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", name.toUpperCase());
+        Institution other = getFacade().findFirstByJpql(jpql, m);
+        return other != null && (ins.getId() == null || !other.getId().equals(ins.getId()));
+    }
+
     public List<Institution> getItems() {
         if (items == null) {
             fillItems();
@@ -982,6 +1027,59 @@ public class InstitutionController implements Serializable {
         this.institutions = institutions;
     }
 
+    public String navigateToDuplicateInstitutions() {
+        detectDuplicateInstitutions();
+        return "/admin/institutions/institution_duplicates?faces-redirect=true";
+    }
+
+    public List<InstitutionDuplicateGroup> getDuplicateGroups() {
+        return duplicateGroups;
+    }
+
+    public void detectDuplicateInstitutions() {
+        String jpql = "SELECT i FROM Institution i WHERE i.retired=false ORDER BY upper(trim(i.name)), i.id";
+        List<Institution> all = getFacade().findByJpql(jpql);
+        Map<String, List<Institution>> grouped = all.stream()
+                .filter(ins -> ins.getName() != null)
+                .collect(Collectors.groupingBy(ins -> ins.getName().trim().toUpperCase()));
+        duplicateGroups = grouped.values().stream()
+                .filter(l -> l.size() > 1)
+                .map(l -> new InstitutionDuplicateGroup(l))
+                .collect(Collectors.toList());
+    }
+
+    public void retireDuplicateGroup(InstitutionDuplicateGroup g) {
+        if (g == null || g.getInstitutions() == null || g.getInstitutions().size() < 2) {
+            return;
+        }
+        g.getInstitutions().sort((a, b) -> a.getId().compareTo(b.getId()));
+        for (int i = 1; i < g.getInstitutions().size(); i++) {
+            Institution ins = g.getInstitutions().get(i);
+            ins.setRetired(true);
+            ins.setRetiredAt(new Date());
+            ins.setRetirer(sessionController.getLoggedUser());
+            save(ins);
+        }
+        detectDuplicateInstitutions();
+        JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    public static class InstitutionDuplicateGroup {
+        private List<Institution> institutions;
+
+        public InstitutionDuplicateGroup(List<Institution> institutions) {
+            this.institutions = institutions;
+        }
+
+        public List<Institution> getInstitutions() {
+            return institutions;
+        }
+
+        public String getName() {
+            return institutions.get(0).getName();
+        }
+    }
+
     /**
      *
      */
@@ -990,7 +1088,7 @@ public class InstitutionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InstitutionController controller = (InstitutionController) facesContext.getApplication().getELResolver().
@@ -1024,13 +1122,4 @@ public class InstitutionController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

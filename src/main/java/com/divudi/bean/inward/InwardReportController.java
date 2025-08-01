@@ -5,32 +5,30 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.InwardChargeType;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.AdmissionTypeFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.AdmissionTypeFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,9 +74,7 @@ public class InwardReportController implements Serializable {
 
     List<AdmissionType> admissionty;
 
-    //////////////
-    @Inject
-    CommonController commonController;
+    private List<AdmissionType> admissionTypes;
 
     @EJB
     PatientEncounterFacade peFacade;
@@ -141,7 +137,6 @@ public class InwardReportController implements Serializable {
 
         fillAdmissions(null, null);
 
-        
     }
 
     public void fillAdmissionBookNew() {
@@ -159,7 +154,7 @@ public class InwardReportController implements Serializable {
         } else if (getReportKeyWord().getString().equals("3")) {
             fillAdmissions(true, true);
         }
-        
+
     }
 
     public void fillAdmissionBookOnlyInward() {
@@ -167,21 +162,17 @@ public class InwardReportController implements Serializable {
 
         fillAdmissions(false, null);
 
-        
     }
 
     public void fillAdmissionBookOnlyDischarged() {
         Date startTime = new Date();
         fillAdmissions(true, null);
 
-        
     }
 
     public void fillAdmissionBookOnlyDischargedNotFinalized() {
         Date startTime = new Date();
         fillAdmissions(true, false);
-
-        
 
     }
 
@@ -189,7 +180,6 @@ public class InwardReportController implements Serializable {
         Date startTime = new Date();
         fillAdmissions(true, true);
 
-        
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
@@ -282,7 +272,6 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        
     }
 
     double total;
@@ -372,7 +361,7 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
-            if (p.getFinalBill()==null) {
+            if (p.getFinalBill() == null) {
                 continue;
             }
             for (BillItem bi : p.getFinalBill().getBillItems()) {
@@ -526,7 +515,6 @@ public class InwardReportController implements Serializable {
 
         calTotalDischargedNoChanges();
 
-        
     }
 
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
@@ -571,7 +559,7 @@ public class InwardReportController implements Serializable {
         creditPaid = 0;
         creditUsed = 0;
         for (PatientEncounter p : list) {
-            if (p.getFinalBill()==null) {
+            if (p.getFinalBill() == null) {
                 continue;
             }
             p.setTransPaidByPatient(calPaidByPatient(p));
@@ -589,8 +577,6 @@ public class InwardReportController implements Serializable {
             }
 
         }
-
-        
 
     }
 
@@ -672,8 +658,6 @@ public class InwardReportController implements Serializable {
             total += b.getBill().getNetTotal();
         }
 
-        
-
     }
 
 //    public void createOutSideBillsByAddedDate() {
@@ -709,7 +693,7 @@ public class InwardReportController implements Serializable {
 //            setTotal(getTotal() + b.getBill().getNetTotal());
 //        }
 //
-//        
+//
 //
 //    }
 //
@@ -747,7 +731,7 @@ public class InwardReportController implements Serializable {
 //            setTotal(getTotal() + b.getBill().getNetTotal());
 //        }
 //
-//        
+//
 //
 //    }
     public void createPatientInvestigationsTableAll() {
@@ -764,18 +748,16 @@ public class InwardReportController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
-//       
+//
 
         sql += " order by pi.id desc  ";
-//    
+//
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-        
 
     }
 
@@ -892,7 +874,6 @@ public class InwardReportController implements Serializable {
             individualBhtIncomeByCategoryRecord.add(ibr);
         }
 
-        
     }
 
     public void listDischargedBhtIncomeByCategories() {
@@ -972,7 +953,6 @@ public class InwardReportController implements Serializable {
         totalCancelledBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
         totalRefundBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
 
-        
     }
 
     public void fillProfessionalPaymentDoneOPD() {
@@ -988,7 +968,6 @@ public class InwardReportController implements Serializable {
         totalCancelledBill = createProfessionalPaymentTableTotals(new CancelledBill(), BillType.PaymentBill, null);
         totalRefundBill = createProfessionalPaymentTableTotals(new RefundBill(), BillType.PaymentBill, null);
 
-        
     }
 
     List<BillItem> createBilledBillProfessionalPaymentTableInwardAll(Bill bill) {
@@ -1030,7 +1009,6 @@ public class InwardReportController implements Serializable {
             temMap.put("cc", institution);
         }
 
-
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -1066,7 +1044,6 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
-
 
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -1260,6 +1237,7 @@ public class InwardReportController implements Serializable {
         this.admissionType = admissionType;
     }
 
+    @Deprecated
     public List<AdmissionType> getAdmissionty() {
         admissionty = getAdmissionTypeFacade().findAll("name", true);
         return admissionty;
@@ -1277,12 +1255,9 @@ public class InwardReportController implements Serializable {
         this.admissionTypeFacade = admissionTypeFacade;
     }
 
-
-    CommonFunctions commonFunctions;
-
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1341,7 +1316,7 @@ public class InwardReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -1415,6 +1390,24 @@ public class InwardReportController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<AdmissionType> getAdmissionTypes() {
+        if (admissionTypes == null) {
+            fillAdmissionTypes();
+        }
+        return admissionTypes;
+    }
+
+    public void setAdmissionTypes(List<AdmissionType> admissionTypes) {
+        this.admissionTypes = admissionTypes;
+    }
+
+    private void fillAdmissionTypes() {
+        String jpql = "select ad from AdmissionType ad "
+                + "where ad.retired=false "
+                + "order by ad.name";
+        admissionTypes = admissionTypeFacade.findByJpql(jpql);
     }
 
     public class IncomeByCategoryRecord {
@@ -1610,14 +1603,6 @@ public class InwardReportController implements Serializable {
         this.inwardReportControllerBht = inwardReportControllerBht;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Bill getBill() {
         return bill;
     }
@@ -1800,14 +1785,6 @@ public class InwardReportController implements Serializable {
 
     public void setWithoutCancelBHT(boolean withoutCancelBHT) {
         this.withoutCancelBHT = withoutCancelBHT;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public String getInvoceNo() {

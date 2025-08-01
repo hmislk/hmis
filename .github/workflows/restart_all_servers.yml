@@ -11,6 +11,18 @@ on:
         description: 'Exclude QA(4.240.43.211)?'
         required: true
         type: boolean
+      excludeShared01:
+        description: 'Exclude Shared01(52.172.158.159)?'
+        required: true
+        type: boolean
+      excludeShared02:
+        description: 'Exclude Shared02(20.204.129.229)?'
+        required: true
+        type: boolean
+      excludeD01:
+        description: 'Exclude D01(4.213.180.217)?'
+        required: true
+        type: boolean
 
 jobs:
   run_script_remote_server:
@@ -27,6 +39,15 @@ jobs:
           fi
           if [[ "${{ inputs.excludeQA }}" == "true" ]]; then
             EXCLUDED_SERVERS+="QA(4.240.43.211),"
+          fi
+          if [[ "${{ inputs.excludeShared01 }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="Shared01(52.172.158.159),"
+          fi
+          if [[ "${{ inputs.excludeShared02 }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="Shared02(20.204.129.229),"
+          fi
+          if [[ "${{ inputs.excludeD01 }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="D01(4.213.180.217),"
           fi
           
           EXCLUDED_SERVERS=${EXCLUDED_SERVERS%,}

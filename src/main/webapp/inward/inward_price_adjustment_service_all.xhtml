@@ -18,9 +18,9 @@
                         <p:panel header="Add new adjustment" >
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="Department :" />
-                                <p:autoComplete value="#{inwardPriceAdjustmntController.department}" 
+                                <p:autoComplete value="#{inwardPriceAdjustmntController.department}"
                                                 forceSelection="true"
-                                                completeMethod="#{departmentController.completeDept}" 
+                                                completeMethod="#{departmentController.completeDept}"
                                                 var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
                                     <p:column>
                                         <h:outputLabel value="#{dep.name}"/>
@@ -30,25 +30,25 @@
                                     </p:column>
                                 </p:autoComplete>
                                 <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
-                                <p:autoComplete value="#{inwardPriceAdjustmntController.category}" 
+                                <p:autoComplete value="#{inwardPriceAdjustmntController.category}"
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryServicePharmacy}"
-                                                var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" 
+                                                var="cat" itemLabel="#{cat.name} #{cat.parentCategory}"
                                                 itemValue="#{cat}" >
                                     <p:column headerText="Category">
                                         <h:outputLabel value="#{cat.name}"/>
                                     </p:column>
                                     <p:column headerText="Parent Category">
                                         <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="TYPE">
-                                        <h:outputLabel value="Parent Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                        <h:outputLabel value="Child Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                        <h:outputLabel value="Investigation Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                    </p:column> 
+                                        <h:outputLabel value="Parent Category"
+                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                                        <h:outputLabel value="Child Category"
+                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+                                        <h:outputLabel value="Investigation Category"
+                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
+                                    </p:column>
 
                                 </p:autoComplete>
 
@@ -60,7 +60,7 @@
                                 <h:outputLabel value="Margin" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.margin}" />
                                 <h:outputLabel value="" ></h:outputLabel>
-                                <p:commandButton id="btnAdd" value="Add" ajax="false" 
+                                <p:commandButton id="btnAdd" value="Add" ajax="false"
                                                 action="#{inwardPriceAdjustmntController.saveSelected}"  >
                                 </p:commandButton>
 
@@ -70,7 +70,7 @@
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_service"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyService()}" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
 
@@ -78,7 +78,7 @@
 
                         <p:panel header="Price Matrix" >
 
-                            <p:dataTable id="inwd" value="#{inwardPriceAdjustmntController.items}" 
+                            <p:dataTable id="inwd" value="#{inwardPriceAdjustmntController.items}"
                                          filteredValue="#{inwardPriceAdjustmntController.filterItems}"
                                          var="a" editable="true" scrollable="true" scrollHeight="500">
 
@@ -86,7 +86,7 @@
 <!--                                    <h:inputText autocomplete="off" value="#{a.department.name}" />-->
 
                                     <p:autoComplete id="dep" forceSelection="true" value="#{a.department}"
-                                                    completeMethod="#{departmentController.completeDept}" 
+                                                    completeMethod="#{departmentController.completeDept}"
                                                     var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
                                         <p:column>
                                             <h:outputLabel value="#{dep.name}"/>
@@ -99,9 +99,9 @@
                                 </p:column>
 
 
-                                <p:column filterBy="#{a.category.name}" 
+                                <p:column filterBy="#{a.category.name}"
                                           filterMatchMode="contains" headerText="Category Name">
-                                    <p:autoComplete id="cat" forceSelection="true" value="#{a.category}" 
+                                    <p:autoComplete id="cat" forceSelection="true" value="#{a.category}"
                                                     completeMethod="#{categoryController.completeCategoryServicePharmacy}"
                                                     var="cat" itemLabel="#{cat.name} #{cat.parentCategory.name}" itemValue="#{cat}" >
                                         <p:column>
@@ -109,15 +109,15 @@
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                        </p:column> 
+                                        </p:column>
                                         <p:column headerText="TYPE">
-                                            <h:outputLabel value="Parent Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                            <h:outputLabel value="Child Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                            <h:outputLabel value="Investigation Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                        </p:column> 
+                                            <h:outputLabel value="Parent Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                                            <h:outputLabel value="Child Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+                                            <h:outputLabel value="Investigation Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
+                                        </p:column>
 
                                     </p:autoComplete>
                                 </p:column>
@@ -137,7 +137,7 @@
                                     </h:inputText>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}"  /> 
+                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}"  />
                                 </p:column>
                                 <p:column>
                                     <p:commandButton value="Delete" action="#{inwardPriceAdjustmntController.delete}">

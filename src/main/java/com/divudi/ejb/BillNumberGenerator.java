@@ -1,43 +1,45 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.TokenType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillNumber;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillNumberFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.TokenType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillNumber;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillNumberFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
 import java.text.DecimalFormat;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.inject.Inject;
 
 /**
@@ -69,7 +71,7 @@ public class BillNumberGenerator {
     private String getLockKey(Institution institution, Department toDepartment, BillType billType) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name();
     }
-    
+
     private String getLockKey(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name() + "-" + paymentMethod.getLabel();
     }
@@ -79,6 +81,40 @@ public class BillNumberGenerator {
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
         String billTypeLabel = billType != null ? billType.getLabel() : "null";
         return institutionId + "-" + departmentId + "-" + billTypeLabel;
+    }
+
+    private String getLockKey(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
+        String institutionId = institution != null ? institution.getId().toString() : "null";
+        String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
+        String billTypeKey = "null";
+        if (billTypes != null && !billTypes.isEmpty()) {
+            // Sort to ensure consistent ordering
+            billTypeKey = billTypes.stream()
+                    .sorted()
+                    .map(bt -> bt != null ? bt.name() : "null")
+                    .collect(Collectors.joining(","));
+        }
+        return institutionId + "-" + departmentId + "-" + billTypeKey;
+    }
+
+    private String getLockKey(Department toDepartment, List<BillTypeAtomic> billTypes) {
+        String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
+        String billTypeKey = "null";
+        if (billTypes != null && !billTypes.isEmpty()) {
+            // Sort to ensure consistent ordering
+            billTypeKey = billTypes.stream()
+                    .sorted()
+                    .map(bt -> bt != null ? bt.name() : "null")
+                    .collect(Collectors.joining(","));
+        }
+        return departmentId + "-" + billTypeKey;
+    }
+    private String getLockKey(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
+        String institutionId = institution != null ? institution.getId().toString() : "null";
+        String fromDepartmentId = fromDepartment != null ? fromDepartment.getId().toString() : "null";
+        String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
+        String billTypeLabel = billType != null ? billType.getLabel() : "null";
+        return institutionId + "-" + fromDepartmentId + "-" + departmentId + "-" + billTypeLabel;
     }
 
     private String getLockKey(Institution institution) {
@@ -92,6 +128,19 @@ public class BillNumberGenerator {
         lock.lock();
         try {
             return fetchLastBillNumberSynchronized(institution, toDepartment, billType, billClassType);
+        } finally {
+            lock.unlock();
+            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
+        }
+    }
+
+    public BillNumber fetchLastBillNumberForYear(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
+        String lockKey = getLockKey(institution, fromDepartment, toDepartment, billType);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronized(institution, fromDepartment, toDepartment, billType);
         } finally {
             lock.unlock();
             // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
@@ -125,7 +174,19 @@ public class BillNumberGenerator {
             // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
         }
     }
-    
+
+    public BillNumber fetchLastBillNumberForYear(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(institution, toDepartment, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronized(institution, toDepartment, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public BillNumber fetchLastBillNumberForYear(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         String lockKey = getLockKey(institution, toDepartment, billType, paymentMethod);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
@@ -344,8 +405,6 @@ public class BillNumberGenerator {
             hm.put("endOfYear", endOfYear.getTime());
             hm.put("paymentMethod", paymentMethod);
 
-            
-
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
             if (dd == null) {
                 dd = 0L;
@@ -427,7 +486,274 @@ public class BillNumberGenerator {
 
         return billNumber;
     }
+
+    private BillNumber fetchLastBillNumberSynchronized(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic is null "
+                + " and b.institution=:ins "
+                + " AND b.toDepartment=:tDep"
+                + " AND b.billYear=:yr";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("ins", institution);
+        hm.put("tDep", toDepartment);
+        hm.put("yr", currentYear);
+
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(null);
+            billNumber.setInstitution(institution);
+            billNumber.setToDepartment(toDepartment);
+            billNumber.setBillYear(currentYear);
+
+            sql = "SELECT b FROM Bill b "
+                    + " where b.billTypeAtomic in :bTp "
+                    + " and b.retired=false"
+                    + " and b.institution=:ins "
+                    + " and b.toDepartment=:tDep"
+                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear"
+                    + " ORDER BY b.id DESC";
+
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+            startOfYear.set(Calendar.MINUTE, 0);
+            startOfYear.set(Calendar.SECOND, 0);
+            startOfYear.set(Calendar.MILLISECOND, 0);
+
+            Calendar endOfYear = Calendar.getInstance();
+            endOfYear.set(Calendar.MONTH, 11);
+            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+            endOfYear.set(Calendar.HOUR_OF_DAY, 23);
+            endOfYear.set(Calendar.MINUTE, 59);
+            endOfYear.set(Calendar.SECOND, 59);
+            endOfYear.set(Calendar.MILLISECOND, 999);
+
+            hm = new HashMap<>();
+            hm.put("bTp", billTypes);
+            hm.put("ins", institution);
+            hm.put("tDep", toDepartment);
+            hm.put("startOfYear", startOfYear.getTime());
+            hm.put("endOfYear", endOfYear.getTime());
+
+            List<Bill> lastBills = getBillFacade().findByJpql(sql, hm, 1);
+
+            Long dd = 0L;
+            if (lastBills != null && !lastBills.isEmpty()) {
+                Bill lastBill = lastBills.get(0);
+                String lastDeptId = lastBill.getDeptId();
+                if (lastDeptId != null && !lastDeptId.trim().isEmpty()) {
+                    try {
+                        String[] parts = lastDeptId.split("/");
+                        if (parts.length >= 4) {
+                            dd = Long.parseLong(parts[parts.length - 1]);
+                        } else {
+                        }
+                    } catch (NumberFormatException e) {
+                        dd = 0L;
+                    }
+                } else {
+                }
+            } else {
+            }
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            } else {
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
+
+    // Special method for Single Number strategy only
+    public BillNumber fetchLastBillNumberForYearSingleNumber(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(institution, toDepartment, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedSingleNumber(toDepartment, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+   
+    public BillNumber fetchLastBillNumberForYearOpdAndInpatientServiceBatchBills(Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Special synchronized method for Single Number strategy only
+    private BillNumber fetchLastBillNumberSynchronizedSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        HashMap<String, Object> hm = new HashMap<>();
+        String jpql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.opdAndInpatientServiceBills=true "
+                + " AND b.billYear=:yr";
+        if (department != null) {
+            jpql += " AND b.department=:tDep";
+            hm.put("tDep", department);
+        }
+        jpql += " order by b.id desc";
+        hm.put("yr", currentYear);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(null);
+            billNumber.setDepartment(department);
+            // METHOD EXISTS: setOpdAndInpatientServiceBills(boolean) defined in BillNumber.java:215
+            billNumber.setOpdAndInpatientServiceBills(true);
+            billNumber.setBillYear(currentYear);
+            jpql = "SELECT count(b) FROM Bill b "
+                    + " where b.billTypeAtomic in :bTp "
+                    + " AND b.billDate > :startOfYear ";
+            if (department != null) {
+                jpql += " AND b.department=:tDep";
+                hm.put("tDep", department);
+            }
+            jpql += " ORDER BY b.id DESC";
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+            startOfYear.set(Calendar.MINUTE, 0);
+            startOfYear.set(Calendar.SECOND, 0);
+            startOfYear.set(Calendar.MILLISECOND, 0);
+
+            hm = new HashMap<>();
+            hm.put("bTp", billTypes);
+            hm.put("tDep", department);
+            hm.put("startOfYear", startOfYear.getTime());
+
+            Long countOfBills = billFacade.findLongByJpql(jpql, hm);
+
+            billNumber.setLastBillNumber(countOfBills + 1);
+
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+        return billNumber;
+    }
+
+    private BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(Department department, List<BillTypeAtomic> billTypes) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        HashMap<String, Object> hm = new HashMap<>();
+        String jpql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.opdAndInpatientServiceBatchBills=true "
+                + " AND b.billYear=:yr";
+        if (department != null) {
+            jpql += " AND b.department=:tDep";
+            hm.put("tDep", department);
+        }
+        jpql += " order by b.id desc";
+        hm.put("yr", currentYear);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(null);
+            billNumber.setDepartment(department);
+            // METHOD EXISTS: setOpdAndInpatientServiceBatchBills(boolean) defined in BillNumber.java:231
+            billNumber.setOpdAndInpatientServiceBatchBills(true);
+            billNumber.setBillYear(currentYear);
+            jpql = "SELECT count(b) FROM Bill b "
+                    + " where b.billTypeAtomic in :bTp "
+                    + " AND b.billDate > :startOfYear ";
+            if (department != null) {
+                jpql += " AND b.department=:tDep";
+                hm.put("tDep", department);
+            }
+            jpql += " ORDER BY b.id DESC";
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+            startOfYear.set(Calendar.MINUTE, 0);
+            startOfYear.set(Calendar.SECOND, 0);
+            startOfYear.set(Calendar.MILLISECOND, 0);
+            hm = new HashMap<>();
+            hm.put("bTp", billTypes);
+            hm.put("tDep", department);
+            hm.put("startOfYear", startOfYear.getTime());
+            Long countOfBills = billFacade.findLongByJpql(jpql, hm);
+            billNumber.setLastBillNumber(countOfBills + 1);
+            billNumberFacade.createAndFlush(billNumber);
+        }
+        return billNumber;
+    }
     
+    private BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientIndividualBills(Department department, List<BillTypeAtomic> billTypes) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        HashMap<String, Object> hm = new HashMap<>();
+        String jpql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.opdAndInpatientServiceBills=true "
+                + " AND b.billYear=:yr";
+        if (department != null) {
+            jpql += " AND b.department=:tDep";
+            hm.put("tDep", department);
+        }
+        jpql += " order by b.id desc";
+        hm.put("yr", currentYear);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(null);
+            billNumber.setDepartment(department);
+            // METHOD EXISTS: setOpdAndInpatientServiceBills(boolean) defined in BillNumber.java:215
+            billNumber.setOpdAndInpatientServiceBills(true);
+            billNumber.setBillYear(currentYear);
+            jpql = "SELECT count(b) FROM Bill b "
+                    + " where b.billTypeAtomic in :bTp "
+                    + " AND b.billDate > :startOfYear ";
+            if (department != null) {
+                jpql += " AND b.department=:tDep";
+                hm.put("tDep", department);
+            }
+            jpql += " ORDER BY b.id DESC";
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+            startOfYear.set(Calendar.MINUTE, 0);
+            startOfYear.set(Calendar.SECOND, 0);
+            startOfYear.set(Calendar.MILLISECOND, 0);
+            hm = new HashMap<>();
+            hm.put("bTp", billTypes);
+            hm.put("tDep", department);
+            hm.put("startOfYear", startOfYear.getTime());
+            Long countOfBills = billFacade.findLongByJpql(jpql, hm);
+            billNumber.setLastBillNumber(countOfBills + 1);
+            billNumberFacade.createAndFlush(billNumber);
+        }
+        return billNumber;
+    }
+
     public PatientFacade getPatientFacade() {
         return patientFacade;
     }
@@ -460,11 +786,76 @@ public class BillNumberGenerator {
         HashMap hm = new HashMap();
         hm.put("ins", institution);
         hm.put("bt", billType);
-//        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
-//        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
+//        hm.put("f", CommonFunctions.getFirstDayOfYear(new Date()));
+//        hm.put("t", CommonFunctions.getLastDayOfYear(new Date()));
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
         return (i + 1) + "";
+    }
+
+    //institution is not use to take Bill Count to privent errors in Overloding
+    private BillNumber fetchLastBillNumberSynchronized(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic=:bTp "
+                + " and b.department=:fDept "
+                + " AND b.toDepartment=:tDep"
+                + " AND b.billYear=:yr";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bTp", billType);
+        hm.put("fDept", fromDepartment);
+        hm.put("tDep", toDepartment);
+        hm.put("yr", currentYear);
+
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(billType);
+            billNumber.setDepartment(fromDepartment);
+            billNumber.setToDepartment(toDepartment);
+            billNumber.setBillYear(currentYear);  // Set the current year
+
+            sql = "SELECT count(b) FROM Bill b "
+                    + " where b.billTypeAtomic=:bTp "
+                    + " and b.retired=false"
+                    + " and b.department=:fDept "
+                    + " and b.toDepartment=:tDep"
+                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear";
+
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            Calendar endOfYear = Calendar.getInstance();
+            endOfYear.set(Calendar.MONTH, 11);  // December
+            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+
+            hm = new HashMap<>();
+            hm.put("bTp", billType);
+            hm.put("fDept", fromDepartment);
+            hm.put("tDep", toDepartment);
+            hm.put("startOfYear", startOfYear.getTime());
+            hm.put("endOfYear", endOfYear.getTime());
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+            if (dd == null) {
+                dd = 0L;
+            }
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+
+        return billNumber;
     }
 
     public synchronized String institutionChannelBillNumberGenerator(Institution ins, Bill bill) {
@@ -570,7 +961,6 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(dep, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-//        //// // System.out.println("b = " + b);
         result.append(dep.getDepartmentCode());
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
@@ -603,11 +993,7 @@ public class BillNumberGenerator {
         hm.put("str", number.toUpperCase());
         Bill result = getBillFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
 
-        if (result != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return result != null;
     }
 
     public String institutionBillNumberGeneratorWithReference(Department dep, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
@@ -909,13 +1295,13 @@ public class BillNumberGenerator {
             }
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
             billNumber.setLastBillNumber(dd);
             billNumberFacade.createAndFlush(billNumber);
         }
         if (billNumber.getLastBillNumber() == null) {
-            billNumber.setLastBillNumber(0l);
+            billNumber.setLastBillNumber(0L);
         }
         billNumber.setLastBillNumber(billNumber.getLastBillNumber() + 1);
         billNumberFacade.editAndFlush(billNumber);
@@ -955,7 +1341,6 @@ public class BillNumberGenerator {
         hm.put("class2", PreBill.class);
 
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        //System.out.println("dd = " + dd);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
 
@@ -1022,18 +1407,19 @@ public class BillNumberGenerator {
         hm.put("bd", new Date());
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         if (dd == null) {
-            dd = 0l;
+            dd = 0L;
         } else {
             dd++;
         }
-        return (dd != null) ? String.valueOf(dd) : "0";
+        return String.valueOf(dd);
     }
 
     public String generateDailyTokenNumber(Department department, Category cat, Staff staff, TokenType tokenType) {
         String sql = "SELECT count(b) "
                 + " FROM Token b "
                 + " where b.tokenType=:tt "
-                + " and b.tokenDate=:bd ";
+                + " and b.tokenDate=:bd "
+                + " and b.retired = false";
         HashMap hm = new HashMap();
 
         if (department != null) {
@@ -1055,11 +1441,11 @@ public class BillNumberGenerator {
         hm.put("bd", new Date());
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         if (dd == null) {
-            dd = 0l;
+            dd = 0L;
         } else {
             dd++;
         }
-        return (dd != null) ? String.valueOf(dd) : "0";
+        return String.valueOf(dd);
     }
 
 // Overloaded methods
@@ -1156,7 +1542,7 @@ public class BillNumberGenerator {
 
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
 
             billNumber.setLastBillNumber(dd);
@@ -1215,14 +1601,14 @@ public class BillNumberGenerator {
             }
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
             billNumber.setLastBillNumber(dd);
             billNumberFacade.createAndFlush(billNumber);
         } else {
             Long newBillNumberLong = billNumber.getLastBillNumber();
             if (newBillNumberLong == null) {
-                newBillNumberLong = 0l;
+                newBillNumberLong = 0L;
             }
             billNumber.setLastBillNumber(newBillNumberLong);
             billNumberFacade.editAndFlush(billNumber);
@@ -1243,7 +1629,6 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
-//        //// // System.out.println("billNumber = " + billNumber);
 
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
@@ -1305,7 +1690,7 @@ public class BillNumberGenerator {
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
 
             billNumber.setLastBillNumber(dd);
@@ -1368,7 +1753,7 @@ public class BillNumberGenerator {
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
 
             billNumber.setLastBillNumber(dd);
@@ -1426,7 +1811,7 @@ public class BillNumberGenerator {
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
 
             billNumber.setLastBillNumber(dd);
@@ -1489,7 +1874,7 @@ public class BillNumberGenerator {
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
             if (dd == null) {
-                dd = 0l;
+                dd = 0L;
             }
 
             billNumber.setLastBillNumber(dd);
@@ -1510,49 +1895,36 @@ public class BillNumberGenerator {
         }
 
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix for " + billType, billType.getCode());
-
-        if (configOptionApplicationController.getBooleanValueByKey("Enable Custom Full Bill Number Sufix")) {
+        
+        boolean customFullBillNumberSuffix = configOptionApplicationController.getBooleanValueByKey("Enable Custom Full Bill Number Sufix");
+ 
+        if (customFullBillNumberSuffix) {
             String template = "{{department_code}}/{{to_department_code}}/" + billSuffix;
             String billSuffixTemplate = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix Template for " + billType, template);
+            
             BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
+            
             Long dd = billNumber.getLastBillNumber();
+
             String detpCode = dep.getDepartmentCode();
             String toDeptCode = toDept.getDepartmentCode();
             String insCode = dep.getInstitution().getInstitutionCode();
+
             String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
                     .replace("{{to_department_code}}", toDeptCode)
                     .replace("{{ins_code}}", insCode);
 
-            StringBuilder result = new StringBuilder();
-            result.append(s);
-//        dd++;
-            result.append(dd);
-//
+            //        dd++;
+            //
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
-
-            return result.toString();
+            String result = s + dd;
+            return result;
         } else {
-
             BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
             Long dd = billNumber.getLastBillNumber();
-            StringBuilder result = new StringBuilder();
-
-            result.append(dep.getDepartmentCode());
-
-            result.append(toDept.getDepartmentCode());
-
-            result.append("/");
-            result.append(billSuffix);
-
-            result.append("/");
-//        dd++;
-            result.append(dd);
-//
-//        billNumber.setLastBillNumber(dd);
-//        billNumberFacade.editAndFlush(billNumber);
-
-            return result.toString();
+            String result = dep.getDepartmentCode() + toDept.getDepartmentCode() + "/" + billSuffix + "/" + dd;
+            return result;
         }
     }
 
@@ -1563,42 +1935,33 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(fromDept, toDept, billType, billClassType);
         Long lastBillNumber = billNumber.getLastBillNumber() + 1;
 
-        StringBuilder result = new StringBuilder()
-                .append(fromDeptCode)
-                .append(toDeptCode)
-                .append("/")
-                .append(lastBillNumber);
+        String result = fromDeptCode + toDeptCode + "/" + lastBillNumber;
 
         billNumber.setLastBillNumber(lastBillNumber);
         billNumberFacade.edit(billNumber);
 
-        return result.toString();
+        return result;
     }
 
     public synchronized String generateBillNumber(Institution institution, BillType billType, BillClassType billClassType) {
         String insCode = (institution == null) ? "" : institution.getCode();
         BillNumber billNumber = fetchLastBillNumber(institution, billType, billClassType);
         Long lastBillNumber = billNumber.getLastBillNumber() + 1;
-        StringBuilder result = new StringBuilder()
-                .append(insCode)
-                .append("/")
-                .append(lastBillNumber);
+        String result = insCode + "/" + lastBillNumber;
 
         billNumber.setLastBillNumber(lastBillNumber);
         billNumberFacade.edit(billNumber);
-        return result.toString();
+        return result;
     }
 
     public String departmentBillNumberGenerator(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
         BillNumber billNumber = fetchLastBillNumber(ins, dep, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
-        StringBuilder result = new StringBuilder();
-        result.append(dep.getDepartmentCode());
-        result.append("/");
-        result.append(++dd);
+        String result = dep.getDepartmentCode() + "/" + ++dd;
+
         billNumber.setLastBillNumber(dd);
         billNumberFacade.edit(billNumber);
-        return result.toString();
+        return result;
     }
 
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {
@@ -1610,8 +1973,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-        System.out.println("billSuffix = " + billSuffix);
-        if (billSuffix == null || billSuffix.trim().equals("")) {
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
         boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
@@ -1626,7 +1988,7 @@ public class BillNumberGenerator {
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
 
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
-            billNumber = fetchLastBillNumberForYear(null, null, null);
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, (BillTypeAtomic) null);
         } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
         } else if (separateBillNumberForInstitutionsOnly) {
@@ -1641,7 +2003,6 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-        System.out.println("dd = " + dd);
         // Increment the bill number
         dd = dd + 1;
 
@@ -1677,6 +2038,350 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
+    public String departmentBillNumberGeneratorYearly(Department dep, List<BillTypeAtomic> billTypes) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        if (billTypes == null || billTypes.isEmpty()) {
+            return departmentBillNumberGeneratorYearly(dep, (BillTypeAtomic) null);
+        }
+
+        BillTypeAtomic sample = billTypes.get(0);
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + sample, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        
+        boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
+        
+        boolean separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for All Departments, Institutions and Bill Types", false);
+        
+        boolean separateBillNumberForInstitutionsOnly
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Institutions Only", false);
+        
+        boolean separateBillNumberForDepartmentsOnly
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Departments Only", false);
+        
+        boolean separateBillNumberForBillTypesOnly
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
+        
+        boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
+        
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+        
+        if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
+            billNumber = fetchLastBillNumberForYear(null, null, billTypes);
+        } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billTypes);
+        } else if (separateBillNumberForInstitutionsOnly) {
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billTypes);
+        } else if (separateBillNumberForDepartmentsOnly) {
+            billNumber = fetchLastBillNumberForYear(null, dep, billTypes);
+        } else if (separateBillNumberForBillTypesOnly) {
+            billNumber = fetchLastBillNumberForYear(null, null, billTypes);
+        } else if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
+            billNumber = fetchLastBillNumberForYear(null, dep, billTypes); //TODO: Correct this in a seperate issue
+        } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
+            billNumber = fetchLastBillNumberForYearSingleNumber(null, dep, billTypes);
+        } else {
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution());
+        }
+
+        Long dd = billNumber.getLastBillNumber();
+        dd = dd + 1;
+
+        billNumber.setLastBillNumber(dd);
+
+        billNumberFacade.edit(billNumber);
+
+        StringBuilder result = new StringBuilder();
+
+        boolean addInstitutionCode = configOptionApplicationController.getBooleanValueByKey(
+                "Add the Institution Code to the Bill Number Generator", true);
+
+        if (addInstitutionCode) {
+            String institutionCode = dep.getInstitution().getInstitutionCode();
+            result.append(institutionCode);
+        }
+
+        String departmentCode = dep.getDepartmentCode();
+        result.append(departmentCode);
+        result.append("/");
+
+        result.append(billSuffix);
+
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+
+        result.append("/");
+        result.append(String.format("%02d", year));
+        result.append("/");
+        result.append(String.format("%06d", dd));
+
+        String finalResult = result.toString();
+        return finalResult;
+    }
+
+    public BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear( Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+    
+
+    public String departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear(dep, billTypes);
+
+        Long dd = billNumber.getLastBillNumber();
+        dd = dd + 1;
+        billNumber.setLastBillNumber(dd);
+
+        billNumberFacade.edit(billNumber);
+
+        StringBuilder result = new StringBuilder();
+
+        boolean addInstitutionCode = configOptionApplicationController.getBooleanValueByKey(
+                "Add the Institution Code to the Bill Number Generator", true);
+
+        if (addInstitutionCode) {
+            String institutionCode = dep.getInstitution().getInstitutionCode();
+            result.append(institutionCode);
+        }
+
+        String departmentCode = dep.getDepartmentCode();
+        result.append(departmentCode);
+        result.append("/");
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for OPD and Inpatient Service Batch Bills", "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        result.append(billSuffix);
+
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+
+        result.append("/");
+        result.append(String.format("%02d", year));
+        result.append("/");
+        result.append(String.format("%06d", dd));
+
+        String finalResult = result.toString();
+        return finalResult;
+    }
+
+    
+    public BillNumber fetchLastdepartmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices( Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedForOpdAndInpatientIndividualBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public String departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
+        BillNumber billNumber = fetchLastdepartmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(dep, billTypes);
+
+        Long dd = billNumber.getLastBillNumber();
+        dd = dd + 1;
+        billNumber.setLastBillNumber(dd);
+
+        billNumberFacade.edit(billNumber);
+
+        StringBuilder result = new StringBuilder();
+
+        boolean addInstitutionCode = configOptionApplicationController.getBooleanValueByKey(
+                "Add the Institution Code to the Bill Number Generator", true);
+
+        if (addInstitutionCode) {
+            String institutionCode = dep.getInstitution().getInstitutionCode();
+            result.append(institutionCode);
+        }
+
+        String departmentCode = dep.getDepartmentCode();
+        result.append(departmentCode);
+        result.append("/");
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for OPD and Inpatient Service Batch Bills", "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        result.append(billSuffix);
+
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+
+        result.append("/");
+        result.append(String.format("%02d", year));
+        result.append("/");
+        result.append(String.format("%06d", dd));
+
+        String finalResult = result.toString();
+        return finalResult;
+    }
+
+    public String departmentBillNumberGeneratorYearly(Department dep, Department billingDepartment, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
+        boolean separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for All Departments, Institutions and Bill Types", false);
+        boolean separateBillNumberForInstitutionsOnly
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Institutions Only", false);
+        boolean separateBillNumberForDepartmentsOnly
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Departments Only", false);
+        boolean separateBillNumberForBillTypesOnly
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
+        boolean separateBillNumberForFromDepartmentToDepaertmentAndBillTypeAtomic
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
+
+        if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
+            billNumber = fetchLastBillNumberForYear(null, null, (BillTypeAtomic) null);
+        } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+        } else if (separateBillNumberForInstitutionsOnly) {
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billType);
+        } else if (separateBillNumberForDepartmentsOnly) {
+            billNumber = fetchLastBillNumberForYear(null, dep, billType);
+        } else if (separateBillNumberForBillTypesOnly) {
+            billNumber = fetchLastBillNumberForYear(null, null, billType);
+        } else if (separateBillNumberForFromDepartmentToDepaertmentAndBillTypeAtomic) {
+            billNumber = fetchLastBillNumberForYear(null, billingDepartment, dep, billType);
+        } else {
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution());
+        }
+
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string
+        StringBuilder result = new StringBuilder();
+
+        // Append institution code
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
+            result.append(dep.getInstitution().getInstitutionCode());
+        }
+
+        if (billingDepartment.getDepartmentCode() != null) {
+            result.append(billingDepartment.getDepartmentCode());
+            result.append("/");
+        }
+
+        // Append department code
+        result.append(dep.getDepartmentCode());
+        result.append("/");
+
+        if (!billSuffix.isEmpty()) {
+            result.append("/");
+            result.append(billSuffix);
+        }
+
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+
+        // Append formatted 6-digit bill number
+        result.append("/");
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+
+        // Return the formatted bill number
+        return result.toString();
+    }
+
+    public String departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(Department dep, Department billingDepartment, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+
+        billNumber = fetchLastBillNumberForYear(null, billingDepartment, dep, billType);
+
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string
+        StringBuilder result = new StringBuilder();
+
+        // Append institution code
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
+            result.append(dep.getInstitution().getInstitutionCode());
+        }
+
+        if (billingDepartment.getDepartmentCode() != null) {
+            result.append(billingDepartment.getDepartmentCode());
+            result.append("/");
+        }
+
+        // Append department code
+        result.append(dep.getDepartmentCode());
+        result.append("/");
+
+        if (!billSuffix.isEmpty()) {
+            result.append(billSuffix);
+            result.append("/");
+        }
+
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+
+        // Append formatted 6-digit bill number
+        result.append("/");
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+
+        // Return the formatted bill number
+        return result.toString();
+    }
+
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         if (dep == null) {
             return "";
@@ -1689,8 +2394,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-        System.out.println("billSuffix = " + billSuffix);
-        if (billSuffix == null || billSuffix.trim().equals("")) {
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
 
@@ -1698,7 +2402,6 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-        System.out.println("dd = " + dd);
         // Increment the bill number
         dd = dd + 1;
 
@@ -1904,7 +2607,6 @@ public class BillNumberGenerator {
 //        }
 //        String sql = "SELECT count(b) FROM CancelledBill b where "
 //                + " b.retired=false AND b.department=:dp AND b.billType= :btp";
-//        //////// // System.out.println("sql");
 //        String result;
 //        HashMap h = new HashMap();
 //        h.put("btp", type);
@@ -1926,7 +2628,6 @@ public class BillNumberGenerator {
 //        }
 //        String sql = "SELECT count(b) FROM CancelledBill b where b.retired=false "
 //                + " AND b.department=:dep AND b.toDepartment=:tDep";
-//        //////// // System.out.println("sql");
 //        String result;
 //        HashMap hm = new HashMap();
 //        hm.put("dep", dep);
@@ -1964,7 +2665,6 @@ public class BillNumberGenerator {
 //
 //        String sql = "SELECT count(b) FROM RefundBill b where b.retired=false "
 //                + " AND b.department=:dep AND b.toDepartment=:tDep";
-//        //////// // System.out.println("sql");
 //        String result;
 //        HashMap hm = new HashMap();
 //        hm.put("dep", dep);
@@ -2005,9 +2705,7 @@ public class BillNumberGenerator {
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
         dd = dd + 1;
-        ////// // System.out.println("dd = " + dd);
         result = "MS" + dd.toString();
-        ////// // System.out.println("result = " + result);
         return result;
 
     }
@@ -2019,9 +2717,7 @@ public class BillNumberGenerator {
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
         dd = dd + 1;
-        ////// // System.out.println("dd = " + dd);
         result = "ASS" + dd.toString();
-        ////// // System.out.println("result = " + result);
         return result;
 
     }
@@ -2040,7 +2736,6 @@ public class BillNumberGenerator {
 //    }
     public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
         if (ins == null) {
-            ////// // System.out.println("Ins null");
             return "";
         }
 
@@ -2057,37 +2752,24 @@ public class BillNumberGenerator {
         hm.put("btp1", BillType.PharmacyPurchaseBill);
         hm.put("btp2", BillType.PharmacyGrnBill);
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        //System.err.println("fff " + b);
 
-//        if (toDept != null) {
-//            result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
-//        } else {
-//            result = ins.getInstitutionCode() + "/" + 1;
-//        }
-//        return result;
-        ////// // System.out.println("In Bill Num Gen");
         String result;
         if (b != null && b != 0) {
             b = b + 1;
             if (toDept != null) {
                 result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
-                ////// // System.out.println("result = " + result);
             } else {
                 result = ins.getInstitutionCode() + "/" + b;
-                ////// // System.out.println("result = " + result);
             }
-            return result;
         } else {
             if (toDept != null) {
                 result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
-                ////// // System.out.println("result = " + result);
             } else {
                 result = ins.getInstitutionCode() + "/" + 1;
-                ////// // System.out.println("result = " + result);
             }
-            return result;
         }
 
+        return result;
     }
 
     public DepartmentFacade getDepFacade() {
@@ -2124,8 +2806,7 @@ public class BillNumberGenerator {
 
     public Long inventoryItemSerialNumberGenerater(Institution ins, Item item) {
         if (ins == null) {
-            ////// // System.out.println("Ins null");
-            return 0l;
+            return 0L;
         }
         String sql = "SELECT count(b) FROM BillItem b where "
                 + " b.bill.institution=:ins "
@@ -2138,14 +2819,12 @@ public class BillNumberGenerator {
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        ////// // System.out.println("In Bill Num Gen" + b);
         return b;
     }
 
     public Long inventoryItemSerialNumberGeneraterForYear(Institution ins, Item item) {
         if (ins == null) {
-            ////// // System.out.println("Ins null");
-            return 0l;
+            return 0L;
         }
         Calendar c = Calendar.getInstance();
         int y = c.get(Calendar.YEAR);
@@ -2168,9 +2847,7 @@ public class BillNumberGenerator {
         hm.put("fd", fd);
         hm.put("td", td);
 
-        Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        ////// // System.out.println("In Bill Num Gen" + b);
-        return b;
+        return getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
     }
 
 }

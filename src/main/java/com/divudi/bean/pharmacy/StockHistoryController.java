@@ -5,17 +5,18 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.HistoryType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.HistoryType;
 import com.divudi.ejb.StockHistoryRecorder;
-import com.divudi.entity.Department;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Item;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyBinCardDTO;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Item;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -35,25 +40,74 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class StockHistoryController implements Serializable {
 
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    StockHistoryFacade facade;
+    private StockHistoryFacade facade;
+    @EJB
+    StockHistoryRecorder stockHistoryRecorder;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+
     @Inject
-    CommonController commonController;
+    SessionController sessionController;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private StockHistory current;
+    private List<StockHistory> pharmacyStockHistories;
+    private List<Date> pharmacyStockHistoryDays;
+    private Date fromDate;
+    private Date toDate;
+    private Date historyDate;
+    private Department department;
+    private DepartmentType departmentType;
 
-    List<StockHistory> pharmacyStockHistories;
-    List<Date> pharmacyStockHistoryDays;
-    Date fromDate;
-    Date toDate;
-    Date historyDate;
-    Department department;
-    DepartmentType departmentType;
+    private double totalStockSaleValue;
+    private double totalStockPurchaseValue;
 
-    double totalStockSaleValue;
-    double totalStockPurchaseValue;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    public StockHistoryController() {
+    }
 
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    public String navigateToViewStockHistory() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        return "/analytics/pharmacy/stock_history?faces-redirect=true";
+    }
+
+    public String navigateToViewStockHistory(StockHistory stockHistory) {
+        if (stockHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = stockHistory;
+        return "/analytics/pharmacy/stock_history?faces-redirect=true";
+    }
+
+    /**
+     * Helper navigation method when only the id of the stock history is
+     * available. This is used when bin card rows are represented by DTOs.
+     */
+    public String navigateToViewStockHistoryById(Long id) {
+        if (id == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = facade.find(id);
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing found");
+            return null;
+        }
+        return "/analytics/pharmacy/stock_history?faces-redirect=true";
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Functions">
     public void fillHistoryAvailableDays() {
-        Date startTime = new Date();
-
         String jpql;
         Map m = new HashMap();
         m.put("fd", fromDate);
@@ -75,7 +129,6 @@ public class StockHistoryController implements Serializable {
         for (Date d : pharmacyStockHistoryDays) {
         }
 
-        
     }
 
     public List<StockHistory> findStockHistories(Date fd, Date td, HistoryType ht, Department dep, Item i) {
@@ -105,6 +158,41 @@ public class StockHistoryController implements Serializable {
         if (shxs != null) {
         }
         return shxs;
+    }
+
+    /**
+     * Returns lightweight DTOs for the bin card view to reduce memory usage.
+     */
+    public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyBinCardDTO(")
+                .append("s.id, s.createdAt, ")
+                .append("s.pbItem.billItem.bill.billType, ")
+                .append("s.pbItem.billItem.bill.billTypeAtomic, ")
+                .append("s.pbItem.billItem.item.name, ")
+                .append("s.pbItem.qty, s.pbItem.freeQty, ")
+                .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
+                .append("s.pbItem.billItem.item.dblValue, s.itemStock")
+                .append(") from StockHistory s ")
+                .append("where s.createdAt between :fd and :td ");
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fd);
+        m.put("td", td);
+        if (ht != null) {
+            jpql.append(" and s.historyType=:ht ");
+            m.put("ht", ht);
+        }
+        if (dep != null) {
+            jpql.append(" and s.department=:dep ");
+            m.put("dep", dep);
+        }
+        if (i != null) {
+            jpql.append(" and s.item=:i ");
+            m.put("i", i);
+        }
+        jpql.append(" order by s.createdAt");
+        return (List<PharmacyBinCardDTO>) facade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public void fillStockHistories(boolean withoutZeroStock) {
@@ -152,7 +240,6 @@ public class StockHistoryController implements Serializable {
             totalStockSaleValue += psh.getStockSaleValue();
         }
 
-        
     }
 
     public void fillStockHistoriesWithZero() {
@@ -162,48 +249,6 @@ public class StockHistoryController implements Serializable {
     public void fillStockHistoriesWithOutZero() {
         fillStockHistories(true);
     }
-
-    public Date getHistoryDate() {
-        return historyDate;
-    }
-
-    public void setHistoryDate(Date historyDate) {
-        this.historyDate = historyDate;
-    }
-
-    public Date getFromDate() {
-        if (fromDate == null) {
-            fromDate = CommonFunctionsController.getFirstDayOfYear(new Date());
-//            fillHistoryAvailableDays();
-        }
-        return fromDate;
-    }
-
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public Date getToDate() {
-        if (toDate == null) {
-            toDate = CommonFunctionsController.getLastDayOfYear(new Date());
-//            fillHistoryAvailableDays();
-        }
-        return toDate;
-    }
-
-    public String viewPharmacyStockHistory() {
-        getFromDate();
-        getToDate();
-        fillHistoryAvailableDays();
-        return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
-    }
-
-    public void setToDate(Date toDate) {
-        this.toDate = toDate;
-    }
-
-    @EJB
-    StockHistoryRecorder stockHistoryRecorder;
 
     public void recordHistory() {
         Date startTime = new Date();
@@ -215,7 +260,47 @@ public class StockHistoryController implements Serializable {
             JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
         }
 
-        
+    }
+
+    public String viewPharmacyStockHistory() {
+        getFromDate();
+        getToDate();
+        fillHistoryAvailableDays();
+        return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    public Date getHistoryDate() {
+        return historyDate;
+    }
+
+    public void setHistoryDate(Date historyDate) {
+        this.historyDate = historyDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getFirstDayOfYear(new Date());
+//            fillHistoryAvailableDays();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getLastDayOfYear(new Date());
+//            fillHistoryAvailableDays();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     public List<Date> getPharmacyStockHistoryDays() {
@@ -233,15 +318,6 @@ public class StockHistoryController implements Serializable {
     public void setPharmacyStockHistories(List<StockHistory> pharmacyStockHistories) {
         this.pharmacyStockHistories = pharmacyStockHistories;
     }
-
-    /**
-     * Creates a new instance of StockHistoryController
-     */
-    public StockHistoryController() {
-    }
-
-    @Inject
-    SessionController sessionController;
 
     public Department getDepartment() {
         if (department == null) {
@@ -270,14 +346,6 @@ public class StockHistoryController implements Serializable {
         this.totalStockPurchaseValue = totalStockPurchaseValue;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public DepartmentType getDepartmentType() {
         return departmentType;
     }
@@ -285,5 +353,68 @@ public class StockHistoryController implements Serializable {
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
     }
+
+    public StockHistoryFacade getFacade() {
+        return facade;
+    }
+
+    public StockHistory getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(StockHistory current) {
+        this.current = current;
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    @FacesConverter(forClass = StockHistory.class)
+    public static class StockHistoryConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                StockHistoryController controller = (StockHistoryController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "stockHistoryController");
+                return controller.getFacade().find(getKey(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                // Rethrow the exception to handle it in getAsObject
+                throw e;
+            }
+        }
+
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null;
+            }
+            return value.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof StockHistory) {
+                StockHistory stock = (StockHistory) object;
+                return getStringKey(stock.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + StockHistory.class.getName());
+            }
+        }
+    }
+    // </editor-fold>
 
 }

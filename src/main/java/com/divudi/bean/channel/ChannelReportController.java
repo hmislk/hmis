@@ -4,53 +4,59 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.InstitutionController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.hr.StaffController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.channel.DateEnum;
-import com.divudi.data.channel.PaymentEnum;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.dataStructure.ChannelDoctor;
-import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.table.String1Value1;
-import com.divudi.data.table.String1Value3;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.channel.DateEnum;
+import com.divudi.core.data.channel.PaymentEnum;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.dataStructure.ChannelDoctor;
+import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Sms;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Speciality;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -63,6 +69,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -133,8 +140,6 @@ public class ChannelReportController implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
-    private BillItemFacade billItemFacade;
-    @EJB
     private BillFacade billFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
@@ -143,15 +148,10 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
-    @Inject
-    StaffController staffController;
-    @Inject
-    BookingController bookingController;
 
     @EJB
     DepartmentFacade departmentFacade;
 
-    CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;
     @EJB
@@ -160,12 +160,23 @@ public class ChannelReportController implements Serializable {
     SmsManagerEjb smsManagerEjb;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
+    @Inject
+    private InstitutionController institutionController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+
+    private String reportStatus;
+
+    @EJB
+    ChannelService channelService;
+
+    private ReportTemplateRowBundle dataBundle;
 
     public Institution getInstitution() {
         return institution;
@@ -347,6 +358,116 @@ public class ChannelReportController implements Serializable {
         this.serviceSessions = serviceSessions;
     }
 
+    public String navigateToIncomeForScanning() {
+        makeNull();
+        return "/channel/income_for_scanning_bookings?faces-redirect=true";
+    }
+
+    public String navigateToIncomeForAgentBookings() {
+        makeNull();
+        return "/channel/income_with_agent_bookings?faces-redirect=true";
+    }
+
+    private List<Payment> paymentsFromCardAppoinments;
+
+    public List<Payment> getPaymentsFromCardAppoinments() {
+        return paymentsFromCardAppoinments;
+    }
+
+    public void setPaymentsFromCardAppoinments(List<Payment> paymentsFromCardAppoinments) {
+        this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
+    }
+
+    public List<Institution> getInstitutionForChannelReports() {
+        List<Institution> list = institutionController.getItems();
+
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+
+        return list;
+    }
+
+    public void getPaymentsForChannelCardAppoinments() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        paymentsFromCardAppoinments = channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
+    }
+
+    public double calculateTotalsFromPayment(List<Payment> payments, String type) {
+        if (payments == null || payments.isEmpty()) {
+            return 0;
+        }
+
+        if (type == null || type.trim().isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+        switch (type) {
+            case "TotalFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getTotal();
+                    }
+                }
+                return total;
+            case "HosFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getHospitalFee();
+                    }
+                }
+                return total;
+            case "StaffFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getStaffFee();
+                    }
+                }
+                return total;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public void fetchScanningSessionForIncome() {
+//        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
+        dataBundle = bundle;
+
+    }
+
+    public void fetchAgentSessionIncome() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
+        dataBundle = bundle;
+    }
+
+    public List<Bill> getChildBills(Bill parent) {
+        List<Bill> childList = new ArrayList<>();
+
+        if (parent.isCancelled()) {
+            childList.add(parent.getCancelledBill());
+        } else if (parent.isRefunded()) {
+            childList.addAll(parent.getRefundBills());
+        }
+
+        return childList;
+    }
+
     public void fillSessionsForChannelDoctorCard() {
         List<SessionInstance> canceledSessionInstances = new ArrayList<>();
         String sql;
@@ -388,7 +509,7 @@ public class ChannelReportController implements Serializable {
 
 //        Bill b = new Bill();
 //        b.setNetTotal(netTotal);
-//        
+//
         rows = new ArrayList<>();
 
         ChannelReportColumnModel br;
@@ -1216,32 +1337,34 @@ public class ChannelReportController implements Serializable {
     BillsTotals refundBillList;
 
     public void createChannelCashierBillList() {
+        reportTimerController.trackReportExecution(() -> {
 
-        getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
-        getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
-        getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
+            getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
+            getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
+            getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
 
-        getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
 
-        getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
 
-        getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
 
-        getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
 
-        getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
 
-        createSummary();
+            createSummary();
+        }, PharmacyReports.CASHIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void createCashierBillList() {
@@ -2098,7 +2221,7 @@ public class ChannelReportController implements Serializable {
 //                + " and type(bf.bill)=:class "
 //                + " and bf.fee.feeType =:ft"
 //                + " and bf.bill.createdAt between :fd and :td ";
-//        
+//
 //        m.put("fd", getFromDate());
 //        m.put("td", getToDate());
 //        m.put("ft", FeeType.Service);
@@ -2386,8 +2509,8 @@ public class ChannelReportController implements Serializable {
     public List<Bill> getChannelUnPaidBillListbyClassTypes(List<BillType> bts, Date d, Staff stf) {
         HashMap hm = new HashMap();
 
-        Date fd = commonFunctions.getStartOfDay(d);
-        Date td = commonFunctions.getEndOfDay(d);
+        Date fd = CommonFunctions.getStartOfDay(d);
+        Date td = CommonFunctions.getEndOfDay(d);
 
         String sql = "SELECT distinct(bf.bill) FROM BillFee bf "
                 + " WHERE bf.retired = false "
@@ -2494,8 +2617,8 @@ public class ChannelReportController implements Serializable {
         Date tod = new Date();
 
         if (fd != null && td == null) {
-            frd = commonFunctions.getStartOfDay(fd);
-            tod = commonFunctions.getEndOfDay(fd);
+            frd = CommonFunctions.getStartOfDay(fd);
+            tod = CommonFunctions.getEndOfDay(fd);
         }
 
         sql = "Select distinct(s) From ServiceSession s "
@@ -2563,8 +2686,8 @@ public class ChannelReportController implements Serializable {
         }
 
         if (d != null) {
-            fd = commonFunctions.getStartOfDay(d);
-            td = commonFunctions.getEndOfDay(d);
+            fd = CommonFunctions.getStartOfDay(d);
+            td = CommonFunctions.getEndOfDay(d);
             sql += " and bi.createdAt between :fd and :td ";
             hm.put("fd", fd);
             hm.put("td", td);
@@ -2618,7 +2741,7 @@ public class ChannelReportController implements Serializable {
             hm.put("st", stf);
         }
 
-        if (pms != null) {
+        if (pms != null && !pms.isEmpty()) {
             sql += " and b.paymentMethod in :pm";
             hm.put("pm", pms);
         }
@@ -2638,8 +2761,8 @@ public class ChannelReportController implements Serializable {
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
         HashMap hm = new HashMap();
 
-        Date fd = commonFunctions.getStartOfDay(d);
-        Date td = commonFunctions.getEndOfDay(d);
+        Date fd = CommonFunctions.getStartOfDay(d);
+        Date td = CommonFunctions.getEndOfDay(d);
 
         String sql = "SELECT count(bi.paidForBillFee.bill) FROM BillItem bi "
                 + " WHERE bi.retired = false "
@@ -2839,7 +2962,7 @@ public class ChannelReportController implements Serializable {
     public List<Staff> getStaffbyClassType(List<BillType> bts, Date fd, Date td) {
         HashMap hm = new HashMap();
 //        String sql = "select p from Staff p where p.retired=false ";
-//        
+//
 //        if(st!=null){
 //            //System.out.println("1");
 //            sql+=" and type(p)=:class ";
@@ -3317,6 +3440,7 @@ public class ChannelReportController implements Serializable {
         serviceSession = null;
         billSessions = null;
         valueList = null;
+        dataBundle = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -3857,8 +3981,8 @@ public class ChannelReportController implements Serializable {
         Date nowDate = getFromDate();
 
         while (nowDate.before(getToDate())) {
-            Date fd = commonFunctions.getStartOfDay(nowDate);
-            Date td = commonFunctions.getEndOfDay(nowDate);
+            Date fd = CommonFunctions.getStartOfDay(nowDate);
+            Date td = CommonFunctions.getEndOfDay(nowDate);
             AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
             if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
                 ahwd.setDate(nowDate);
@@ -4272,6 +4396,22 @@ public class ChannelReportController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public ReportTemplateRowBundle getDataBundle() {
+        return dataBundle;
+    }
+
+    public void setDataBundle(ReportTemplateRowBundle dataBundle) {
+        this.dataBundle = dataBundle;
+    }
+
+    public String getReportStatus() {
+        return reportStatus;
+    }
+
+    public void setReportStatus(String reportStatus) {
+        this.reportStatus = reportStatus;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

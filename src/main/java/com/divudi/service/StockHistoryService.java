@@ -1,9 +1,11 @@
 package com.divudi.service;
 
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.StockHistoryFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.data.HistoricalRecordType;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.StockHistoryFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,8 @@ public class StockHistoryService {
     StockHistoryFacade stockHistoryFacade;
     @EJB
     ItemService itemService;
+    @EJB
+    HistoricalRecordService historicalRecordService;
 
     public StockHistory fetchOpeningStockHistory(Department department, Item item, Date date) {
         String jpql = "SELECT sh FROM StockHistory sh "
@@ -59,15 +63,20 @@ public class StockHistoryService {
         StockHistory sh = fetchOpeningStockHistory(department, item, date);
         return sh != null ? sh.getStockQty() : 0.0;
     }
-
+    
     public double fetchClosingStockQuantity(Department department, Item item, Date date) {
         StockHistory sh = fetchClosingStockHistory(department, item, date);
         return sh != null ? sh.getStockQty() : 0.0;
     }
 
     public double fetchOpeningStockQuantity(Department department, Date date) {
-        List<Item> items = itemService.fetchAmps();
-        return fetchOpeningStockQuantity(department, items, date);
+        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, date);
+        if (openingBalance != null) {
+            return openingBalance.getRecordValue();
+        } else {
+            List<Item> items = itemService.fetchAmps();
+            return fetchOpeningStockQuantity(department, items, date);
+        }
     }
 
     public double fetchClosingStockQuantity(Department department, Date date) {

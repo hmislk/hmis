@@ -9,11 +9,11 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.AssetCategory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
-import com.divudi.facade.AssetCategoryFacade;
-import com.divudi.facade.StoreItemCategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.AssetCategory;
+import com.divudi.core.entity.pharmacy.StoreItemCategory;
+import com.divudi.core.facade.AssetCategoryFacade;
+import com.divudi.core.facade.StoreItemCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

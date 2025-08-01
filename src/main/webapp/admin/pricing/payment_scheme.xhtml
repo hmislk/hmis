@@ -24,7 +24,7 @@
                             id="btnAdd"
                             value="Add"
                             icon="pi pi-plus"  
-                            class="ui-button-warning "
+                            class="ui-button-success "
                             action="#{paymentSchemeController.prepareAdd()}" 
                             process="btnAdd"
                             update="gpDetail"/>                                      
@@ -33,17 +33,30 @@
                             ajax="false" 
                             id="btnDelete" 
                             icon="pi pi-trash" 
-                            class="ui-button-danger "
+                            class="ui-button-danger"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{paymentSchemeController.delete()}"  
-                            value="Delete"  >
+                return false;"  
+                            action="#{paymentSchemeController.delete()}"  
+                            value="Delete" >
                         </p:commandButton>
+
+                        <p:commandButton
+                            id="btnDuplicate"
+                            value="Duplicate"
+                            class="mx-2 ui-button-warning"
+                            action="#{paymentSchemeController.duplicateSelected()}"
+                            icon="pi pi-copy"
+                            ajax="false"
+                            onclick="if (!confirm('Are you sure you want to duplicate this record?'))
+                return false;">
+                        </p:commandButton>
+
 
                         <p:commandButton 
                             ajax="false" 
                             class="ui-button-info" 
                             icon="pi pi-refresh" 
-                            value="Fill"
+                            value="Refresh"
                             action="#{paymentSchemeController.createPaymentSchemes()}"/>
                     </div>
                     <div class="row"  >
@@ -76,28 +89,69 @@
                                     </p:commandButton>
                                 </f:facet>
                                 <p:panelGrid id="gpDetail" columns="1" class="w-100" >
-                                    <h:panelGrid id="gpDetailText" columns="2" class="w-100 ">
-                                        <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <p:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}" class="w-100 my-1" ></p:inputText>
-                                        <h:outputText id="lblPrintingName" value="Printing Name" ></h:outputText>
-                                        <p:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}" class="w-100 my-1"></p:inputText>
-                                        <h:outputText id="lblOrder" value="Order No" />
-                                        <p:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" class="w-100 my-1"/>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Pharmacy" />
-                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" ></p:selectBooleanCheckbox>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}" class="my-1" value="Valid for Billing" />
-                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" ></p:selectBooleanCheckbox>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}" class="my-1" value="Valid for Cancellings and Refunds" />
-                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" ></p:selectBooleanCheckbox>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}" class="my-1" value="Valid for Channeling" />
-                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}"></p:selectBooleanCheckbox>
-                                        <h:outputText value="Creator" class="my-1" ></h:outputText>
-                                        <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
-                                        <h:outputText value="Created At" ></h:outputText>
-                                        <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                        </p:outputLabel>
-                                    </h:panelGrid>
+                                    <p:tabView id="gpDetailText">
+                                        <p:tab title="Main Details">
+                                            <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                                <h:outputText id="lblName" value="Name" />
+                                                <p:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}" class="w-100 my-1" />
+                                                <h:outputText id="lblPrintingName" value="Printing Name" />
+                                                <p:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}" class="w-100 my-1" />
+                                                <h:outputText id="lblOrder" value="Order No" />
+                                                <p:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" class="w-100 my-1" />
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                        <p:tab title="Availability">
+                                            <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                                <h:outputLabel value="Valid for Pharmacy" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForPharmacy}" />
+                                                <h:outputLabel value="Valid for OPD" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForBilledBills}" />
+                                                <h:outputLabel value="Valid for Channeling" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForChanneling}" />
+                                                <h:outputLabel value="Department" />
+                                                <p:autoComplete value="#{paymentSchemeController.current.department}"
+                                                                completeMethod="#{departmentController.completeDept}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"
+                                                                forceSelection="true"
+                                                                class="w-100" />
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                        <p:tab title="Validation Rules">
+                                            <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                                <h:outputLabel value="Staff Required" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.staffRequired}" />
+                                                <h:outputLabel value="Staff or Family Required" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.staffOrFamilyRequired}" />
+                                                <h:outputLabel value="Member Required" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.memberRequired}" />
+                                                <h:outputLabel value="Member or Family Required" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.memberOrFamilyRequired}" />
+                                                <h:outputLabel value="Senior Citizen Required" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.seniorCitizenRequired}" />
+                                                <h:outputLabel value="Pregnant Mother Required" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.pregnantMotherRequired}" />
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                        <p:tab title="Metadata">
+                                            <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                                <h:outputText value="Creator" />
+                                                <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}" />
+                                                <h:outputText value="Created At" />
+                                                <p:outputLabel value="#{paymentSchemeController.current.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </p:outputLabel>
+                                            </p:panelGrid>
+                                        </p:tab>
+                                    </p:tabView>
+
+
+
+
                                     <h:panelGrid id="gpDetailButtons" columns="2">
 
 

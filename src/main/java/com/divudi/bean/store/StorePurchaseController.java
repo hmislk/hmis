@@ -6,38 +6,36 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.BillItemController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.Payment;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -88,9 +86,7 @@ public class StorePurchaseController implements Serializable {
     ApplicationController applicationController;
     @Inject
     BillItemController billItemController;
-    @Inject
-    CommonController commonController;
-    
+
 
     public BillItemController getBillItemController() {
         return billItemController;
@@ -110,8 +106,6 @@ public class StorePurchaseController implements Serializable {
     List<BillItem> billExpenses;
     BillItem parentBillItem;
 
-
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberGenerator;
 
@@ -318,7 +312,7 @@ public class StorePurchaseController implements Serializable {
         for (BillItem i : getBillItems()) {
             i.setId(null);
         }
-        
+
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -384,10 +378,10 @@ public class StorePurchaseController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Billed");
         printPreview = true;
 
-        
-        
+
+
     }
-    
+
     public Payment createPayment(Bill bill) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -541,7 +535,7 @@ public class StorePurchaseController implements Serializable {
         getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
         //getCurrentBillItem().setId(getCurrentBillItem().getSearialNoInteger().longValue());
 
-//        billItem.setSearialNo(getBillItems().size() + 1);        
+//        billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(getCurrentBillItem());
 
         getBillItemController().setItems(getBillItems());
@@ -557,7 +551,7 @@ public class StorePurchaseController implements Serializable {
         calTotal();
 
     }
-    
+
     public void addItemWithLastRate() {
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Please select and item from the list");
@@ -606,7 +600,7 @@ public class StorePurchaseController implements Serializable {
         currentExpense = null;
         calTotal();
     }
-    
+
     public void removeExpense(BillItem removeExpences) {
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().remove(removeExpences);
@@ -688,7 +682,7 @@ public class StorePurchaseController implements Serializable {
         getBill().setNetTotal(tot + exp);
 
     }
-    
+
     public void calNetTotal() {
         double grossTotal = 0.0;
         if (getBill().getDiscount() > 0 || getBill().getTax()>0) {
@@ -825,7 +819,7 @@ public class StorePurchaseController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frmDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
@@ -865,18 +859,6 @@ public class StorePurchaseController implements Serializable {
         return storeCalculation;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
@@ -900,5 +882,5 @@ public class StorePurchaseController implements Serializable {
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
- 
+
 }

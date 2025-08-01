@@ -4,32 +4,40 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.InvestigationSummeryData;
-import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.InvestigationSummeryData;
+import com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.MachineFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.MachineFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.CommonFunctions;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -37,11 +45,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -53,12 +65,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonReport commonReport;
-    @Inject
-    CommonController commonController;
-    @EJB
-    private CommonFunctions commonFunctions;
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -132,7 +139,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -143,7 +150,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance().getTime());
+            toDate = CommonFunctions.getEndOfDay(Calendar.getInstance().getTime());
         }
         return toDate;
     }
@@ -158,14 +165,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private Institution collectingIns;
@@ -186,6 +185,119 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             if (temp.getCount() != 0) {
                 items.add(temp);
             }
+        }
+    }
+
+    public void exportInvestigationReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=InvestigationReport.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Investigation Report");
+            int rowIndex = 0;
+
+            // Create styles
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+            XSSFCellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd/MM/yyyy"));
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            XSSFCellStyle mergedStyle = workbook.createCellStyle();
+            mergedStyle.cloneStyleFrom(amountStyle);
+            mergedStyle.setFont(boldFont);
+
+            // Add report title and date range
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Investigation Month End Detail");
+            titleCell.setCellStyle(boldStyle);
+
+            Row dateRangeRow = sheet.createRow(rowIndex++);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            String dateRange = "From: " + dateFormat.format(getFromDate()) +
+                    " To: " + dateFormat.format(getToDate());
+            dateRangeRow.createCell(0).setCellValue(dateRange);
+
+            // Add empty row
+            rowIndex++;
+
+            // Create headers
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"Investigation", "Department ID", "Date", "Patient Name", "Net Value"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            // Process data - iterate through itemDetails
+            for (InvestigationSummeryData c : getItemDetails()) {
+
+                // Get investigation name for grouping
+                String investigationName = c.getInvestigation().getName();
+
+                // Add investigation group header
+                Row groupRow = sheet.createRow(rowIndex++);
+                Cell groupCell = groupRow.createCell(0);
+                groupCell.setCellValue(investigationName);
+                groupCell.setCellStyle(boldStyle);
+
+                // Process bill items for this investigation
+                for (BillItem bc : c.getBillItems()) {
+
+                    Row dataRow = sheet.createRow(rowIndex++);
+
+                    // Investigation name
+                    dataRow.createCell(0).setCellValue(investigationName);
+
+                    // Department ID
+                    dataRow.createCell(1).setCellValue(bc.getBill().getDeptId());
+
+                    // Date
+                    Cell dateCell = dataRow.createCell(2);
+                    dateCell.setCellValue(bc.getCreatedAt());
+                    dateCell.setCellStyle(dateStyle);
+
+                    // Patient Name
+                    dataRow.createCell(3).setCellValue(bc.getBill().getPatient().getPerson().getName());
+
+                    // Net Value
+                    Cell amountCell = dataRow.createCell(4);
+                    amountCell.setCellValue(bc.getNetValue());
+                    amountCell.setCellStyle(amountStyle);
+                }
+
+                // Add empty row after each investigation group
+                rowIndex++;
+            }
+
+            // Add footer with printed by information
+            Row footerRow = sheet.createRow(rowIndex++);
+            String printedBy = "Printed By: " + sessionController.getLoggedUser().getWebUserPerson().getName();
+            Cell footerCell = footerRow.createCell(0);
+            footerCell.setCellValue(printedBy);
+            footerCell.setCellStyle(boldStyle);
+
+            // Auto-size columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(InvestigationMonthSummeryOwnController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -222,7 +334,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         Map m;
         m = new HashMap();
 
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " join b.institution ins "
@@ -261,7 +373,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         }
 
         m = new HashMap();
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " join b.institution ins "
@@ -354,7 +466,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //            if (bobj.length < 3) {
 //                continue;
 //            }
-//            
+//
 //            ItemInstitutionCollectingCentreCountRow r = new ItemInstitutionCollectingCentreCountRow();
 //            r.setItem((Item) bobj[0]);
 //            r.setCount((Long) bobj[1]);
@@ -434,7 +546,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //
 //        countTotal = billed - (refunded + cancelled);
 
-        
+
     }
 
     public List<InvestigationSummeryData> getItems3() {
@@ -469,7 +581,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("ins", getSessionController().getInstitution());
 
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
         List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
@@ -876,7 +988,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -1198,7 +1310,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -1287,7 +1399,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
-        
+
     }
 
     public void createLabServiceWithCountAndValueByMachineAndBillType() {
@@ -1358,7 +1470,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
 
-        
+
     }
 
     public void createLabServiceWithCountAndValueByMachineInvestigationAndBillType() {
@@ -1529,7 +1641,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         investigationCountWithMachines.add(row);
 
-        
+
     }
 
     public List<Item> getInvestigationItems() {
@@ -1965,14 +2077,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             this.count = count;
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

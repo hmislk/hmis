@@ -4,30 +4,30 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
-                
+
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="lst1" header="Staff Paysheet Component  List"> 
+            <p:panel id="lst1" header="Staff Paysheet Component  List">
                 <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false" rendered="false"/>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="Date"/>
-                    <p:calendar value="#{staffBasicController.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" >                                                                                
+                    <p:calendar value="#{staffBasicController.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                     </p:calendar>
                     <h:outputLabel value="Select User Defined Component"/>
                     <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
                         <f:selectItem itemLabel="Please select component Type "/>
                         <f:selectItems value="#{paysheetComponentController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                    </p:selectOneMenu> 
+                    </p:selectOneMenu>
                     <h:outputLabel value="Select System Defined Component"/>
                     <p:selectOneMenu   value="#{staffBasicController.paysheetComponent2}">
                         <f:selectItem itemLabel="Please select component Type "/>
-                        <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>                    
-                    </p:selectOneMenu> 
+                        <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                    </p:selectOneMenu>
                     <h:outputLabel value="Institution : "/>
-                    <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>                   
+                    <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>
                     <h:outputLabel value="Department : "/>
                     <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
                     <h:outputLabel value="Employee : "/>
@@ -55,25 +55,25 @@
 
 
                 <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                    <p:dataTable  id="tb1" value="#{staffBasicController.items}" 
+                    <p:dataTable  id="tb1" value="#{staffBasicController.items}"
                                   filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                                   var="i"   rowKey="#{i.id}"  >
 
                         <f:facet name="header">
-                           
+
                             <h:outputLabel value="Staff Paysheet Component List"/>
                             <h:panelGroup rendered="#{staffBasicController.reportKeyWord.institution ne null}" >
                                 <br/>
                                 <h:outputLabel value="#{staffBasicController.reportKeyWord.institution.name}" />
                                 <br/>
                              </h:panelGroup>
-                            <h:panelGroup rendered="#{staffBasicController.reportKeyWord.department ne null}" >  
-                                <h:outputLabel value="#{staffBasicController.reportKeyWord.department.name}" />    
+                            <h:panelGroup rendered="#{staffBasicController.reportKeyWord.department ne null}" >
+                                <h:outputLabel value="#{staffBasicController.reportKeyWord.department.name}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{staffBasicController.reportKeyWord.staff ne null}" >
                                 <h:outputLabel value="#{staffBasicController.reportKeyWord.staff.person.name}" />
-                            </h:panelGroup> 
-                            <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">                                        
+                            </h:panelGroup>
+                            <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">
                             </h:outputLabel>
                         </f:facet>
 
@@ -90,7 +90,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="To"  />
                             </f:facet>
-                            <p:cellEditor> 
+                            <p:cellEditor>
 
 
                                 <f:facet name="output">
@@ -108,14 +108,14 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Component Name"  />
                             </f:facet>
-                            <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
+                            <h:outputLabel value="#{i.paysheetComponent.name}"/>
                         </p:column>
 
                         <p:column headerText="Grade" >
                             <f:facet name="header">
                                 <h:outputLabel value="Grade"  />
                             </f:facet>
-                            <h:outputLabel value="#{i.staff.grade}"/>                           
+                            <h:outputLabel value="#{i.staff.grade}"/>
                         </p:column>
 
                         <p:column headerText="Category" >
@@ -214,7 +214,7 @@
                         <f:facet name="footer">
                             <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                             <p:outputLabel value="Print At : " />
-                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                             </p:outputLabel>
                         </f:facet>

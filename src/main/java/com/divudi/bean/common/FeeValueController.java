@@ -8,15 +8,14 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeValue;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Service;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.FeeValueFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeValue;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.FeeValueFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,18 +39,13 @@ public class FeeValueController implements Serializable {
     SessionController sessionController;
     @EJB
     private FeeValueFacade ejbFacade;
-    
-    
+
     private List<FeeValue> items;
-    
-    
-    public void fillItems(){
+
+    public void fillItems() {
         items = getFacade().findAll();
     }
 
-    
-    
-    
     public void save(FeeValue feeValue) {
         if (feeValue == null) {
             return;
@@ -86,9 +80,25 @@ public class FeeValueController implements Serializable {
         return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
     }
 
+    public Double getFeeForLocals(Item item, Department department) {
+        FeeValue feeValue = getFeeValue(item, department);
+        return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
+    }
+
     public Double getFeeForForeigners(Item item, Institution institution) {
         FeeValue feeValue = getFeeValue(item, institution);
-        return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
+        return feeValue != null ? feeValue.getTotalValueForForeigners() : 0.0;
+    }
+
+    public Double getFeeForForeigners(Item item, Department department) {
+        if (item == null || department == null) {
+            return 0.0;
+        }
+        FeeValue feeValue = getFeeValue(item, department);
+        if (feeValue == null || feeValue.getTotalValueForForeigners() == null) {
+            return 0.0;
+        }
+        return feeValue.getTotalValueForForeigners();
     }
 
     public FeeValue getFeeValue(Item item, Department department) {
@@ -127,7 +137,6 @@ public class FeeValueController implements Serializable {
     }
 
     public FeeValue getCollectingCentreFeeValue(Long itemId, Institution collectingCentre) {
-        
 
         String jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -137,13 +146,11 @@ public class FeeValueController implements Serializable {
         params.put("iid", itemId);
         params.put("collectingCentre", collectingCentre.getId());
 
-
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
             return fv;
         }
-
 
         jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -156,14 +163,11 @@ public class FeeValueController implements Serializable {
         params.put("ret", false);
         params.put("category", collectingCentre.getFeeListType().getId());
 
-
         fv = getFacade().findFirstByJpql(jpql, params);
-
 
         return fv;
     }
-    
-    
+
     public FeeValue getSiteFeeValue(Long itemId, Institution site) {
 
         String jpql = "SELECT f "
@@ -177,13 +181,11 @@ public class FeeValueController implements Serializable {
         params.put("ret", false);
         params.put("site", site);
 
-
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
             return fv;
         }
-
 
         jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -191,14 +193,45 @@ public class FeeValueController implements Serializable {
                 + " AND f.totalValueForLocals > 0 "
                 + " AND f.retired=:ret "
                 + " AND f.category is null"
+                + " AND f.department is null"
                 + " AND f.institution is null";
         params = new HashMap<>();
         params.put("iid", itemId);
         params.put("ret", false);
 
-
         fv = getFacade().findFirstByJpql(jpql, params);
 
+        return fv;
+    }
+    
+    public FeeValue getDepartmentFeeValue(Long itemId, Department dept) {
+        String jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.department = :dept";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        params.put("dept", dept);
+        FeeValue fv = getFacade().findFirstByJpql(jpql, params);
+        if (fv != null) {
+            return fv;
+        }
+        jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.category is null"
+                + " AND f.department is null"
+                + " AND f.institution is null";
+        params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+
+        fv = getFacade().findFirstByJpql(jpql, params);
 
         return fv;
     }
@@ -232,7 +265,7 @@ public class FeeValueController implements Serializable {
             feeValue.setCreater(getSessionController().getLoggedUser());
         }
         feeValue.setTotalValueForLocals(feeValueForLocals);
-        feeValue.setTotalValueForLocals(feeValueForForeigners);
+        feeValue.setTotalValueForForeigners(feeValueForForeigners);
         save(feeValue);
     }
 

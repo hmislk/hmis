@@ -8,7 +8,7 @@
       xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
@@ -34,6 +34,65 @@
             </h:panelGroup>
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
+                <style>
+                    @font-face {
+                        font-family: 'OCR-B';
+                        src: url('../../fonts/OCR-B.ttf') format('truetype');
+                        /* Add other font properties like font-weight, font-style if necessary */
+                    }
+
+                    @media print {
+                        .receipt-container {
+                            border: none;
+                            width: 10cm!important;
+                            height: 9.5cm!important;
+                            margin-left: 0cm!important;
+                            margin-right: 2.5cm!important;
+                            margin-bottom: 1.0cm!important;
+                            margin-top: 0.7cm!important;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            padding-left: 0.25cm;
+                            /*        font-family: sans-serif !important;
+                                    border: none;
+                                    width: 11cm!important;
+                                    height: 14cm!important;
+                                    margin-left: 0cm!important;
+                                    margin-right: 1.5cm!important;
+                                    margin-top: 1cm!important;
+                                    margin-bottom: 0cm!important;
+                                    padding: 2px!important;
+                                    line-height: 1.2!important;*/
+                        }
+
+                        .hospital-name {
+                            font-size: 12px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                        
+                        .hospital-details {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .receipt-table th,
+                        .receipt-table td {
+                            padding: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                        
+                        .total-table th,
+                        .total-table td {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .separator {
+                            margin: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                    }
+                </style>
             </h:panelGroup>
 
 
@@ -53,17 +112,17 @@
                                                 <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
                         </div>
                         <div >
-                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />                                                
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />
                         </div>
                     </div>
                     <div class="separator"></div>
                 </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="#{cc.attrs.bill.department.name} Refuned Receipt"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.name} Refund Receipt"/>
                     <br/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                 </div>
 
                 <!-- Separator Line -->
@@ -241,7 +300,7 @@
                             </table>
                         </td>
                     </tr>
-                </table> 
+                </table>
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate eq true}" >
                     <table >
@@ -257,7 +316,7 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </h:panelGroup>
 
                 <div class="d-flex gap-2" style="font-size: 9pt;">

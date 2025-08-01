@@ -7,10 +7,9 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
-
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -19,7 +18,7 @@
         <h:outputStylesheet>
                     /* Styles for screen display */
                     .page {
-                    
+
                     }
                     .d-flex {
                     display: flex;
@@ -52,7 +51,7 @@
                     }
                     }
                 </h:outputStylesheet>
-       
+
 
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
@@ -70,18 +69,18 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" class="w-25"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="RECEIPT"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="RECEIPT"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
-            <div class="billline">                
-                <hr></hr>                
+            <div class="billline">
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -235,7 +234,7 @@
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"
                                    />
                     </div>
                 </div>

@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
@@ -23,14 +23,14 @@
             </h:panelGroup>
 
 
-            <p:inputText 
+            <p:inputText
                 autocomplete="off"
                 style="width: 100px"
-                value="#{cc.attrs.paymentMethodData.creditCard.no}"  
+                value="#{cc.attrs.paymentMethodData.creditCard.no}"
                 id="refno"
                 placeholder="Card Last 4 Digits">
                 <p:ajax process="@this" ></p:ajax>
-            </p:inputText>                          
+            </p:inputText>
             <p:selectOneMenu style="width: 150px" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"  >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>

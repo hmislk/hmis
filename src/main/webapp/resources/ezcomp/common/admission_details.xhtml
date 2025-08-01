@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="admission" type="com.divudi.entity.inward.Admission"  />
+        <cc:attribute name="admission" type="com.divudi.core.entity.inward.Admission"  />
         <cc:attribute name="rooms" type="java.util.List" />
     </cc:interface>
 
@@ -111,17 +111,17 @@
             <p:dataTable value="#{cc.attrs.rooms}" rendered="#{cc.attrs.rooms ne null}" var="rm">
                 <p:column headerText="Room Name">
                     <h:outputText value="#{rm.roomFacilityCharge.name}" ></h:outputText>
-                </p:column>      
+                </p:column>
                 <p:column headerText="Admitted At">
                     <h:outputText value="#{rm.admittedAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                </p:column>     
+                </p:column>
                 <p:column headerText="Discharged At">
                     <h:outputText value="#{rm.dischargedAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                </p:column>     
+                </p:column>
             </p:dataTable>
 
 

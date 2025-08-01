@@ -6,29 +6,28 @@
 package com.divudi.ws.lims;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.pharmacy.StockController;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Item;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.PatientSampleComponant;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientSampleComponantFacade;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,13 +41,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
+
+import com.divudi.core.util.CommonFunctions;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.divudi.data.LoginRequest;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillItemFacade;
+import com.divudi.core.data.LoginRequest;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillItemFacade;
 import java.text.DecimalFormat;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -490,7 +491,7 @@ public class Lims {
             } else {
                 jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
                 jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+                jSONObject.put("billDate", CommonFunctions.formatDate(bill.getCreatedAt(), "dd MMM yy"));
             }
             jSONObject.put("id", ps.getIdStr() != null ? ps.getIdStr() : "");
         }
@@ -544,7 +545,7 @@ public class Lims {
 
             jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
             jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+            jSONObject.put("billDate", CommonFunctions.formatDate(bill.getCreatedAt(), "dd MMM yy"));
 
             jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }
@@ -589,7 +590,7 @@ public class Lims {
 
             jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
             jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+            jSONObject.put("billDate", CommonFunctions.formatDate(bill.getCreatedAt(), "dd MMM yy"));
 
             jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }

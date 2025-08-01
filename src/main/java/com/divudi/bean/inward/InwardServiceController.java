@@ -10,22 +10,22 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.FeeType;
-import com.divudi.data.SessionNumberType;
-import com.divudi.data.dataStructure.ServiceFee;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InwardServiceFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.ServiceCategoryFacade;
-import com.divudi.facade.ServiceSubCategoryFacade;
-import com.divudi.facade.SpecialityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.SessionNumberType;
+import com.divudi.core.data.dataStructure.ServiceFee;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InwardServiceFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.ServiceCategoryFacade;
+import com.divudi.core.facade.ServiceSubCategoryFacade;
+import com.divudi.core.facade.SpecialityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -369,12 +369,12 @@ public class InwardServiceController implements Serializable {
         }
         return items;
     }
-    
+
     public List<InwardService> findInwardServices() {
         String sql = "select c from InwardService c where c.retired=false order by c.name";
         return getFacade().findByJpql(sql);
     }
-    
+
 
     public List<InwardService> getItem() {
         String sql;

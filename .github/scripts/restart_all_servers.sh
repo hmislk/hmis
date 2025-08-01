@@ -29,7 +29,7 @@ fi
 IFS=',' read -r -a EXCLUDED_ARRAY <<< "$EXCLUDED_SERVERS"
 
 # Define the included servers
-INCLUDED_ARRAY=("Development(4.240.39.63)" "QA(4.240.43.211)")
+INCLUDED_ARRAY=("Development(4.240.39.63)" "QA(4.240.43.211)" "Shared01(52.172.158.159)" "Shared02(20.204.129.229)" "D01(4.213.180.217)")
 
 # Remove excluded servers from included array
 for excluded in "${EXCLUDED_ARRAY[@]}"; do

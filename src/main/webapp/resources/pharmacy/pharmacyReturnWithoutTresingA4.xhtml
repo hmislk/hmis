@@ -1,0 +1,288 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <div  style="width: 210mm; height: 297mm" class=" container" >
+
+            <div class="institutionName my-2">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div class="d-flex justify-content-center gap-2">
+                    <h:outputLabel value="Tel : "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{cc.attrs.bill.department.telephone2 ne null}"/>
+                </div>
+                <div  class="d-flex justify-content-center gap-2">
+                    <h:outputLabel value="Fax :"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
+                </div>
+                <div  class="d-flex justify-content-center gap-2">
+                    <h:outputLabel value="Email : "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>
+                </div>
+            </div>
+
+            <div class="headingBill my-2">
+                <h:outputLabel value="Purchase Return Note" style="text-decoration: underline;"/>
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+            </div>
+
+            <div style="min-width: 90%; margin-left: 5%; margin-right: 5%; font-size: 15px;" class="row justify-content-center py-2" >
+                <div class="row border-bottom">
+                    <h:outputLabel value="Invoice No "  class="col-6"/>
+                    <h:outputLabel value="#{cc.attrs.bill.deptId}" class="col-6"/>
+                </div>
+
+                <div class="row border-bottom">
+
+                    <h:outputLabel value="Billed Date" class="col-6"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-6">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    </h:outputLabel>
+                </div>
+
+                <div class="row border-bottom">
+                    <h:outputLabel value="Billed Time" class="col-6"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-6">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                    </h:outputLabel>
+                </div>
+
+                <div class="row border-bottom">
+                    <h:outputLabel value="Company" class="col-6 "/>
+                    <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" class="col-6"/>
+                </div>
+                <div class="row ">
+                    <h:outputLabel value="Comment" class="col-6"/>
+                    <h:outputLabel value="#{cc.attrs.bill.comments}" class="col-6"/>
+                </div>
+
+
+
+            </div>
+
+            <style>
+                table {
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+
+                td, th {
+                    border: 1px solid #dddddd;
+                    text-align: left;
+                    padding: 4px;
+                }
+
+            </style>
+            <div class="row">
+
+                <hr/>
+            </div>
+
+
+            <div style="width: 100%;" class="my-2">
+
+                <table border="0" style="text-align: center; width: 100%; border: 0px!important; padding: 1px!important;">
+                    <thead style="font-size: 12px;">
+                        <tr>
+                            <th style="text-align: left!important;min-width: 34%; font-weight: bold!important;">Item</th>
+                            <!--<th style="width: 4%; text-align: right!important; font-weight: bold!important;">Code</th>-->
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Expiry</th>
+                            <!--                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Batch No.</th>-->
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Return Qty</th>
+                            <!--                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>-->
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
+                            <!--                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Price</th>-->
+                            <!--                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>-->
+                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Purchase Value</th>
+                            <!--                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>-->
+                        </tr>
+                    </thead>
+
+                    <tbody style="font-size: 13px;">
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputText value="#{bip.item.name}">
+                                    </h:outputText>
+
+                                    <h:outputText rendered="#{not empty bip.item.code}" value=" - #{bip.item.code}">
+                                    </h:outputText>
+                                </td>
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText value="#{bip.item.code}">
+                                                                    </h:outputText>
+                                                                </td>-->
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.doe}">
+                                        <f:convertDateTime pattern="d/M/yy"/>
+                                    </h:outputText>
+                                </td>
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText value="#{bip.pharmaceuticalBillItem.stringValue}">
+                                                                    </h:outputText>
+                                                                </td>-->
+
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{-bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </td>
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                                                        <f:convertNumber pattern="#,##0"/>
+                                                                    </h:outputText>
+                                                                </td>-->
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+                                                                </td>-->
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
+                                                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </td>-->
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{-bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate*bip.pharmaceuticalBillItem.qty}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+                                                                </td>-->
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+
+
+
+                    <!--                    <tr style="font-size: 15px">
+                                            <td colspan="9" style="text-align: left; ">Sale Value</td>
+                                            <td colspan="2" style="text-align: right; ">
+
+                                                <h:outputText value="#{cc.attrs.bill.saleValue}">
+
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>-->
+
+                    <!--                    <tr style="font-size: 15px">
+                                            <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
+                                            <td colspan="2" style="text-align: right;">
+                                                <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>-->
+
+                    <tr style="font-size: 15px">
+                        <td colspan="4" style="text-align: left;">Total</td>
+                        <td colspan="1" style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.total}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <!--                    <tr style="font-size: 15px">
+                                            <td colspan="9" style="text-align: left; ">Expenses</td>
+                                            <td colspan="2" style="text-align: right;">
+                                                <h:outputText value="#{cc.attrs.bill.expenseTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>-->
+
+                    <!--                    <tr style="font-size: 15px">
+                                            <td colspan="9" style="text-align: left; ">Tax</td>
+                                            <td colspan="2" style="text-align: right; ">
+                                                <h:outputText value="#{cc.attrs.bill.tax}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>-->
+
+                    <tr style="font-size: 15px">
+                        <td colspan="4" style="text-align: left; ">Discount</td>
+                        <td colspan="1" style="text-align: right; ">
+                            <h:outputText value="#{0-cc.attrs.bill.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 15px">
+                        <td colspan="4" style="text-align: left; font-weight: bold!important;">Net Total</td>
+                        <td colspan="1" style="text-align: right; font-weight: bold!important;">
+                            <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+
+                </table>
+            </div>
+
+
+
+            <div class="preparedBy mt-3">
+                <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;"/>
+            </div>
+
+            <div class="mb-4">
+                <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
+                <h:outputLabel value="Printed At : #{sessionController.currentDate}" style="text-align: right!important;"/>
+            </div>
+
+
+            <div class="row my-5">
+                <div class="col-6 text-center">
+                    <h:outputLabel value="......................................................................"/><br></br>
+                    <h:outputLabel value="Prepared By. " />
+                </div>
+
+                <div class="col-6 text-center">
+                    <h:outputLabel value="......................................................................"/><br></br>
+                    <h:outputLabel value="Authorized By.(Cheif Pharmacist) " />
+                </div>
+
+            </div>
+
+
+
+            <div style="page-break-after: always;"></div>
+
+
+        </div>
+    </cc:implementation>
+</html>

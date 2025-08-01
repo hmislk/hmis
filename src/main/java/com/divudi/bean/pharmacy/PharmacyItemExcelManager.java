@@ -10,61 +10,61 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PharmacyImportCol;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PharmacyImportCol;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Service;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.ItemsDistributors;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.AtmFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.MeasurementUnitFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemCategoryFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.StoreItemCategoryFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.StoreItemCategory;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.AtmFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.MeasurementUnitFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.StoreItemCategoryFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VmppFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1158,7 +1158,6 @@ public class PharmacyItemExcelManager implements Serializable {
 //        }
 //
 //    }
-
     @Deprecated // Use the mathod with the same name in data upload controller
     public String importToExcelWithStock() {
         if (file == null || file.getFileName() == null) {
@@ -2401,14 +2400,27 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setCode(strCode);
                         amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setMeasurementUnit(strengthUnit);
+                        amp.setIssueUnit(issueUnit);
+                        amp.setStrengthUnit(strengthUnit);
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
                         getAmpFacade().create(amp);
                     } else {
+                      
+                        
                         amp.setRetired(false);
                         amp.setDepartmentType(DepartmentType.Pharmacy);
+                        
                         amp.setCode(strCode);
+                        amp.setDepartmentType(DepartmentType.Pharmacy);
+                        amp.setMeasurementUnit(strengthUnit);
+                        amp.setIssueUnit(issueUnit);
+                        amp.setStrengthUnit(strengthUnit);
+                        amp.setDblValue(strengthUnitsPerIssueUnit);
+                        amp.setCategory(cat);
+                        amp.setVmp(vmp);
+                        
                         getAmpFacade().edit(amp);
                     }
                 } else {

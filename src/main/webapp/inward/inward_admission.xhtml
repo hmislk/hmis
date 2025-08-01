@@ -126,6 +126,8 @@
                                                       pattern="dd/MMM/yyyy - hh:mm:ss a" 
                                                       styleClass="form-control w-100"
                                                       showTime="true"
+                                                      yearNavigator="true"
+                                                      monthNavigator="true"
                                                       showButtonBar="true"
                                                       timeInput="true"
                                                       class="w-100" 
@@ -286,48 +288,69 @@
                                             </p:tabView>
                                         </p:panel>
                                     </div>
-                                    <p:panel header="Payment Details" style="margin-top: 10px;">
-
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <h:panelGrid id="pg1" columns="2" class="my-2 w-100" >
-                                                    <p:outputLabel value="Nationality"/>
-                                                    <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
-                                                                             styleClass="form-control w-100"
-                                                                             class="w-100" 
-                                                                             itemLabel="Mark as Foreigner"/>
-
-                                                    <p:outputLabel value="Claimable Status"/>
-                                                    <p:selectBooleanCheckbox value="#{admissionController.current.claimable}"
-                                                                             styleClass="form-control w-100"
-                                                                             class="w-100"
-                                                                             itemLabel="Claimable" />
-
-                                                    <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
-                                                    <p:badge value="#{admissionController.lastCreditCompany.name}" 
-                                                             rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
-                                                             />
-
-                                                    <p:outputLabel value="Payment Method*"/>
-                                                    <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                                        <f:selectItem itemLabel="Select" />                           
-                                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                                        <p:ajax process="@this" update="crd pg1" event="change" />
-                                                    </p:selectOneMenu>
-                                                </h:panelGrid>
-                                            </div>
-                                        </div>
-                                        <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
-                                            <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
-                                        </h:panelGroup>
+                                    <p:panel header="Additonal Info" style="margin-top: 10px;">
+                                        <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
+                                            <h:outputLabel for="acPrimRes" value="Primary Reason"/>
+                                            <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select a Referring Method"
+                                                            value="#{admissionController.current.primaryReason}"
+                                                            completeMethod="#{symptomController.completeSymptom}" var="myItem"
+                                                            class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
+                                                            itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                            <h:outputLabel for="acRefMeth" value="Referred From" rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}"/>
+                                            <p:selectOneMenu id="acRefMeth" value="#{admissionController.current.referringMethod}" editable="false" filter="true" 
+                                                             placeholder="Search &amp; select a Referring Method" filterMatchMode="contains" styleClass="w-100" required="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Require Referred From in Patient Admission')}" 
+                                                             requiredMessage="Need a Referring Method " class="w-100 form-control" 
+                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}">
+                                                <f:selectItem itemLabel="Search &amp; select a Method" itemValue="" noSelectionOption="true"/>
+                                                <f:selectItems 
+                                                    value="#{configOptionApplicationController.getListOfCustomOptions('Patient Admit - Referred From Methods')}" 
+                                                    var="option" 
+                                                    itemLabel="#{option}" 
+                                                    itemValue="#{option}"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
                                     </p:panel>
                                 </div>
                             </div>
-
-
-
                         </div>
 
+                    </div>
+                    <div class="col-12">
+                        <p:panel header="Payment Details" style="margin-top: 10px;">
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <h:panelGrid id="pg1" columns="2" class="my-2 w-100" >
+                                        <p:outputLabel value="Nationality"/>
+                                        <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
+                                                                 styleClass="form-control w-100"
+                                                                 class="w-100"
+                                                                 itemLabel="Mark as Foreigner"/>
+
+                                        <p:outputLabel value="Claimable Status"/>
+                                        <p:selectBooleanCheckbox value="#{admissionController.current.claimable}"
+                                                                 styleClass="form-control w-100"
+                                                                 class="w-100"
+                                                                 itemLabel="Claimable" />
+
+                                        <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
+                                        <p:badge value="#{admissionController.lastCreditCompany.name}"
+                                                 rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
+                                                 />
+
+                                        <p:outputLabel value="Payment Method*"/>
+                                        <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                            <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
+                                </div>
+                            </div>
+                            <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
+                                <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
+                            </h:panelGroup>
+                        </p:panel>
                     </div>
 
                 </p:panel>

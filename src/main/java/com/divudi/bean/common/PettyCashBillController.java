@@ -6,27 +6,25 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Person;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -50,8 +48,6 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class PettyCashBillController implements Serializable {
 
-    @Inject
-    CommonController commonController;
     @Inject
     BillController billController;
     @Inject
@@ -342,7 +338,7 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage(massage);
             return "";
         }
-        
+
         if (maximumRefundedAmount > 0.0) {
             System.out.println("current = " + current);
             if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
@@ -602,14 +598,6 @@ public class PettyCashBillController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getReturnAmount() {

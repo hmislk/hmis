@@ -1,27 +1,16 @@
 package com.divudi.service;
 
-import com.divudi.bean.common.util.JsfUtil;
-import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT_REFUND;
-import com.divudi.data.HistoryType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.Payment;
-import com.divudi.facade.PatientDepositFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.PatientDepositFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +44,6 @@ public class PatientDepositService {
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
-        System.out.println("pd = " + pd);
 
         save(p);
 
@@ -81,7 +69,7 @@ public class PatientDepositService {
             patientFacade.edit(p);
         }
     }
-    
+
     public void updateBalance(Payment p, PatientDeposit pd) {
         switch (p.getBill().getBillTypeAtomic()) {
             case PATIENT_DEPOSIT:
@@ -115,7 +103,7 @@ public class PatientDepositService {
             case PATIENT_DEPOSIT_CANCELLED:
                 handleOutPayment(p, pd);
                 break;
-                
+
             case INWARD_DEPOSIT:
                 handleOutPayment(p, pd);
                 break;
@@ -124,7 +112,7 @@ public class PatientDepositService {
                 throw new AssertionError();
         }
     }
-    
+
     public void updateBalance(Bill b, PatientDeposit pd) {
         switch (b.getBillTypeAtomic()) {
             case PATIENT_DEPOSIT:
@@ -199,7 +187,7 @@ public class PatientDepositService {
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
-    
+
     public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());
@@ -208,7 +196,7 @@ public class PatientDepositService {
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  Math.abs(p.getPaidValue()));
     }
-    
+
     public void handleOutPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs( p.getPaidValue());
@@ -251,5 +239,5 @@ public class PatientDepositService {
         patientDepositHistoryFacade.create(pdh);
     }
 
-    
+
 }

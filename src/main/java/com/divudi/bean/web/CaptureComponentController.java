@@ -6,14 +6,14 @@ package com.divudi.bean.web;
 
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.PatientController;
-import com.divudi.data.web.ComponentPresentationType;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.web.CaptureComponent;
-import com.divudi.entity.web.DesignComponent;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DynamicHtmlFormComponent;
-import com.divudi.facade.web.CaptureComponentFacade;
-import com.divudi.facade.web.DesignComponentFacade;
+import com.divudi.core.data.web.ComponentPresentationType;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.web.CaptureComponent;
+import com.divudi.core.entity.web.DesignComponent;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DynamicHtmlFormComponent;
+import com.divudi.core.facade.web.CaptureComponentFacade;
+import com.divudi.core.facade.web.DesignComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -204,7 +204,7 @@ public class CaptureComponentController implements Serializable {
                 facade.edit(cc);
             }
         }
-        
+
         JsfUtil.addErrorMessage("Saved");
     }
 

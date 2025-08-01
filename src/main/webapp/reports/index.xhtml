@@ -86,17 +86,28 @@
                                     <p:commandButton  
                                         class="w-100"  
                                         ajax="false" 
-                                        action="#{searchController.navigateToAllCashierHandovers()}"
-                                        value="5. Handovers" >
+                                        action="#{financialTransactionController.navigateToUserHandovers()}"
+                                        value="5. Shifts" >
                                     </p:commandButton>
-
+                                    <p:commandButton  
+                                        class="w-100"  
+                                        ajax="false" 
+                                        action="#{searchController.navigateToAllCashierHandovers()}"
+                                        value="6. Handovers" >
+                                    </p:commandButton>
+                                    <p:commandButton  
+                                        class="w-100"  
+                                        ajax="false" 
+                                        action="#{searchController.navigateToShiftEndCash()}"
+                                        value="7. Shift End Cash" >
+                                    </p:commandButton>
 
                                 </div>
                             </p:tab>
 
                             <p:tab title="Collection Center Reports">
                                 <div class="d-grid gap-2">
-                                    
+
                                     <p:commandButton 
                                         class="w-100"  
                                         ajax="false" 
@@ -407,7 +418,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" action="#{reportController.navigateToCostOfGoodsSold()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Good in Transit" action="#{reportController.navigateToGoodInTransit()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="6. GRN Report" action="#{reportController.navigateToGrnReport()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="7. Batch Wise Stock" action="#{reportController.navigateToClosingStockReport()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="7. Batch Wise Stock" action="#{reportController.navigateToBatchWiseStockReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="8. Slow/Fast/None Movement Report" action="#{reportController.navigateToSlowFastNoneMovement()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="9. GRN" action="#{reportController.navigateToGrn()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Before Stock Taking" action="#{reportController.navigateToBeforeStockTaking()}" />
@@ -434,11 +445,13 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigation Wise Research" action="#{reportController.navigateToLabInvetigationWiseReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Annual Test Statistics" action="#{reportController.navigateToAnnualTestStatistics()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="External Laboratory Workload" action="#{reportController.navigateToExternalLaboratoryWorkloadReport()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Laboratory Workload" action="#{reportController.navigateToLaboratoryWorkloadReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Summary" action="#{reportController.navigateToInvestigationMonthEndSummery()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Details" action="#{reportController.navigateToInvestigationMonthEndDetails()}"/>
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Lab Register" action="#{reportController.navigateToLabRegisterReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Collection center statement" action="#{reportController.navigateToCollectionCenterStatement()}"/>
+
                                 </div>
                             </p:tab>
 

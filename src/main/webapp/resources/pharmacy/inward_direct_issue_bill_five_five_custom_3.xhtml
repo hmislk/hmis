@@ -16,7 +16,7 @@
         <!-- Composite Component Interface -->
         <cc:interface>
             <!-- Attributes passed to the component -->
-            <cc:attribute name="bill" required="true"  type="com.divudi.entity.Bill" />
+            <cc:attribute name="bill" required="true"  type="com.divudi.core.entity.Bill" />
             <cc:attribute name="duplicate" required="false" />
         </cc:interface>
 
@@ -29,8 +29,8 @@
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                 </div>
 
                 <!-- Separator Line -->
@@ -38,54 +38,61 @@
 
                 <!-- Patient and Bill Information Table -->
                 <table class="info-table">
+                    
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
-                            <td >Patient Name:</td>
-                            <td >
+                            <td style="padding: 2px;">Name </td>
+                            <td style="padding: 2px;" colspan="5">
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
-                            </td>
-                            <td class="spacer"></td>
-                            <td >Patient Age/Sex:</td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.age}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
-                            <td >BHT:</td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
-                            </td>
-                            <td class="spacer"></td>
-                            <td >Room No:</td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.name}"/>
+                            <td style="padding: 2px;">Age/Sex </td>
+                            <td style="padding: 2px;" colspan="5" class="d-flex gap-2">
+                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
                             </td>
                         </tr>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                    <tr>
+                        <td  style="padding: 2px;">BHT</td>
+                        <td  style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" ></h:outputLabel>
+                        </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Room No</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" ></h:outputLabel>
+                        </td>
+                    </tr>
                     </h:panelGroup>
 
                     <tr>
-                        <td >Bill Date:</td>
-                        <td >
+                        <td  style="padding: 2px;">Bill Date</td>
+                        <td  style="padding: 2px;">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                                 <f:convertDateTime pattern="yyyy-MM-dd" />
                             </h:outputLabel>
                         </td>
-                        <td class="spacer"></td>
-                        <td >Bill Time:</td>
-                        <td >
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Bill Time</td>
+                        <td style="padding: 2px;">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                                 <f:convertDateTime pattern="HH:mm a" />
                             </h:outputLabel>
                         </td>
                     </tr>
+                    
                     <tr>
-                        <td >Bill No:</td>
-                        <td >#{cc.attrs.bill.deptId}</td>
-                        <td class="spacer"></td>
-                        <td >Department:</td>
-                        <td >Pharmacy</td>
+                        <td style="padding: 2px;">Bill No</td>
+                        <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;" >Department</td>
+                        <td style="padding: 2px;">#{cc.attrs.bill.department.name}</td>
                     </tr>
                 </table>
 
@@ -156,14 +163,14 @@
                         <td>
                             <ui:repeat value="#{cc.attrs.bill.payments}" var="ps" rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}">
                                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Cash' }" >
-                                    <h:outputText 
-                                        style="font-size: 8pt"  
+                                    <h:outputText
+                                        style="font-size: 8pt"
                                         value="Paid by : Cash #{ps.paidValue}"/><br/>
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                                    <h:outputText 
-                                        style="font-size: 8pt"  
+                                    <h:outputText
+                                        style="font-size: 8pt"
                                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/><br/>
                                 </h:panelGroup>
                             </ui:repeat>

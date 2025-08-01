@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                
+
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -24,9 +24,9 @@
                                         pattern="yyyy MM dd HH:mm:ss" >
                             </p:calendar>
                             <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
+                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>
                             <h:outputLabel value="Approved Person"/>
-                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
+                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/>
                             <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
                             <h:panelGroup>
                                 <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
@@ -41,9 +41,9 @@
                             </p:commandButton>
                         </h:panelGrid>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
-                            <p:dataTable  value="#{staffAdditionalFormController.aditionalWithTimes}" 
-                                          var="add" 
-                                          rowStyleClass="#{add.af.retired eq true ? 'redText':''}" 
+                            <p:dataTable  value="#{staffAdditionalFormController.aditionalWithTimes}"
+                                          var="add"
+                                          rowStyleClass="#{add.af.retired eq true ? 'redText':''}"
                                           id="tb1">
 
                                 <f:facet name="header">
@@ -55,7 +55,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{staffAdditionalFormController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -197,7 +197,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>
@@ -207,6 +207,6 @@
                 </h:panelGrid>
             </p:panel>
         </h:form>
-    </ui:define> 
+    </ui:define>
 
 </ui:composition>

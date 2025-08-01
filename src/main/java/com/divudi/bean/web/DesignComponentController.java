@@ -1,11 +1,11 @@
 package com.divudi.bean.web;
 
-import com.divudi.data.web.ComponentDataType;
-import com.divudi.data.web.ComponentPresentationType;
-import com.divudi.entity.web.DesignComponent;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.web.ComponentMappingType;
-import com.divudi.facade.web.DesignComponentFacade;
+import com.divudi.core.data.web.ComponentDataType;
+import com.divudi.core.data.web.ComponentPresentationType;
+import com.divudi.core.entity.web.DesignComponent;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.web.ComponentMappingType;
+import com.divudi.core.facade.web.DesignComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

@@ -4,26 +4,27 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,8 +33,9 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.service.BillService;
 
 /**
  *
@@ -66,6 +68,19 @@ public class BhtIssueReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    BillService billService;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    
+    public String navigateToReturnPharmacyDirectIssueToInpatients(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No Bill provided");
+            return null;
+        }
+        bill = b;
+        return navigateToReturnPharmacyDirectIssueToInpatients();
+    }
 
     public String navigateToReturnPharmacyDirectIssueToInpatients() {
         if (bill == null) {
@@ -85,9 +100,16 @@ public class BhtIssueReturnController implements Serializable {
 //            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
 //            return;
 //        }
-        if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
-            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
-            return null;
+        if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
+            if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
+                JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+                return null;
+            }
+        } else {
+            if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId()) && !getSessionController().getDepartment().getId().equals(bill.getFromDepartment().getId())) {
+                JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+                return null;
+            }
         }
         returnBill = null;
         getReturnBill();
@@ -202,6 +224,36 @@ public class BhtIssueReturnController implements Serializable {
 
     }
 
+    private void saveReturnIssueBill() {
+
+//        getReturnBill().copy(getBill());
+        getReturnBill().setBillType(getBill().getBillType());
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        getReturnBill().setBilledBill(getBill());
+
+        getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
+
+        getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
+        getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
+        getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
+
+        getReturnBill().setCreater(getSessionController().getLoggedUser());
+        getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
+
+        getReturnBill().setDepartment(getSessionController().getDepartment());
+        getReturnBill().setInstitution(getSessionController().getInstitution());
+
+        String departmentId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        getReturnBill().setInsId(departmentId);
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
+
+        //   getReturnBill().setInsId(getBill().getInsId());
+        if (getReturnBill().getId() == null) {
+            getBillFacade().create(getReturnBill());
+        }
+
+    }
+
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
@@ -218,7 +270,6 @@ public class BhtIssueReturnController implements Serializable {
 //            double value = i.getRate() * i.getQty();
 //            i.setGrossValue(0 - value);
 //            i.setNetValue(0 - value);
-
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             if (i.getId() == null) {
@@ -234,7 +285,11 @@ public class BhtIssueReturnController implements Serializable {
 
             //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             //System.err.println("STOCK " + i.getPharmaceuticalBillItem().getStock());
-            getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
+                getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            } else {
+                getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getBill().getDepartment());
+            }
 
             //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());
             //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
@@ -315,9 +370,15 @@ public class BhtIssueReturnController implements Serializable {
             return;
         }
 
-        saveReturnBill();
+        if (getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            saveReturnIssueBill();
+        } else {
+            saveReturnBill();
+        }
         saveComponent();
+        billService.createBillFinancialDetailsForPharmacyBill(getReturnBill());
 
+        getReturnBill().setReferenceBill(getBill());
 //        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
         getBillFacade().edit(getReturnBill());
 
@@ -385,6 +446,7 @@ public class BhtIssueReturnController implements Serializable {
             bi.setReferenceBill(getBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
+            bi.setMarginRate(bi.getNetRate() - bi.getRate());
             bi.setQty(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
@@ -419,7 +481,7 @@ public class BhtIssueReturnController implements Serializable {
 //            return i.getRemainingQty();
 //        }
 //
-//    }
+//    }    
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
     }

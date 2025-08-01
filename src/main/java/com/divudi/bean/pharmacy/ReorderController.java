@@ -1,31 +1,30 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentListMethod;
-import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.ItemReorders;
-import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentListMethod;
+import static com.divudi.core.data.DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.ItemReorders;
+import com.divudi.core.data.dataStructure.ItemTransactionSummeryRow;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Person;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Reorder;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.ReorderFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Reorder;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.ReorderFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -67,8 +66,6 @@ public class ReorderController implements Serializable {
     ItemController itemController;
     @Inject
     PurchaseOrderRequestController purchaseOrderRequestController;
-    @Inject
-    CommonController commonController;
 
 //    EJBs
     @EJB
@@ -353,7 +350,7 @@ public class ReorderController implements Serializable {
     public List<ItemTransactionSummeryRow> findDailyStockAverage(Item item, Department dept, Date fd, Date td) {
         String jpql;
         List<ItemTransactionSummeryRow> rows;
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow"
+        jpql = "SELECT new com.divudi.core.data.dataStructure.ItemTransactionSummeryRow"
                 + "(s.item, avg(s.stockQty), FUNC('DATE',s.createdAt)) "
                 + " FROM StockHistory s "
                 + " WHERE s.createdAt between :fd and :td "
@@ -422,7 +419,7 @@ public class ReorderController implements Serializable {
 //            bi.getQty();
 //            bi.getItem();
 //        }
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow(s.item, sum(s.qty), FUNC('DATE',s.bill.createdAt)) "
+        jpql = "SELECT new com.divudi.core.data.dataStructure.ItemTransactionSummeryRow(s.item, sum(s.qty), FUNC('DATE',s.bill.createdAt)) "
                 + " FROM BillItem s "
                 + " WHERE s.bill.createdAt between :fd and :td "
                 + " and s.item=:item ";
@@ -1401,14 +1398,6 @@ public class ReorderController implements Serializable {
             }
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

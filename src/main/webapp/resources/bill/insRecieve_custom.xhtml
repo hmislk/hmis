@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billController"  />
         <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
@@ -40,9 +40,9 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value=" Receipt"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value=" Receipt"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
@@ -50,7 +50,7 @@
             </div>
 
             <div class="billDetailsFiveFive" style="margin-left: 5%">
-                
+
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Name" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>

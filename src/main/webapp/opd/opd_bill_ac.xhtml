@@ -474,7 +474,7 @@
                                     id='pIxAdd' 
                                     class="w-100 mt-2 form">
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa-solid fa-circle-plus" /> 
                                         <h:outputText value="Add New Item" class="mx-4"></h:outputText>
                                     </f:facet>
 
@@ -1046,7 +1046,7 @@
 
                                 <p:panel class="mb-2" id="payment">
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row my-1"  >
@@ -1163,14 +1163,14 @@
                                                     <div class="row mt-1">
                                                         <div class="col-12">
                                                             <p:autoComplete  
-                                                                minQueryLength="3"
+                                                                minQueryLength="1"
                                                                 forceSelection="true" 
                                                                 value="#{opdBillController.toStaff}" 
                                                                 id="welfareStaff"
                                                                 completeMethod="#{staffController.completeStaff}" 
                                                                 var="mys" 
                                                                 class="w-100"
-                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                placeholder="Staff (Type Name, Code or EPF No to search)"
                                                                 inputStyleClass="form-control"
                                                                 itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
@@ -1178,7 +1178,10 @@
                                                                 <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="EPF" style="padding: 2px;">
+                                                                <p:column headerText="Code" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF No" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement" style="padding: 2px;">
@@ -1224,15 +1227,21 @@
                                                 id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                            <h:panelGroup 
+                                            <h:panelGroup
                                                 class="row my-1"
-                                                layout="block" 
+                                                layout="block"
                                                 id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                            <h:panelGroup 
+                                            <h:panelGroup
                                                 class="row my-1"
-                                                layout="block" 
+                                                layout="block"
+                                                id="onlinePayment"  rendered="#{opdBillController.paymentMethod eq 'OnlineSettlement'}" >
+                                                <pa:online_settlement paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"
                                                 id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
                                                 <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
@@ -1308,7 +1317,7 @@
 
                                 <p:panel id="pBillDetails" >
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                         <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row">
@@ -1386,7 +1395,7 @@
 
                                 <p:panel id="panelWorkingStaff" class="m-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill - Show the Doctor Details')}">
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <p:commandButton value="reload" rendered="false" action="#" process="@this" update="lstCurrentDocs" ></p:commandButton>
@@ -1403,7 +1412,7 @@
 
                                 <p:panel id="panelBillReferrals" class="mt-2">
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa fa-stethoscope" /> 
                                         <h:outputText value="Referral Details" class="mx-4"></h:outputText>
                                     </f:facet>
 
@@ -1542,6 +1551,13 @@
 
                                         </p:autoComplete>
 
+    <p:outputLabel for="txtIndication" value="Indication"/>
+    <p:inputTextarea
+        id="txtIndication"
+        class="w-100"
+        rows="4"
+        maxlength="500"
+        value="#{opdBillController.indication}" />
                                     </h:panelGrid>
                                 </p:panel>
 

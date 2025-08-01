@@ -8,20 +8,19 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.DealerController;
 import com.divudi.bean.pharmacy.ItemsDistributorsController;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PackageFee;
-import com.divudi.entity.pharmacy.ItemsDistributors;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PackageFeeFacade;
-import com.divudi.facade.PackegeFacade;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PackageFee;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PackageFeeFacade;
+import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,8 +56,6 @@ public class StoreItemsDistributorsController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
     private List<ItemsDistributors> items = null;
@@ -66,17 +63,17 @@ public class StoreItemsDistributorsController implements Serializable {
     private SearchKeyword searchKeyword;
     private List<PackageFee> charges;
     //private List<Packege> packegeList = null;
-    Institution currentInstituion;
+    Institution currentInstitution;
     private Item currentItem;
     private PackageFee currentFee;
     private Double total = 0.0;
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
     }
 
     /**
@@ -86,8 +83,11 @@ public class StoreItemsDistributorsController implements Serializable {
     }
 
     private boolean checkItem() {
+        if (getCurrentInstitution() == null || getCurrentItem() == null) {
+            return false;
+        }
         String sql = "Select i from ItemsDistributors i where i.retired=false"
-                + " and i.institution.id= " + getCurrentInstituion().getId() + " and "
+                + " and i.institution.id= " + getCurrentInstitution().getId() + " and "
                 + " i.item.id=" + getCurrentItem().getId();
         ItemsDistributors tmp = getFacade().findFirstByJpql(sql);
         if (tmp != null) {
@@ -98,7 +98,7 @@ public class StoreItemsDistributorsController implements Serializable {
     }
 
     public void addToPackage() {
-        if (getCurrentInstituion() == null) {
+        if (getCurrentInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
@@ -114,7 +114,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         ItemsDistributors pi = new ItemsDistributors();
 
-        pi.setInstitution(getCurrentInstituion());
+        pi.setInstitution(getCurrentInstitution());
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
         pi.setCreater(getSessionController().getLoggedUser());
@@ -124,7 +124,7 @@ public class StoreItemsDistributorsController implements Serializable {
     }
 
     public void removeFromPackage() {
-        if (getCurrentInstituion() == null) {
+        if (getCurrentInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
@@ -214,6 +214,11 @@ public class StoreItemsDistributorsController implements Serializable {
      * @return
      */
     public List<ItemsDistributors> getItems() {
+        if (getCurrentInstitution() == null) {
+            items = new ArrayList<>();
+            return items;
+        }
+
         String temSql;
         HashMap hm = new HashMap();
 
@@ -222,7 +227,7 @@ public class StoreItemsDistributorsController implements Serializable {
                 + " and i.institution=:ins "
                 + " order by i.item.name";
 
-        hm.put("ins", getCurrentInstituion());
+        hm.put("ins", getCurrentInstitution());
 
         items = getFacade().findByJpql(temSql, hm);
 
@@ -267,8 +272,8 @@ public class StoreItemsDistributorsController implements Serializable {
         sql += " order by b.institution.name,b.item.name ";
 
         searchItems = getFacade().findByJpql(sql, tmp);
-        
-        
+
+
 
     }
 
@@ -441,7 +446,7 @@ public class StoreItemsDistributorsController implements Serializable {
          */
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ItemsDistributorsController controller = (ItemsDistributorsController) facesContext.getApplication().getELResolver().
@@ -456,9 +461,7 @@ public class StoreItemsDistributorsController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         /**
@@ -483,12 +486,4 @@ public class StoreItemsDistributorsController implements Serializable {
         }
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
 }

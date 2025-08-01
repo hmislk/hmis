@@ -7,14 +7,14 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Route;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserRoute;
-import com.divudi.facade.RouteFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.WebUserRouteFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Route;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserRoute;
+import com.divudi.core.facade.RouteFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.WebUserRouteFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,7 +52,7 @@ public class UserRouteController implements Serializable {
     List<WebUserRoute> selectedItems;
     private WebUserRoute current;
     private WebUser selectedUser;
-    private Institution currentInstituion;
+    private Institution currentInstitution;
     Route currentRoute;
     private List<Route> lstDep;
     private List<Route> currentInsRoutes;
@@ -161,7 +161,7 @@ public class UserRouteController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentRoute = null;
-        
+
     }
 
     public List<WebUserRoute> fillWebUserRoutes(WebUser wu) {
@@ -188,8 +188,8 @@ public class UserRouteController implements Serializable {
         }
         return items;
     }
-    
-    
+
+
 
     public WebUserRouteFacade getEjbFacade() {
         return ejbFacade;
@@ -262,23 +262,23 @@ public class UserRouteController implements Serializable {
         this.institutionFacade = institutionFacade;
     }
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
 //        getCurrentInsRoutes();
     }
 
 //    public List<Route> getCurrentInsRoutes() {
-//        if (currentInstituion == null) {
+//        if (currentInstitution == null) {
 //            //////// // System.out.println("1");
 //            return new ArrayList<>();
 //        }
 //        //////// // System.out.println("2");
 //        Map m = new HashMap();
-//        m.put("ins", currentInstituion);
+//        m.put("ins", currentInstitution);
 //        String sql = "SELECT i FROM Route i where i.retired=false and i.institution=:ins order by i.name";
 //        currentInsRoutes = getRouteFacade().findByJpql(sql,m);
 //        //////// // System.out.println("3");

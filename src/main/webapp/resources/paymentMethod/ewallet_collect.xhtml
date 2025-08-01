@@ -8,17 +8,17 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData" type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
         <div class="d-flex gap-2">
-            <p:inputText autocomplete="off" placeholder="Wallet No" value="#{cc.attrs.paymentMethodData.ewallet.no}" style="width: 8em;" id="refno" class=""/>  
-            
+            <p:inputText autocomplete="off" placeholder="Wallet No" value="#{cc.attrs.paymentMethodData.ewallet.no}" style="width: 8em;" id="refno" class=""/>
+
             <p:inputText autocomplete="off" style="width: 10em;" value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal"/>
-            
+
             <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" filter="true" filterMatchMode="contains" style="width: 12em;">
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>

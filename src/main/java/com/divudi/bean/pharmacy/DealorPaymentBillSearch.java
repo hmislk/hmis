@@ -6,34 +6,34 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.facade.CancelledBillFacade;
-import com.divudi.facade.RefundBillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.CancelledBillFacade;
+import com.divudi.core.facade.RefundBillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -70,7 +70,6 @@ public class DealorPaymentBillSearch implements Serializable {
     List<BillFee> billFees;
     List<Bill> bills;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -189,10 +188,8 @@ public class DealorPaymentBillSearch implements Serializable {
 //        List<Bill> userBills;
 //        if (getUser() == null) {
 //            userBills = new ArrayList<>();
-//            //////// // System.out.println("user is null");
 //        } else {
 //            userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-//            //////// // System.out.println("user ok");
 //        }
 //        if (userBills == null) {
 //            userBills = new ArrayList<>();
@@ -358,7 +355,6 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBillType(BillType.GrnPayment);
         rb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
-        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic());
 
         rb.setBillDate(new Date());
         rb.setBillTime(new Date());
@@ -464,7 +460,6 @@ public class DealorPaymentBillSearch implements Serializable {
             bill.setCancelled(true);
             bill.setCancelledBill(cb);
             JsfUtil.addSuccessMessage("Successfully Cancelled");
-            System.out.println("JsfUtil.addSuccessMessage(Successfully Cancelled);");
             getBilledBillFacade().edit(bill);
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
@@ -510,7 +505,6 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -655,13 +649,10 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //////// // System.out.println("getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////// // System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -843,7 +834,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -855,7 +846,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -863,14 +854,6 @@ public class DealorPaymentBillSearch implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {

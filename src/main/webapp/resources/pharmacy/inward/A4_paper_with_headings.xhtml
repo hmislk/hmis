@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -33,22 +33,22 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>
                 </div>
             </div>
 
             <div class="" style="text-align: center; margin-top: 10px; font-weight: bold;font-size: 13pt">
                 <h:outputLabel value="Issue Bill" />
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
                 <br/>
-                <hr></hr>   
+                <hr/>
                 <br/>
             </div>
 
@@ -173,7 +173,7 @@
 
                 </table>
             </div>
-            
+
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
                     <!--                    <div style="text-align: center;font-size: 10px;" class="mt-3">
@@ -273,7 +273,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-                        </tr>      
+                        </tr>
 
                         <tr>
                             <td class="totalsBlock" style="text-align: left; width: 60%;">
@@ -284,10 +284,10 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-                        </tr> 
+                        </tr>
                     </h:panelGroup>
 
-                    
+
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <tr>

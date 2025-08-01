@@ -5,38 +5,38 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Payment;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -49,6 +49,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -89,6 +90,8 @@ public class GrnController implements Serializable {
     PaymentFacade paymentFacade;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /////////////////
     private Institution dealor;
     private Bill approveBill;
@@ -121,7 +124,7 @@ public class GrnController implements Serializable {
     BillItem currentExpense;
     List<BillItem> billExpenses;
 
-    public void closeSelectedPurchesOrder() {
+    public void closeSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -132,7 +135,7 @@ public class GrnController implements Serializable {
 
     }
 
-    public void openSelectedPurchesOrder() {
+    public void openSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -226,6 +229,7 @@ public class GrnController implements Serializable {
         return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
     }
 
+    @Deprecated // Please use navigateToResive
     public String navigateToResiveAll() {
         grnBill = null;
         dealor = null;
@@ -777,6 +781,14 @@ public class GrnController implements Serializable {
         return freeTotal;
     }
 
+    public double calFreeQuantitySaleValue(Bill b) {
+        double freeTotal = 0.0;
+        for (BillItem bi : b.getBillItems()) {
+            freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getRetailRate());
+        }
+        return freeTotal;
+    }
+
     private void updateBalanceForGrn(Bill grn) {
         if (grn == null) {
             return;
@@ -912,6 +924,13 @@ public class GrnController implements Serializable {
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+
+        if (getGrnBill().getId() == null) {
+            getBillFacade().create(getGrnBill());
+        } else {
+            getBillFacade().edit(getGrnBill());
+        }
+
         if (getCurrentGrnBillPre() != null) {
 
             if (getCurrentGrnBillPre().getId() == null) {
@@ -922,11 +941,7 @@ public class GrnController implements Serializable {
             getCurrentGrnBillPre().setForwardReferenceBill(getGrnBill());
             getBillFacade().edit(getCurrentGrnBillPre());
         }
-        if (getGrnBill().getId() == null) {
-            getBillFacade().create(getGrnBill());
-        } else {
-            getBillFacade().edit(getGrnBill());
-        }
+
     }
 
     public void saveWholesaleBill() {
@@ -980,8 +995,9 @@ public class GrnController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
+            double remains = Math.abs(i.getQtyInUnit()) - Math.abs(calculatedReturns);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1012,7 +1028,8 @@ public class GrnController implements Serializable {
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
 
-                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1029,8 +1046,8 @@ public class GrnController implements Serializable {
 
         for (BillItem importBi : importGrnBill.getBillItems()) {
             PharmaceuticalBillItem i = importBi.getPharmaceuticalBillItem();
-            double remains = i.getQty() - getPharmacyCalculation().calQtyInTwoSql(i);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double remains = i.getQty() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1064,7 +1081,8 @@ public class GrnController implements Serializable {
                 ph.setDoe(i.getDoe());
                 ph.setStringValue(i.getStringValue());
 
-                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                double wholesaleFactor2 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor2) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1080,7 +1098,7 @@ public class GrnController implements Serializable {
     public void generateBillComponentAll() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
+            double remains = i.getQtyInUnit() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
 
             BillItem bi = new BillItem();
             bi.setSearialNo(getBillItems().size());
@@ -1104,7 +1122,8 @@ public class GrnController implements Serializable {
             ph.setPurchaseRate(i.getPurchaseRate());
             ph.setRetailRate(i.getRetailRate());
 
-            ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+            double wholesaleFactor3 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+            ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor3) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
             ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
             ph.setFreeQty(i.getFreeQty());

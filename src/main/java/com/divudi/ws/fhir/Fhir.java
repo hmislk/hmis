@@ -6,24 +6,20 @@
 package com.divudi.ws.fhir;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.AuthenticateController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-
-import com.divudi.entity.ApiKey;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Institution;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,16 +60,7 @@ public class Fhir {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    @EJB
-    private BillFeeFacade billFeeFacade;
 
-
-    private CommonFunctions commonFunctions;
-
-    @Inject
-    private CommonController commonController;
-    @Inject
-    AuthenticateController authenticateController;
     @Inject
     ApiKeyController apiKeyController;
 
@@ -468,7 +455,7 @@ public class Fhir {
         return array;
     }
 
- 
+
     private boolean isValidKey(String key) {
         if (key == null || key.trim().equals("")) {
             return false;
@@ -1146,12 +1133,12 @@ public class Fhir {
                 map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", commonController.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
-                map.put("bill_session_start_time", commonController.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", commonController.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
-                map.put("bill_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal()));
-                map.put("bill_vat", commonController.getDouble(billObjects.get(0).getBill().getVat()));
-                map.put("bill_vat_plus_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
+                map.put("bill_session_date", CommonFunctions.formatDate(billObjects.get(0).getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
+                map.put("bill_total", CommonFunctions.getDouble(billObjects.get(0).getBill().getNetTotal()));
+                map.put("bill_vat", CommonFunctions.getDouble(billObjects.get(0).getBill().getVat()));
+                map.put("bill_vat_plus_total", CommonFunctions.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1180,8 +1167,8 @@ public class Fhir {
         }
 
         m.put("id", agentId);
-        m.put("fd", commonFunctions.getStartOfDay(fromDate));
-        m.put("td", commonFunctions.getEndOfDay(toDate));
+        m.put("fd", CommonFunctions.getStartOfDay(fromDate));
+        m.put("td", CommonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //System.out.println("m = " + m);
@@ -1197,10 +1184,10 @@ public class Fhir {
                 map.put("bill_patient_name", o.getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", commonController.getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
-                map.put("bill_session_start_time", commonController.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", commonController.getDateTimeFormat24(o.getBill().getCreatedAt()));
-                map.put("bill_total", commonController.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
+                map.put("bill_session_date", CommonFunctions.formatDate(o.getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(o.getBill().getCreatedAt()));
+                map.put("bill_total", CommonFunctions.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
                 array.put(map);
             } catch (Exception e) {
                 e.printStackTrace();

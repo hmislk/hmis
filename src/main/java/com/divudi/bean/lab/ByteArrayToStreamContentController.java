@@ -1,7 +1,7 @@
 package com.divudi.bean.lab;
 
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.PatientReportItemValueFacade;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import javax.ejb.EJB;
@@ -43,48 +43,41 @@ public class ByteArrayToStreamContentController {
     public StreamedContent getImageById() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
-            return DefaultStreamedContent.builder().build();
+            return null; // No content needed during render phase
         }
 
-        // Retrieve image ID from request parameters
         String id = context.getExternalContext().getRequestParameterMap().get("id");
-
         if (id == null || id.isEmpty()) {
-            return DefaultStreamedContent.builder().build();
+            return null;
         }
 
         Long imgId;
         try {
             imgId = Long.valueOf(id);
         } catch (NumberFormatException e) {
-            return DefaultStreamedContent.builder().build();
+            return null;
         }
 
-        PatientReportItemValue priv = null;
-        priv = findPatientReportItemValueFromId(imgId);
-
-        if (priv == null) {
-            return DefaultStreamedContent.builder().build();
+        PatientReportItemValue priv = findPatientReportItemValueFromId(imgId);
+        if (priv == null || priv.getBaImage() == null || priv.getBaImage().length == 0) {
+            return null;
         }
 
-        if (priv.getBaImage() == null) {
-             return DefaultStreamedContent.builder().build();
-        }
-
-        // Fetch the byte array corresponding to the given ID
         byte[] imageData = priv.getBaImage();
+        InputStream targetStream = new ByteArrayInputStream(imageData);
 
-        if (imageData == null || imageData.length == 0) {
-            return DefaultStreamedContent.builder().build();
+        String fileType = priv.getFileType();
+        if (fileType == null || fileType.isEmpty()) {
+            fileType = "image/png"; // default to PNG if undefined
+        } else {
+            fileType = "image/" + fileType.toLowerCase();
         }
 
-        InputStream targetStream = new ByteArrayInputStream(imageData);
         return DefaultStreamedContent.builder()
                 .stream(() -> targetStream)
-                .contentType(priv.getFileType()) // Adjust content type as needed
+                .contentType(fileType)
                 .build();
     }
-
 
     private PatientReportItemValue findPatientReportItemValueFromId(Long id) {
         return patientReportItemValueFacade.find(id);

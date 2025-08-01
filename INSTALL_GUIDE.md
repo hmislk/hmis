@@ -2,10 +2,11 @@
 
 ## Table of Contents
 1. [Obtaining the source code](#obtaining-the-source-code)
-2. [Building project](#building-project)
-3. [Installing Glassfish](#installing-glassfish)
-4. [Preparing the database](#preparing-the-database)
-5. [Deploying the project](#deploying-the-project)
+2. [Installing Maven](#installing-maven)
+3. [Building project](#building-project)
+4. [Installing Glassfish](#installing-glassfish)
+5. [Preparing the database](#preparing-the-database)
+6. [Deploying the project](#deploying-the-project)
 
 ## Obtaining the source code
 
@@ -14,6 +15,16 @@
 ```
 git clone https://github.com/hmislk/hmis.git
 ```
+
+## Installing Maven
+
+On Debian-based systems, install Maven via:
+
+```
+sudo apt-get install maven
+```
+
+For other operating systems, download Maven from the [official website](https://maven.apache.org/download.cgi) and follow the provided installation instructions.
 
 ## Building project
 
@@ -115,3 +126,4 @@ and you're ready to go!
 ## Troubleshooting
 
 - I can't access admin pages anymore after creating the first user (which is password/login for the super user?)
+ 

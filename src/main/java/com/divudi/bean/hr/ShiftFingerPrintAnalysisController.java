@@ -5,35 +5,31 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.dataStructure.ShiftTable;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.FingerPrintComparator;
-import com.divudi.data.hr.FingerPrintRecordType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.Times;
-import static com.divudi.data.hr.Times.inTime;
-import static com.divudi.data.hr.Times.outTime;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.dataStructure.ShiftTable;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.FingerPrintComparator;
+import com.divudi.core.data.hr.FingerPrintRecordType;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.Times;
 
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Form;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.AdditionalForm;
-import com.divudi.entity.hr.FingerPrintRecord;
-import com.divudi.entity.hr.FingerPrintRecordHistory;
-import com.divudi.entity.hr.HrForm;
-import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftExtra;
-import com.divudi.facade.FingerPrintRecordFacade;
-import com.divudi.facade.FingerPrintRecordHistoryFacade;
-import com.divudi.facade.FormFacade;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Form;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.AdditionalForm;
+import com.divudi.core.entity.hr.FingerPrintRecord;
+import com.divudi.core.entity.hr.FingerPrintRecordHistory;
+import com.divudi.core.entity.hr.HrForm;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftExtra;
+import com.divudi.core.facade.FingerPrintRecordFacade;
+import com.divudi.core.facade.FingerPrintRecordHistoryFacade;
+import com.divudi.core.facade.FormFacade;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.facade.StaffShiftFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,7 +61,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
     @EJB
@@ -88,8 +83,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     StaffAdditionalFormController staffAdditionalFormController;
     @Inject
     ShiftTableController shiftTableController;
-    @Inject
-    CommonController commonController;
     /**
      *
      * Properties
@@ -543,13 +536,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
+
     }
 
     public void createShiftTableByStaff() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -612,9 +605,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        
-        
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
+
+
     }
 
     private List<Form> fetchAdditionalForm(StaffShift staffShift) {
@@ -754,12 +747,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
 //    public List<StaffShift> fetchStaffShift(StaffShift referenceShift){
 //        String sql="";
-//        
-//        
+//
+//
 //    }
     public void createShiftTableAdditional() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -823,9 +816,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        
-        
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
+
+
     }
 
     public void createShiftTableAdditionalByStaff() {
@@ -892,7 +885,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
     }
 
     public void createShiftTableReset() {
@@ -959,7 +952,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
     }
 
     public void createShiftTableResetByStaff() {
@@ -1028,7 +1021,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
     }
 
     public void fingerPrintSelectListenerStartRecord(StaffShift staffShift) {
@@ -1316,6 +1309,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void save() {
+        System.out.println("save");
         List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
@@ -1333,10 +1327,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //            return;
 //        }
         for (ShiftTable st : shiftTables) {
+            System.out.println("st = " + st);
             ShiftTable newSh = new ShiftTable();
             newSh.setDate(st.getDate());
             newSh.setFlag(st.isFlag());
             for (StaffShift ss : st.getStaffShift()) {
+                System.out.println("ss = " + ss);
 //                Collections.sort(ss.getFingerPrintRecordList(), new FingerPrintComparator());
                 if (errorCheckForSave(ss, newSh)) {
                     continue;
@@ -1344,6 +1340,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //UPDATE START RECORD
                 FingerPrintRecord startRecord = ss.getStartRecord();
+                System.out.println("startRecord = " + startRecord);
                 if (startRecord != null) {
                     startRecord.setStaffShift(ss);
                     saveHistory(startRecord);
@@ -1405,7 +1402,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calCulateTimes();
                 //Update Extra Time
                 ss.calExtraTimeWithStartOrEndRecord();
-                //Update Staff Shift OT time if DayOff or Sleeping Day                
+                //Update Staff Shift OT time if DayOff or Sleeping Day
                 ss.calExtraTimeComplete();
 
                 ss.calMultiplyingFactor(ss.getShift().getDayType());
@@ -1418,8 +1415,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calLeaveTime();
                 //Update Lieu Leave
                 ss.calLieu();
+                System.out.println("ss = " + ss);
 
                 getStaffShiftFacade().edit(ss);
+                
+                System.out.println("ss = " + ss);
+                System.out.println("ss.getStartRecord = " + ss.getStartRecord());
 
             }
 
@@ -1482,14 +1483,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public List<ShiftTable> getShiftTables() {
         return shiftTables;
     }
@@ -1543,13 +1536,4 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     public void setErrorMessage(List<String> errorMessage) {
         this.errorMessage = errorMessage;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

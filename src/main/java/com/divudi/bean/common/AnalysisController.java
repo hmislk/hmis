@@ -6,23 +6,22 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.VmpController;
-import com.divudi.data.BillCategory;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.analytics.DailyBillReportBundle;
-import com.divudi.data.analytics.DailyBillTypeSummary;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.analytics.DailyBillReportBundle;
+import com.divudi.core.data.analytics.DailyBillTypeSummary;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.inject.Named;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -66,11 +64,11 @@ public class AnalysisController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private ItemFacade itemFacade;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private VmpController vmpController;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String message;
     private Date fromDate;
@@ -83,18 +81,18 @@ public class AnalysisController implements Serializable {
     private Institution site;
     private DailyBillReportBundle dailyBillReportBundle;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public AnalysisController() {
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToDailyBillTypeCounts() {
         return "/analytics/performance/dailyBillTypeCounts.xhtml";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void processDailyBillTypeCount() {
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -520,7 +518,7 @@ public class AnalysisController implements Serializable {
 
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
@@ -590,9 +588,9 @@ public class AnalysisController implements Serializable {
     public void setBilledItems(List<Item> billedItems) {
         this.billedItems = billedItems;
     }
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
-    // </editor-fold>  
+    // </editor-fold>
 
     public WebUser getWebUser() {
         return webUser;

@@ -1,7 +1,7 @@
 package com.divudi.bean.common.analytics;
 
-import com.divudi.entity.analytics.AggregatedRecord;
-import com.divudi.facade.AggregatedRecordFacade;
+import com.divudi.core.entity.analytics.AggregatedRecord;
+import com.divudi.core.facade.AggregatedRecordFacade;
 import com.divudi.service.AggregatedRecordService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -28,17 +28,17 @@ public class AggregatedRecordController implements Serializable {
     @EJB
     private AggregatedRecordFacade ejbFacade;
     AggregatedRecordService aggregatedRecordService;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private AggregatedRecord current;
     private List<AggregatedRecord> items;
-    // </editor-fold>  
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public AggregatedRecordController() {
     }
-    // </editor-fold>  
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public AggregatedRecord getCurrent() {
@@ -66,7 +66,7 @@ public class AggregatedRecordController implements Serializable {
     private AggregatedRecordFacade getFacade() {
         return ejbFacade;
     }
-    // </editor-fold>  
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
     @FacesConverter(forClass = AggregatedRecord.class)

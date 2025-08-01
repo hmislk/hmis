@@ -9,9 +9,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.VmppFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.VmppFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +43,7 @@ public class VmppController implements Serializable {
     private VmppFacade ejbFacade;
     private Vmpp current;
     private List<Vmpp> items = null;
+    private boolean editable;
 
     @Deprecated
     public String navigateToListAllVmpps() {
@@ -84,6 +85,20 @@ public class VmppController implements Serializable {
 
     public void prepareAdd() {
         current = new Vmpp();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     private void recreateModel() {
@@ -100,6 +115,7 @@ public class VmppController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void save() {
@@ -156,6 +172,7 @@ public class VmppController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private VmppFacade getFacade() {
@@ -182,6 +199,14 @@ public class VmppController implements Serializable {
         }
 
         return vmpps;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

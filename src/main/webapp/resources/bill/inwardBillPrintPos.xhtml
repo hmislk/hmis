@@ -10,8 +10,9 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
-        <cc:attribute name="duplicate" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" />
         <cc:attribute name="refunded" />
+        <cc:attribute name="cancelled" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -57,7 +58,7 @@
             <div class="headingBill">
                 <h:outputLabel value="INVOICE"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled }" />
             </div>
 
             <div class="billline">
@@ -272,7 +273,7 @@
 
 
 
-                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
+                <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" >
                     
                     <tr style="font-size: 14px;">
                         <td colspan="1">
@@ -336,8 +337,8 @@
                                 <h:outputLabel   value="Number of Items Count" />
                             </td>
                             <td  class="totalsBlock">
-                                <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                <h:outputLabel   value="#{billBeanController.fetchBillItems(cc.attrs.bill).size()}">
+                                    <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>
                             </td>
                         </tr>

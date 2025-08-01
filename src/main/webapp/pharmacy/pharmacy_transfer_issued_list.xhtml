@@ -43,17 +43,13 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >                       
-                            <p:column headerText="Issue No" width="100px">                        
+                            <p:column headerText="Issue No" width="6em">                        
                                 <h:outputLabel value="#{p.deptId}"/>                          
-                            </p:column>
-                            <p:column headerText="Status" width="100px">                        
-                                <h:outputLabel style="font-weight: bold;" rendered="#{p.billTypeAtomic eq 'PHARMACY_DIRECT_ISSUE'}" value="Direct Issue"/>  
-                                <h:outputLabel style="font-weight: bold" rendered="#{p.billTypeAtomic ne 'PHARMACY_DIRECT_ISSUE'}" value="Request Issue"/>  
                             </p:column>
                             <p:column headerText="From Department" width="150px">                       
                                 <h:outputLabel value="#{p.department.name}"/>                          
                             </p:column>  
-                            <p:column headerText="Issued By" width="100px">
+                            <p:column headerText="Issued By" width="6em">
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
                                 <br/>
                                 <h:panelGroup rendered="#{p.cancelled}" >
@@ -62,13 +58,15 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column> 
-                            <p:column headerText="Staff" width="100px">                       
+                            <p:column headerText="Staff" width="6em">                       
                                 <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                            
                             </p:column> 
-                            <p:column headerText="Issued At" width="100px">                      
-                                <h:outputLabel value="#{p.createdAt}"/>                       
-                                <br/>
+                            <p:column headerText="Issued At" width="6em">                      
+                                <h:outputLabel value="#{p.createdAt}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>                       
                                 <h:panelGroup rendered="#{p.cancelled}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                    value="#{p.cancelledBill.createdAt}" >
@@ -77,10 +75,11 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Action" width="100px">
+                            <p:column headerText="Action" width="6em">
                                 <p:commandButton 
                                     ajax="false" 
                                     icon="far fa-eye"
+                                    rendered="false"
                                     class="ui-button-info"
                                     action="/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
@@ -88,10 +87,9 @@
 
                                 <p:commandButton 
                                     ajax="false"
-                                    icon="fas fa-check"
-                                    class="ui-button-success mx-2"
-                                    action="#{transferReceiveController.navigateToPharmacyReceiveForRequests()}"
-                                    disabled="#{p.cancelled eq true}">
+                                    value="Receive"
+                                    class="ui-button-warning mx-2"
+                                    action="#{transferReceiveController.navigateToRecieveRequest()}">
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
                                 </p:commandButton>
 
@@ -108,9 +106,8 @@
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                           value="#{b.cancelledBill.createdAt}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
+                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>                               
@@ -120,7 +117,7 @@
                                         </h:outputLabel>                                
                                         <br/>
                                         <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled by " />
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
                                             <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                            value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
@@ -132,13 +129,14 @@
                                         </h:outputLabel>                                  
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            icon="fas fa-eye"
-                                            class="ui-button-info"
-                                            value="View Recieve Note" 
-                                            action="pharmacy_reprint_transfer_receive" 
-                                            disabled="#{b.creater eq null}">
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fa fa-eye"
+                                            title="View Recieve Issue"
+                                            ajax="false"
+                                            action="#{transferReceiveController.navigateToReprintRecieveIssue()}"
+                                            disabled="#{b.referenceBill eq null}"
+                                            >
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                         </p:commandButton>
                                     </p:column>

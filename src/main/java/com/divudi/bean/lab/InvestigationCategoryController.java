@@ -11,11 +11,11 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.InvestigationCategoryFacade;
-import com.divudi.facade.MachineFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.InvestigationCategoryFacade;
+import com.divudi.core.facade.MachineFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +68,7 @@ public class InvestigationCategoryController implements Serializable {
     private UploadedFile file;
     String selectText = "";
     int manageItemIndex=-1;
-    
+
 
     public List<InvestigationCategory> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from InvestigationCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -133,7 +133,7 @@ public class InvestigationCategoryController implements Serializable {
         if (current == null) {
             current = new InvestigationCategory();
         }
-        
+
         return current;
     }
 
@@ -167,6 +167,13 @@ public class InvestigationCategoryController implements Serializable {
         return items;
     }
 
+    public List<InvestigationCategory> getItemsWithServiceCategories() {
+        if (items == null) {
+            items = fillItemsWithServiceCategories();
+        }
+        return items;
+    }
+
     public List<InvestigationCategory> fillItems() {
         String jpql = "select c "
                 + " from InvestigationCategory c "
@@ -176,7 +183,15 @@ public class InvestigationCategoryController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(jpql, m);
     }
-    
+
+    public List<InvestigationCategory> fillItemsWithServiceCategories() {
+        String jpql = "SELECT c FROM Category c "
+                + "WHERE TYPE(c) IN (InvestigationCategory, ServiceCategory) "
+                + "ORDER BY c.name";
+        Map m = new HashMap();
+        return getFacade().findByJpql(jpql, m);
+    }
+
     public InvestigationCategory findAndCreateCategoryByName(String qry) {
         InvestigationCategory c;
         String jpql;
@@ -244,14 +259,14 @@ public class InvestigationCategoryController implements Serializable {
         getItems();
         return "/admin/items/investigation_category_list?faces-redirect=true";
     }
-    
+
 
     public String navigateToManageInvestigationCategoris() {
         prepareAdd();
         return "/admin/lims/manage_categories.xhtml?faces-redirect=true";
     }
-    
-    
+
+
     public String navigateToAddInvestigationCategory() {
         prepareAdd();
         return "/admin/lims/category?faces-redirect=true";
@@ -274,15 +289,15 @@ public class InvestigationCategoryController implements Serializable {
     public String navigateToOpdServiceSubCategory() {
         return "/admin/items/opd_service_subcategory?faces-redirect=true";
     }
-    
+
     public String navigateToItemsAndServices() {
         return "/admin/items/items.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToItemsAndServiceCountsByDepartment() {
         return "/admin/items/item_counts_by_department.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToItemsAndServiceCountsByInstitution() {
         return "/admin/items/item_counts_by_institution.xhtml?faces-redirect=true";
     }
@@ -299,9 +314,7 @@ public class InvestigationCategoryController implements Serializable {
         return "/admin/items/theatre_service.xhtml?faces-redirect=true";
     }
 
-    public String navigateToBillExpenses() {
-        return "/admin/items/bill_expenses.xhtml?faces-redirect=true";
-    }
+
 
     public String navigateToRelationships() {
         return "/admin/items/relationships.xhtml?faces-redirect=true";

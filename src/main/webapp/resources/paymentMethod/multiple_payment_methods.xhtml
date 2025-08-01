@@ -65,7 +65,7 @@
                                     itemLabel="#{pm1.label}"
                                     itemValue="#{pm1}"/>
                                 <p:ajax process="pay" 
-                                        update="paymentDetails"
+                                        update="paymentDetails tblMultiplePayments"
                                         event="change"
                                         listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  />
                             </p:selectOneMenu>
@@ -106,6 +106,9 @@
                                 </h:panelGroup>                               
                                 <h:panelGroup id="Staff_Welfare" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block" class="row">
                                     <pa:staff_welfare valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="online_settlement" rendered="#{pm.paymentMethod eq 'OnlineSettlement'}" layout="block" class="row">
+                                    <pa:online_settlement valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </div></div>

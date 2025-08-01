@@ -61,7 +61,7 @@
                         <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
-                                value="#{reportsController.institution}"
+                                value="#{reportsController.institutionOfDepartment}"
                                 filter="true">
                             <f:selectItem itemLabel="All Institutions"/>
                             <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
@@ -175,7 +175,7 @@
                         <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
                             <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                             <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                                <p:ajax update="statusMenu"/>
+                            <p:ajax update="statusMenu"/>
                         </p:selectOneMenu>
 
                         <p:spacer/>
@@ -208,14 +208,14 @@
                             <h:outputText value="&#xf0ae;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Status" class="m-3"/>
                         </h:panelGroup>
-                            <p:selectOneMenu value="#{reportsController.dischargedStatus}" 
-                                             filter="true" 
-                                             class="w-100 "
-                                             id="statusMenu"
-                                             disabled="#{reportsController.visitType ne 'IP'}">
-                                <f:selectItem itemLabel="All" itemValue="#{null}" />
-                                <f:selectItem itemLabel="Not Discharged" itemValue="notDischarged" />
-                                <f:selectItem itemLabel="Discharged" itemValue="discharged" />
+                        <p:selectOneMenu value="#{reportsController.dischargedStatus}"
+                                         filter="true"
+                                         class="w-100 "
+                                         id="statusMenu"
+                                         disabled="#{reportsController.visitType ne 'IP'}">
+                            <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                            <f:selectItem itemLabel="Not Discharged" itemValue="notDischarged"/>
+                            <f:selectItem itemLabel="Discharged" itemValue="discharged"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
 
@@ -234,19 +234,25 @@
                             icon="fas fa-print"
                             ajax="false"
                             value="Print"
-                            rendered="#{reportsController.visitType eq 'OP'}">
-                        <p:printer target="tblExport2"/>
+                            onclick="hidePaginatorBeforePrint()">
+                        <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
                     </p:commandButton>
 
-                    <p:commandButton
-                            class="ui-button-info my-4 mx-2"
-                            style="width: 150px"
-                            icon="fas fa-print"
-                            ajax="false"
-                            value="Print"
-                            rendered="#{reportsController.visitType eq 'IP'}">
-                        <p:printer target="tblExport1"/>
-                    </p:commandButton>
+                    <h:outputScript>
+                        function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                        }
+
+                        function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                        }
+
+                        window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                        };
+                    </h:outputScript>
 
                     <p:commandButton class="m-2 ui-button-success"
                                      style="width: 150px"
@@ -256,7 +262,6 @@
                                      ajax="false" value="Excel">
                     </p:commandButton>
 
-                    
                     <p:commandButton class="m-2 ui-button-success"
                                      style="width: 150px"
                                      icon="fas fa-file-excel"
@@ -285,121 +290,189 @@
                             value="PDF">
                     </p:commandButton>
 
-                    <p:panel>
-                        <f:facet name="header">
-                            <h:outputLabel value="OPD and Inward Due"/><br/><br/>
-                            <h:panelGrid columns="2" class="mb-2">
-                                <h:outputLabel value="From Date :"/>
-                                <h:outputLabel value="#{reportsController.fromDate}">
-                                    <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="To Date :"/>
-                                <h:outputLabel value="#{reportsController.toDate}">
-                                    <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                            </h:panelGrid>
-                        </f:facet>
-
-                        <p:dataTable
-                                id="tblExport2"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rendered="#{reportsController.visitType eq 'OP'}"
-                                value="#{reportsController.bundle.groupedBillItemsByInstitution.entrySet()}"
-                                rows="10"
-                                var="entry"
-                                rowIndexVar="n"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="10,25,50">
-
-                            <p:columnGroup type="header">
-                                <p:row>
-                                    <p:column headerText="Sr.No" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Invoice Date" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Invoice No" width="10rem">
-                                    </p:column>
-                                    <p:column headerText="Customer Reference No" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="MRNO" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Patient Name" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Gross Amt" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Disc Amt" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Net Amt" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Patient Share" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Sponsor Share" width="5rem">
-                                    </p:column>
-                                    <p:column headerText="Due Amt" width="5rem">
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-
-                            <p:subTable value="#{entry.value}" var="bill">
-                                <f:facet name="header">
-                                    <h:outputText value="#{entry.key.name}"/>
-                                </f:facet>
-
-                                <p:column headerText="Sr.No" width="5rem">
-                                    <h:outputText value="#{n+1}"/>
-                                </p:column>
-                                <p:column headerText="Invoice Date" width="5rem">
-                                    <h:outputText value="#{bill.createdAt}">
+                    <h:panelGroup id="printPanel">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="OPD and Inward Due"/><br/><br/>
+                                <h:panelGrid columns="2" class="mb-2">
+                                    <h:outputLabel value="From Date :"/>
+                                    <h:outputLabel value="#{reportsController.fromDate}">
                                         <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Invoice No" width="10rem">
-                                    <h:outputText value="#{bill.deptId}"/>
-                                </p:column>
-                                <p:column headerText="Customer Reference No" width="5rem">
-                                    <h:outputText value="#{bill.referenceNumber}"/>
-                                </p:column>
-                                <p:column headerText="MRNO" width="5rem">
-                                    <h:outputText value="#{bill.patient.phn}"/>
-                                </p:column>
-                                <p:column headerText="Patient Name" width="5rem">
-                                    <h:outputText value="#{bill.patient.person.name}"/>
-                                </p:column>
-                                <p:column headerText="Gross Amt" width="5rem">
-                                    <h:outputText value="#{bill.total}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Disc Amt" width="5rem">
-                                    <h:outputText value="#{bill.discount}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Net Amt" width="5rem">
-                                    <h:outputText value="#{bill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Patient Share" width="5rem">
-                                    <h:outputText value="#{bill.settledAmountByPatient}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Sponsor Share" width="5rem">
-                                    <h:outputText value="#{bill.settledAmountBySponsor}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Due Amt" width="5rem">
-                                    <h:outputText
-                                            value="#{bill.netTotal - bill.settledAmountBySponsor - bill.settledAmountByPatient}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To Date :"/>
+                                    <h:outputLabel value="#{reportsController.toDate}">
+                                        <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputLabel>
+                                </h:panelGrid>
+                            </f:facet>
+
+                            <p:dataTable
+                                    id="tblExport2"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rendered="#{reportsController.visitType eq 'OP'}"
+                                    value="#{reportsController.bundle.groupedBillItemsByInstitution.entrySet()}"
+                                    rows="10"
+                                    var="entry"
+                                    rowIndexVar="n"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,25,50">
+                                <f:event type="preRenderComponent" listener="#{reportsController.resetGlobalIndex}"/>
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="Sr.No" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Invoice Date" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Invoice No" width="10rem">
+                                        </p:column>
+                                        <p:column headerText="Customer Reference No" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="MRNO" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Patient Name" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Gross Amt" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Disc Amt" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Net Amt" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Patient Share" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Sponsor Share" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Due Amt" width="5rem">
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:subTable value="#{entry.value}" var="bill" rowIndexVar="index">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{entry.key.name}"/>
+                                    </f:facet>
+
+                                    <p:column headerText="Sr.No" width="5rem">
+                                        <h:outputText value="#{reportsController.nextIndex}"/>
+                                    </p:column>
+                                    <p:column headerText="Invoice Date" width="5rem">
+                                        <h:outputText value="#{bill.createdAt}">
+                                            <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Invoice No" width="10rem">
+                                        <h:outputText value="#{bill.deptId}"/>
+                                    </p:column>
+                                    <p:column headerText="Customer Reference No" width="5rem">
+                                        <h:outputText value="#{bill.referenceNumber}"/>
+                                    </p:column>
+                                    <p:column headerText="MRNO" width="5rem">
+                                        <h:outputText value="#{bill.patient.phn}"/>
+                                    </p:column>
+                                    <p:column headerText="Patient Name" width="5rem">
+                                        <h:outputText value="#{bill.patient.person.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Gross Amt" width="5rem">
+                                        <h:outputText value="#{bill.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Disc Amt" width="5rem">
+                                        <h:outputText value="#{bill.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Net Amt" width="5rem">
+                                        <h:outputText value="#{bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient Share" width="5rem">
+                                        <h:outputText value="#{bill.settledAmountByPatient}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Sponsor Share" width="5rem">
+                                        <h:outputText value="#{bill.settledAmountBySponsor}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Due Amt" width="5rem">
+                                        <h:outputText
+                                                value="#{bill.netTotal - bill.settledAmountBySponsor - bill.settledAmountByPatient}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText="Sub Total: " class="text-right"
+                                                      style="font-weight: bold;"/>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.calculateGrossAmountSubTotalByBills(entry.value)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.calculateDiscountSubTotalByBills(entry.value)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.calculateNetAmountSubTotalByBills(entry.value)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.calculatePatientShareSubTotalByBills(entry.value)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.calculateSponsorShareSubTotalByBills(entry.value)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.calculateDueAmountSubTotalByBills(entry.value)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:subTable>
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column footerText=""/>
@@ -407,12 +480,37 @@
                                         <p:column footerText=""/>
                                         <p:column footerText=""/>
                                         <p:column footerText=""/>
-                                        <p:column footerText="Sub Total: " class="text-right"
+                                        <p:column footerText="Net Total: " class="text-right"
                                                   style="font-weight: bold;"/>
                                         <p:column>
                                             <f:facet name="footer">
                                                 <h:outputText
-                                                        value="#{reportsController.calculateGrossAmountSubTotalByBills(entry.value)}"
+                                                        value="#{reportsController.calculateGrossAmountNetTotal()}"
+                                                        style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{reportsController.calculateDiscountNetTotal()}"
+                                                              style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{reportsController.calculateNetAmountNetTotal()}"
+                                                              style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText
+                                                        value="#{reportsController.calculatePatientShareNetTotal()}"
                                                         style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
@@ -421,7 +519,7 @@
                                         <p:column>
                                             <f:facet name="footer">
                                                 <h:outputText
-                                                        value="#{reportsController.calculateDiscountSubTotalByBills(entry.value)}"
+                                                        value="#{reportsController.calculateSponsorShareNetTotal()}"
                                                         style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
@@ -429,234 +527,292 @@
                                         </p:column>
                                         <p:column>
                                             <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateNetAmountSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculatePatientShareSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateSponsorShareSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateDueAmountSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
+                                                <h:outputText value="#{reportsController.calculateDueAmountNetTotal()}"
+                                                              style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
-                            </p:subTable>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText="Net Total: " class="text-right" style="font-weight: bold;"/>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateGrossAmountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateDiscountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateNetAmountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculatePatientShareNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateSponsorShareNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateDueAmountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:dataTable>
+                            </p:dataTable>
 
-                        <p:dataTable
-                                id="tblExport1"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rendered="#{reportsController.visitType eq 'IP'}"
-                                value="#{reportsController.bundle.groupedBillItemsByInstitution.entrySet()}"
-                                rows="10"
-                                var="entry"
-                                rowIndexVar="n"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="10,25,50">
+                            <p:dataTable
+                                    id="tblExport1"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rendered="#{reportsController.visitType eq 'IP'}"
+                                    value="#{reportsController.billInstitutionEncounterMap.entrySet()}"
+                                    rows="10"
+                                    var="entry"
+                                    rowIndexVar="n"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,25,50">
+                                <f:event type="preRenderComponent" listener="#{reportsController.resetGlobalIndex}"/>
 
-                            <p:columnGroup type="header">
-                                <p:row>
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="Sr.No" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="BHT No" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Invoice Date" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Invoice No" width="10rem">
+                                        </p:column>
+                                        <p:column headerText="Customer Reference No" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="MRNO" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Patient Name" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Gross Amt" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Disc Amt" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Net Amt" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="GOP of Patient" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Paid by Patient" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Patient Due" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="GOP of Sponsor" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Paid by Sponsor" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Sponsor Due" width="5rem">
+                                        </p:column>
+                                        <p:column headerText="Due Amt" width="5rem">
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:subTable value="#{entry.value}" var="b">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{entry.key.name}"/>
+                                    </f:facet>
+
                                     <p:column headerText="Sr.No" width="5rem">
+                                        <h:outputText value="#{reportsController.nextIndex}"/>
                                     </p:column>
                                     <p:column headerText="BHT No" width="5rem">
+                                        <h:outputText value="#{b.bhtNo}"/>
                                     </p:column>
                                     <p:column headerText="Invoice Date" width="5rem">
+                                        <h:outputText value="#{b.patientEncounter.finalBill.createdAt}">
+                                            <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.createdAt}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertDateTime-->
+                                        <!--                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText value="#{bill.createdAt}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertDateTime-->
+                                        <!--                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                                        <!--                                        </h:outputText>-->
                                     </p:column>
                                     <p:column headerText="Invoice No" width="10rem">
+                                        <h:outputText value="#{b.patientEncounter.finalBill.deptId}"/>
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.deptId}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}"/>-->
+                                        <!--                                        <h:outputText value="#{bill.deptId}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}"/>-->
                                     </p:column>
                                     <p:column headerText="Customer Reference No" width="5rem">
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.referenceNumber}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}"/>-->
+                                        <!--                                        <h:outputText value="#{bill.referenceNumber}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}"/>-->
+                                        <h:outputText
+                                                value="#{reportsController.getReferenceNumberFromEncounterCreditCompanyMap(b.bhtNo, entry.key.name)}"/>
                                     </p:column>
                                     <p:column headerText="MRNO" width="5rem">
+                                        <h:outputText value="#{b.patient.phn}"/>
                                     </p:column>
                                     <p:column headerText="Patient Name" width="5rem">
+                                        <h:outputText value="#{b.patient.person.name}"/>
                                     </p:column>
                                     <p:column headerText="Gross Amt" width="5rem">
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.grantTotal}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText value="#{bill.grantTotal}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <h:outputText value="#{b.patientEncounter.finalBill.grantTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Disc Amt" width="5rem">
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.discount}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText value="#{bill.discount}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <h:outputText value="#{b.patientEncounter.finalBill.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Net Amt" width="5rem">
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.netTotal}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText value="#{bill.netTotal}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Patient Share" width="5rem">
+                                    <p:column headerText="GOP of Patient" width="5rem">
+                                        <h:outputText value="#{b.patientGopAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Paid by Patient" width="5rem">
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountByPatient}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText value="#{bill.settledAmountByPatient}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <h:outputText value="#{b.paidByPatient}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient Due" width="5rem">
+                                        <h:outputText value="#{b.patientDue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="GOP of Sponsor" width="5rem">
+                                        <h:outputText value="#{b.gopAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Sponsor Share" width="5rem">
+                                        <!--                                        <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountBySponsor}"-->
+                                        <!--                                                      rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText value="#{bill.settledAmountBySponsor}"-->
+                                        <!--                                                      rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <h:outputText value="#{b.paidByCompany}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Due Amt" width="5rem">
+                                    <p:column headerText="Sponsor Due" width="5rem">
+                                        <h:outputText value="#{b.companyDue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
-                                </p:row>
-                            </p:columnGroup>
-
-                            <p:subTable value="#{entry.value}" var="bill">
-                                <f:facet name="header">
-                                    <h:outputText value="#{entry.key.name}"/>
-                                </f:facet>
-
-                                <p:column headerText="Sr.No" width="5rem">
-                                    <h:outputText value="#{n+1}"/>
-                                </p:column>
-                                <p:column headerText="BHT No" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.bhtNo}"/>
-                                </p:column>
-                                <p:column headerText="Invoice Date" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.createdAt}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputText>
-                                    <h:outputText value="#{bill.createdAt}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Invoice No" width="10rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.deptId}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}"/>
-                                    <h:outputText value="#{bill.deptId}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}"/>
-                                </p:column>
-                                <p:column headerText="Customer Reference No" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.referenceNumber}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}"/>
-                                    <h:outputText value="#{bill.referenceBill}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}"/>
-                                </p:column>
-                                <p:column headerText="MRNO" width="5rem">
-                                    <h:outputText value="#{bill.patient.phn}"/>
-                                </p:column>
-                                <p:column headerText="Patient Name" width="5rem">
-                                    <h:outputText value="#{bill.patient.person.name}"/>
-                                </p:column>
-                                <p:column headerText="Gross Amt" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.grantTotal}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <h:outputText value="#{bill.grantTotal}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Disc Amt" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.discount}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <h:outputText value="#{bill.discount}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Net Amt" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.netTotal}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <h:outputText value="#{bill.netTotal}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Patient Share" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountByPatient}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <h:outputText value="#{bill.settledAmountByPatient}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Sponsor Share" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountBySponsor}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <h:outputText value="#{bill.settledAmountBySponsor}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Due Amt" width="5rem">
-                                    <h:outputText
-                                            value="#{bill.patientEncounter.finalBill.netTotal -
-                                            bill.patientEncounter.finalBill.settledAmountBySponsor - bill.patientEncounter.finalBill.settledAmountByPatient}"
-                                            rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <h:outputText
-                                            value="#{bill.netTotal - bill.settledAmountBySponsor - bill.settledAmountByPatient}"
-                                            rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                    <p:column headerText="Total Due" width="5rem">
+                                        <!--                                        <h:outputText-->
+                                        <!--                                                value="#{bill.patientEncounter.finalBill.netTotal - bill.patientEncounter.finalBill.settledAmountBySponsor - -->
+                                        <!--                                                            bill.patientEncounter.finalBill.settledAmountByPatient}"-->
+                                        <!--                                                rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null and bill.billClassType ne 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <!--                                        <h:outputText-->
+                                        <!--                                                value="#{bill.netTotal - bill.settledAmountBySponsor - bill.settledAmountByPatient}"-->
+                                        <!--                                                rendered="#{bill.billClassType eq 'CancelledBill'}">-->
+                                        <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                                        <!--                                        </h:outputText>-->
+                                        <h:outputText value="#{b.totalDue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText="Sub Total: " class="text-right"
+                                                      style="font-weight: bold;"/>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.instituteGopMap.get(entry.key)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.institutPaidByCompanyMap.get(entry.key)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText
+                                                            value="#{reportsController.institutePayableByCompanyMap.get(entry.key)}"
+                                                            style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value=""/>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:subTable>
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column footerText=""/>
@@ -665,12 +821,49 @@
                                         <p:column footerText=""/>
                                         <p:column footerText=""/>
                                         <p:column footerText=""/>
-                                        <p:column footerText="Sub Total: " class="text-right"
+                                        <p:column footerText="Net Total: " class="text-right"
                                                   style="font-weight: bold;"/>
                                         <p:column>
                                             <f:facet name="footer">
+                                                <h:outputText value=""/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value=""/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value=""/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value=""/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value=""/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value=""/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsController.gopAmount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
                                                 <h:outputText
-                                                        value="#{reportsController.calculateIpGrossAmountSubTotalByBills(entry.value)}"
+                                                        value="#{reportsController.paidByCompany}"
                                                         style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
@@ -678,113 +871,21 @@
                                         </p:column>
                                         <p:column>
                                             <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateIpDiscountSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
+                                                <h:outputLabel value="#{reportsController.payableByCompany}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
+                                                </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateIpNetAmountSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateIpPatientShareSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateIpSponsorShareSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                <h:outputText
-                                                        value="#{reportsController.calculateIpDueAmountSubTotalByBills(entry.value)}"
-                                                        style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
+                                                <h:outputText value=""/>
                                             </f:facet>
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
-                            </p:subTable>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText=""/>
-                                    <p:column footerText="Net Total: " class="text-right" style="font-weight: bold;"/>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateIpGrossAmountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateIpDiscountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateIpNetAmountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateIpPatientShareNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateIpSponsorShareNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{reportsController.calculateIpDueAmountNetTotal()}"
-                                                          style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:dataTable>
-                    </p:panel>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </ui:define>

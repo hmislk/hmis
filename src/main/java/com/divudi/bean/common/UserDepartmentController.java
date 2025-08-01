@@ -7,14 +7,14 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserDepartment;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.WebUserDepartmentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserDepartment;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.WebUserDepartmentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,7 +52,8 @@ public class UserDepartmentController implements Serializable {
     List<WebUserDepartment> selectedItems;
     private WebUserDepartment current;
     private WebUser selectedUser;
-    private Institution currentInstituion;
+    private Institution currentInstitution;
+    private Institution currentSite;
     Department currentDepartment;
     private List<Department> lstDep;
     private List<Department> currentInsDepartments;
@@ -161,10 +162,10 @@ public class UserDepartmentController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentDepartment = null;
-        
+
     }
-    
-    
+
+
     public void addRouteForUser() {
         if (selectedUser == null) {
             JsfUtil.addSuccessMessage("Select A User");
@@ -181,7 +182,7 @@ public class UserDepartmentController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentDepartment = null;
-        
+
     }
 
     public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
@@ -208,8 +209,8 @@ public class UserDepartmentController implements Serializable {
         }
         return items;
     }
-    
-    
+
+
 
     public WebUserDepartmentFacade getEjbFacade() {
         return ejbFacade;
@@ -282,23 +283,23 @@ public class UserDepartmentController implements Serializable {
         this.institutionFacade = institutionFacade;
     }
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
 //        getCurrentInsDepartments();
     }
 
 //    public List<Department> getCurrentInsDepartments() {
-//        if (currentInstituion == null) {
+//        if (currentInstitution == null) {
 //            //////// // System.out.println("1");
 //            return new ArrayList<>();
 //        }
 //        //////// // System.out.println("2");
 //        Map m = new HashMap();
-//        m.put("ins", currentInstituion);
+//        m.put("ins", currentInstitution);
 //        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
 //        currentInsDepartments = getDepartmentFacade().findByJpql(sql,m);
 //        //////// // System.out.println("3");
@@ -315,6 +316,8 @@ public class UserDepartmentController implements Serializable {
     public List<Department> getLstDep() {
         return lstDep;
     }
+    
+    
 
     public void setLstDep(List<Department> lstDep) {
         this.lstDep = lstDep;
@@ -322,6 +325,14 @@ public class UserDepartmentController implements Serializable {
 
     public void setItems(List<WebUserDepartment> items) {
         this.items = items;
+    }
+
+    public Institution getCurrentSite() {
+        return currentSite;
+    }
+
+    public void setCurrentSite(Institution currentSite) {
+        this.currentSite = currentSite;
     }
 
     /**

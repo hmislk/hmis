@@ -16,17 +16,18 @@
                     <p:panel header="Investigation Results" >
 
                         <p:panelGrid columns="2" >
-                            <p:outputLabel value="ID From" >
-                            </p:outputLabel>
-                            <p:inputText value="#{patientInvestigationController.fromId}" >
-                            </p:inputText>
-                            <p:outputLabel value="ID To" >
-                            </p:outputLabel>
-                            <p:inputText value="#{patientInvestigationController.toId}" >
-                            </p:inputText>
+                            <p:outputLabel value="Date From" />
+                            <p:calendar value="#{patientInvestigationController.fromDate}" pattern="yyyy-MM-dd" />
+                            <p:outputLabel value="Date To" />
+                            <p:calendar value="#{patientInvestigationController.toDate}" pattern="yyyy-MM-dd" />
+                            <p:outputLabel value="ID From" />
+                            <p:inputText value="#{patientInvestigationController.fromId}" />
+                            <p:outputLabel value="ID To" />
+                            <p:inputText value="#{patientInvestigationController.toId}" />
                             <p:spacer></p:spacer>
-                            <p:commandButton ajax="false" action="#{patientInvestigationController.fillPatientReportItemValues}"
-                                             value="Fill" ></p:commandButton>
+                            <p:commandButton ajax="false"
+                                             action="#{patientInvestigationController.fillPatientReportItemValues(patientInvestigationController.fromId, patientInvestigationController.toId, patientInvestigationController.fromDate, patientInvestigationController.toDate)}"
+                                             value="Fill" />
                             <p:spacer></p:spacer>
                             <p:commandButton value="Export" ajax="false">
                                 <p:dataExporter target="tbl" type="xlsx" fileName="test_results" ></p:dataExporter>
@@ -34,18 +35,18 @@
                             </p:commandButton>
 
                             <p:outputLabel value="Passed Time" ></p:outputLabel>
-                            <h:outputText id="txt_count" value="#{commonController.number} - #{patientInvestigationController.patientReportItemValues eq null}" />
+                            <h:outputText id="txt_count" value="#{patientInvestigationController.number} - #{patientInvestigationController.patientReportItemValues eq null}" />
 
                         </p:panelGrid>
 
 
 
-                        <p:poll interval="3" listener="#{commonController.increment}" update="txt_count" />
+                        <p:poll interval="3" listener="#{patientInvestigationController.increment}" update="txt_count" />
 
 
 
 
-                        <p:dataTable 
+                        <p:dataTable
                             id="tbl"
                             var="v" value="#{patientInvestigationController.patientReportItemValues}" rows="10"
                             rowKey="#{v.id}"

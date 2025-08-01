@@ -9,8 +9,9 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="cancelled" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -32,7 +33,7 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.email}"/>
@@ -40,15 +41,15 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="RECEIPT"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="RECEIPT"   />
+
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled}" />
+
             </div>
 
-            <div class="billline">
-                <br/>
-                <hr></hr>   
-                <br/>
+            <div >
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -193,7 +194,7 @@
 
                     <tr>
                         <td style="text-align: left;" >
-                            <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="PHN" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
                         <td >:</td>
@@ -235,7 +236,7 @@
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td colspan="2" style="text-align: center;" class="billline">
+                        <td colspan="2" style="text-align: center;">
                             <hr/>
                         </td>
                     </tr>
@@ -248,13 +249,13 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2" style="text-align: center;" class="billline">
+                        <td colspan="2" style="text-align: center;">
                             <hr/>
                         </td>
                     </tr>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
@@ -271,7 +272,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
@@ -302,10 +303,8 @@
 
             </div>
 
-            <div class="billline">
-                <br/>
+            <div>
                 <hr/>
-                <br/>
             </div>
 
             <div  >
