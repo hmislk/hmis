@@ -347,9 +347,6 @@ public class BillBhtController implements Serializable {
 
     @Inject
     private BillSearch billSearch;
-    
-    @EJB
-    private BillNumberGenerator billNumberGenerator;
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
@@ -362,9 +359,9 @@ public class BillBhtController implements Serializable {
         
         if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
-            batchBillId = billNumberGenerator.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
+            batchBillId = billNumberBean.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
         }else{
-            batchBillId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            batchBillId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
         }
         
         tmp.setDeptId(batchBillId);
