@@ -564,11 +564,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
-        List<Bill> purchaseBills = findReturnItemPurchaseBills(tmpBillItems);
-        if (!purchaseBills.isEmpty()) {
-            getPreBill().setReferenceBill(purchaseBills.get(0));
-            getPreBill().setBackwardReferenceBills(purchaseBills);
-        }
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
@@ -578,38 +573,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         billPreview = true;
 
-    }
-
-    private List<Bill> findReturnItemPurchaseBills(List<BillItem> tmpBillItems) {
-        if (tmpBillItems == null || tmpBillItems.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        Set<ItemBatch> itemBatches = tmpBillItems.stream()
-                .filter(bi -> bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null)
-                .map(bi -> bi.getPharmaceuticalBillItem().getItemBatch())
-                .collect(Collectors.toSet());
-
-        if (itemBatches.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<BillTypeAtomic> billTypes = Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-
-        String jpql = "SELECT DISTINCT b FROM Bill b "
-                + "JOIN b.billItems bi "
-                + "JOIN bi.pharmaceuticalBillItem pbi "
-                + "WHERE b.retired = false "
-                + "AND bi.retired = false "
-                + "AND b.billTypeAtomic IN :billTypes "
-                + "AND pbi.itemBatch IN :itemBatches";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("billTypes", billTypes);
-        params.put("itemBatches", itemBatches);
-
-        List<Bill> purchaseBills = billFacade.findByJpql(jpql, params);
-        return purchaseBills != null ? purchaseBills : new ArrayList<>();
     }
 
     private boolean checkItemBatch() {
