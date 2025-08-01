@@ -150,6 +150,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
         getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
+        getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
