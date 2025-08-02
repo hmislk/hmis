@@ -2731,6 +2731,17 @@ public class BillService {
             }
 
             Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+            
+            // Fix for transfer receive bills: Use preserved rates from pack values
+            if (bta == BillTypeAtomic.PHARMACY_TRANSFER_RECEIVE) {
+                // Use pack rates which preserve original transfer issue rates, fall back to unit rates if not available
+                if (bi.getPharmaceuticalBillItem().getPurchaseRatePack() > 0) {
+                    pRate = bi.getPharmaceuticalBillItem().getPurchaseRatePack();
+                }
+                if (bi.getPharmaceuticalBillItem().getRetailRatePack() > 0) {
+                    rRate = bi.getPharmaceuticalBillItem().getRetailRatePack();
+                }
+            }
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
