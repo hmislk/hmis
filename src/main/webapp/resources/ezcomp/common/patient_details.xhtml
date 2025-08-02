@@ -185,7 +185,8 @@
                                                     onfocus="this.select();"
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{cc.attrs.ageListener}" />
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
+<!--                                                    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{cc.attrs.ageListener}" />-->
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -194,7 +195,7 @@
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{cc.attrs.ageListener}" />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -203,7 +204,7 @@
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{cc.attrs.ageListener}" />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
