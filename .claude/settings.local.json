@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(git add:*)",
@@ -17,7 +18,20 @@
       "Bash(git pull:*)",
       "Bash(git fetch:*)",
       "Bash(gh issue view:*)",
-      "Bash(mvn:*)"
+      "Bash(mvn:*)",
+      "Bash(grep:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(./detect-maven.sh test:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr edit:*)"
     ],
     "deny": []
   }

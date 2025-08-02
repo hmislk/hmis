@@ -81,11 +81,11 @@
 
                             <div class="col-md-10">
                                 <h:panelGroup >
-                                    <p:dataTable  
-                                        id="sample" 
-                                        value="#{patientInvestigationController.lstForSampleManagement}" 
-                                        var="smpIx" 
-                                        paginator="true"
+                                    <p:dataTable
+                                        id="sample"
+                                        value="#{patientInvestigationController.lstForSampleManagement}"
+                                        var="smpIx"
+                                        paginator="true" lazy="true"
                                         rowKey="#{smpIx.id}"
                                         paginatorPosition="bottom"
                                         rows="10"

@@ -233,8 +233,26 @@
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
-                                                action="/audit/config_option_events?faces-redirect=true"
-                                                value="Config Option Events"
+                                            action="/audit/config_option_events?faces-redirect=true"
+                                            value="Config Option Events"
+                                            icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/report_execution_logs?faces-redirect=true"
+                                                value="Report Execution Logs"
+                                                icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/report_analytics?faces-redirect=true"
+                                                value="Report Analytics Dashboard"
+                                                icon="pi pi-chart-bar" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/all_audit_events?faces-redirect=true"
+                                                value="All Audit Events"
                                                 icon="pi pi-history" >
                                             </p:commandButton>
                                         </div>
@@ -251,8 +269,15 @@
 
                                             <p:commandButton
                                                 ajax="false" 
-                                                action="#{dataAdministrationController.navigateToDownloadLogFiles()}" 
-                                                value="To Download Log Files"  
+                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}"
+                                            value="To Download Log Files"
+                                            class="w-100 m-1"
+                                            />
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToReportExecutionLogs()}"
+                                                value="Process Execution Logs"
                                                 class="w-100 m-1"
                                                 />
 

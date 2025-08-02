@@ -18,11 +18,17 @@
                                     <p:tab title="Summary Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
-                                                class="w-100" 
+                                                class="w-100 ui-button-secondary" 
                                                 ajax="false" 
                                                 style="text-align: left" 
                                                 value="OPD Income Report"
                                                 action="#{opdReportController.navigateToOpdIncomeReport()}"/>
+                                            <p:commandButton 
+                                                class="w-100 ui-button-success" 
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="OPD Income Report DTO"
+                                                action="#{opdReportController.navigateToOpdIncomeReportDto()}"/>
                                              <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 

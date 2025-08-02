@@ -70,7 +70,7 @@
                             <h:outputLabel value="Rate Difference" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate - bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
-                            <f:convertNumber pattern="#00.00"/>
+                            <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 

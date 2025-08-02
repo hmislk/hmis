@@ -27,11 +27,12 @@
                                         <h:outputText styleClass="fa-solid fa-stethoscope"/>
                                         <h:outputText class="mx-4" value="Channel Schedule Management" />
                                     </div>
-                                    <p:commandButton value="Go To Channel Booking"
+                                    <p:commandButton value="Go To Channel Booking View"
                                                      icon="fa-solid fa-location-arrow"
                                                      class="ui-button-secondary"
-                                                     rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                     action="/channel/channel_booking" 
+                                                     rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}"
+                                                     action="/channel/channel_booking"
+                                                     immediate="true"
                                                      ajax="false"  />
                                 </div>
                             </f:facet>

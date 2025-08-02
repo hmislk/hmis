@@ -14,6 +14,7 @@
         <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
         <cc:attribute name="focus" type="java.lang.Boolean"  />
+        <cc:attribute name="ageListener" method-signature="void action()"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -185,6 +186,7 @@
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
                                                     <f:ajax event="keyup" execute="@this" render="dpDob" />
+<!--                                                    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{cc.attrs.ageListener}" />-->
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -193,7 +195,7 @@
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">

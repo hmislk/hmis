@@ -25,8 +25,22 @@
 
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                                <h:outputText class="mx-4" value="Channel Schedule Management" />
+
+                                <div class="d-flex justify-content-between align-item-center">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                                        <h:outputText class="mx-4" value="Channel Schedule Management" />
+                                    </div>
+
+                                    <p:commandButton value="Go To Channel Booking View"
+                                                     icon="fa-solid fa-location-arrow"
+                                                     class="ui-button-secondary"
+                                                     rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}"
+                                                     action="/channel/channel_booking"
+                                                     immediate="true"
+                                                     ajax="false"  />
+                                </div>
+
                             </f:facet>
                             <div class="row">
                                 <div class="col-4">
@@ -35,7 +49,7 @@
                                             <h:outputText styleClass="fa-solid fa-clock"/>
                                             <h:outputText class="mx-4" value="Select Session" />
                                         </f:facet>
-                                        <h:panelGrid columns="2" class="w-100">
+                                        <h:panelGrid columns="2" class="w-75">
                                             <h:outputLabel  value="Speciality" ></h:outputLabel>
                                             <p:autoComplete 
                                                 onfocus="this.select()" 
@@ -57,7 +71,8 @@
                                             <p:selectOneMenu 
                                                 filter="true"
                                                 filterMatchMode="contains"
-                                                class="mx-2 w-100"  
+                                                class="mx-2 " 
+                                                style="width: 100%"
                                                 value="#{channelScheduleController.currentStaff}" 
                                                 id="scStaff" 
                                                 > 
@@ -88,7 +103,7 @@
                                             </p:selectOneListbox>
 
                                         </h:panelGrid>
-                                        <h:panelGrid id="gpSelectButtons" columns="3" class="my-1 d-flex justify-content-end">
+                                        <h:panelGrid id="gpSelectButtons" columns="3" class="my-1 d-flex justify-content-center">
                                             <p:commandButton 
                                                 id="btnAdd" 
                                                 value="New" 
