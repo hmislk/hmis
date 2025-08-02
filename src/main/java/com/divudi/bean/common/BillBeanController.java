@@ -1979,8 +1979,13 @@ public class BillBeanController implements Serializable {
                 + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
                 + " FROM Bill b "
                 + " LEFT JOIN b.billFinanceDetails bfd "
-                + " where b.department=:dept "
-                + " and  b.billType= :bTp  "
+                + " where ";
+        if (toDep) {
+            sql += " b.department=:dept ";
+        } else {
+            sql += " b.fromDepartment=:dept ";
+        }
+        sql += " and  b.billType= :bTp  "
                 + " and  b.createdAt between :fromDate and :toDate ";
         if (toDep) {
             sql += " group by b.toDepartment "
