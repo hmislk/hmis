@@ -19,19 +19,25 @@
                         
                         
                         <div id="filters" class="row g-2">
-                            <div class="col-4 ">
+                            <div class="col-3">
                                 <h:outputLabel value="Issue From" />
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                                 itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{reportsTransfer.fromDepartment}" required="true" requiredMessage="Please select a department" >
+                                                value="#{reportsTransfer.fromDepartment}" >
                                 </p:autoComplete>
-                                <p:message for="@previous"/>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
+                                <h:outputLabel value="Issue To" />
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                value="#{reportsTransfer.toDepartment}" >
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-3">
                                 <h:outputLabel value="From" />
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <h:outputLabel value="To"/>
                             <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </div>
@@ -44,7 +50,7 @@
                                 icon="pi pi-play"
                                 class="ui-button-warning"
                                 title="Generate transfer summary with current filters"
-                                action="#{reportsTransfer.createTransferIssueBillSummery}" >
+                                action="#{reportsTransfer.createTransferIssueBillSummeryEnhanced}" >
                             </p:commandButton>
                             <p:commandButton
                                 ajax="false"
@@ -78,8 +84,14 @@
                                                     <i class="fas fa-exchange-alt mr-2"></i>Transfer Summary
                                                 </h6>
                                                 <small class="text-muted">
-                                                    <strong>From:</strong>
-                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
+                                                    <h:panelGroup rendered="#{reportsTransfer.fromDepartment != null}">
+                                                        <strong>From:</strong>
+                                                        <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{reportsTransfer.toDepartment != null}">
+                                                        <strong>To:</strong>
+                                                        <span class="badge badge-secondary">#{reportsTransfer.toDepartment.name}</span>
+                                                    </h:panelGroup>
                                                 </small>
                                                 <br/>
                                                 <small class="text-muted">
