@@ -39,9 +39,12 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.core.data.dto.PharmacyTransferIssueDTO;
+import com.divudi.core.data.dto.PharmacyTransferReceiveDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO;
+import com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -114,6 +117,7 @@ public class ReportsTransfer implements Serializable {
     private double netTotalValues;
     private double netTotalSaleValues;
     private double netTotalPurchaseValues;
+    private double netTotalCostValues;
     private double retailValue;
     private double costValue;
     private double transferValue;
@@ -122,7 +126,9 @@ public class ReportsTransfer implements Serializable {
     private List<BillItem> transferItems;
     private List<Bill> transferBills;
     private List<PharmacyTransferIssueDTO> transferIssueDtos; // DTO for efficient display
+    private List<PharmacyTransferReceiveDTO> transferReceiveDtos; // DTO for efficient display
     private List<PharmacyTransferIssueBillItemDTO> transferIssueBillItemDtos; // DTO for item level display
+    private List<PharmacyTransferReceiveBillItemDTO> transferReceiveBillItemDtos; // DTO for receive item level display
     private List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts;
 
     // Configuration for DTO vs Entity approach - true by default for better performance
@@ -519,18 +525,19 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
                 .append("b.deptId, b.createdAt, it.name, it.code,")
-                .append(" p.qty, ib.costRate, bfd.valueAtCostRate,")
+                .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
                 .append(" p.purchaseRate, bfd.valueAtPurchaseRate,")
                 .append(" bfd.lineGrossRate, bfd.lineGrossTotal)")
                 .append(" from BillItem bi")
                 .append(" join bi.bill b")
-                .append(" join bi.pharmaceuticalBillItem p")
-                .append(" join p.itemBatch ib")
+                .append(" left join bi.pharmaceuticalBillItem p")
+                .append(" left join p.itemBatch ib")
                 .append(" left join bi.billItemFinanceDetails bfd")
-                .append(" join bi.item it")
+                .append(" left join bi.item it")
                 .append(" where b.billType=:bt")
-                .append(" and b.retired=false and bi.retired=false")
+                .append(" and (b.retired=false or b.retired is null)")
+                .append(" and (bi.retired=false or bi.retired is null)")
                 .append(" and b.createdAt between :fd and :td ");
 
         params.put("fd", fromDate);
@@ -549,20 +556,12 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by bi.id");
 
-
         try {
             transferIssueBillItemDtos = (List<PharmacyTransferIssueBillItemDTO>) getBillItemFacade()
                     .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            if (transferIssueBillItemDtos != null && !transferIssueBillItemDtos.isEmpty()) {
-                for (int i = 0; i < Math.min(3, transferIssueBillItemDtos.size()); i++) {
-                    PharmacyTransferIssueBillItemDTO dto = transferIssueBillItemDtos.get(i);
-                }
-            } else {
-            }
-
         } catch (Exception e) {
             e.printStackTrace();
+            transferIssueBillItemDtos = new ArrayList<>();
         }
 
         purchaseValue = 0.0;
@@ -571,10 +570,8 @@ public class ReportsTransfer implements Serializable {
         costValue = 0.0;
         transferValue = 0.0;
 
-
         if (transferIssueBillItemDtos != null) {
             for (PharmacyTransferIssueBillItemDTO d : transferIssueBillItemDtos) {
-
                 if (d.getPurchaseValue() != null) {
                     purchaseValue += d.getPurchaseValue();
                 }
@@ -589,22 +586,86 @@ public class ReportsTransfer implements Serializable {
                     transferValue += d.getTransferValue();
                 }
             }
-        } else {
         }
 
     }
 
-    /**
-     * Main method that delegates to either DTO or Entity approach based on
-     * configuration
-     */
-    public void fillDepartmentTransfersIssueByBill() {
-        if (useDtoApproach) {
-            fillDepartmentTransfersIssueByBillDto();
-        } else {
-            fillDepartmentTransfersIssueByBillEntity();
-        }
+    public void fillDepartmentTransfersReceiveByBillItem() {
+        fillDepartmentTransfersReceiveByBillItemDto();
     }
+
+    private void fillDepartmentTransfersReceiveByBillItemDto() {
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("select new com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO(")
+                .append("b.deptId, b.createdAt, it.name, it.code,")
+                .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
+                .append(" p.retailRate, bfd.valueAtRetailRate,")
+                .append(" p.purchaseRate, bfd.valueAtPurchaseRate,")
+                .append(" bfd.lineGrossRate, bfd.lineGrossTotal)")
+                .append(" from BillItem bi")
+                .append(" join bi.bill b")
+                .append(" left join bi.pharmaceuticalBillItem p")
+                .append(" left join p.itemBatch ib")
+                .append(" left join bi.billItemFinanceDetails bfd")
+                .append(" left join bi.item it")
+                .append(" where b.billType=:bt")
+                .append(" and (b.retired=false or b.retired is null)")
+                .append(" and (bi.retired=false or bi.retired is null)")
+                .append(" and b.createdAt between :fd and :td ");
+
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bt", BillType.PharmacyTransferReceive);
+
+        if (fromDepartment != null) {
+            jpql.append(" and b.fromDepartment=:fdept");
+            params.put("fdept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            jpql.append(" and b.department=:tdept");
+            params.put("tdept", toDepartment);
+        }
+
+        jpql.append(" order by bi.id");
+
+        try {
+            transferReceiveBillItemDtos = (List<PharmacyTransferReceiveBillItemDTO>) getBillItemFacade()
+                    .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            transferReceiveBillItemDtos = new ArrayList<>();
+        }
+
+        purchaseValue = 0.0;
+        saleValue = 0.0;
+        retailValue = 0.0;
+        costValue = 0.0;
+        transferValue = 0.0;
+
+        if (transferReceiveBillItemDtos != null) {
+            for (PharmacyTransferReceiveBillItemDTO d : transferReceiveBillItemDtos) {
+                if (d.getPurchaseValue() != null) {
+                    purchaseValue += d.getPurchaseValue();
+                }
+                if (d.getCostValue() != null) {
+                    costValue += d.getCostValue();
+                }
+                if (d.getRetailValue() != null) {
+                    retailValue += d.getRetailValue();
+                    saleValue += d.getRetailValue();
+                }
+                if (d.getTransferValue() != null) {
+                    transferValue += d.getTransferValue();
+                }
+            }
+        }
+
+    }
+
 
     /**
      * DTO-based approach for efficient data retrieval - no calculations needed
@@ -620,6 +681,7 @@ public class ReportsTransfer implements Serializable {
      * Entity-based approach for backward compatibility Uses the traditional
      * method with iterative calculations
      */
+    @Deprecated // Use fillDepartmentTransfersIssueByBillDto
     public void fillDepartmentTransfersIssueByBillEntity() {
         reportTimerController.trackReportExecution(() -> {
             fillTransferIssueBillsLegacy();
@@ -647,6 +709,7 @@ public class ReportsTransfer implements Serializable {
                 .append("COALESCE(b.refunded, false), ")
                 .append("COALESCE(b.comments, ''), ")
                 .append("COALESCE(bfd.totalCostValue, 0.0), ")
+                .append("COALESCE(bfd.lineNetTotal, 0.0), ")
                 .append("COALESCE(bfd.totalRetailSaleValue, 0.0)")
                 .append(") ")
                 .append("FROM Bill b ")
@@ -685,13 +748,22 @@ public class ReportsTransfer implements Serializable {
         // Calculate totals from DTOs 
         totalsValue = 0.0;
         netTotalValues = 0.0;
+        costValue = 0.0;
+        purchaseValue = 0.0;
+        transferValue = 0.0;
         if (transferIssueDtos != null) {
             for (PharmacyTransferIssueDTO dto : transferIssueDtos) {
                 if (dto.getSaleValue() != null) {
-                    totalsValue += dto.getSaleValue().doubleValue();
+                    totalsValue += dto.getSaleValue();
                 }
-                if (dto.getTransferValue() != null) {
-                    netTotalValues += dto.getTransferValue().doubleValue();
+                if (dto.getPurchaseValue() != null) {
+                    purchaseValue += dto.getPurchaseValue();
+                }
+                if (dto.getCostValue() != null) {
+                    costValue += dto.getCostValue().doubleValue();
+                }
+                if (dto.getTransferValueDouble() != null) {
+                    transferValue += dto.getTransferValueDouble();
                 }
             }
         }
@@ -750,33 +822,14 @@ public class ReportsTransfer implements Serializable {
         }
 
         // Reset totals before accumulating stored values
-        totalsValue = 0.0;
-        netTotalValues = 0.0;
+        purchaseValue = 0.0;
+        retailValue = 0.0;
+        costValue = 0.0;
 
         for (Bill b : billList) {
-            double saleValue = 0.0;
-            double purchaseValue = 0.0;
-
-            for (BillItem bi : b.getBillItems()) {
-                // Use stored financial data - no calculations during report viewing
-                if (bi.getBillItemFinanceDetails() != null) {
-                    // Sale value from stored retail value
-                    if (bi.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
-                        saleValue += bi.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
-                    }
-
-                    // Purchase value from stored transfer value (lineNetTotal contains the transfer rate value)
-                    if (bi.getBillItemFinanceDetails().getLineNetTotal() != null) {
-                        purchaseValue += bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
-                    }
-                }
-            }
-
-            b.setSaleValue(saleValue);
-            b.setPaidAmount(purchaseValue);
-            b.setNetTotal(purchaseValue); // Show transfer value in "Purchase Value" column
-            totalsValue += saleValue;
-            netTotalValues += purchaseValue; // Accumulate transfer values for "Purchase Value" total
+            retailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+            purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+            costValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
         }
 
     }
@@ -1007,14 +1060,14 @@ public class ReportsTransfer implements Serializable {
 
     public void createTransferIssueBillSummery() {
         reportTimerController.trackReportExecution(() -> {
-            Date startTime = new Date();
-
             fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void createTransferReciveBillSummery() {
-        fetchBillTotalByFromDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
+        reportTimerController.trackReportExecution(() -> {
+            fetchBillTotalByFromDepartmentFinance(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
+        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void fetchBillTotalByToDepartment(Date fd, Date td, Department dep, BillType bt) {
@@ -1022,37 +1075,55 @@ public class ReportsTransfer implements Serializable {
         netTotalValues = 0.0;
         netTotalSaleValues = 0.0;
         netTotalPurchaseValues = 0.0;
+        netTotalCostValues = 0.0;
 
-        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, true);
-        List<Object[]> objectsItems = getBillBeanController().fetchBilledDepartmentBillItem(fd, td, dep, bt, true);
-
-        // Create a map for efficient lookup
-        Map<Department, Double> departmentSaleValues = new HashMap<>();
-        Map<Department, Double> departmentPurchaseValues = new HashMap<>();
-        for (Object[] obItem : objectsItems) {
-            Department dItem = (Department) obItem[0];
-            double itemValue = (double) obItem[1];
-            double itemPurchaseValue = (double) obItem[2];
-            departmentSaleValues.merge(dItem, itemValue, Double::sum);
-            departmentPurchaseValues.merge(dItem, itemPurchaseValue, Double::sum);
-        }
+        // Use BillFinanceDetails for consistent calculations (matching DTO approach)
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentFinanceDetails(fd, td, dep, bt, true);
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
-            double dbl = (double) ob[1];
-            double db2 = departmentSaleValues.getOrDefault(d, 0.0);
-            double db3 = departmentPurchaseValues.getOrDefault(d, 0.0);
+
+            // Handle both BigDecimal and Double types from aggregation functions
+            double dbl1 = 0.0;
+            if (ob[1] instanceof BigDecimal) {
+                dbl1 = ((BigDecimal) ob[1]).doubleValue();
+            } else if (ob[1] instanceof Double) {
+                dbl1 = (Double) ob[1];
+            }
+
+            double dbl2 = 0.0;
+            if (ob[2] instanceof BigDecimal) {
+                dbl2 = ((BigDecimal) ob[2]).doubleValue();
+            } else if (ob[2] instanceof Double) {
+                dbl2 = (Double) ob[2];
+            }
+
+            double dbl3 = 0.0;
+            if (ob[3] instanceof BigDecimal) {
+                dbl3 = ((BigDecimal) ob[3]).doubleValue();
+            } else if (ob[3] instanceof Double) {
+                dbl3 = (Double) ob[3];
+            }
+
+            double dbl4 = 0.0;
+            if (ob[4] instanceof BigDecimal) {
+                dbl4 = ((BigDecimal) ob[4]).doubleValue();
+            } else if (ob[4] instanceof Double) {
+                dbl4 = (Double) ob[4];
+            }
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
-            sv.setValue1(dbl);
-            sv.setValue2(db2);
-            sv.setValue3(db3);
+            sv.setValue1(dbl1);                  // Transfer Value (lineNetTotal)
+            sv.setValue2(dbl2);                  // Purchase Value (totalCostValue)
+            sv.setValue3(dbl3);                  // Sale Value (totalRetailSaleValue)
+            sv.setValue4(dbl4);                  // Cost Value (totalCostValue)
             listz.add(sv);
 
-            netTotalValues += dbl;
-            netTotalSaleValues += db2;
-            netTotalPurchaseValues += db3;
+            netTotalValues += dbl1;
+            netTotalPurchaseValues += dbl2;
+            netTotalSaleValues += dbl3;
+            netTotalCostValues += dbl4;
 
         }
 
@@ -1077,6 +1148,63 @@ public class ReportsTransfer implements Serializable {
 
         }
 
+    }
+
+    public void fetchBillTotalByFromDepartmentFinance(Date fd, Date td, Department dep, BillType bt) {
+        listz = new ArrayList<>();
+        netTotalValues = 0.0;
+        netTotalSaleValues = 0.0;
+        netTotalPurchaseValues = 0.0;
+        netTotalCostValues = 0.0;
+
+        // Use BillFinanceDetails for consistent calculations (matching DTO approach)
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentFinanceDetails(fd, td, dep, bt, false);
+
+        for (Object[] ob : objects) {
+            Department d = (Department) ob[0];
+
+            // Handle both BigDecimal and Double types from aggregation functions
+            double dbl1 = 0.0;
+            if (ob[1] instanceof BigDecimal) {
+                dbl1 = ((BigDecimal) ob[1]).doubleValue();
+            } else if (ob[1] instanceof Double) {
+                dbl1 = (Double) ob[1];
+            }
+
+            double dbl2 = 0.0;
+            if (ob[2] instanceof BigDecimal) {
+                dbl2 = ((BigDecimal) ob[2]).doubleValue();
+            } else if (ob[2] instanceof Double) {
+                dbl2 = (Double) ob[2];
+            }
+
+            double dbl3 = 0.0;
+            if (ob[3] instanceof BigDecimal) {
+                dbl3 = ((BigDecimal) ob[3]).doubleValue();
+            } else if (ob[3] instanceof Double) {
+                dbl3 = (Double) ob[3];
+            }
+
+            double dbl4 = 0.0;
+            if (ob[4] instanceof BigDecimal) {
+                dbl4 = ((BigDecimal) ob[4]).doubleValue();
+            } else if (ob[4] instanceof Double) {
+                dbl4 = (Double) ob[4];
+            }
+
+            String1Value3 sv = new String1Value3();
+            sv.setString(d.getName());
+            sv.setValue1(dbl1);                  // Transfer Value (lineNetTotal)
+            sv.setValue2(dbl2);                  // Purchase Value (totalCostValue)
+            sv.setValue3(dbl3);                  // Sale Value (totalRetailSaleValue)
+            sv.setValue4(dbl4);                  // Cost Value (totalCostValue)
+            listz.add(sv);
+
+            netTotalValues += dbl1;
+            netTotalPurchaseValues += dbl2;
+            netTotalSaleValues += dbl3;
+            netTotalCostValues += dbl4;
+        }
     }
 
     public void createDepartmentIssueStore() {
@@ -1990,36 +2118,150 @@ public class ReportsTransfer implements Serializable {
 
     }
 
+    /**
+     * Main method that delegates to either DTO or Entity approach based on
+     * configuration
+     */
     public void fillDepartmentTransfersRecieveByBill() {
+        if (useDtoApproach) {
+            fillDepartmentTransfersReceiveByBillDto();
+        } else {
+            fillDepartmentTransfersReceiveByBillEntity();
+        }
+    }
+
+    /**
+     * DTO-based approach for efficient data retrieval - no calculations needed
+     * This is the recommended approach for better performance
+     */
+    public void fillDepartmentTransfersReceiveByBillDto() {
         reportTimerController.trackReportExecution(() -> {
-            Map<String, Object> params = new HashMap<>();
-            StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
-            params.put("fd", fromDate);
-            params.put("td", toDate);
-            params.put("bt", BillType.PharmacyTransferReceive);
+            fillTransferReceiveBillsDtoDirectly();
+        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL, sessionController.getLoggedUser());
+    }
 
-            if (fromDepartment != null) {
-                jpql.append(" and b.fromDepartment=:fdept");
-                params.put("fdept", fromDepartment);
-            }
-            if (toDepartment != null) {
-                jpql.append(" and b.department=:tdept");
-                params.put("tdept", toDepartment);
-            }
-
-            jpql.append(" order by b.id");
-            transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            totalsValue = 0.0;
-            discountsValue = 0.0;
-            netTotalValues = 0.0;
-            for (Bill b : transferBills) {
-
-                discountsValue = discountsValue + b.getDiscount();
-                netTotalValues = netTotalValues + b.getNetTotal();
-            }
+    /**
+     * Entity-based approach for backward compatibility Uses the traditional
+     * method with iterative calculations
+     */
+    public void fillDepartmentTransfersReceiveByBillEntity() {
+        reportTimerController.trackReportExecution(() -> {
+            fillTransferReceiveBillsLegacy();
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
         }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Direct DTO query with aggregated financial data - follows DTO
+     * implementation guidelines This is the primary method that should be used
+     * for report display
+     */
+    private void fillTransferReceiveBillsDtoDirectly() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferReceiveDTO(")
+                .append("b.id, ")
+                .append("COALESCE(b.deptId, ''), ")
+                .append("b.createdAt, ")
+                .append("COALESCE(b.department.name, ''), ")
+                .append("COALESCE(b.fromDepartment.name, ''), ")
+                .append("COALESCE(p.name, ''), ")
+                .append("COALESCE(b.cancelled, false), ")
+                .append("COALESCE(b.refunded, false), ")
+                .append("COALESCE(b.comments, ''), ")
+                .append("COALESCE(bfd.totalCostValue, 0.0), ")
+                .append("COALESCE(bfd.lineNetTotal, 0.0), ")
+                .append("COALESCE(bfd.totalRetailSaleValue, 0.0)")
+                .append(") ")
+                .append("FROM Bill b ")
+                .append("LEFT JOIN b.billFinanceDetails bfd ")
+                .append("LEFT JOIN b.fromStaff fs ")
+                .append("LEFT JOIN fs.person p ")
+                .append("WHERE b.billType = :bt ")
+                .append("AND b.retired = false ")
+                .append("AND b.createdAt BETWEEN :fd AND :td ");
+
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bt", BillType.PharmacyTransferReceive);
+
+        if (fromDepartment != null) {
+            jpql.append("AND b.fromDepartment = :fdept ");
+            params.put("fdept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            jpql.append("AND b.department = :tdept ");
+            params.put("tdept", toDepartment);
+        }
+
+        jpql.append("ORDER BY b.id");
+
+        // Execute the DTO query
+        try {
+            transferReceiveDtos = (List<PharmacyTransferReceiveDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            // Log the exception for debugging
+            // logger.error("Failed to fetch transfer receive DTOs", e);
+            transferReceiveDtos = new ArrayList<>();
+        }
+        // Calculate totals from DTOs 
+        totalsValue = 0.0;
+        netTotalValues = 0.0;
+        costValue = 0.0;
+        purchaseValue = 0.0;
+        transferValue = 0.0;
+        if (transferReceiveDtos != null) {
+            for (PharmacyTransferReceiveDTO dto : transferReceiveDtos) {
+                if (dto.getSaleValue() != null) {
+                    totalsValue += dto.getSaleValue();
+                }
+                if (dto.getPurchaseValue() != null) {
+                    purchaseValue += dto.getPurchaseValue();
+                }
+                if (dto.getCostValue() != null) {
+                    costValue += dto.getCostValue().doubleValue();
+                }
+                if (dto.getTransferValueDouble() != null) {
+                    transferValue += dto.getTransferValueDouble();
+                }
+            }
+        }
+    }
+
+    /**
+     * Legacy entity-based approach for transfer receive bills
+     *
+     * @deprecated Use fillTransferReceiveBillsDtoDirectly() instead
+     */
+    @Deprecated
+    private void fillTransferReceiveBillsLegacy() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bt", BillType.PharmacyTransferReceive);
+
+        if (fromDepartment != null) {
+            jpql.append(" and b.fromDepartment=:fdept");
+            params.put("fdept", fromDepartment);
+        }
+        if (toDepartment != null) {
+            jpql.append(" and b.department=:tdept");
+            params.put("tdept", toDepartment);
+        }
+
+        jpql.append(" order by b.id");
+        transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        for (Bill b : transferBills) {
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetTotal();
+        }
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
@@ -2215,6 +2457,14 @@ public class ReportsTransfer implements Serializable {
 
     public void setTransferValue(double transferValue) {
         this.transferValue = transferValue;
+    }
+
+    public double getNetTotalCostValues() {
+        return netTotalCostValues;
+    }
+
+    public void setNetTotalCostValues(double netTotalCostValues) {
+        this.netTotalCostValues = netTotalCostValues;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {
@@ -2436,12 +2686,28 @@ public class ReportsTransfer implements Serializable {
         this.transferIssueDtos = transferIssueDtos;
     }
 
+    public List<PharmacyTransferReceiveDTO> getTransferReceiveDtos() {
+        return transferReceiveDtos;
+    }
+
+    public void setTransferReceiveDtos(List<PharmacyTransferReceiveDTO> transferReceiveDtos) {
+        this.transferReceiveDtos = transferReceiveDtos;
+    }
+
     public List<PharmacyTransferIssueBillItemDTO> getTransferIssueBillItemDtos() {
         return transferIssueBillItemDtos;
     }
 
     public void setTransferIssueBillItemDtos(List<PharmacyTransferIssueBillItemDTO> transferIssueBillItemDtos) {
         this.transferIssueBillItemDtos = transferIssueBillItemDtos;
+    }
+
+    public List<PharmacyTransferReceiveBillItemDTO> getTransferReceiveBillItemDtos() {
+        return transferReceiveBillItemDtos;
+    }
+
+    public void setTransferReceiveBillItemDtos(List<PharmacyTransferReceiveBillItemDTO> transferReceiveBillItemDtos) {
+        this.transferReceiveBillItemDtos = transferReceiveBillItemDtos;
     }
 
     public boolean isUseDtoApproach() {
@@ -2482,6 +2748,14 @@ public class ReportsTransfer implements Serializable {
 
     public void setNetTotalValues(double netTotalValues) {
         this.netTotalValues = netTotalValues;
+    }
+
+    public double getTotalCostValue() {
+        return costValue;
+    }
+
+    public double getTotalTransferValue() {
+        return transferValue;
     }
 
     public BillType[] getBillTypes() {
