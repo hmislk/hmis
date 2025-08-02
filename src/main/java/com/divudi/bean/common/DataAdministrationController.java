@@ -515,9 +515,9 @@ public class DataAdministrationController implements Serializable {
                                 bi.getBillItemFinanceDetails().setBillItem(bi);
                             }
 
-                            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+                            
 
-                            if ((fd.getLineNetTotal() == null || fd.getLineNetTotal().doubleValue() == 0)
+                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
                                     && bi.getPharmaceuticalBillItem() != null
                                     && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
 
@@ -532,21 +532,51 @@ public class DataAdministrationController implements Serializable {
                                 BigDecimal grossValue = BigDecimal.valueOf(bi.getGrossValue());
 
                                 // Populate BillItemFinanceDetails
-                                fd.setQuantity(qtyBD);
-                                fd.setQuantityByUnits(qtyBD); // if no pack-unit conversion available
-                                fd.setLineNetRate(BigDecimal.valueOf(bi.getNetRate()));
-                                fd.setLineGrossRate(BigDecimal.valueOf(bi.getRate()));
-                                fd.setGrossRate(BigDecimal.valueOf(bi.getRate()));
-                                fd.setLineNetTotal(transferValue);
-                                fd.setNetTotal(transferValue);
-                                fd.setLineGrossTotal(grossValue);
-                                fd.setGrossTotal(grossValue);
-                                fd.setLineCostRate(costRate);
-                                fd.setLineCost(costRate.multiply(qtyBD));
-                                fd.setValueAtCostRate(costRate.multiply(qtyBD));
-                                fd.setValueAtPurchaseRate(purchaseRate.multiply(qtyBD));
-                                fd.setValueAtRetailRate(retailRate.multiply(qtyBD));
-                                fd.setRetailSaleRate(retailRate);
+                                if (bi.getBillItemFinanceDetails().getQuantity() == null || bi.getBillItemFinanceDetails().getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantity(qtyBD);
+                                }
+                                if (bi.getBillItemFinanceDetails().getQuantityByUnits() == null || bi.getBillItemFinanceDetails().getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantityByUnits(qtyBD); // if no pack-unit conversion available
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetRate() == null || bi.getBillItemFinanceDetails().getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetRate(BigDecimal.valueOf(bi.getNetRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossRate() == null || bi.getBillItemFinanceDetails().getLineGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossRate() == null || bi.getBillItemFinanceDetails().getGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getNetTotal() == null || bi.getBillItemFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossTotal() == null || bi.getBillItemFinanceDetails().getLineGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossTotal() == null || bi.getBillItemFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCostRate() == null || bi.getBillItemFinanceDetails().getLineCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCostRate(costRate);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCost() == null || bi.getBillItemFinanceDetails().getLineCost().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCost(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtCostRate() == null || bi.getBillItemFinanceDetails().getValueAtCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtPurchaseRate() == null || bi.getBillItemFinanceDetails().getValueAtPurchaseRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtRetailRate() == null || bi.getBillItemFinanceDetails().getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getRetailSaleRate() == null || bi.getBillItemFinanceDetails().getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setRetailSaleRate(retailRate);
+                                }
 
                                 billItemFacade.edit(bi);
 
@@ -565,13 +595,21 @@ public class DataAdministrationController implements Serializable {
                             }
                         }
 
-                        // Update BillFinanceDetails for the Bill
-                        BillFinanceDetails bfd = fixingBill.getBillFinanceDetails(); // new object is created if null
-                        bfd.setNetTotal(totalNetValue);
-                        bfd.setGrossTotal(totalGrossValue);
-                        bfd.setTotalCostValue(totalCostValue);
-                        bfd.setTotalPurchaseValue(totalPurchaseValue);
-                        bfd.setTotalRetailSaleValue(totalRetailValue);
+                        if (fixingBill.getBillFinanceDetails().getNetTotal() == null || fixingBill.getBillFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setNetTotal(totalNetValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getGrossTotal() == null || fixingBill.getBillFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setGrossTotal(totalGrossValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalCostValue() == null || fixingBill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalPurchaseValue() == null || fixingBill.getBillFinanceDetails().getTotalPurchaseValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalRetailSaleValue() == null || fixingBill.getBillFinanceDetails().getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+                        }
 
                         billFacade.edit(fixingBill);
 

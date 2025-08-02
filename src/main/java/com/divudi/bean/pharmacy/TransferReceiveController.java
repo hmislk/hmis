@@ -372,9 +372,11 @@ public class TransferReceiveController implements Serializable {
             }
 
             double unitsPerPackValue = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack().doubleValue() : 1.0;
-            double purchaseRate = pbi.getStock().getItemBatch().getPurcahseRate() * unitsPerPackValue;
-            double retailRate = pbi.getStock().getItemBatch().getRetailsaleRate() * unitsPerPackValue;
-            double wholesaleRate = pbi.getStock().getItemBatch().getWholesaleRate() * unitsPerPackValue;
+            
+            // Use rates from the PharmaceuticalBillItem to preserve original purchase rates
+            double purchaseRate = pbi.getPurchaseRatePack() > 0 ? pbi.getPurchaseRatePack() : pbi.getStock().getItemBatch().getPurcahseRate() * unitsPerPackValue;
+            double retailRate = pbi.getRetailRatePack() > 0 ? pbi.getRetailRatePack() : pbi.getStock().getItemBatch().getRetailsaleRate() * unitsPerPackValue;
+            double wholesaleRate = pbi.getWholesaleRatePack() > 0 ? pbi.getWholesaleRatePack() : pbi.getStock().getItemBatch().getWholesaleRate() * unitsPerPackValue;
             double costRate = pbi.getStock().getItemBatch().getCostRate() * unitsPerPackValue;
 
 
