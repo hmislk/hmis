@@ -5,7 +5,8 @@ public enum LaboratoryReport implements IReportType {
     INVESTIGATION_MONTH_END_SUMMARY("Investigation Month End Summary"),
     EXTERNAL_LABORATORY_WORKLOAD_REPORT("External laboratory workload report"),
     LABORATORY_WORKLOAD_REPORT("Laboratory workload report"),
-    COLLECTION_CENTER_STATEMENT_REPORT("Collection Center Statement Report");
+    COLLECTION_CENTER_STATEMENT_REPORT("Collection Center Statement Report"),
+    PATIENT_SAMPLE_REPORT("Patient Sample Report");
 
     private final String displayName;
 

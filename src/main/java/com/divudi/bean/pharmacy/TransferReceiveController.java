@@ -60,6 +60,7 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
+    private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
     ///////
@@ -933,13 +934,13 @@ public class TransferReceiveController implements Serializable {
         list.add(new ConfigOptionInfo("Pharmacy Transfer is by Cost Rate", "false"));
         list.add(new ConfigOptionInfo("Pharmacy Transfer is by Retail Rate", "true"));
         list.add(new ConfigOptionInfo("Report Font Size of Item List in Pharmacy Disbursement Reports", "10pt"));
-        list.add(new ConfigOptionInfo("Report Columns - Serial Number is required in Pharmacy Disbursement Reports", "true"));
-        list.add(new ConfigOptionInfo("Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports", "true"));
-        list.add(new ConfigOptionInfo("Report Columns - Code is required in Pharmacy Disbursement Reports", "true"));
-        list.add(new ConfigOptionInfo("Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports", "true"));
-        list.add(new ConfigOptionInfo("Report Columns - Purchase Value is required in Pharmacy Disbursement Reports", "false"));
-        list.add(new ConfigOptionInfo("Report Columns - Retail Rate is required in Pharmacy Disbursement Reports", "false"));
-        list.add(new ConfigOptionInfo("Report Columns - Retail Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Serial Number", "true"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Date of Expiary", "true"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Code", "true"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Purchase Rate", "true"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Purchase Value", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Retail Sale Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Disbursement Reports - Display Retail Sale Value", "false"));
         list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer CSS", ""));
         list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer Text", ""));
         return list;
@@ -959,6 +960,19 @@ public class TransferReceiveController implements Serializable {
 
     public void setSelectedBillItem(BillItem selectedBillItem) {
         this.selectedBillItem = selectedBillItem;
+    }
+
+    public boolean isShowAllBillFormats() {
+        return showAllBillFormats;
+    }
+
+    public void setShowAllBillFormats(boolean showAllBillFormats) {
+        this.showAllBillFormats = showAllBillFormats;
+    }
+
+    public String toggleShowAllBillFormats() {
+        this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
     }
 
 }

@@ -108,22 +108,21 @@
 
                 <p:dataTable
                     rowIndexVar="rowIndex"
-                    styleClass="no-border-table"
-                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.2;"
-                    class="my-2"
+                    styleClass="no-border-table compact-table"
+                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;"
                     value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip">
 
                     <p:column
                         width="2em"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Serial Number is required in Pharmacy Disbursement Reports', true)}"
-                        style="margin: 0px; padding: 0px;">
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Serial Number', true)}"
+                        style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column style="margin: 0px; padding: 0px;" width="15em">
+                    <p:column style="margin: 0px; padding: 1px 2px; line-height: 1.1;" width="15em">
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
@@ -135,15 +134,15 @@
 
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Code is required in Pharmacy Disbursement Reports', true)}"
-                        width="5em" style="margin: 0px; padding: 0px;">
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Code', true)}"
+                        width="5em" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
 
-                    <p:column width="3em" style="margin: 0px; padding: 0px;">
+                    <p:column width="3em" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Receive QTY"/>
                         </f:facet>
@@ -153,7 +152,7 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', true)}"
                         width="4em"
                         class="text-end">
                         <f:facet name="header">
@@ -165,8 +164,8 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Value is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" class="text-end">
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', false)}"
+                        width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
@@ -182,8 +181,8 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Rate is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" class="text-end">
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Rate', false)}"
+                        width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate"/>
                         </f:facet>
@@ -193,8 +192,8 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" class="text-end">
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Value', false)}"
+                        width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Retail Value"/>
                         </f:facet>
@@ -211,8 +210,8 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Transfer Rate is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" class="text-end">
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Rate', false)}"
+                        width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Rate"/>
                         </f:facet>
@@ -222,7 +221,7 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Transfer Value is required in Pharmacy Disbursement Reports', false)}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', false)}"
                         width="4em" class="text-end">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Value"/>
@@ -238,12 +237,15 @@
                         </f:facet>
                     </p:column>
 
-                    <p:column style="margin: 0px; padding: 0px;" width="5em"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}">
+                    <p:column 
+                        style="margin: 0px; padding: 1px 2px; line-height: 1.1;" 
+                        width="5em"
+                        class="text-end"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Date of Expiary', true)}">
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>

@@ -32,4 +32,47 @@ Common UI issues can often be resolved by:
 - No PrimeFaces version compatibility issues ✓
 
 ---
+
+## Command Button Icon and Terminology Standards
+
+### Icon Conventions for Command Buttons
+
+Based on implementation in `/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item.xhtml`:
+
+#### Standard Icons
+- **Process/Generate Reports**: `pi pi-play` (play icon)
+- **Export to Excel**: `pi pi-file-excel` (Excel file icon)  
+- **Print Report**: `pi pi-print` (print icon)
+
+#### Button Classes
+- **Process buttons**: `ui-button-warning` (orange/amber styling)
+- **Export buttons**: `ui-button-success` (green styling)
+- **Print buttons**: `ui-button-info` (blue styling)
+
+### Terminology Standards
+
+#### Reports Section
+- **Use "Process"** instead of "Fill" or "Refresh" for report generation
+- **Use "Export to Excel"** for Excel export functionality
+- **Use "Print Report"** for print functionality
+
+#### Button Structure Template
+```xml
+<p:commandButton 
+    ajax="false" 
+    value="Process" 
+    icon="pi pi-play"
+    class="ui-button-warning"
+    title="Generate report with current filters"
+    action="#{controller.method()}" >
+</p:commandButton>
+```
+
+### Implementation Guidelines
+1. Always include descriptive `title` attributes for accessibility
+2. Use consistent icon-button class combinations
+3. Group related buttons using flexbox: `class="d-flex flex-wrap gap-2 my-3"`
+4. Maintain semantic color coding (warning=process, success=export, info=print)
+
+---
 **Remember: Simple solutions first. Complex solutions should be a last resort.**
