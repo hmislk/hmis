@@ -321,7 +321,7 @@
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                                 <p:commandLink 
-                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' }"
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
                                     value="#{f.pbItem.billItem.bill.billedBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
@@ -337,7 +337,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                                 <h:outputText 
-                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' }"
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
                                               value="#{f.pbItem.billItem.bill.billedBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
