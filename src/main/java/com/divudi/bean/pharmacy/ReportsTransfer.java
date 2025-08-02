@@ -1206,6 +1206,12 @@ public class ReportsTransfer implements Serializable {
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
 
+    public void createTransferReceiveBillSummeryWithFromAndTo() {
+        reportTimerController.trackReportExecution(() -> {
+            fetchBillTotalByDepartmentsWithFromAndTo(fromDate, toDate, fromDepartment, toDepartment, BillType.PharmacyTransferReceive);
+        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
+    }
+
     public void fetchBillTotalByDepartmentsWithFromAndTo(Date fd, Date td, Department fromDep, Department toDep, BillType bt) {
         transferList = new ArrayList<>();
         netTotalValues = 0.0;
