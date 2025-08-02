@@ -47,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -488,6 +489,11 @@ public class TransferIssueController implements Serializable {
     public void settleDirectIssue() {
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
+            return;
+        }
+        if (Objects.equals(getIssuedBill().getFromDepartment().getId(),
+                getIssuedBill().getToDepartment().getId())) {
+            JsfUtil.addErrorMessage("You can't issue to the same department");
             return;
         }
         if (getIssuedBill().getToStaff() == null) {
