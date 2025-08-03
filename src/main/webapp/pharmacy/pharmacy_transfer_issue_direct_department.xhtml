@@ -238,7 +238,6 @@
                                     var="to" 
                                     itemLabel="#{to.name}" 
                                     itemValue="#{to}"
-                                    disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
                                     completeMethod="#{departmentController.completeDept}"/>
 
                                 <h:outputLabel value="Select Staff Name" />
@@ -285,7 +284,7 @@
                 <ph:history/>
 
             </p:panel>
-            
+
             <p:panel rendered="#{transferIssueController.printPreview}">
 
                 <div class="d-flex justify-content-between">
@@ -323,33 +322,107 @@
                     </div>
                 </div>
 
-                <h:panelGroup   id="gpBillPreview" class="d-flex justify-content-center">
+                <h:panelGroup id="gpBillPreview" >
 
-                    <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
-                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
-                            <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                    <h:panelGroup
+                        rendered="#{transferIssueController.showAllBillFormats 
+                                    or (sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper' 
+                                    and not sessionController.loggedPreference.grnBillDetailed)}"
+                        styleClass="noBorder">
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}" >
+                            <p:separator></p:separator>
+                            <h:outputText value="Preference - Pharmacy Bill Paper Type = A4Paper" class="h3" ></h:outputText>
+                            <br/>
+                            <h:outputText value="Preference - grnBillDetailed = false"  class="h3" ></h:outputText>
+                            <p:separator></p:separator>
                         </h:panelGroup>
-
-                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
-                            <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}" >
+                            <p:separator></p:separator>
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq false}" >
-                            <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
+                    <h:panelGroup
+                        rendered="#{transferIssueController.showAllBillFormats 
+                                    or (sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper' 
+                                    and sessionController.loggedPreference.grnBillDetailed)}"
+                        styleClass="noBorder">
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                            <h:outputText value="Preference - Pharmacy Bill Paper Type = A4Paper" class="h3"/>
+                            <br/>
+                            <h:outputText value="Preference - grnBillDetailed = true" class="h3"/>
+                            <p:separator/>
+                        </h:panelGroup>
+
+                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
-                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
+
+
+                    <h:panelGroup 
+                        rendered="#{transferIssueController.showAllBillFormats 
+                                    or (sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper' 
+                                    and not sessionController.loggedPreference.grnBillDetailed)}">
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                            <h:outputText value="Preference - Pharmacy Bill Paper Type = PosPaper" class="h3"/>
+                            <br/>
+                            <h:outputText value="Preference - grnBillDetailed = false" class="h3"/>
+                            <p:separator/>
+                        </h:panelGroup>
+
+                        <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                        </h:panelGroup>
                     </h:panelGroup>
+
+
+
+                    <h:panelGroup id="gpBillPreviewPosHeader"
+                                  rendered="#{transferIssueController.showAllBillFormats 
+                                              or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper', true)}">
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                            <h:outputText value="Configuration Option - Pharmacy Transfer Issue Bill is PosHeaderPaper = true" class="h3"/>
+                            <p:separator/>
+                        </h:panelGroup>
+
+                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}"/>
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
 
                     <h:panelGroup 
                         id="gpBillTemplate" 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
-                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
+                        rendered="#{transferIssueController.showAllBillFormats 
+                                    or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template', false)}">
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                            <h:outputText value="Configuration Option - Pharmacy Transfer Issue Bill is Template = true" class="h3"/>
+                            <p:separator/>
+                        </h:panelGroup>
+
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}"/>
+
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats}">
+                            <p:separator/>
+                        </h:panelGroup>
                     </h:panelGroup>
+
 
 
                 </h:panelGroup>
