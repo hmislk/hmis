@@ -364,6 +364,17 @@
                                     <p:column headerText="Description" >
                                         <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Delete" >
+                                        <p:commandButton
+                                            id="btnRemoveExpense"
+                                            title="Delete expense"
+                                            styleClass="ui-button-danger"
+                                            action="#{grnCostingController.removeExpense(be)}"
+                                            process="@this"
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}">
+                                            <p:graphicImage library="images" name="icons/trash.svg" width="20" height="20" style="fill: currentColor;"/>
+                                        </p:commandButton>
+                                    </p:column>
                                 </p:dataTable>
                             </p:panel>
 
