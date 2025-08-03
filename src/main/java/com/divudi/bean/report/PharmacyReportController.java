@@ -3410,9 +3410,11 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private Map<String, Double> calculateStockValues(String rowKey) {
+    private Map<String, Double> calculateStockCorrectionValues() {
         try {
-            List<BillTypeAtomic> bTypes = findBillTypeAtomicsForCogsComponents(rowKey);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
 
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
@@ -3427,7 +3429,7 @@ public class PharmacyReportController implements Serializable {
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
 
             params.put("ret", false);
-            params.put("btas", bTypes);
+            params.put("btas", billTypeAtomics);
             params.put("fd", fromDate);
             params.put("td", toDate);
 
@@ -3458,6 +3460,78 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void calculateGrnCashAndCreditValues() {
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+
+            StringBuilder jpql = new StringBuilder("SELECT bi.bill.paymentMethod, SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) FROM BillItem bi ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND bi.bill.billTypeAtomic IN :bType ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
+                    .append("AND bi.bill.paymentMethod IN (:cash, :credit) ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", billTypeAtomics);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("cash", PaymentMethod.Cash);
+            params.put("credit", PaymentMethod.Credit);
+
+            addFilter(jpql, params, "bi.bill.institution", "ins", institution);
+            addFilter(jpql, params, "bi.bill.department.site", "sit", site);
+            addFilter(jpql, params, "bi.bill.department", "dep", department);
+            jpql.append(" GROUP BY bi.bill.paymentMethod");
+
+            List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            // A map to store the final results for cash and credit.
+            Map<String, Double> cashRow = new HashMap<>();
+            Map<String, Double> creditRow = new HashMap<>();
+
+            // Initialize with default values.
+            cashRow.put("purchaseValue", 0.0);
+            cashRow.put("costValue", 0.0);
+            creditRow.put("purchaseValue", 0.0);
+            creditRow.put("costValue", 0.0);
+
+            if (results != null && !results.isEmpty()) {
+                for (Object[] row : results) {
+                    PaymentMethod paymentMethod = (PaymentMethod) row[0];
+                    double purchaseValue = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                    double costValue = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+
+                    if (paymentMethod == PaymentMethod.Cash) {
+                        cashRow.put("purchaseValue", purchaseValue);
+                        cashRow.put("costValue", costValue);
+                    } else if (paymentMethod == PaymentMethod.Credit) {
+                        creditRow.put("purchaseValue", purchaseValue);
+                        creditRow.put("costValue", costValue);
+                    }
+                }
+            }
+
+            // Add the computed rows to the main cogsRows map
+            synchronized (cogsRows) {
+                cogsRows.put("GRN Cash ", cashRow);
+                cogsRows.put("GRN Credit ", creditRow);
+            }
+
+        } catch (Exception e) {
+            // Log the error for debugging purposes
+            JsfUtil.addErrorMessage(e, "Error calculating GRN values");
+            // Fallback or error handling for the cogsRows map
+            synchronized (cogsRows) {
+                Map<String, Double> errorResult = new HashMap<>();
+                errorResult.put("purchaseValue", 0.0);
+                errorResult.put("costValue", 0.0);
+                cogsRows.put("GRN Cash Total", errorResult);
+                cogsRows.put("GRN Credit Total", errorResult);
+            }
+        }
+    }
+
     public void processCostOfGoodSoldReport() {
         long startTime = System.currentTimeMillis();
 
@@ -3465,6 +3539,8 @@ public class PharmacyReportController implements Serializable {
         try {
             calculateOpeningStockRow();
             calculateStockCorrectionRow();
+            calculateGrnCashAndCreditRows();
+            calculateCogsOtherComponents();
             calculateClosingStockRow();
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "error");
@@ -3482,8 +3558,12 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void calculateStockCorrectionRow() {
-        Map<String, Double> stockCorrection = calculateStockValues("Stock Corection");
+        Map<String, Double> stockCorrection = calculateStockCorrectionValues();
         cogsRows.put("Stock Corection", stockCorrection);
+    }
+
+    public void calculateGrnCashAndCreditRows() {
+        calculateGrnCashAndCreditValues();
     }
 
     public void calculateClosingStockRow() {
