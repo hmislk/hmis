@@ -658,6 +658,32 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     }
 
+    public void removeExpense(BillItem expense) {
+        if (expense == null) {
+            return;
+        }
+
+        if (billExpenses != null) {
+            billExpenses.remove(expense);
+            int index = 0;
+            for (BillItem be : billExpenses) {
+                be.setSearialNo(index++);
+            }
+        }
+
+        if (getBill().getBillExpenses() != null) {
+            getBill().getBillExpenses().remove(expense);
+        }
+
+        recalculateExpenseTotals();
+        calculateBillTotalsFromItems();
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+
+        if (getBill().getId() != null) {
+            billFacade.edit(getBill());
+        }
+    }
+
     public void settleDirectPurchaseBillFinally() {
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
