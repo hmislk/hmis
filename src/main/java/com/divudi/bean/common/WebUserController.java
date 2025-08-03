@@ -20,6 +20,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.WebUserDashboard;
 import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.entity.WebUserPasswordHistory;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -1110,10 +1111,31 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return "";
         }
+        if (configOptionApplicationController.isPreventPasswordReuse()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("u", current);
+            List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql("select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u", m);
+            for (WebUserPasswordHistory h : hs) {
+                if (SecurityController.matchPassword(newPassword, h.getPassword())) {
+                    JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                    return "";
+                }
+            }
+            if (SecurityController.matchPassword(newPassword, current.getWebUserPassword())) {
+                JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                return "";
+            }
+        }
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
+        WebUserPasswordHistory wh = new WebUserPasswordHistory();
+        wh.setWebUser(current);
+        wh.setPassword(hashedPassword);
+        wh.setCreater(sessionController.getLoggedUser());
+        wh.setCreatedAt(new Date());
+        webUserPasswordHistoryFacade.create(wh);
         JsfUtil.addSuccessMessage("Password changed");
         return navigateToListUsers();
     }
