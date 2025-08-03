@@ -138,6 +138,7 @@ public class PharmacyBillSearch implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private UploadedFile file;
     private boolean printPreview = false;
+    private boolean showAllBillFormats = false;
     private double refundAmount;
     private String txtSearch;
     private String comment;
@@ -3500,6 +3501,19 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public boolean isShowAllBillFormats() {
+        return showAllBillFormats;
+    }
+
+    public void setShowAllBillFormats(boolean showAllBillFormats) {
+        this.showAllBillFormats = showAllBillFormats;
+    }
+
+    public String toggleShowAllBillFormats() {
+        this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
     }
 
     public List<BillItem> getTempbillItems() {
