@@ -1946,7 +1946,7 @@ public class PharmacyReportController implements Serializable {
                     + "WHERE bi.retired = false "
                     + "AND b.retired = false "
                     + "AND " + billTypeField + " IN :billTypes "
-//                    + "AND b.paymentMethod IN :paymentMethod "
+                    //                    + "AND b.paymentMethod IN :paymentMethod "
                     + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
             jpql.append("AND (b.paymentMethod IN :pm ");
@@ -2016,6 +2016,18 @@ public class PharmacyReportController implements Serializable {
 
     public void processStockConsumption() {
         retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyIssue));
+        calculateStockConsumptionNetTotal(billItems);
+    }
+
+    public void calculateStockConsumptionNetTotal(List<BillItem> items) {
+        netTotal = 0.0;
+        netTotal = items.stream()
+                .mapToDouble(this::calculateItemTotal)
+                .sum();
+    }
+
+    private double calculateItemTotal(BillItem item) {
+        return item.getPharmaceuticalBillItem().getPurchaseRate() * item.getQty();
     }
 
     public void processTransferIssue() {

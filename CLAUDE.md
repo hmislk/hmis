@@ -11,6 +11,7 @@
 - **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
 - **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
 - **QA Deployment**: [Bot-Friendly QA Deployment Guide](developer_docs/deployment/qa-deployment-guide.md)
+- **VM Management**: [VM Restart Guide](developer_docs/deployment/vm-restart-guide.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
 - **QA Testing Path**: Issue should be tested via GitHub Issues → Projects → HMIS Development Board
 - **PR Review Path**: Pull Requests → Files Changed → Review Required Files → Approve/Request Changes
