@@ -1065,12 +1065,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             user.setWebUserPassword(hashed);
             user.setNeedToResetPassword(false);
             uFacade.edit(user);
-            WebUserPasswordHistory wh = new WebUserPasswordHistory();
-            wh.setWebUser(user);
-            wh.setPassword(hashed);
-            wh.setCreater(getLoggedUser());
-            wh.setCreatedAt(new Date());
-            webUserPasswordHistoryFacade.create(wh);
+            recordPasswordHistory(user, hashed);
             
             // Purge old password history entries beyond the configured limit
             purgeOldPasswordHistory(user);
@@ -1105,12 +1100,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         String hashed = getSecurityController().hashAndCheck(newPassword);
         user.setWebUserPassword(hashed);
         uFacade.edit(user);
-        WebUserPasswordHistory wh = new WebUserPasswordHistory();
-        wh.setWebUser(user);
-        wh.setPassword(hashed);
-        wh.setCreater(getLoggedUser());
-        wh.setCreatedAt(new Date());
-        webUserPasswordHistoryFacade.create(wh);
+        recordPasswordHistory(user, hashed);
         
         // Purge old password history entries beyond the configured limit
         purgeOldPasswordHistory(user);
@@ -1153,6 +1143,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
     
+    private void recordPasswordHistory(WebUser user, String hashedPassword) {
+        WebUserPasswordHistory wh = new WebUserPasswordHistory();
+        wh.setWebUser(user);
+        wh.setPassword(hashedPassword);
+        wh.setCreater(getLoggedUser());
+        wh.setCreatedAt(new Date());
+        webUserPasswordHistoryFacade.create(wh);
+    }
+
     private void purgeOldPasswordHistory(WebUser user) {
         if (!configOptionApplicationController.isPreventPasswordReuse()) {
             return;
