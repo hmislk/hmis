@@ -562,7 +562,6 @@ public class TransferIssueController implements Serializable {
             pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
         }
 
-
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
             getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -577,7 +576,8 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setNetTotal(calculateBillNetTotal());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
-        updateStockBillValues();
+        billService.createBillFinancialDetailsForPharmacyDirectIssueBill(getIssuedBill(), getBillItems());
+//        updateStockBillValues();
         notificationController.createNotification(issuedBill);
 
         Bill b = getBillFacade().find(getIssuedBill().getId());
@@ -881,6 +881,7 @@ public class TransferIssueController implements Serializable {
         return value;
     }
 
+    @Deprecated // Data Already stored in BillFinanceDetails
     private void updateStockBillValues() {
         double retailValue = 0.0;
         double purchaseValue = 0.0;
@@ -928,36 +929,68 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
+
+        if (billItem.getBillItemFinanceDetails().getUnitsPerPack() == null || billItem.getBillItemFinanceDetails().getUnitsPerPack() == BigDecimal.ZERO) {
+            if (billItem.getItem() instanceof Ampp) {
+                billItem.getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(billItem.getItem().getDblValue()));
+            } else {
+                billItem.getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
+            }
+        }
+
         billItem.getPharmaceuticalBillItem().setQty(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
 
-        // IMPORTANT: Set the purchase rate from item batch for proper costing
         billItem.getPharmaceuticalBillItem().setPurchaseRate(getTmpStock().getItemBatch().getPurcahseRate());
+        billItem.getPharmaceuticalBillItem().setPurchaseRatePack(getTmpStock().getItemBatch().getPurcahseRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
 
+        billItem.getPharmaceuticalBillItem().setRetailRate(getTmpStock().getItemBatch().getRetailsaleRate());
+        billItem.getPharmaceuticalBillItem().setRetailRatePack(getTmpStock().getItemBatch().getRetailsaleRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+
+        billItem.getPharmaceuticalBillItem().setCostRate(getTmpStock().getItemBatch().getCostRate());
+        billItem.getPharmaceuticalBillItem().setCostRatePack(getTmpStock().getItemBatch().getCostRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+
+        billItem.getPharmaceuticalBillItem().setCostValue(billItem.getPharmaceuticalBillItem().getCostRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+        billItem.getPharmaceuticalBillItem().setRetailValue(billItem.getPharmaceuticalBillItem().getRetailRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+        billItem.getPharmaceuticalBillItem().setPurchaseValue(billItem.getPharmaceuticalBillItem().getPurchaseRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+        
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
 
         billItem.getBillItemFinanceDetails().setLineGrossRate(determineTransferRate(billItem.getPharmaceuticalBillItem().getItemBatch()));
 
         billItem.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(billItem.getQty()));
+        billItem.getBillItemFinanceDetails().setQuantityByUnits(BigDecimal.valueOf(billItem.getQty()).multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack()));
 
         billItem.getBillItemFinanceDetails().setLineGrossTotal(billItem.getBillItemFinanceDetails().getLineGrossRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
 
         billItem.getBillItemFinanceDetails().setLineNetRate(billItem.getBillItemFinanceDetails().getLineGrossRate());
+        billItem.getBillItemFinanceDetails().setGrossRate(billItem.getBillItemFinanceDetails().getLineGrossRate());
         billItem.getBillItemFinanceDetails().setLineNetTotal(billItem.getBillItemFinanceDetails().getLineGrossTotal());
         billItem.getBillItemFinanceDetails().setNetTotal(billItem.getBillItemFinanceDetails().getLineGrossTotal());
 
         billItem.getBillItemFinanceDetails().setTotalQuantity(BigDecimal.valueOf(billItem.getQty()));
 
-        // Use cost rate for cost calculations
+        billItem.setRate(billItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue());
+        billItem.setNetRate(billItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue());
+        billItem.setNetValue(billItem.getBillItemFinanceDetails().getLineGrossTotal().doubleValue());
+        billItem.setGrossValue(billItem.getBillItemFinanceDetails().getLineGrossTotal().doubleValue());
+
         BigDecimal costRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+        BigDecimal retailRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()).multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
+        BigDecimal purchaseRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate()).multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
+
         billItem.getBillItemFinanceDetails().setLineCostRate(costRate);
         billItem.getBillItemFinanceDetails().setLineCost(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
         billItem.getBillItemFinanceDetails().setTotalCost(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
         billItem.getBillItemFinanceDetails().setTotalCostRate(costRate);
 
         billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
+
+        billItem.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
 
         billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(billItem);

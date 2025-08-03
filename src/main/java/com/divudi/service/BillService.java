@@ -2784,9 +2784,9 @@ public class BillService {
         if (b == null) {
             return;
         }
-        Double saleValue = 0.0;
-        Double purchaseValue = 0.0;
-        Double costValue = 0.0;
+        Double billValueAtRetailRate = 0.0;
+        Double billValueAtPurchaseRate = 0.0;
+        Double billValueAtCostRate = 0.0;
         for (BillItem bi : billItems) {
             if (bi == null || bi.getPharmaceuticalBillItem() == null) {
                 continue;
@@ -2796,33 +2796,22 @@ public class BillService {
             Double purchaseRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
             Double costRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getCostRate();
 
-            retailRatePerUnit = bi.getNetRate();
 
-            Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+            double billItemRetailValue = 0;
+            double billItemPurchaseValue = 0;
+            double billItemCostValue = 0;
 
-            if (quentityInUnits == null || retailRatePerUnit == null || pRate == null) {
-                continue;
-            }
+            billItemRetailValue = retailRatePerUnit * quentityInUnits;
+            billItemPurchaseValue = purchaseRatePerUnit * quentityInUnits;
+            billItemCostValue = costRatePerUnit * quentityInUnits;
 
-            double qty = Math.abs(quentityInUnits);
-            double retail = Math.abs(retailRatePerUnit);
-            double purchase = Math.abs(pRate);
-
-            double retailTotal = 0;
-            double purchaseTotal = 0;
-
-            retailTotal = retail * qty;
-            purchaseTotal = purchase * qty;
-
-            saleValue += retailTotal;
-            purchaseValue += purchaseTotal;
+            billValueAtRetailRate += billItemRetailValue;
+            billValueAtPurchaseRate += billItemPurchaseValue;
+            billValueAtCostRate += billItemCostValue;
         }
-        if (b.getBillFinanceDetails() == null) {
-            b.setBillFinanceDetails(new BillFinanceDetails());
-        }
-
-        b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
-        b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+        b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(billValueAtRetailRate));
+        b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(billValueAtPurchaseRate));
+        b.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(billValueAtCostRate));
         billFacade.editAndCommit(b);
     }
 
