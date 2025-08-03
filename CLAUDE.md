@@ -7,6 +7,7 @@
 - **CRITICAL**: Automatic JNDI replacement before/after GitHub pushes
 - **File**: `src/main/resources/META-INF/persistence.xml`
 - **⚠️ QA DEPLOYMENT BLOCKER**: Must use `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables, NOT hardcoded JNDI names
+- **⚠️ DDL GENERATION BLOCKER**: Remove hardcoded `eclipselink.application-location` paths like `c:/tmp/` from persistence.xml
 
 ### Git & GitHub Integration
 - **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
@@ -36,6 +37,7 @@
 5. **Follow DTO patterns** to avoid breaking changes
 6. **JSF-only changes** do not require compilation or testing
 7. **🚨 CRITICAL QA RULE**: Before any QA deployment, verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables
+8. **🚨 DDL GENERATION RULE**: Never commit persistence.xml with hardcoded DDL generation paths (`eclipselink.application-location`)
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

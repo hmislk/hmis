@@ -141,18 +141,38 @@ These mappings are handled automatically by the GitHub Actions workflow when env
 
 ### Payara Deployment Failures
 
-#### Issue: EclipseLink DDL Generation Error
+#### Issue: EclipseLink DDL Generation Path Error
 **Error:**
 ```
 Exception [EclipseLink-7018] File error.
 java.io.FileNotFoundException: c:/tmp/createDDL.jdbc (No such file or directory)
 ```
 
-**Root Cause:** Missing or inaccessible DDL generation directory
+**Root Cause:** Hardcoded DDL generation paths in persistence.xml
+
+**Most Common Cause:** Developer accidentally used persistence.xml file configured for DDL generation (with hardcoded paths like `c:/tmp/`) instead of the deployment-ready version.
 
 **Solution:**
-1. **Server administrator** needs to ensure `/tmp/` or `c:/tmp/` directory exists and is writable
-2. **Alternative**: Update persistence.xml `eclipselink.application-location` property to use existing writable directory
+1. **Check persistence.xml for DDL generation properties:**
+   ```bash
+   grep -i "eclipselink.application-location" src/main/resources/META-INF/persistence.xml
+   ```
+
+2. **Remove or fix DDL generation properties:**
+   ```xml
+   <!-- REMOVE or update these lines: -->
+   <property name="eclipselink.application-location" value="c:/tmp/"/>
+   <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+   <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
+   ```
+
+3. **Ensure logging is appropriate for deployment:**
+   ```xml
+   <!-- Use SEVERE instead of FINEST for production -->
+   <property name="eclipselink.logging.level" value="SEVERE"/>
+   ```
+
+4. **Alternative for DDL generation**: Use separate persistence configuration file for DDL generation, not the deployment persistence.xml
 
 #### Issue: Payara Admin Authentication Failure  
 **Error:**

@@ -8,21 +8,49 @@ The HMIS project uses GitHub Actions for automated CI/CD deployment to QA enviro
 
 ## ⚠️ Critical Configuration Requirements
 
-**IMPORTANT**: Before any QA deployment, verify that `src/main/resources/META-INF/persistence.xml` uses environment variables, NOT hardcoded JNDI datasources:
+**IMPORTANT**: Before any QA deployment, verify that `src/main/resources/META-INF/persistence.xml` is properly configured:
 
-✅ **CORRECT** (Required for deployments):
+### Pre-Deployment Checklist
+
+Run these commands before deploying:
+
+```bash
+# 1. Check JNDI datasources use environment variables
+grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+
+# 2. Check for hardcoded DDL generation paths
+grep -i "eclipselink.application-location" src/main/resources/META-INF/persistence.xml
+```
+
+### ✅ **CORRECT Configuration** (Required for deployments):
+
+**JNDI Datasources:**
 ```xml
 <jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
 <jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
 ```
 
-❌ **INCORRECT** (Will cause deployment failures):
+**DDL Generation:** Should NOT contain hardcoded paths
+```xml
+<!-- These lines should NOT exist in deployment persistence.xml -->
+<!-- <property name="eclipselink.application-location" value="c:/tmp/"/> -->
+```
+
+### ❌ **INCORRECT Configuration** (Will cause deployment failures):
+
+**Hardcoded JNDI:**
 ```xml
 <jta-data-source>jdbc/coop</jta-data-source>
 <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
 ```
 
-The GitHub Actions workflow automatically replaces these environment variables with environment-specific values during build.
+**Hardcoded DDL paths:**
+```xml
+<property name="eclipselink.application-location" value="c:/tmp/"/>
+<property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+```
+
+The GitHub Actions workflow automatically replaces environment variables with environment-specific values during build.
 
 ## Environment Details
 
