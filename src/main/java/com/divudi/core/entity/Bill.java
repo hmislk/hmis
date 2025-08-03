@@ -445,10 +445,10 @@ public class Bill implements Serializable, RetirableEntity {
 
     private String externalDoctor;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private StockBill stockBill;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "BILLFINANCEDETAILS_ID", unique = true)
     private BillFinanceDetails billFinanceDetails;
 

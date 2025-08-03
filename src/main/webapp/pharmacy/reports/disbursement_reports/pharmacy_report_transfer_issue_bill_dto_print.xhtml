@@ -172,6 +172,8 @@
                                         <th style="text-align: left;">Remarks</th>
                                         <th style="text-align: right;">Purchase Value</th>
                                         <th style="text-align: right;">Sale Value</th>
+                                        <th style="text-align: right;">Cost Value</th>
+                                        <th style="text-align: right;">Transfer Value</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -197,12 +199,22 @@
                                                 </h:panelGroup>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.netTotal}">
+                                                <h:outputLabel value="#{-i.purchaseValue}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </td>
                                             <td style="text-align: right;">
                                                 <h:outputLabel value="#{-i.saleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{-i.costValueDouble}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{-i.transferValueDouble}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </td>
@@ -215,12 +227,22 @@
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.netTotalValues}">
+                                            <h:outputLabel value="#{-reportsTransfer.purchaseValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
                                         <td style="text-align: right;">
                                             <h:outputLabel value="#{-reportsTransfer.totalsValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{-reportsTransfer.totalCostValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{-reportsTransfer.totalTransferValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>

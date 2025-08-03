@@ -393,10 +393,10 @@
                                                 class="w-100 ui-button-success"/>
 
                                             <p:commandButton 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill(Summary)')}" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill Summary', true)}" 
                                                 class="w-100 ui-button-success" 
                                                 value="Transfer Receive Summary" 
-                                                action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true"
+                                                action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery?faces-redirect=true"
                                                 ajax="false"
                                                 icon="pi pi-list"/>
 
