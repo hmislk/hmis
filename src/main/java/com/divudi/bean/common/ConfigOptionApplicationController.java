@@ -581,22 +581,22 @@ public class ConfigOptionApplicationController implements Serializable {
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Footer", "");
-        
+
         // Cost Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate Footer", "");
-        
+
         // Retail Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate Footer", "");
-        
+
         // Stock Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Stock CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Stock Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Stock Footer", "");
-        
+
         // Wholesale Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Header", "");
@@ -805,7 +805,6 @@ public class ConfigOptionApplicationController implements Serializable {
             optionFacade.edit(option);
         }
     }
-
 
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
@@ -1060,6 +1059,16 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public int getPasswordHistoryLimit() {
         return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public void setIntegerValueByKey(String key, int value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.INTEGER, Integer.toString(value));
+        }
+        option.setOptionValue(Integer.toString(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
     }
 
     public void setPasswordHistoryLimit(int value) {
