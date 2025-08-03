@@ -243,11 +243,6 @@ public class TransferReceiveController implements Serializable {
             if (pbi != null && pbi.getItemBatch() != null) {
                 ItemBatch itemBatch = pbi.getItemBatch();
                 
-                System.out.println("=== DEBUG: generateBillComponent() - Setting rates from ItemBatch ===");
-                System.out.println("ItemBatch ID: " + itemBatch.getId());
-                System.out.println("BEFORE - PBI Purchase Rate: " + pbi.getPurchaseRate() + ", Retail Rate: " + pbi.getRetailRate() + ", Cost Rate: " + pbi.getCostRate());
-                System.out.println("ItemBatch Purchase Rate: " + itemBatch.getPurcahseRate() + ", Retail Rate: " + itemBatch.getRetailsaleRate() + ", Cost Rate: " + itemBatch.getCostRate());
-                System.out.println("Units Per Pack: " + unitsPerPack + ", Remaining Qty: " + remainingQty);
                 
                 // Set correct purchase rates from ItemBatch
                 pbi.setPurchaseRate(itemBatch.getPurcahseRate());
@@ -264,14 +259,8 @@ public class TransferReceiveController implements Serializable {
                 pbi.setCostRatePack(itemBatch.getCostRate() * unitsPerPack);
                 pbi.setCostValue(itemBatch.getCostRate() * remainingQty);
                 
-                System.out.println("AFTER - PBI Purchase Rate: " + pbi.getPurchaseRate() + ", Purchase Rate Pack: " + pbi.getPurchaseRatePack() + ", Purchase Value: " + pbi.getPurchaseValue());
-                System.out.println("AFTER - PBI Retail Rate: " + pbi.getRetailRate() + ", Retail Rate Pack: " + pbi.getRetailRatePack() + ", Retail Value: " + pbi.getRetailValue());
-                System.out.println("AFTER - PBI Cost Rate: " + pbi.getCostRate() + ", Cost Rate Pack: " + pbi.getCostRatePack() + ", Cost Value: " + pbi.getCostValue());
             } else {
-                System.out.println("=== DEBUG: generateBillComponent() - WARNING: PBI or ItemBatch is null ===");
-                System.out.println("PBI is null: " + (pbi == null));
                 if (pbi != null) {
-                    System.out.println("ItemBatch is null: " + (pbi.getItemBatch() == null));
                 }
             }
 
@@ -324,7 +313,6 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settle() {
-        System.out.println("=== DEBUG: settle() - Starting settlement process ===");
         if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
@@ -417,12 +405,6 @@ public class TransferReceiveController implements Serializable {
             double wholesaleRate = pbi.getWholesaleRatePack() > 0 ? pbi.getWholesaleRatePack() : pbi.getStock().getItemBatch().getWholesaleRate() * unitsPerPackValue;
             double costRate = pbi.getStock().getItemBatch().getCostRate() * unitsPerPackValue;
             
-            System.out.println("=== DEBUG: fillData() - Processing bill item ===");
-            System.out.println("BillItem ID: " + bi.getId() + ", PBI ID: " + pbi.getId());
-            System.out.println("PBI Purchase Rate Pack: " + pbi.getPurchaseRatePack() + ", Retail Rate Pack: " + pbi.getRetailRatePack());
-            System.out.println("ItemBatch Purchase Rate: " + pbi.getStock().getItemBatch().getPurcahseRate() + ", Retail Rate: " + pbi.getStock().getItemBatch().getRetailsaleRate());
-            System.out.println("Final calculated Purchase Rate: " + purchaseRate + ", Retail Rate: " + retailRate + ", Cost Rate: " + costRate);
-            System.out.println("Units Per Pack Value: " + unitsPerPackValue + ", Paid Qty: " + (pbi.getQty() / unitsPerPackValue));
 
 
             billTotalAtCostRate += bifd.getTotalCost() != null ? bifd.getTotalCost().doubleValue() : 0.0;
@@ -507,10 +489,6 @@ public class TransferReceiveController implements Serializable {
         inputBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
         inputBill.getBillFinanceDetails().setTotalCostValueNonFree(BigDecimal.valueOf(costNonFree));
 
-        System.out.println("=== DEBUG: fillData() - Setting bill totals ===");
-        System.out.println("Purchase Free: " + purchaseFree + ", Purchase Non-Free: " + purchaseNonFree + ", Total Purchase: " + (purchaseFree + purchaseNonFree));
-        System.out.println("Retail Free: " + retailFree + ", Retail Non-Free: " + retailNonFree + ", Total Retail: " + (retailFree + retailNonFree));
-        System.out.println("Cost Free: " + costFree + ", Cost Non-Free: " + costNonFree + ", Total Cost: " + (costFree + costNonFree));
         
         inputBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseFree + purchaseNonFree));
         inputBill.getBillFinanceDetails().setTotalPurchaseValueFree(BigDecimal.valueOf(purchaseFree));
@@ -520,9 +498,6 @@ public class TransferReceiveController implements Serializable {
         inputBill.getBillFinanceDetails().setTotalRetailSaleValueFree(BigDecimal.valueOf(retailFree));
         inputBill.getBillFinanceDetails().setTotalRetailSaleValueNonFree(BigDecimal.valueOf(retailNonFree));
         
-        System.out.println("FINAL Bill Finance Details - Total Purchase Value: " + inputBill.getBillFinanceDetails().getTotalPurchaseValue());
-        System.out.println("FINAL Bill Finance Details - Total Retail Sale Value: " + inputBill.getBillFinanceDetails().getTotalRetailSaleValue());
-        System.out.println("FINAL Bill Finance Details - Total Cost Value: " + inputBill.getBillFinanceDetails().getTotalCostValue());
 
         inputBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(wholesaleFree + wholesaleNonFree));
         inputBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
@@ -793,12 +768,6 @@ public class TransferReceiveController implements Serializable {
         
         fd.setLineGrossRate(grossRate);
         
-        System.out.println("=== DEBUG: updateFinancialsForTransferReceiveFromReference() ===");
-        System.out.println("Reference BillItem ID: " + referenceBillItem.getId());
-        System.out.println("Reference LineGrossRate: " + (referenceBillItem.getBillItemFinanceDetails() != null ? 
-                referenceBillItem.getBillItemFinanceDetails().getLineGrossRate() : "null"));
-        System.out.println("Final Gross Rate used: " + grossRate);
-        System.out.println("Units Per Pack: " + unitsPerPack);
 
         BigDecimal lineGrossTotal = grossRate.multiply(qty);
         fd.setLineGrossTotal(lineGrossTotal);
@@ -816,10 +785,6 @@ public class TransferReceiveController implements Serializable {
         if (ph != null && ph.getItemBatch() != null) {
             ItemBatch itemBatch = ph.getItemBatch();
             
-            System.out.println("=== DEBUG: updateFinancialsForTransferReceiveFromReference() - Setting finance details ===");
-            System.out.println("ItemBatch ID: " + itemBatch.getId());
-            System.out.println("Qty By Units: " + qtyByUnits);
-            System.out.println("BEFORE - Finance Details ValueAtPurchaseRate: " + fd.getValueAtPurchaseRate() + ", ValueAtRetailRate: " + fd.getValueAtRetailRate());
             
             // Set purchase rate details
             BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
@@ -836,13 +801,8 @@ public class TransferReceiveController implements Serializable {
             fd.setValueAtCostRate(costRate.multiply(qtyByUnits));
             fd.setTotalCost(costRate.multiply(qtyByUnits));
             
-            System.out.println("ItemBatch Purchase Rate: " + itemBatch.getPurcahseRate() + ", Retail Rate: " + itemBatch.getRetailsaleRate() + ", Cost Rate: " + itemBatch.getCostRate());
-            System.out.println("AFTER - Finance Details ValueAtPurchaseRate: " + fd.getValueAtPurchaseRate() + ", ValueAtRetailRate: " + fd.getValueAtRetailRate() + ", ValueAtCostRate: " + fd.getValueAtCostRate());
         } else {
-            System.out.println("=== DEBUG: updateFinancialsForTransferReceiveFromReference() - WARNING: PH or ItemBatch is null ===");
-            System.out.println("PH is null: " + (ph == null));
             if (ph != null) {
-                System.out.println("ItemBatch is null: " + (ph.getItemBatch() == null));
             }
         }
 
@@ -908,10 +868,6 @@ public class TransferReceiveController implements Serializable {
         if (ph != null && ph.getItemBatch() != null) {
             ItemBatch itemBatch = ph.getItemBatch();
             
-            System.out.println("=== DEBUG: updateFinancialsForTransferReceive() - Setting finance details ===");
-            System.out.println("ItemBatch ID: " + itemBatch.getId());
-            System.out.println("Qty By Units: " + qtyByUnits);
-            System.out.println("BEFORE - Finance Details ValueAtPurchaseRate: " + fd.getValueAtPurchaseRate() + ", ValueAtRetailRate: " + fd.getValueAtRetailRate());
             
             // Set purchase rate details
             BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
@@ -928,13 +884,8 @@ public class TransferReceiveController implements Serializable {
             fd.setValueAtCostRate(costRate.multiply(qtyByUnits));
             fd.setTotalCost(costRate.multiply(qtyByUnits));
             
-            System.out.println("ItemBatch Purchase Rate: " + itemBatch.getPurcahseRate() + ", Retail Rate: " + itemBatch.getRetailsaleRate() + ", Cost Rate: " + itemBatch.getCostRate());
-            System.out.println("AFTER - Finance Details ValueAtPurchaseRate: " + fd.getValueAtPurchaseRate() + ", ValueAtRetailRate: " + fd.getValueAtRetailRate() + ", ValueAtCostRate: " + fd.getValueAtCostRate());
         } else {
-            System.out.println("=== DEBUG: updateFinancialsForTransferReceive() - WARNING: PH or ItemBatch is null ===");
-            System.out.println("PH is null: " + (ph == null));
             if (ph != null) {
-                System.out.println("ItemBatch is null: " + (ph.getItemBatch() == null));
             }
         }
 
