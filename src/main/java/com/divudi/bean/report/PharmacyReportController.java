@@ -3300,6 +3300,17 @@ public class PharmacyReportController implements Serializable {
 
     private Map<String, Object> cogsRows = new LinkedHashMap<>();
 
+    private List<BillTypeAtomic> findBillTypeAtomicsForCogsComponents(String rowKey) {
+        List<BillTypeAtomic> billTypes = new ArrayList<>();
+        switch (rowKey) {
+            case "Stock Corection":
+                billTypes.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+                billTypes.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+                return billTypes;
+        }
+        return new ArrayList<>();
+    }
+
     private Map<String, Double> calculateStockTotals(Date date) {
         try {
             Map<String, Object> params = new HashMap<>();
@@ -3399,21 +3410,64 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private Map<String, Double> calculateStockValues(String rowKey) {
+        try {
+            List<BillTypeAtomic> bTypes = findBillTypeAtomicsForCogsComponents(rowKey);
+
+            Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder();
+
+            // Direct aggregation query
+            jpql.append("SELECT ")
+                    .append("SUM(bi.bill.billFinanceDetails.totalPurchaseValue), ")
+                    .append("SUM(bi.bill.billFinanceDetails.totalCostValue) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :btas ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            params.put("ret", false);
+            params.put("btas", bTypes);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+
+            addFilter(jpql, params, "bi.bill.institution", "ins", institution);
+            addFilter(jpql, params, "bi.bill.department.site", "sit", site);
+            addFilter(jpql, params, "bi.bill.department", "dep", department);
+
+            List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+            }
+
+            return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            return errorResult;
+        }
+    }
+
     public void processCostOfGoodSoldReport() {
         long startTime = System.currentTimeMillis();
 
         cogsRows.clear();
-        // Process in parallel if dealing with large date ranges
-        CompletableFuture<Void> openingFuture = CompletableFuture.runAsync(this::calculateOpeningStockRow);
-        CompletableFuture<Void> closingFuture = CompletableFuture.runAsync(this::calculateClosingStockRow);
-
         try {
-            CompletableFuture.allOf(openingFuture, closingFuture).get(30, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error processing COGS report");
-            // Fallback to sequential processing
             calculateOpeningStockRow();
+            calculateStockCorrectionRow();
             calculateClosingStockRow();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "error");
         }
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
@@ -3425,6 +3479,11 @@ public class PharmacyReportController implements Serializable {
         synchronized (cogsRows) {
             cogsRows.put("Opening Stock", openingStock);
         }
+    }
+
+    public void calculateStockCorrectionRow() {
+        Map<String, Double> stockCorrection = calculateStockValues("Stock Corection");
+        cogsRows.put("Stock Corection", stockCorrection);
     }
 
     public void calculateClosingStockRow() {
