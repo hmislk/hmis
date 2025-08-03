@@ -575,11 +575,11 @@
                                             id="btnRemoveExpense"
                                             title="Delete expense"
                                             styleClass="ui-button-danger"
+                                            icon="pi pi-trash"
                                             action="#{pharmacyDirectPurchaseController.removeExpense(be)}"
                                             process="@this"
-                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}">
-                                            <p:graphicImage library="images" name="icons/trash.svg" width="20" height="20" style="fill: currentColor;"/>
-                                        </p:commandButton>
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
+                                        
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
