@@ -113,6 +113,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyCommonBillConfigurationDefaults();
         loadPharmacyAdjustmentReceiptConfigurationDefaults();
         loadPatientNameConfigurationDefaults();
+        loadSecurityConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -607,6 +608,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
     }
 
+    private void loadSecurityConfigurationDefaults() {
+        getBooleanValueByKey("prevent_password_reuse", false);
+    }
+
     private void loadPharmacyAnalyticsConfigurationDefaults() {
         List<String> tabOptions = Arrays.asList(
                 "Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab",
@@ -1039,6 +1044,18 @@ public class ConfigOptionApplicationController implements Serializable {
         option.setOptionValue(Boolean.toString(value));
         optionFacade.edit(option);
         loadApplicationOptions();
+    }
+
+    public boolean isPreventPasswordReuse() {
+        return getBooleanValueByKey("prevent_password_reuse", false);
+    }
+
+    public void setPreventPasswordReuse(boolean value) {
+        setBooleanValueByKey("prevent_password_reuse", value);
+    }
+
+    public ConfigOption getPreventPasswordReuseOption() {
+        return getApplicationOption("prevent_password_reuse");
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {
