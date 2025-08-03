@@ -8,7 +8,7 @@
 
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>jdbc/sl</jta-data-source>
+        <jta-data-source>jdbc/coop</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level" value="FINEST"/>
