@@ -20,5 +20,10 @@ git push "$@"
 # Step 3: Restore local configuration
 echo "🔄 Restoring local configuration..."
 ./scripts/restore-local-jndi.sh
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to restore local configuration"
+    echo "💡 You may need to manually restore your local JNDI names"
+    exit 1
+fi
 
 echo "✅ Push complete and local config restored!"
