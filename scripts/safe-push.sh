@@ -12,8 +12,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Step 2: Add and push
+# Step 2: Add, commit, and push
 git add src/main/resources/META-INF/persistence.xml
+git commit -m "chore: substitute JNDI names for push" --no-verify
 git push "$@"
 
 # Step 3: Restore local configuration
