@@ -8,13 +8,11 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy">
-
     <ui:define name="content">
-        <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
         <h:form id="bill">
             <p:growl id="msg"/>
-            <h:panelGroup >
-                <p:panel rendered="#{!pharmacyDirectPurchaseController.printPreview}" style="height: 100vh">
+            <h:panelGroup rendered="#{!pharmacyDirectPurchaseController.printPreview}">
+                <p:panel  >
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center w-100">
                             <div>
@@ -41,14 +39,20 @@
                             </div>
                         </div>
                     </f:facet>
-                    <h:panelGroup
-                        rendered="#{pharmacyDirectPurchaseController.warningMessage ne null}" >
-                        <h:inputTextarea
-                            class="text-warning w-100"
-                            readonly="true"
-                            value="#{pharmacyDirectPurchaseController.warningMessage}" >
-                        </h:inputTextarea>
-                    </h:panelGroup>
+
+                    <div class="row" >
+                        <div class="col-12" >
+                            <h:panelGroup
+                                rendered="#{pharmacyDirectPurchaseController.warningMessage ne null}" >
+                                <h:inputTextarea
+                                    class="text-warning w-100"
+                                    readonly="true"
+                                    value="#{pharmacyDirectPurchaseController.warningMessage}" >
+                                </h:inputTextarea>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-8">
                             <p:panel
@@ -467,6 +471,116 @@
                                 </p:column>
                             </p:dataTable>
 
+                            <p:separator ></p:separator>
+
+                            <p:panel header="Bill Expenses" class="my-3" >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill-wave" />
+                                    <h:outputText class="mx-4" value="Bill Expenses" />
+                                </f:facet>
+                                <h:panelGroup id="billExpenseGrid">
+                                    <div class="row w-100">
+                                        <div class="col-4">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Select Expense"/><br/>
+                                            <p:autoComplete
+                                                id="acExpense"
+                                                class="w-100 m-1"
+                                                inputStyleClass="w-100"
+                                                value="#{pharmacyDirectPurchaseController.currentExpense.item}"
+                                                forceSelection="true"
+                                                completeMethod="#{itemController.completeExpenseItem}"
+                                                var="ex"
+                                                itemLabel="#{ex.name}"
+                                                itemValue="#{ex}">
+                                                <p:ajax
+                                                    event="itemSelect"
+                                                    process="acExpense"
+                                                    listener="#{pharmacyDirectPurchaseController.onExpenseItemSelect}"
+                                                    update="billExpenseGrid" />
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Value"/><br/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtExpense"
+                                                class="w-100 m-1 text-end"
+                                                onfocus="this.select()"
+                                                styleClass="numericTxt"
+                                                value="#{pharmacyDirectPurchaseController.currentExpense.rate}" />
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Description"/><br/>
+                                            <p:inputText 
+                                                class="w-100 m-1"
+                                                maxlength="250" 
+                                                value="#{pharmacyDirectPurchaseController.currentExpense.descreption}" />
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Considered for Costing"/><br/>
+                                            <div class="w-100 m-1 d-flex align-items-center justify-content-center" style="height: 38px;">
+                                                <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.currentExpense.consideredForCosting}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="&nbsp;"/><br/>
+                                            <p:commandButton
+                                                id="btnAddExpense"
+                                                value="Add"
+                                                icon="fas fa-plus"
+                                                class="ui-button-warning w-100"
+                                                action="#{pharmacyDirectPurchaseController.addExpense()}"
+                                                ajax = "false"
+                                                process="billExpenseGrid btnAddExpense @this"
+                                                update=" billExpenseGrid @all"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable 
+                                    id="tblExpenses"
+                                    value="#{pharmacyDirectPurchaseController.billExpenses}" 
+                                    var="be" 
+                                    class="mt-2"
+                                    emptyMessage="No Bill Expenses" >
+                                    <p:column headerText="Expense" >
+                                        <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value" >
+                                        <h:outputLabel value="#{be.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Description" >
+                                        <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Considered for Costing" >
+                                        <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
+                                            <p:ajax event="change" 
+                                                    listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
+                                                    update="@parent" />
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <p:commandButton
+                                id="nullButton"
+                                value="No Action"
+                                action="#"
+                                style="display: none;" ></p:commandButton>
+
+                            <p:defaultCommand  target="btnAdd" />
+
                         </div>
                         <div class="col-4">
                             <p:panel header="Purchasing Details" class="m-1">
@@ -520,7 +634,6 @@
 
                                 </h:panelGrid>
                             </p:panel>
-
                             <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
                                 <f:facet name="header" >
                                     <h:outputText styleClass="fas fa-receipt"/>
@@ -618,107 +731,21 @@
 
 
                             </p:panel>
-
-
-
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-
-
                         </div>
                     </div>
 
 
 
 
-                    <p:panel header="Bill Expenses" class="my-3" >
-                        <h:panelGrid id="billExpenseGrid" columns="5" style="min-width: 100%;">
-                            <h:outputLabel value="Select Expense"/>
-                            <h:outputLabel value="Value"/>
-                            <h:outputLabel value="Description"/>
-                            <h:outputLabel value="Considered for Costing"/>
-                            <h:outputLabel ></h:outputLabel>
-                            <p:autoComplete
-                                id="acExpense"
-                                value="#{pharmacyDirectPurchaseController.currentExpense.item}"
-                                forceSelection="true"
-                                completeMethod="#{itemController.completeExpenseItem}"
-                                var="ex"
-                                itemLabel="#{ex.name}"
-                                itemValue="#{ex}"
-                                inputStyleClass="w-100"
-                                class="w-75">
-                                <p:ajax
-                                    event="itemSelect"
-                                    process="acExpense"
-                                    listener="#{pharmacyDirectPurchaseController.onExpenseItemSelect}"
-                                    update="billExpenseGrid" />
-                            </p:autoComplete>
-                            <p:inputText
-                                autocomplete="off"
-                                id="txtExpense"
-                                onfocus="this.select()"
-                                styleClass="numericTxt"
-                                value="#{pharmacyDirectPurchaseController.currentExpense.rate}"
-                                style="width:50%" />
-                            <p:inputText maxlength="250" value="#{pharmacyDirectPurchaseController.currentExpense.descreption}" style="width:75%" ></p:inputText>
-                            <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.currentExpense.consideredForCosting}" />
-                            <p:commandButton
-                                id="btnAddExpense"
-                                value="Add Expense"
-                                icon="fas fa-plus"
-                                class="ui-button-Warning mx-2"
-                                action="#{pharmacyDirectPurchaseController.addExpense()}"
-                                ajax = "false"
-                                process="billExpenseGrid btnAddExpense @this"
-                                update=" billExpenseGrid @all"/>
-                        </h:panelGrid>
-                        <p:dataTable id="tblExpenses" value="#{pharmacyDirectPurchaseController.billExpenses}" var="be" class="mt-2"
-                                     emptyMessage="No Bill Expenses" >
-                            <p:column headerText="Expense" >
-                                <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Value" >
-                                <h:outputLabel value="#{be.netValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Description" >
-                                <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Considered for Costing" >
-                                <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
-                                    <p:ajax event="change" 
-                                            listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
-                                            update="@parent" />
-                                </p:selectBooleanCheckbox>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
 
-                    <p:commandButton
-                        id="nullButton"
-                        value="No Action"
-                        action="#"
-                        style="display: none;" ></p:commandButton>
 
-                    <p:defaultCommand  target="btnAdd" />
 
-                    <h:panelGroup rendered="#{not empty pharmacyItemExcelManager.itemNamesFailedToImport}" >
-                        <p:dataTable value="#{pharmacyItemExcelManager.itemNamesFailedToImport}"
-                                     var="f">
-                            <p:column >
-                                #{f}
-                            </p:column>
-                        </p:dataTable>
-                    </h:panelGroup>
+
+
                 </p:panel>
             </h:panelGroup>
-            <h:panelGroup>
-                <p:panel rendered="#{pharmacyDirectPurchaseController.printPreview}">
+            <h:panelGroup rendered="#{pharmacyDirectPurchaseController.printPreview}">
+                <p:panel >
                     <f:facet name="header" >
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
