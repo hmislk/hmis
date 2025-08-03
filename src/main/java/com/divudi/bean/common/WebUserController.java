@@ -1441,7 +1441,7 @@ public class WebUserController implements Serializable {
                 WebUserPasswordHistory oldEntry = allHistory.get(i);
                 oldEntry.setRetired(true);
                 oldEntry.setRetiredAt(new Date());
-                oldEntry.setRetirer(getLoggedUser());
+                oldEntry.setRetirer(getSessionController().getLoggedUser());
                 webUserPasswordHistoryFacade.edit(oldEntry);
             }
         }
