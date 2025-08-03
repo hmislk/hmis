@@ -551,11 +551,20 @@ public class ConfigOptionController implements Serializable {
     }
 
     public void listApplicationOptions() {
+        configOptionApplicationController.isPreventPasswordReuse();
         options = getApplicationOptions();
     }
 
     public void listWebUserOptions() {
         options = getWebUserOptions(webUser);
+    }
+
+    public boolean isPreventPasswordReuse() {
+        return configOptionApplicationController.isPreventPasswordReuse();
+    }
+
+    public void setPreventPasswordReuse(boolean value) {
+        configOptionApplicationController.setPreventPasswordReuse(value);
     }
 
     private ConfigOptionFacade getFacade() {
