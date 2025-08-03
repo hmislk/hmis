@@ -6,6 +6,24 @@ This guide provides detailed instructions for deploying the latest development c
 
 The HMIS project uses GitHub Actions for automated CI/CD deployment to QA environments. Deployments are triggered by pushing code to specific branch names that correspond to each environment.
 
+## ⚠️ Critical Configuration Requirements
+
+**IMPORTANT**: Before any QA deployment, verify that `src/main/resources/META-INF/persistence.xml` uses environment variables, NOT hardcoded JNDI datasources:
+
+✅ **CORRECT** (Required for deployments):
+```xml
+<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
+<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
+```
+
+❌ **INCORRECT** (Will cause deployment failures):
+```xml
+<jta-data-source>jdbc/coop</jta-data-source>
+<jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+```
+
+The GitHub Actions workflow automatically replaces these environment variables with environment-specific values during build.
+
 ## Environment Details
 
 | Environment | Branch Name | Application URL | JDBC DataSource |
@@ -288,7 +306,42 @@ gh auth login
 - Contact repository administrator for access
 - Verify you're using the correct GitHub account
 
-#### 4. **Force Push Rejected (QA2/QA3)**
+#### 3.1. **🚨 CRITICAL: Applications Not Starting (404 Errors)**
+**Symptoms:** 
+- Deployment completes successfully but applications return 404 errors
+- `curl https://qa.carecode.org/qa1/faces/index1.xhtml` returns 404
+
+**Most Common Cause:** Hardcoded JNDI datasources in persistence.xml
+
+**Solution:**
+1. **Check persistence.xml configuration:**
+   ```bash
+   grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+   ```
+   
+2. **Expected output (CORRECT):**
+   ```xml
+   <jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
+   <jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
+   ```
+
+3. **If you see hardcoded values (INCORRECT):**
+   ```xml
+   <jta-data-source>jdbc/coop</jta-data-source>
+   <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+   ```
+   
+   **Fix immediately:**
+   - Replace with environment variables
+   - Create PR with the fix
+   - Redeploy all affected QA environments
+
+4. **Verify build logs show proper replacement:**
+   ```bash
+   gh run view [RUN_ID] --log | grep "Update JDBC Data Sources"
+   ```
+
+#### 4. **Force Push Rejected (All QA Environments)**
 **Error:** `remote: error: GH013: Repository rule violations found`
 **Solution:** This is normal for protected branches. Use the Pull Request method instead.
 
