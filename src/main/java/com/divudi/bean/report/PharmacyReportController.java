@@ -105,6 +105,8 @@ import java.util.HashSet;
 
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -3173,10 +3175,10 @@ public class PharmacyReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh where sh.retired=:ret ");
-//                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+        //                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
 
         // Set query parameters
-//        params.put("depty", DepartmentType.Pharmacy);
+        //        params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
 
         if (institution != null) {
@@ -3208,7 +3210,7 @@ public class PharmacyReportController implements Serializable {
         jpql.append("and sh.createdAt < :et ");
         params.put("et", CommonFunctions.getEndOfDay(toDate));
 
-//        jpql.append("group by sh.department, sh.itemBatch.item ");
+        //        jpql.append("group by sh.department, sh.itemBatch.item ");
         jpql.append("group by sh.department, sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
@@ -3227,7 +3229,7 @@ public class PharmacyReportController implements Serializable {
             // Assign class-level 'item' so it is not shadowed by a local variable
             item = shx.getItemBatch().getItem();
 
-//            double batchQty = shx.getItemStock();
+            //            double batchQty = shx.getItemStock();
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
@@ -3294,6 +3296,142 @@ public class PharmacyReportController implements Serializable {
                 }
             }
         }, InventoryReports.CLOSING_STOCK_REPORT, sessionController.getLoggedUser());
+    }
+
+    private Map<String, Object> cogsRows = new LinkedHashMap<>();
+
+    private Map<String, Double> calculateStockTotals(Date date) {
+        try {
+            Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder();
+
+            // Direct aggregation query
+            jpql.append("SELECT ")
+                    .append("SUM(sh.stockQty * sh.itemBatch.purcahseRate), ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.costRate, 0.0)) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = :ret ")
+                    .append("AND sh.id IN (")
+                    .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("WHERE sh2.retired = :ret ")
+                    .append("AND sh2.createdAt < :et ");
+
+            params.put("ret", false);
+            params.put("et", date);
+
+            // Add filters to subquery
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("GROUP BY sh2.department, sh2.itemBatch ")
+                    .append("HAVING MAX(sh2.id) IN (")
+                    .append("SELECT sh3.id FROM StockHistory sh3 ")
+                    .append("WHERE sh3.retired = :ret ");
+
+            // Add filters to innermost query
+            addFilter(jpql, params, "sh3.institution", "ins2", institution);
+            addFilter(jpql, params, "sh3.department.site", "sit2", site);
+            addFilter(jpql, params, "sh3.department", "dep2", department);
+
+            jpql.append("AND sh3.createdAt < :et2)) ");
+            params.put("et2", date);
+
+            // Add filters to main query
+            addFilter(jpql, params, "sh.institution", "ins3", institution);
+            addFilter(jpql, params, "sh.department.site", "sit3", site);
+            addFilter(jpql, params, "sh.department", "dep3", department);
+
+            // Group by item and filter positive quantities
+            jpql.append("AND sh.itemBatch.item.id IN (")
+                    .append("SELECT sh4.itemBatch.item.id FROM StockHistory sh4 ")
+                    .append("WHERE sh4.retired = :ret ")
+                    .append("AND sh4.id IN (")
+                    .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
+                    .append("WHERE sh5.retired = :ret ")
+                    .append("AND sh5.createdAt < :et3 ");
+
+            params.put("et3", date);
+
+            // Add filters to item filtering subqueries
+            addFilter(jpql, params, "sh5.institution", "ins4", institution);
+            addFilter(jpql, params, "sh5.department.site", "sit4", site);
+            addFilter(jpql, params, "sh5.department", "dep4", department);
+
+            jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
+
+            addFilter(jpql, params, "sh4.institution", "ins5", institution);
+            addFilter(jpql, params, "sh4.department.site", "sit5", site);
+            addFilter(jpql, params, "sh4.department", "dep5", department);
+
+            jpql.append("GROUP BY sh4.itemBatch.item.id ")
+                    .append("HAVING SUM(sh4.stockQty) > 0");
+
+            // Apply consignment filter if needed
+            if (isConsignmentItem()) {
+                jpql.append(" AND SUM(sh4.stockQty) <= 0");
+            }
+
+            jpql.append(")");
+
+            // Execute the query
+            List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+            }
+
+            return result;
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock totals for date: " + date);
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            return errorResult;
+        }
+    }
+
+    public void processCostOfGoodSoldReport() {
+        long startTime = System.currentTimeMillis();
+
+        cogsRows.clear();
+        // Process in parallel if dealing with large date ranges
+        CompletableFuture<Void> openingFuture = CompletableFuture.runAsync(this::calculateOpeningStockRow);
+        CompletableFuture<Void> closingFuture = CompletableFuture.runAsync(this::calculateClosingStockRow);
+
+        try {
+            CompletableFuture.allOf(openingFuture, closingFuture).get(30, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error processing COGS report");
+            // Fallback to sequential processing
+            calculateOpeningStockRow();
+            calculateClosingStockRow();
+        }
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        System.out.println("processCostOfGoodSoldReport execution time: " + duration + " milliseconds");
+    }
+
+    public void calculateOpeningStockRow() {
+        Map<String, Double> openingStock = calculateStockTotals(fromDate);
+        synchronized (cogsRows) {
+            cogsRows.put("Opening Stock", openingStock);
+        }
+    }
+
+    public void calculateClosingStockRow() {
+        Map<String, Double> closingStock = calculateStockTotals(toDate);
+        synchronized (cogsRows) {
+            cogsRows.put("Closing Stock", closingStock);
+        }
     }
 
     public void exportBatchWisePharmacyStockToPdf() {
@@ -3816,7 +3954,7 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpql = new StringBuilder();
             Map<String, Object> params = new HashMap<>();
 
-            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.purcahseRate) ")
                     .append("FROM StockHistory sh ")
                     .append("WHERE sh.retired = false ")
                     .append("AND sh.id IN (")
@@ -5441,5 +5579,13 @@ public class PharmacyReportController implements Serializable {
 
     public void setPharmacyRows(List<PharmacyRow> pharmacyRows) {
         this.pharmacyRows = pharmacyRows;
+    }
+
+    public Map<String, Object> getCogsRows() {
+        return cogsRows;
+    }
+
+    public void setCogsRows(Map<String, Object> cogsRows) {
+        this.cogsRows = cogsRows;
     }
 }
