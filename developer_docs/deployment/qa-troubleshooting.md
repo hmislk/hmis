@@ -137,5 +137,62 @@ curl -s -o /dev/null -w "%{http_code}" https://qa.carecode.org/qa3/faces/index1.
 
 These mappings are handled automatically by the GitHub Actions workflow when environment variables are used correctly.
 
+## Server-Side Infrastructure Failures
+
+### Payara Deployment Failures
+
+#### Issue: EclipseLink DDL Generation Error
+**Error:**
+```
+Exception [EclipseLink-7018] File error.
+java.io.FileNotFoundException: c:/tmp/createDDL.jdbc (No such file or directory)
+```
+
+**Root Cause:** Missing or inaccessible DDL generation directory
+
+**Solution:**
+1. **Server administrator** needs to ensure `/tmp/` or `c:/tmp/` directory exists and is writable
+2. **Alternative**: Update persistence.xml `eclipselink.application-location` property to use existing writable directory
+
+#### Issue: Payara Admin Authentication Failure  
+**Error:**
+```
+Invalid file for option: --passwordfile: java.io.FileNotFoundException: /tmp/payara-admin-pass.txt
+```
+
+**Root Cause:** Missing Payara admin password file on server
+
+**Solution:**
+1. **Server administrator** needs to restore `/tmp/payara-admin-pass.txt` file
+2. **Check GitHub repository secrets** for correct password file content
+3. **Verify deployment workflow** is properly creating the password file
+
+#### Issue: Application State Mismatch
+**Error:**
+```
+remote failure: Application qa2 is not deployed on this target [server]
+Command undeploy failed.
+```
+
+**Root Cause:** Application registry is out of sync with actual deployment state
+
+**Solution:**
+1. **Manual server cleanup** required by administrator
+2. **Clean deployment approach:**
+   ```bash
+   # Skip undeploy and force new deployment
+   asadmin deploy --force=true --name=qa2 path/to/application.war
+   ```
+
+### When to Escalate to Server Administrator
+
+**Escalate immediately if you see:**
+- File permission errors (`/tmp/` directory issues)
+- Payara admin authentication failures  
+- EclipseLink DDL generation path errors
+- Application registry mismatches
+
+**These are infrastructure issues beyond deployment workflow scope.**
+
 ---
 *This guide was created based on real deployment failures encountered on 2025-08-03*

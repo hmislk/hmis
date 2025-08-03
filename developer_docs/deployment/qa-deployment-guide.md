@@ -424,6 +424,17 @@ After successful deployment, applications will be available at:
 - **QA2**: https://qa.carecode.org/qa2/faces/index1.xhtml
 - **QA3**: https://qa.carecode.org/qa3/faces/index1.xhtml
 
+## Advanced Troubleshooting
+
+For complex deployment failures involving server infrastructure issues, see the comprehensive troubleshooting guide:
+📋 **[QA Troubleshooting Guide](qa-troubleshooting.md)**
+
+Common server-side issues include:
+- EclipseLink DDL generation path errors
+- Payara admin authentication failures  
+- Application state mismatches
+- Missing server directories or files
+
 ## Security Notes
 
 - All server credentials are stored as GitHub repository secrets
