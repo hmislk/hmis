@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.core.entity.Bill;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.light.common.BillLight;
@@ -28,98 +28,129 @@ public class CollectingCentrePaymentController implements Serializable {
     @EJB
     BillFacade billFacade;
 // </editor-fold>
-    
+
 // <editor-fold defaultstate="collapsed" desc="Controllers">
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Variables">
-    
     private boolean ccPaymentSettlingStarted = false;
     private Date fromDate;
     private Date toDate;
 
     private Institution currentCollectingCentre;
-    
+
     private List<BillLight> pandingCCpaymentBills;
     private List<BillLight> selectedCCpaymentBills;
-    
+
     private double totalCCAmount;
     private double totalHospitalAmount;
-    
-    
-    
-// </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Navigation Method">
-    
+    private double totalCCReceiveAmount = 0.0;
+    private double payingTotalCCAmount = 0.0;
+
 // </editor-fold>
-    
+// <editor-fold defaultstate="collapsed" desc="Navigation Method">
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
-    
-    public void processCollectingCentrePayment(){
-        if(currentCollectingCentre == null){
+
+    public void processCollectingCentrePayment() {
+        if (currentCollectingCentre == null) {
             JsfUtil.addErrorMessage("Select Collecting Centre");
-            return ;
+            return;
         }
-        
+
         findPendingCCBills();
+        calculateTotalOfPaymentReceive();
     }
-    
-    public void makeNull(){
+
+    public void makeNull() {
         totalHospitalAmount = 0.0;
         totalCCAmount = 0.0;
-        fromDate =null;
-        toDate =null;
-        selectedCCpaymentBills =null;
-        pandingCCpaymentBills =null;
+        fromDate = null;
+        toDate = null;
+        selectedCCpaymentBills = null;
+        pandingCCpaymentBills = null;
         ccPaymentSettlingStarted = false;
-        currentCollectingCentre =null;
+        currentCollectingCentre = null;
+        totalCCReceiveAmount = 0.0;
+        payingTotalCCAmount = 0.0;
     }
-    
-    public void findPendingCCBills(){
+
+    public void findPendingCCBills() {
         System.out.println("findPendingCCBills");
         System.out.println("currentCollectingCentre = " + currentCollectingCentre);
         System.out.println("fromDate = " + fromDate);
         System.out.println("toDate = " + toDate);
-        
+
         pandingCCpaymentBills = new ArrayList<>();
         String jpql;
         Map temMap = new HashMap();
-        
-        jpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.patient.person.title, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
+
+        jpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
                 + " from Bill bill "
                 + " where bill.collectingCentre=:cc "
                 + " and bill.createdAt between :fromDate and :toDate "
                 + " and bill.retired=false ";
-        
+
         jpql += " order by bill.createdAt asc ";
         temMap.put("cc", currentCollectingCentre);
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
-        
-        pandingCCpaymentBills =  billFacade.findLightsByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-    
+
+        pandingCCpaymentBills = billFacade.findLightsByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+
         System.out.println("pandingCCpaymentBills = " + pandingCCpaymentBills.size());
-        
+
         totalHospitalAmount = 0.0;
         totalCCAmount = 0.0;
-        
-        for(BillLight bl : pandingCCpaymentBills){
+
+        for (BillLight bl : pandingCCpaymentBills) {
             totalHospitalAmount += bl.getHospitalTotal();
-            totalCCAmount+= bl.getCcTotal();
+            totalCCAmount += bl.getCcTotal();
         }
-        
+
         System.out.println("totalHospitalAmount = " + totalHospitalAmount);
         System.out.println("totalCCAmount = " + totalCCAmount);
-        
+
     }
-    
+
+    public void calculateTotalOfPaymentReceive() {
+        System.out.println("calculateTotalOfPaymentReceive"); // Fixed typo in method name
+
+        String jpql;
+        Map<String, Object> temMap = new HashMap<>(); // Use generics for type safety
+
+        jpql = "SELECT SUM(b.netTotal) " // Use "SUM" (JPQL is case-insensitive, but best practice)
+                + "FROM Bill b " // Use a shorter alias for clarity
+                + "WHERE b.billTypeAtomic = :atomic "
+                + "AND b.fromInstitution = :cc "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.cancelled = FALSE "
+                + "AND b.retired = FALSE";
+
+        temMap.put("atomic", BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        temMap.put("cc", currentCollectingCentre);
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+
+        totalCCReceiveAmount = billFacade.findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+
+        System.out.println("totalCCReceiveAmount = " + totalCCReceiveAmount); 
+    }
+
+    public void performCalculations() {
+        payingTotalCCAmount = 0.0;
+
+        for (BillLight bl : selectedCCpaymentBills) {
+            payingTotalCCAmount += bl.getCcTotal();
+        }
+        System.out.println("payingTotalCCAmount = " + payingTotalCCAmount);
+
+    }
+
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
-    
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfMonth();
@@ -159,7 +190,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
 // </editor-fold>
-
     public List<BillLight> getPandingCCpaymentBills() {
         return pandingCCpaymentBills;
     }
@@ -192,5 +222,20 @@ public class CollectingCentrePaymentController implements Serializable {
         this.totalHospitalAmount = totalHospitalAmount;
     }
 
-  
+    public double getPayingTotalCCAmount() {
+        return payingTotalCCAmount;
+    }
+
+    public void setPayingTotalCCAmount(double payingTotalCCAmount) {
+        this.payingTotalCCAmount = payingTotalCCAmount;
+    }
+
+    public double getTotalCCReceiveAmount() {
+        return totalCCReceiveAmount;
+    }
+
+    public void setTotalCCReceiveAmount(double totalCCReceiveAmount) {
+        this.totalCCReceiveAmount = totalCCReceiveAmount;
+    }
+
 }
