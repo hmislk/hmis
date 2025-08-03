@@ -50,6 +50,8 @@ import com.divudi.core.facade.WebUserDepartmentFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
 import com.divudi.core.facade.WebUserRoleFacade;
+import com.divudi.core.facade.WebUserPasswordHistoryFacade;
+import com.divudi.core.entity.WebUserPasswordHistory;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.cashTransaction.CashBook;
@@ -117,6 +119,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     PersonFacade pFacade;
     @EJB
     WebUserRoleFacade rFacade;
+    @EJB
+    private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -1053,9 +1057,31 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         boolean passwordRequirementsCorrect = passwordRequirementsCorrect();
         if (passwordRequirementsCorrect) {
-            user.setWebUserPassword(getSecurityController().hashAndCheck(password));
+            if (configOptionApplicationController.isPreventPasswordReuse()) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("u", user);
+                List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql("select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u", m);
+                for (WebUserPasswordHistory h : hs) {
+                    if (SecurityController.matchPassword(password, h.getPassword())) {
+                        JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                        return;
+                    }
+                }
+                if (SecurityController.matchPassword(password, user.getWebUserPassword())) {
+                    JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                    return;
+                }
+            }
+            String hashed = getSecurityController().hashAndCheck(password);
+            user.setWebUserPassword(hashed);
             user.setNeedToResetPassword(false);
             uFacade.edit(user);
+            WebUserPasswordHistory wh = new WebUserPasswordHistory();
+            wh.setWebUser(user);
+            wh.setPassword(hashed);
+            wh.setCreater(getLoggedUser());
+            wh.setCreatedAt(new Date());
+            webUserPasswordHistoryFacade.create(wh);
             passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
         } else {
@@ -1078,8 +1104,31 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
+        if (configOptionApplicationController.isPreventPasswordReuse()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("u", user);
+            List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql("select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u", m);
+            for (WebUserPasswordHistory h : hs) {
+                if (SecurityController.matchPassword(newPassword, h.getPassword())) {
+                    JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                    return;
+                }
+            }
+            if (SecurityController.matchPassword(newPassword, user.getWebUserPassword())) {
+                JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                return;
+            }
+        }
+
+        String hashed = getSecurityController().hashAndCheck(newPassword);
+        user.setWebUserPassword(hashed);
         uFacade.edit(user);
+        WebUserPasswordHistory wh = new WebUserPasswordHistory();
+        wh.setWebUser(user);
+        wh.setPassword(hashed);
+        wh.setCreater(getLoggedUser());
+        wh.setCreatedAt(new Date());
+        webUserPasswordHistoryFacade.create(wh);
         JsfUtil.addSuccessMessage("Password changed");
     }
 
