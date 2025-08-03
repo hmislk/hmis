@@ -4,8 +4,8 @@
 
 ### Persistence Configuration
 - **Database Push Workflow**: [Complete Instructions](developer_docs/persistence/persistence-workflow.md)
-- **AUTOMATION SCRIPTS**: Use `./scripts/safe-push.sh` instead of `git push` to automatically handle JNDI replacement
-- **Manual Scripts**: `./scripts/prepare-for-push.sh` and `./scripts/restore-local-jndi.sh` for step-by-step control
+- **AUTOMATION SCRIPTS**: Use `scripts\safe-push.bat` (Windows) or `./scripts/safe-push.sh` (Linux) instead of `git push` to automatically handle JNDI replacement
+- **Manual Scripts**: `scripts\prepare-for-push.bat` / `scripts\restore-local-jndi.bat` (Windows) or bash equivalents for step-by-step control
 - **File**: `src/main/resources/META-INF/persistence.xml`
 - **⚠️ QA DEPLOYMENT BLOCKER**: Must use `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables, NOT hardcoded JNDI names
 - **⚠️ DDL GENERATION BLOCKER**: Remove hardcoded `eclipselink.application-location` paths like `c:/tmp/` from persistence.xml
@@ -31,7 +31,7 @@
 - **Use direct DTO queries** - avoid entity-to-DTO conversion loops
 
 ## Essential Rules
-1. **Use automation scripts for GitHub pushes**: `./scripts/safe-push.sh` instead of `git push` to prevent JNDI issues
+1. **Use automation scripts for GitHub pushes**: `scripts\safe-push.bat` (Windows) or `./scripts/safe-push.sh` (Linux) instead of `git push` to prevent JNDI issues
 2. **Always use environment variables** in pushed persistence.xml - NEVER commit hardcoded JNDI datasources
 3. **Include issue closing keywords** in commit messages
 4. **Update project board status** automatically

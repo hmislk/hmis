@@ -3,6 +3,18 @@
 ## AUTOMATION SCRIPTS (RECOMMENDED)
 
 ### One-Command Solution
+
+**Windows (Primary Development Environment):**
+```cmd
+REM Instead of: git push
+REM Use this:
+scripts\safe-push.bat
+
+REM Or with parameters:
+scripts\safe-push.bat origin main
+```
+
+**Linux (Server Environment):**
 ```bash
 # Instead of: git push
 # Use this:
@@ -19,6 +31,20 @@ This script automatically:
 4. Restores your local JNDI names
 
 ### Manual Step-by-Step Control
+
+**Windows:**
+```cmd
+REM 1. Prepare for push (backs up and replaces JNDI names)
+scripts\prepare-for-push.bat
+
+REM 2. Push your changes
+git push
+
+REM 3. Restore local configuration
+scripts\restore-local-jndi.bat
+```
+
+**Linux:**
 ```bash
 # 1. Prepare for push (backs up and replaces JNDI names)
 ./scripts/prepare-for-push.sh
@@ -61,6 +87,13 @@ Use the **last choice in history** - whatever JNDI names are currently in the fi
 ## Script Details
 
 ### Available Scripts
+
+**Windows (Primary Development):**
+- **`scripts\safe-push.bat`** - Complete automation (recommended)
+- **`scripts\prepare-for-push.bat`** - Prepare persistence.xml for GitHub push
+- **`scripts\restore-local-jndi.bat`** - Restore local JNDI configuration
+
+**Linux (Server Environment):**
 - **`scripts/safe-push.sh`** - Complete automation (recommended)
 - **`scripts/prepare-for-push.sh`** - Prepare persistence.xml for GitHub push
 - **`scripts/restore-local-jndi.sh`** - Restore local JNDI configuration
