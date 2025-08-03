@@ -238,6 +238,27 @@ public class TransferReceiveController implements Serializable {
             newlyCreatedReceivedBillItem.setQty(packs);
             newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().setQty(remainingQty);
 
+            // Fix rates by retrieving correct values from ItemBatch
+            PharmaceuticalBillItem pbi = newlyCreatedReceivedBillItem.getPharmaceuticalBillItem();
+            if (pbi != null && pbi.getItemBatch() != null) {
+                ItemBatch itemBatch = pbi.getItemBatch();
+                
+                // Set correct purchase rates from ItemBatch
+                pbi.setPurchaseRate(itemBatch.getPurcahseRate());
+                pbi.setPurchaseRatePack(itemBatch.getPurcahseRate() * unitsPerPack);
+                pbi.setPurchaseValue(itemBatch.getPurcahseRate() * remainingQty);
+                
+                // Set correct retail rates from ItemBatch
+                pbi.setRetailRate(itemBatch.getRetailsaleRate());
+                pbi.setRetailRatePack(itemBatch.getRetailsaleRate() * unitsPerPack);
+                pbi.setRetailValue(itemBatch.getRetailsaleRate() * remainingQty);
+                
+                // Set correct cost rates from ItemBatch
+                pbi.setCostRate(itemBatch.getCostRate());
+                pbi.setCostRatePack(itemBatch.getCostRate() * unitsPerPack);
+                pbi.setCostValue(itemBatch.getCostRate() * remainingQty);
+            }
+
             // Ensure finance details reflect positive quantities and rates
             BillItemFinanceDetails fd = newlyCreatedReceivedBillItem.getBillItemFinanceDetails();
             if (fd != null) {
@@ -740,14 +761,32 @@ public class TransferReceiveController implements Serializable {
         fd.setQuantityByUnits(qtyByUnits);
         fd.setTotalQuantityByUnits(qtyByUnits);
 
+        // Set correct rates for different types from ItemBatch
+        if (ph != null && ph.getItemBatch() != null) {
+            ItemBatch itemBatch = ph.getItemBatch();
+            
+            // Set purchase rate details
+            BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+            fd.setValueAtPurchaseRate(purchaseRate.multiply(qtyByUnits));
+            
+            // Set retail rate details  
+            BigDecimal retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+            fd.setValueAtRetailRate(retailRate.multiply(qtyByUnits));
+            
+            // Set cost rate details
+            BigDecimal costRate = BigDecimal.valueOf(itemBatch.getCostRate());
+            fd.setLineCostRate(costRate);
+            fd.setLineCost(costRate.multiply(qtyByUnits));
+            fd.setValueAtCostRate(costRate.multiply(qtyByUnits));
+            fd.setTotalCost(costRate.multiply(qtyByUnits));
+        }
+
         fd.setLineDiscount(BigDecimal.ZERO);
         fd.setLineExpense(BigDecimal.ZERO);
         fd.setLineTax(BigDecimal.ZERO);
-        fd.setLineCost(BigDecimal.ZERO);
         fd.setTotalDiscount(BigDecimal.ZERO);
         fd.setTotalExpense(BigDecimal.ZERO);
         fd.setTotalTax(BigDecimal.ZERO);
-        fd.setTotalCost(BigDecimal.ZERO);
         fd.setFreeQuantity(BigDecimal.ZERO);
         fd.setFreeQuantityByUnits(BigDecimal.ZERO);
 
