@@ -565,10 +565,21 @@
                                     </p:column>
                                     <p:column headerText="Considered for Costing" >
                                         <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
-                                            <p:ajax event="change" 
+                                            <p:ajax event="change"
                                                     listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
                                                     update="@parent" />
                                         </p:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column headerText="Delete" >
+                                        <p:commandButton
+                                            id="btnRemoveExpense"
+                                            title="Delete expense"
+                                            styleClass="ui-button-danger"
+                                            action="#{pharmacyDirectPurchaseController.removeExpense(be)}"
+                                            process="@this"
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}">
+                                            <p:graphicImage library="images" name="icons/trash.svg" width="20" height="20" style="fill: currentColor;"/>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>

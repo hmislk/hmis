@@ -1733,6 +1733,26 @@ public class GrnCostingController implements Serializable {
 
     }
 
+    public void removeExpense(BillItem expense) {
+        if (expense == null) {
+            return;
+        }
+
+        if (billExpenses != null) {
+            billExpenses.remove(expense);
+            int index = 0;
+            for (BillItem be : billExpenses) {
+                be.setSearialNo(index++);
+            }
+        }
+
+        if (getBill().getBillExpenses() != null) {
+            getBill().getBillExpenses().remove(expense);
+        }
+
+        calTotal();
+    }
+
     public double calExpenses() {
         double tot = 0.0;
         for (BillItem be : billExpenses) {
