@@ -568,6 +568,8 @@ public class TransferIssueController implements Serializable {
             pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
         }
 
+        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
+
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
             getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -859,8 +861,10 @@ public class TransferIssueController implements Serializable {
 
             phItem.setPurchaseRatePack(batch.getPurcahseRate() * unitsPerPack.doubleValue()); // PURCHASERATEPACK
             phItem.setRetailRatePack(batch.getRetailsaleRate() * unitsPerPack.doubleValue()); // RETAILRATEPACK
+            phItem.setCostRatePack(batch.getCostRate() * unitsPerPack.doubleValue()); // COSTRATEPACK
             phItem.setPurchaseValue(batch.getPurcahseRate() * phItem.getQty()); // PURCHASEVALUE (rate * qty in units)
             phItem.setRetailValue(batch.getRetailsaleRate() * phItem.getQty()); // RETAILVALUE (rate * qty in units)
+            phItem.setCostValue(batch.getCostRate() * phItem.getQty()); // COSTVALUE (rate * qty in units)
         }
 
         getBillItemFacade().edit(b);
@@ -957,9 +961,9 @@ public class TransferIssueController implements Serializable {
         billItem.getPharmaceuticalBillItem().setCostRate(getTmpStock().getItemBatch().getCostRate());
         billItem.getPharmaceuticalBillItem().setCostRatePack(getTmpStock().getItemBatch().getCostRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
 
-        billItem.getPharmaceuticalBillItem().setCostValue(billItem.getPharmaceuticalBillItem().getCostRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
-        billItem.getPharmaceuticalBillItem().setRetailValue(billItem.getPharmaceuticalBillItem().getRetailRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
-        billItem.getPharmaceuticalBillItem().setPurchaseValue(billItem.getPharmaceuticalBillItem().getPurchaseRate() * billItem.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+        billItem.getPharmaceuticalBillItem().setCostValue(billItem.getPharmaceuticalBillItem().getCostRate() * billItem.getPharmaceuticalBillItem().getQty());
+        billItem.getPharmaceuticalBillItem().setRetailValue(billItem.getPharmaceuticalBillItem().getRetailRate() * billItem.getPharmaceuticalBillItem().getQty());
+        billItem.getPharmaceuticalBillItem().setPurchaseValue(billItem.getPharmaceuticalBillItem().getPurchaseRate() * billItem.getPharmaceuticalBillItem().getQty());
         
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
