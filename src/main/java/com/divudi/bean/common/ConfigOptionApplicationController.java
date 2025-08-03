@@ -1058,6 +1058,18 @@ public class ConfigOptionApplicationController implements Serializable {
         return getApplicationOption("prevent_password_reuse");
     }
 
+    public int getPasswordHistoryLimit() {
+        return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public void setPasswordHistoryLimit(int value) {
+        setIntegerValueByKey("password_history_limit", value);
+    }
+
+    public ConfigOption getPasswordHistoryLimitOption() {
+        return getApplicationOption("password_history_limit");
+    }
+
     public List<ConfigOption> getAllOptions(Object entity) {
         String jpql = "SELECT o FROM ConfigOption o WHERE o.retired = false"; // Assuming there's a 'retired' field.
         Map<String, Object> params = new HashMap<>();

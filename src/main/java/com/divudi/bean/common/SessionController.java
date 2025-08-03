@@ -1057,20 +1057,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         boolean passwordRequirementsCorrect = passwordRequirementsCorrect();
         if (passwordRequirementsCorrect) {
-            if (configOptionApplicationController.isPreventPasswordReuse()) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("u", user);
-                List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql("select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u", m);
-                for (WebUserPasswordHistory h : hs) {
-                    if (SecurityController.matchPassword(password, h.getPassword())) {
-                        JsfUtil.addErrorMessage("Cannot reuse previous password.");
-                        return;
-                    }
-                }
-                if (SecurityController.matchPassword(password, user.getWebUserPassword())) {
-                    JsfUtil.addErrorMessage("Cannot reuse previous password.");
-                    return;
-                }
+            if (isPasswordReused(user, password)) {
+                JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                return;
             }
             String hashed = getSecurityController().hashAndCheck(password);
             user.setWebUserPassword(hashed);
@@ -1082,6 +1071,10 @@ public class SessionController implements Serializable, HttpSessionListener {
             wh.setCreater(getLoggedUser());
             wh.setCreatedAt(new Date());
             webUserPasswordHistoryFacade.create(wh);
+            
+            // Purge old password history entries beyond the configured limit
+            purgeOldPasswordHistory(user);
+            
             passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
         } else {
@@ -1104,20 +1097,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        if (configOptionApplicationController.isPreventPasswordReuse()) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("u", user);
-            List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql("select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u", m);
-            for (WebUserPasswordHistory h : hs) {
-                if (SecurityController.matchPassword(newPassword, h.getPassword())) {
-                    JsfUtil.addErrorMessage("Cannot reuse previous password.");
-                    return;
-                }
-            }
-            if (SecurityController.matchPassword(newPassword, user.getWebUserPassword())) {
-                JsfUtil.addErrorMessage("Cannot reuse previous password.");
-                return;
-            }
+        if (isPasswordReused(user, newPassword)) {
+            JsfUtil.addErrorMessage("Cannot reuse previous password.");
+            return;
         }
 
         String hashed = getSecurityController().hashAndCheck(newPassword);
@@ -1129,6 +1111,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         wh.setCreater(getLoggedUser());
         wh.setCreatedAt(new Date());
         webUserPasswordHistoryFacade.create(wh);
+        
+        // Purge old password history entries beyond the configured limit
+        purgeOldPasswordHistory(user);
         JsfUtil.addSuccessMessage("Password changed");
     }
 
@@ -1142,6 +1127,55 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
         }
         return available;
+    }
+
+    private boolean isPasswordReused(WebUser user, String newPassword) {
+        if (!configOptionApplicationController.isPreventPasswordReuse()) {
+            return false;
+        }
+        
+        int historyLimit = configOptionApplicationController.getPasswordHistoryLimit();
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        
+        // Get recent password history entries within the limit, ordered by creation date descending
+        String jpql = "select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u order by h.createdAt desc";
+        List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql(jpql, m, historyLimit);
+        
+        for (WebUserPasswordHistory h : hs) {
+            if (SecurityController.matchPassword(newPassword, h.getPassword())) {
+                return true;
+            }
+        }
+        if (SecurityController.matchPassword(newPassword, user.getWebUserPassword())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private void purgeOldPasswordHistory(WebUser user) {
+        if (!configOptionApplicationController.isPreventPasswordReuse()) {
+            return;
+        }
+        
+        int historyLimit = configOptionApplicationController.getPasswordHistoryLimit();
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        
+        // Get all password history entries for this user, ordered by creation date descending
+        String jpql = "select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u order by h.createdAt desc";
+        List<WebUserPasswordHistory> allHistory = webUserPasswordHistoryFacade.findByJpql(jpql, m);
+        
+        // If we have more entries than the limit, retire the older ones
+        if (allHistory.size() > historyLimit) {
+            for (int i = historyLimit; i < allHistory.size(); i++) {
+                WebUserPasswordHistory oldEntry = allHistory.get(i);
+                oldEntry.setRetired(true);
+                oldEntry.setRetiredAt(new Date());
+                oldEntry.setRetirer(getLoggedUser());
+                webUserPasswordHistoryFacade.edit(oldEntry);
+            }
+        }
     }
 
     private boolean isFirstVisit() {
