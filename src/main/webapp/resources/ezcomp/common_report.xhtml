@@ -75,7 +75,7 @@
                     <h:outputText 
                         rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  
                         value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nameWithTitle}" 
-                        style="#{myIi.innerCssStyle};" 
+                        style="#{myCli.innerCssStyle};" 
                         escape="false" >
                     </h:outputText>
                 </h:panelGroup>
@@ -83,7 +83,7 @@
                     <h:outputText 
                         rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  
                         value="#{cc.attrs.patientReport.patientName}" 
-                        style="#{myIi.innerCssStyle};" 
+                        style="#{myCli.innerCssStyle};" 
                         escape="false" >
                     </h:outputText>
                 </h:panelGroup>
@@ -93,7 +93,7 @@
                     <h:outputText 
                         rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  
                         value="#{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" 
-                        style="#{myIi.innerCssStyle};" 
+                        style="#{myCli.innerCssStyle};" 
                         escape="false" >
                     </h:outputText>
                 </h:panelGroup>
@@ -101,7 +101,7 @@
                     <h:outputText 
                         rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  
                         value="#{cc.attrs.patientReport.patientGender}" 
-                        style="#{myIi.innerCssStyle};" 
+                        style="#{myCli.innerCssStyle};" 
                         escape="false" >
                     </h:outputText>
                 </h:panelGroup>
@@ -111,7 +111,7 @@
                     <h:outputText 
                         rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  
                         value="#{cc.attrs.patientReport.patientInvestigation.patient.ageOnBilledDate(cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt)}" 
-                        style="#{myIi.innerCssStyle};" 
+                        style="#{myCli.innerCssStyle};" 
                         escape="false" >
                     </h:outputText>
                 </h:panelGroup>
@@ -119,7 +119,7 @@
                     <h:outputText 
                         rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  
                         value="#{cc.attrs.patientReport.patientAge}" 
-                        style="#{myIi.innerCssStyle};" escape="false" >
+                        style="#{myCli.innerCssStyle};" escape="false" >
                     </h:outputText>
                 </h:panelGroup>
 
