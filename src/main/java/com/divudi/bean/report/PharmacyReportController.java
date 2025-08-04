@@ -3300,17 +3300,6 @@ public class PharmacyReportController implements Serializable {
 
     private Map<String, Object> cogsRows = new LinkedHashMap<>();
 
-    private List<BillTypeAtomic> findBillTypeAtomicsForCogsComponents(String rowKey) {
-        List<BillTypeAtomic> billTypes = new ArrayList<>();
-        switch (rowKey) {
-            case "Stock Corection":
-                billTypes.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
-                billTypes.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
-                return billTypes;
-        }
-        return new ArrayList<>();
-    }
-
     private Map<String, Double> calculateStockTotals(Date date) {
         try {
             Map<String, Object> params = new HashMap<>();
@@ -3540,7 +3529,7 @@ public class PharmacyReportController implements Serializable {
             calculateOpeningStockRow();
             calculateStockCorrectionRow();
             calculateGrnCashAndCreditRows();
-            calculateCogsOtherComponents();
+            calculateCogsOtherComponentsRows();
             calculateClosingStockRow();
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "error");
@@ -3566,13 +3555,48 @@ public class PharmacyReportController implements Serializable {
         calculateGrnCashAndCreditValues();
     }
 
+    public void calculateCogsOtherComponentsRows() {        
+            Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+//                    .append("AND bi.bill.billTypeAtomic IN :btas ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            commonParams.put("ret", false);
+//            commonParams.put("btas", billTypeAtomics);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            
+            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+//            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+//            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
+//            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
+//            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+//            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+//            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+//            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+//            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+//            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
+
+        
+    }
+
     public void calculateClosingStockRow() {
         Map<String, Double> closingStock = calculateStockTotals(toDate);
         synchronized (cogsRows) {
             cogsRows.put("Closing Stock", closingStock);
         }
     }
-
+    
     public void exportBatchWisePharmacyStockToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -3979,12 +4003,23 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :ipDoctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("ipDoctype", billTypeAtomics);
+            jpql.append("AND bi.bill.billTypeAtomic IN :btas ");
+            jpql.append("ORDER BY bi.bill.createdAt");
+            params.put("btas", billTypeAtomics);
 
-            double totalReturnsIp = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Drug Return IP", totalReturnsIp);
+            List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+            }
+            cogsRows.put("Drug Return IP", result);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
