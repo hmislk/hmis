@@ -94,6 +94,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void init() {
         loadApplicationOptions();
         loadPharmacyAnalyticsConfigurationDefaults();
+        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
@@ -112,6 +113,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyCommonBillConfigurationDefaults();
         loadPharmacyAdjustmentReceiptConfigurationDefaults();
         loadPatientNameConfigurationDefaults();
+        loadSecurityConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -149,6 +151,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
         getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
+        getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -578,22 +581,22 @@ public class ConfigOptionApplicationController implements Serializable {
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Footer", "");
-        
+
         // Cost Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate Footer", "");
-        
+
         // Retail Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate Footer", "");
-        
+
         // Stock Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Stock CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Stock Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Stock Footer", "");
-        
+
         // Wholesale Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Header", "");
@@ -603,6 +606,10 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadPatientNameConfigurationDefaults() {
         getBooleanValueByKey("Capitalize Entire Patient Name", false);
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+    }
+
+    private void loadSecurityConfigurationDefaults() {
+        getBooleanValueByKey("prevent_password_reuse", false);
     }
 
     private void loadPharmacyAnalyticsConfigurationDefaults() {
@@ -747,6 +754,37 @@ public class ConfigOptionApplicationController implements Serializable {
         buttonOptions.forEach(k -> getBooleanValueByKey(k, true));
     }
 
+    private void loadReportMethodConfigurationDefaults() {
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+
+        // Lab Reports
+        getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
+        getBooleanValueByKey("Lab Daily Summary Report - Optimized Method", false);
+        getBooleanValueByKey("Test Wise Count Report - Legacy Method", true);
+        getBooleanValueByKey("Test Wise Count Report - Optimized Method", false);
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+        getBooleanValueByKey("OPD Income Report - Legacy Method", true);
+        getBooleanValueByKey("OPD Income Report - Optimized Method", false);
+
+        // Pharmacy Reports
+        getBooleanValueByKey("Pharmacy Transfer Issue Bill Report - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Transfer Issue Bill Report - Optimized Method", false);
+        getBooleanValueByKey("Pharmacy Income Report - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Income Report - Optimized Method", false);
+        getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
+
+    }
+
     public ConfigOption getApplicationOption(String key) {
         if (applicationOptions == null) {
             loadApplicationOptions();
@@ -768,15 +806,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public List<Denomination> getDenominations() {
-//        if (denominations == null) {
-//            initializeDenominations();
-//        }
-//        for (Denomination d : denominations) {
-//            d.setCount(0);
-//        }
-//        return denominations;
-//    }
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -784,15 +813,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public ConfigOption getOptionValueByKey(String key) {
-//        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("key", key);
-//        params.put("scope", OptionScope.APPLICATION);
-//        jpql.append(" AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL");
-//        ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-//        return option;
-//    }
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
@@ -1023,6 +1043,40 @@ public class ConfigOptionApplicationController implements Serializable {
         option.setOptionValue(Boolean.toString(value));
         optionFacade.edit(option);
         loadApplicationOptions();
+    }
+
+    public boolean isPreventPasswordReuse() {
+        return getBooleanValueByKey("prevent_password_reuse", false);
+    }
+
+    public void setPreventPasswordReuse(boolean value) {
+        setBooleanValueByKey("prevent_password_reuse", value);
+    }
+
+    public ConfigOption getPreventPasswordReuseOption() {
+        return getApplicationOption("prevent_password_reuse");
+    }
+
+    public int getPasswordHistoryLimit() {
+        return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public void setIntegerValueByKey(String key, int value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.INTEGER, Integer.toString(value));
+        }
+        option.setOptionValue(Integer.toString(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
+    public void setPasswordHistoryLimit(int value) {
+        setIntegerValueByKey("password_history_limit", value);
+    }
+
+    public ConfigOption getPasswordHistoryLimitOption() {
+        return getApplicationOption("password_history_limit");
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {

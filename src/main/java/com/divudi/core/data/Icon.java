@@ -133,7 +133,9 @@ public enum Icon {
     Channel_Scheduling("Channel Scheduling"),
     Goods_Receipt_Costing("Goods Receipt Costing"),
     Report_Execution_Logs("Report Execution Logs"),
-    Purchase_Orders_Finalize("Finalize Purchase Orders");
+    Purchase_Orders_Finalize("Finalize Purchase Orders"),
+    pharmacy_bill_search("Pharmacy Bill Search"),
+    pharmacy_bill_search_new("Pharmacy Bill Search (New)");
 
     private final String label;
 

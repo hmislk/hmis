@@ -854,6 +854,7 @@ public class StaffController implements Serializable {
             sql = "select p from Staff p where p.retired=false  and"
                     + " ((p.person.name) like :q or  "
                     + " (p.staffCode) like :q or "
+                    + " (p.code) like :q or "
                     + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
             //////System.out.println(sql);
@@ -863,7 +864,7 @@ public class StaffController implements Serializable {
         }
 
         return suggestions;
-    }
+    }  
     Roster roster;
 
     public List<Staff> getSuggestions() {

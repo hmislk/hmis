@@ -284,6 +284,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private String clazz;
 
     private boolean canRemoveItemfromPackage;
+    
+    private boolean consideredForCosting = true;
 
     public double getVatPercentage() {
         return 0;
@@ -1514,6 +1516,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

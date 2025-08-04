@@ -68,6 +68,8 @@
                                     <p:inputText autocomplete="off" id="txtFullName"   value="#{billExpenseController.current.fullName}"  class="w-100" ></p:inputText>
                                     <p:outputLabel value="Item Code"/>
                                     <p:inputText autocomplete="off" value="#{billExpenseController.current.code}" class = "w-100" />
+                                    <p:outputLabel value="Considered for Costing"/>
+                                    <p:selectBooleanCheckbox value="#{billExpenseController.current.consideredForCosting}" />
                                 </p:panelGrid>
 
 

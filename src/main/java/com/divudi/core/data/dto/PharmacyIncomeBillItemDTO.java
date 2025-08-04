@@ -27,6 +27,7 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
     private Double qty;
     private Double retailRate;
     private Double purchaseRate;
+    private Double costRate;
     private Double netRate;
     private String itemName;
 
@@ -48,6 +49,28 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
         this.qty = qty;
         this.retailRate = retailRate;
         this.purchaseRate = purchaseRate;
+        this.netRate = netRate;
+        this.itemName = itemName;
+        this.billId = billId;
+        this.billItemId = billItemId;
+    }
+
+    public PharmacyIncomeBillItemDTO(Long billId, Long billItemId, String deptId, String patientName, BillTypeAtomic billTypeAtomic,
+                                     Date createdAt, Double netTotal, PaymentMethod paymentMethod, Double total,
+                                     PatientEncounter patientEncounter, Double qty, Double retailRate, Double purchaseRate,
+                                     Double costRate, Double netRate, String itemName) {
+        this.deptId = deptId;
+        this.patientName = patientName;
+        this.billTypeAtomic = billTypeAtomic;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.paymentMethod = paymentMethod;
+        this.total = total;
+        this.patientEncounter = patientEncounter;
+        this.qty = qty;
+        this.retailRate = retailRate;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
         this.netRate = netRate;
         this.itemName = itemName;
         this.billId = billId;
@@ -196,5 +219,13 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
 
     public void setBillItemId(Long billItemId) {
         this.billItemId = billItemId;
+    }
+
+    public Double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(Double costRate) {
+        this.costRate = costRate;
     }
 }

@@ -207,11 +207,13 @@ public class EmailManagerEjb {
         final String username = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Username", "");
         final String password = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Password", "");
         final String smtpHost = configOptionApplicationController.getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        final String replyTo = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Reply To Email", "");
 
         JSONObject payload = new JSONObject();
         payload.put("subject", subject);
         payload.put("body", body);
         payload.put("isHtml", isHtml);
+        payload.put("replyTo", replyTo);
 
         JSONArray recipientArray = new JSONArray();
         for (String recipient : recipients) {

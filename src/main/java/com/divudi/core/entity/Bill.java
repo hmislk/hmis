@@ -41,6 +41,7 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
 
 /**
  * @author buddhika
@@ -185,6 +186,8 @@ public class Bill implements Serializable, RetirableEntity {
     private double billerFee;
     private double grantTotal;
     private double expenseTotal;
+    private double expensesTotalConsideredForCosting;
+    private double expensesTotalNotConsideredForCosting;
     //with minus tax and discount
     private double grnNetTotal;
 
@@ -442,10 +445,11 @@ public class Bill implements Serializable, RetirableEntity {
 
     private String externalDoctor;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private StockBill stockBill;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "BILLFINANCEDETAILS_ID", unique = true)
     private BillFinanceDetails billFinanceDetails;
 
     @Transient
@@ -874,6 +878,8 @@ public class Bill implements Serializable, RetirableEntity {
         refundAmount = 0 - bill.getRefundAmount();
         serviceCharge = 0 - bill.getServiceCharge();
         expenseTotal = 0 - bill.getExpenseTotal();
+        expensesTotalConsideredForCosting = 0 - bill.getExpensesTotalConsideredForCosting();
+        expensesTotalNotConsideredForCosting = 0 - bill.getExpensesTotalNotConsideredForCosting();
         claimableTotal = 0 - bill.getClaimableTotal();
         tenderedAmount = 0 - bill.getTenderedAmount();
         totalHospitalFee = 0 - bill.getTotalHospitalFee();
@@ -910,6 +916,8 @@ public class Bill implements Serializable, RetirableEntity {
         refundAmount = 0 - getRefundAmount();
         serviceCharge = 0 - getServiceCharge();
         expenseTotal = 0 - getExpenseTotal();
+        expensesTotalConsideredForCosting = 0 - getExpensesTotalConsideredForCosting();
+        expensesTotalNotConsideredForCosting = 0 - getExpensesTotalNotConsideredForCosting();
         claimableTotal = 0 - getClaimableTotal();
         tenderedAmount = 0 - getTenderedAmount();
         totalHospitalFee = 0 - getTotalHospitalFee();
@@ -1140,6 +1148,22 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setExpenseTotal(double expenseTotal) {
         this.expenseTotal = expenseTotal;
+    }
+
+    public double getExpensesTotalConsideredForCosting() {
+        return expensesTotalConsideredForCosting;
+    }
+
+    public void setExpensesTotalConsideredForCosting(double expensesTotalConsideredForCosting) {
+        this.expensesTotalConsideredForCosting = expensesTotalConsideredForCosting;
+    }
+
+    public double getExpensesTotalNotConsideredForCosting() {
+        return expensesTotalNotConsideredForCosting;
+    }
+
+    public void setExpensesTotalNotConsideredForCosting(double expensesTotalNotConsideredForCosting) {
+        this.expensesTotalNotConsideredForCosting = expensesTotalNotConsideredForCosting;
     }
 
     public double getDiscountPercentPharmacy() {

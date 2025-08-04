@@ -1,7 +1,6 @@
 package com.divudi.bean.pharmacy;
 
 // <editor-fold defaultstate="collapsed" desc="Import Statements">
-
 import com.divudi.bean.common.*;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
@@ -279,7 +278,7 @@ public class PharmacySummaryReportController implements Serializable {
     private int maxResult = 50;
 
     private List<HistoricalRecord> historicalRecords;
-    
+
     //transferOuts;
     //adjustments;
 // </editor-fold>
@@ -436,7 +435,7 @@ public class PharmacySummaryReportController implements Serializable {
 
             if (site != null) {
                 params.put("site", site);
-                jpql.append(" and b.department = :site ");
+                jpql.append(" and b.department.site = :site ");
             }
 
             if (webUser != null) {
@@ -653,7 +652,7 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("From date must be before or equal to to date");
             return;
         }
-        
+
         HistoricalRecord hr = new HistoricalRecord();
         hr.setHistoricalRecordType(HistoricalRecordType.ASYNC_REPORT);
         hr.setVariableName("AllItemMovementSummary");
@@ -666,7 +665,7 @@ public class PharmacySummaryReportController implements Serializable {
         hr.setCreatedBy(sessionController.getLoggedUser());
         historicalRecordFacade.create(hr);
         pharmacyAsyncReportService.generateAllItemMovementReport(hr, sessionController.getApplicationPreference().getLongDateTimeFormat());
-        
+
         JsfUtil.addSuccessMessage("Async report generation request added");
         viewAlreadyAvailableAllItemMovementSummaryReports();
     }
@@ -947,7 +946,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemDTOs(
+        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemWithCostRateDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
@@ -980,28 +979,16 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
-        
+
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        
+
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        
-        
-        if (dtos != null && !dtos.isEmpty()) {
-            for (int i = 0; i < Math.min(3, dtos.size()); i++) {
-                PharmacyIncomeBillDTO dto = dtos.get(i);
-            }
-        }
+
 
         bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
-        
 
-        if (bundle.getRows() != null && !bundle.getRows().isEmpty()) {
-            for (int i = 0; i < Math.min(3, bundle.getRows().size()); i++) {
-                IncomeRow row = bundle.getRows().get(i);
-            }
-        }
     }
 
     /**
@@ -1141,7 +1128,7 @@ public class PharmacySummaryReportController implements Serializable {
 
         // Calculate the difference between gross and net as gap (using null-safe operations)
         BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = BigDecimalUtil.subtract(
-                BigDecimalUtil.add(taxPortionFromBill, expensePortionFromBill), 
+                BigDecimalUtil.add(taxPortionFromBill, expensePortionFromBill),
                 discountPortionFromBill);
 
         // Assign gross and net totals
@@ -1343,10 +1330,18 @@ public class PharmacySummaryReportController implements Serializable {
 
     }
 
+// Contributed with ChatGPT assistance
+    // Contributed with ChatGPT assistance
     public void addFinancialDetailsForPharmacySaleBillsFromBillItemData() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<Bill> pbis = billService.fetchBills(billController.getFromDate(), billController.getToDate(),
-                null, null, null, null, billTypeAtomics, null, null);
+        List<Bill> pbis = billService.fetchBills(
+                billController.getFromDate(),
+                billController.getToDate(),
+                null, null, null, null,
+                billTypeAtomics,
+                null, null
+        );
+
         for (Bill b : pbis) {
             if (b == null) {
                 continue;
@@ -1357,7 +1352,7 @@ public class PharmacySummaryReportController implements Serializable {
                     .map(Bill::getBillTypeAtomic)
                     .orElse(null);
             if (bta == null || bta.getBillCategory() == null) {
-                continue; // unable to categorise safely
+                continue;
             }
             BillCategory bc = bta.getBillCategory();
 
@@ -1366,12 +1361,11 @@ public class PharmacySummaryReportController implements Serializable {
             double costValue = 0.0;
 
             for (BillItem bi : b.getBillItems()) {
-                // Step 1: Add missing finance data
                 addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(bi);
-                billItemFacade.edit(bi);
+                
 
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                if (pbi == null) {
+                if (pbi == null || pbi.getItemBatch() == null) {
                     continue;
                 }
 
@@ -1390,21 +1384,52 @@ public class PharmacySummaryReportController implements Serializable {
                 double itemPurchaseValue = factor * purchaseRate * qty;
                 double itemCostValue = factor * cRate * qty;
 
-                // Add to totals
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                if (bifd == null) {
+                    bifd = new BillItemFinanceDetails();
+                    bifd.setBillItem(bi);
+                    bi.setBillItemFinanceDetails(bifd);
+                }
+
+                // Fill basic values if missing
+                if (bifd.getGrossRate() == null) {
+                    bifd.setGrossRate(BigDecimal.valueOf(retailRate));
+                }
+                if (bifd.getQuantityByUnits() == null) {
+                    bifd.setQuantityByUnits(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getValueAtCostRate() == null) {
+                    bifd.setValueAtCostRate(BigDecimal.valueOf(itemCostValue));
+                }
+                if (bifd.getValueAtPurchaseRate() == null) {
+                    bifd.setValueAtPurchaseRate(BigDecimal.valueOf(itemPurchaseValue));
+                }
+                if (bifd.getValueAtRetailRate() == null) {
+                    bifd.setValueAtRetailRate(BigDecimal.valueOf(itemSaleValue));
+                }
+
+                // Set Line Gross Rate & Total based on config
+                boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+                boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+                double txRate;
+                if (txByCr) {
+                    txRate = cRate;
+                } else if (txByPr) {
+                    txRate = purchaseRate;
+                } else {
+                    txRate = retailRate;
+                }
+
+                // Assign lineGrossRate and lineGrossTotal using the chosen transfer rate
+                bifd.setLineGrossRate(BigDecimal.valueOf(txRate));
+                bifd.setLineGrossTotal(BigDecimal.valueOf(txRate * qty * factor));
+
+                // Totals
                 saleValue += itemSaleValue;
                 purchaseValue += itemPurchaseValue;
                 costValue += itemCostValue;
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
-                // Print debug info
+                billItemFacade.edit(bi);
             }
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
@@ -1413,14 +1438,29 @@ public class PharmacySummaryReportController implements Serializable {
                 b.setBillFinanceDetails(bfd);
             }
 
-            StockBill sb = b.getStockBill();
-            sb.setStockValueAsSaleRate(saleValue);
-            sb.setStockValueAtPurchaseRates(purchaseValue);
-            sb.setStockValueAsCostRate(costValue);
-
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
             bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
             bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
-            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+
+            StockBill sb = b.getStockBill();
+            if (sb != null) {
+                sb.setStockValueAsSaleRate(saleValue);
+                sb.setStockValueAtPurchaseRates(purchaseValue);
+                sb.setStockValueAsCostRate(costValue);
+            }
+
+            // Bill Gross Total based on config
+            boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+            boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+            if (txByCr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(costValue));
+            } else if (txByPr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(purchaseValue));
+            } else {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(saleValue));
+            }
+
             getBillFacade().edit(b);
         }
     }
@@ -1434,9 +1474,13 @@ public class PharmacySummaryReportController implements Serializable {
         Map<Long, Double> purchaseTotals = new HashMap<>();
 
         for (PharmacyIncomeBillItemDTO b : dtos) {
-            if (b == null || b.getBillId() == null || b.getBillTypeAtomic() == null) continue;
+            if (b == null || b.getBillId() == null || b.getBillTypeAtomic() == null) {
+                continue;
+            }
             BillCategory bc = b.getBillTypeAtomic().getBillCategory();
-            if (bc == null || b.getQty() == null || b.getRetailRate() == null || b.getPurchaseRate() == null) continue;
+            if (bc == null || b.getQty() == null || b.getRetailRate() == null || b.getPurchaseRate() == null) {
+                continue;
+            }
 
             double qty = Math.abs(b.getQty());
             double retail = Math.abs(b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS ? b.getNetRate() : b.getRetailRate());
@@ -1467,7 +1511,9 @@ public class PharmacySummaryReportController implements Serializable {
 
         for (IncomeRow bundle : this.bundle.getRows()) {
             Bill bill = bundle.getBill();
-            if (bill == null || bill.getId() == null) continue;
+            if (bill == null || bill.getId() == null) {
+                continue;
+            }
 
             double sale = saleTotals.getOrDefault(bill.getId(), 0.0);
             double purchase = purchaseTotals.getOrDefault(bill.getId(), 0.0);
@@ -1781,7 +1827,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     /**
      * @param configOptionApplicationController the
-     *                                          configOptionApplicationController to set
+     * configOptionApplicationController to set
      */
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
@@ -2525,8 +2571,6 @@ public class PharmacySummaryReportController implements Serializable {
         this.reportViewTypes = reportViewTypes;
     }
 
-    
-    
     private void addCurrentItemStock(PharmacyBundle pharmacyBundle) {
         if (pharmacyBundle == null) {
             return;

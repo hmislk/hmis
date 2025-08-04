@@ -27,6 +27,7 @@ public class BillFinanceDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // Inverse side of the relationship - Bill entity owns the FK BILLFINANCEDETAILS_ID
     @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
@@ -55,6 +56,14 @@ public class BillFinanceDetails implements Serializable {
     // Total expense (bill-level + all line-level)
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalExpense;
+
+    // Expenses considered for costing calculation
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billExpensesConsideredForCosting;
+
+    // Expenses not considered for costing calculation
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billExpensesNotConsideredForCosting;
 
     // ------------------ COST ------------------
     // Cost incurred for the Bill as a whole (not specific to lines)
@@ -211,6 +220,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setBillExpense(this.billExpense);
         clone.setLineExpense(this.lineExpense);
         clone.setTotalExpense(this.totalExpense);
+        clone.setBillExpensesConsideredForCosting(this.billExpensesConsideredForCosting);
+        clone.setBillExpensesNotConsideredForCosting(this.billExpensesNotConsideredForCosting);
 
         // ------------------ COST ------------------
         clone.setBillCostValue(this.billCostValue);
@@ -647,7 +658,20 @@ public class BillFinanceDetails implements Serializable {
         this.createdBy = createdBy;
     }
 
+    public BigDecimal getBillExpensesConsideredForCosting() {
+        return billExpensesConsideredForCosting;
+    }
 
-    
-    
+    public void setBillExpensesConsideredForCosting(BigDecimal billExpensesConsideredForCosting) {
+        this.billExpensesConsideredForCosting = billExpensesConsideredForCosting;
+    }
+
+    public BigDecimal getBillExpensesNotConsideredForCosting() {
+        return billExpensesNotConsideredForCosting;
+    }
+
+    public void setBillExpensesNotConsideredForCosting(BigDecimal billExpensesNotConsideredForCosting) {
+        this.billExpensesNotConsideredForCosting = billExpensesNotConsideredForCosting;
+    }
+
 }

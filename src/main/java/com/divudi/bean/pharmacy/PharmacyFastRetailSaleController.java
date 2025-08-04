@@ -56,6 +56,7 @@ import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.facade.BillFacade;
@@ -89,6 +90,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -141,6 +143,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     PaymentSchemeController PaymentSchemeController;
     @Inject
     StockController stockController;
+    @Inject
+    AmpController ampController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -232,11 +236,21 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
      */
     private StockDTO selectedStockDto;
     private Long selectedStockId;
+
+    /**
+     * AMP (Active Medicinal Product) for new multi-batch approach
+     */
+    private Amp selectedAmp;
+    private List<Stock> availableStocks;
     /**
      * Cached results from the most recent stock autocomplete query. Used by
      * {@link StockDtoConverter} to resolve objects on postback.
      */
     private List<StockDTO> cachedStockDtos;
+    /**
+     * DTO list for available stocks - used for efficient search and calculations
+     */
+    private List<StockDTO> availableStockDtos;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -569,6 +583,31 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         this.stock = stock;
     }
 
+    // AMP-related getters and setters
+    public Amp getSelectedAmp() {
+        return selectedAmp;
+    }
+
+    public void setSelectedAmp(Amp selectedAmp) {
+        this.selectedAmp = selectedAmp;
+    }
+
+    public List<Stock> getAvailableStocks() {
+        return availableStocks;
+    }
+
+    public void setAvailableStocks(List<Stock> availableStocks) {
+        this.availableStocks = availableStocks;
+    }
+
+    public List<StockDTO> getAvailableStockDtos() {
+        return availableStockDtos;
+    }
+
+    public void setAvailableStockDtos(List<StockDTO> availableStockDtos) {
+        this.availableStockDtos = availableStockDtos;
+    }
+
     private String navigateToPharmacyRetailSaleAfterCashierCheck(Patient pt, PaymentScheme ps) {
         if (pt == null) {
             JsfUtil.addErrorMessage("No Patient Selected");
@@ -631,6 +670,16 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         invalidateAllCaches();
     }
 
+    /**
+     * Initialization fallback for preRenderView to ensure controller state is
+     * ready
+     */
+    public void initIfNeeded() {
+        if (billItem == null) {
+            getBillItem(); // Force initialization of BillItem and nested objects
+        }
+    }
+
     public List<StockDTO> completeStockDtos(String qry) {
         // Performance optimization: Only search if query is meaningful
         if (qry == null || qry.trim().length() < 3) {
@@ -641,21 +690,130 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         return cachedStockDtos;
     }
 
-    public void handleSelect(SelectEvent event) {
-        // Validate prerequisites first without loading heavy entities
-        if (selectedStockDto == null || selectedStockDto.getId() == null) {
+    /**
+     * Autocomplete method for AMP (Active Medicinal Product) selection
+     */
+    public List<Amp> completeAmp(String qry) {
+        if (qry == null || qry.trim().length() < 3) {
+            return new ArrayList<>();
+        }
+        return ampController.completeAmp(qry);
+    }
+
+    /**
+     * Handler for AMP selection - loads available stocks and focuses quantity
+     */
+    public void handleAmpSelect(SelectEvent event) {
+        Amp selectedAmpObj = (Amp) event.getObject();
+        if (selectedAmpObj == null) {
             return;
         }
+        this.selectedAmp = selectedAmpObj;
+        if (intQty == null || intQty == 0) {
+            setIntQty(1);
+        }
+    }
+
+    /**
+     * Load available non-expired stocks for the selected AMP
+     * Also loads DTO version for efficient calculations
+     */
+    public void loadAvailableStocks() {
+        if (selectedAmp == null) {
+            availableStocks = new ArrayList<>();
+            availableStockDtos = new ArrayList<>();
+            return;
+        }
+        
+        // Load DTOs first for efficient calculations
+        loadAvailableStockDtos();
+        
+        // Load entities for backward compatibility if needed
+        String jpql = "SELECT s FROM Stock s WHERE s.itemBatch.item = :amp "
+                + "AND s.stock > 0 "
+                + "AND (s.itemBatch.dateOfExpire IS NULL OR s.itemBatch.dateOfExpire > :currentDate) "
+                + "AND s.department = :department "
+                + "ORDER BY s.itemBatch.dateOfExpire ASC, s.itemBatch.purcahseRate ASC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amp", selectedAmp);
+        params.put("currentDate", new Date());
+        params.put("department", sessionController.getLoggedUser().getDepartment());
+        try {
+            availableStocks = stockFacade.findByJpql(jpql, params);
+        } catch (Exception e) {
+            availableStocks = new ArrayList<>();
+            JsfUtil.addErrorMessage("Error loading available stocks: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Load available non-expired stocks as DTOs for efficient calculations
+     */
+    public void loadAvailableStockDtos() {
+        if (selectedAmp == null) {
+            availableStockDtos = new ArrayList<>();
+            return;
+        }
+        
+        String jpql = "SELECT new com.divudi.core.data.dto.StockDTO("
+                + "s.id, "
+                + "s.id, "  // stockId
+                + "s.itemBatch.id, "  // itemBatchId 
+                + "s.itemBatch.item.name, "
+                + "s.itemBatch.item.code, "
+                + "s.itemBatch.retailsaleRate, "
+                + "s.stock, "
+                + "s.itemBatch.dateOfExpire, "
+                + "s.itemBatch.batchNo, "
+                + "s.itemBatch.purcahseRate, "
+                + "s.itemBatch.wholesaleRate) "
+                + "FROM Stock s WHERE s.itemBatch.item = :amp "
+                + "AND s.stock > 0 "
+                + "AND (s.itemBatch.dateOfExpire IS NULL OR s.itemBatch.dateOfExpire > :currentDate) "
+                + "AND s.department = :department "
+                + "ORDER BY s.itemBatch.dateOfExpire ASC, s.itemBatch.purcahseRate ASC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amp", selectedAmp);
+        params.put("currentDate", new Date());
+        params.put("department", sessionController.getLoggedUser().getDepartment());
+        
+        try {
+            availableStockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql, params);
+        } catch (Exception e) {
+            availableStockDtos = new ArrayList<>();
+            JsfUtil.addErrorMessage("Error loading available stock DTOs: " + e.getMessage());
+        }
+    }
+
+    public void handleSelect(SelectEvent event) {
+        // Get the selected item directly from the event (before JSF updates the bound property)
+        StockDTO selectedDto = (StockDTO) event.getObject();
+        if (selectedDto == null || selectedDto.getId() == null) {
+            return;
+        }
+
+        // Update the bound properties with the selected item
+        this.selectedStockDto = selectedDto;
+        this.selectedStockId = selectedDto.getId();
+
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
             return;
         }
-        
+
         // Set stock using lazy loading (will be loaded when getStock() is called)
         getBillItem().getPharmaceuticalBillItem().setStock(getStock());
-        
+
+        // Initialize quantity to 1 if not set
+        if (intQty == null || intQty == 0) {
+            setIntQty(1);
+        }
+
         // Only perform heavy operations if stock was successfully loaded
         if (stock != null) {
             calculateRates(billItem);
+            calculateBillItem();
             pharmacyService.addBillItemInstructions(billItem);
         }
     }
@@ -1754,6 +1912,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         errorMessage = "";
         paymentMethodData = null;
         selectedStockDto = null;
+        selectedAmp = null;
+        availableStocks = null;
         allergyListOfPatient = null;
     }
 
@@ -2213,7 +2373,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     @Override
     public void listnerForPaymentMethodChange() {
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
+        if (paymentMethod == PaymentMethod.Cash) {
+            getPaymentMethodData().getCash().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
@@ -2223,6 +2385,18 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Credit) {
+            getPaymentMethodData().getCredit().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Cheque) {
+            getPaymentMethodData().getCheque().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Slip) {
+            getPaymentMethodData().getSlip().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Staff) {
+            getPaymentMethodData().getStaffCredit().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.OnlineSettlement) {
+            getPaymentMethodData().getOnlineSettlement().setTotalValue(netTotal);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
@@ -2241,6 +2415,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
 
         }
+        // Recalculate all bill item discounts when payment method or scheme changes
         processBillItems();
     }
 
@@ -2346,8 +2521,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         editingQty = null;
         errorMessage = null;
 
-        if (getStock() == null) {
-            JsfUtil.addErrorMessage("Please select an item first");
+        if (selectedAmp == null) {
+            JsfUtil.addErrorMessage("Please select a medicine first");
             return;
         }
 
@@ -2355,10 +2530,96 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Please enter a valid quantity");
             return;
         }
+        // Check if the same AMP is already in the bill
+        double existingTotalQty = 0.0;
+        for (BillItem existingItem : getPreBill().getBillItems()) {
+            if (existingItem.getItem() != null && existingItem.getItem().getId().equals(selectedAmp.getId())) {
+                existingTotalQty += existingItem.getQty();
+            }
+        }
 
-        // Implementation for adding items from multiple batches
-        // This would need to be customized based on business logic
-        addBillItemSingleItem();
+        if (existingTotalQty > 0) {
+            JsfUtil.addErrorMessage("'" + selectedAmp.getName() + "' is already in the bill with quantity " + existingTotalQty + ". Please edit the existing item quantity instead of adding duplicate items.");
+            return;
+        }
+
+        // Load available stocks as DTOs for efficient calculations
+        loadAvailableStockDtos();
+
+        if (availableStockDtos == null || availableStockDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No stock available for " + selectedAmp.getName());
+            return;
+        }
+
+        // Check if requested quantity exceeds available stock using DTOs
+        double totalAvailableStock = 0.0;
+        for (StockDTO stockDto : availableStockDtos) {
+            totalAvailableStock += stockDto.getStockQty();
+        }
+
+        if (getQty() > totalAvailableStock) {
+            JsfUtil.addErrorMessage("Requested quantity (" + getQty() + ") exceeds available stock (" + totalAvailableStock + ") for " + selectedAmp.getName());
+            return;
+        }
+
+        // Add items from available batches to fulfill the requested quantity using DTOs
+        double remainingQty = getQty();
+
+        for (StockDTO stockDto : availableStockDtos) {
+            if (remainingQty <= 0) {
+                break;
+            }
+
+            double stockAvailable = stockDto.getStockQty();
+            double qtyToAdd = Math.min(remainingQty, stockAvailable);
+
+            if (qtyToAdd > 0) {
+                // Load full Stock entity only when needed for business operations
+                Stock availableStock = stockFacade.find(stockDto.getStockId());
+                if (availableStock == null) {
+                    JsfUtil.addErrorMessage("Stock not found for ID: " + stockDto.getStockId());
+                    continue;
+                }
+                
+                // Create a new bill item for this batch
+                BillItem newBillItem = new BillItem();
+                newBillItem.setBill(getPreBill());
+                newBillItem.setItem(selectedAmp);
+                newBillItem.setQty(qtyToAdd);
+                newBillItem.setInwardChargeType(InwardChargeType.Medicine);
+                newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+
+                // Create pharmaceutical bill item
+                PharmaceuticalBillItem pharmBillItem = new PharmaceuticalBillItem();
+                pharmBillItem.setBillItem(newBillItem);
+                pharmBillItem.setStock(availableStock);
+                pharmBillItem.setItemBatch(availableStock.getItemBatch());
+                pharmBillItem.setQtyInUnit(0 - qtyToAdd);
+                newBillItem.setPharmaceuticalBillItem(pharmBillItem);
+
+                // Calculate rates
+                calculateRates(newBillItem);
+
+                // Add to bill
+                getPreBill().getBillItems().add(newBillItem);
+
+                remainingQty -= qtyToAdd;
+            }
+        }
+
+        if (remainingQty > 0) {
+            JsfUtil.addErrorMessage("Only " + (getQty() - remainingQty) + " items could be added due to insufficient stock");
+        } else {
+            JsfUtil.addSuccessMessage("Added " + getQty() + " of " + selectedAmp.getName());
+        }
+
+        // Clear selection for next item
+        selectedAmp = null;
+        setIntQty(1);
+
+        // Update totals
+        processBillItems();
+        setActiveIndex(1);
     }
 
     @FacesConverter("stockDtoConverter")
