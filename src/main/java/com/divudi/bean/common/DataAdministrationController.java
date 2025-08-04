@@ -531,9 +531,9 @@ public class DataAdministrationController implements Serializable {
 
                             
 
-                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
-                                    && bi.getPharmaceuticalBillItem() != null
-                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+//                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
+//                                    && bi.getPharmaceuticalBillItem() != null
+//                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
 
                                 System.out.println("  Updating finance details for bill item ID: " + bi.getId());
                                 ItemBatch itemBatch = bi.getPharmaceuticalBillItem().getItemBatch();
@@ -623,9 +623,9 @@ public class DataAdministrationController implements Serializable {
                                     result.append("Updated ").append(updatedCount).append(" items so far...\n");
                                     System.out.println("Progress: Updated " + updatedCount + " items so far...");
                                 }
-                            } else {
-                                System.out.println("  Skipping bill item ID: " + bi.getId() + " (already has valid finance details or missing pharmaceutical data)");
-                            }
+//                            } else {
+//                                System.out.println("  Skipping bill item ID: " + bi.getId() + " (already has valid finance details or missing pharmaceutical data)");
+//                            }
                         }
 
                         System.out.println("  Updating bill finance details - Net: " + totalNetValue + ", Purchase: " + totalPurchaseValue);
