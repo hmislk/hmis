@@ -3665,7 +3665,7 @@ public class PharmacyReportController implements Serializable {
             calculateSaleCreditValue();
             calculateBhtIssueValue();
             calculateSaleCreditCard();
-//            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCash();
 
         
     }
@@ -3921,24 +3921,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateSaleCash(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
-            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
-            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
-            params.put("pm", PaymentMethod.Cash);
-            jpql.append("ORDER BY sh2.createdAt");
-
-            double totalSaleCash = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Sale Cash", totalSaleCash);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
+    
     
     
     private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
@@ -4081,6 +4064,16 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
         }
     }
+    private void calculateSaleCash() {
+        try {
+            Map<String, Double> saleCashValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Cash));
+            cogsRows.put("Sale Cash", saleCashValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
+        }
+    }
+
 
 
 
