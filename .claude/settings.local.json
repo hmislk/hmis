@@ -7,7 +7,10 @@
       "Bash(scriptsprepare-for-push.bat)",
       "Bash(scripts/prepare-for-push.bat)",
       "Bash(scriptssafe-push.bat)",
-      "Bash(./scripts/safe-push.sh:*)"
+      "Bash(./scripts/safe-push.sh:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": []
   }
