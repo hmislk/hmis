@@ -1,11 +1,15 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -27,9 +32,13 @@ public class CollectingCentrePaymentController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Ejbs">
     @EJB
     BillFacade billFacade;
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
 // </editor-fold>
     
 // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -47,6 +56,7 @@ public class CollectingCentrePaymentController implements Serializable {
 
     private double totalCCReceiveAmount = 0.0;
     private double payingTotalCCAmount = 0.0;
+    private PaymentMethod paymentMethod;
 
 // </editor-fold>
     
@@ -139,38 +149,65 @@ public class CollectingCentrePaymentController implements Serializable {
 
         totalCCReceiveAmount = billFacade.findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
-        System.out.println("totalCCReceiveAmount = " + totalCCReceiveAmount); 
+        System.out.println("totalCCReceiveAmount = " + totalCCReceiveAmount);
     }
 
     public void performCalculations() {
-        double totalHospitalAmount = 0.0;
-
-        for (BillLight bl : selectedCCpaymentBills) {
-            totalHospitalAmount += bl.getHospitalTotal();
-        }
-        double payAmount = totalCCReceiveAmount - totalHospitalAmount;
-        
-        if(payAmount < 0.0){
+        if (selectedCCpaymentBills == null) {
             payingTotalCCAmount = 0.0;
-        }else{
-            payingTotalCCAmount = payAmount;
+        } else {
+            double totalHospitalAmount = 0.0;
+
+            for (BillLight bl : selectedCCpaymentBills) {
+                totalHospitalAmount += bl.getHospitalTotal();
+            }
+            double payAmount = totalCCReceiveAmount - totalHospitalAmount;
+
+            if (payAmount < 0.0) {
+                payingTotalCCAmount = 0.0;
+            } else {
+                payingTotalCCAmount = payAmount;
+            }
         }
-        
         System.out.println("payingCCAmount = " + payingTotalCCAmount);
-        
     }
-    
+
     public void settlePaymentBill() {
         System.out.println("Settle Payment Bill");
         saveBill();
-        
+
     }
-    
+
     public void saveBill() {
         System.out.println("Save Bill");
+        Bill ccAgentPaymentBill = new Bill();
+        
+        ccAgentPaymentBill.setCreater(sessionController.getLoggedUser());
+        ccAgentPaymentBill.setCreatedAt(new Date());
+        ccAgentPaymentBill.setInstitution(sessionController.getInstitution());
+        ccAgentPaymentBill.setDepartment(sessionController.getDepartment());
+        ccAgentPaymentBill.setToInstitution(currentCollectingCentre);
+        ccAgentPaymentBill.setBillType(BillType.CollectingCentreAgentPayment);
+        ccAgentPaymentBill.setBillDate(new Date());
+        ccAgentPaymentBill.setBillTime(new Date());
+        
+        ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
+        ccAgentPaymentBill.setNetTotal(0.0);
+        ccAgentPaymentBill.setTotal(0.0);
+        ccAgentPaymentBill.setPaidAmount(0.0);
+        
+        ccAgentPaymentBill.setPaymentMethod(paymentMethod);
+        String billNumber = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_AGENT_PAYMENT);
+        
+        ccAgentPaymentBill.setDeptId(billNumber);
+        ccAgentPaymentBill.setInsId(billNumber);
+
+        if (ccAgentPaymentBill.getId() == null) {
+            billFacade.create(ccAgentPaymentBill);
+        } else {
+            billFacade.edit(ccAgentPaymentBill);
+        }
     }
-    
-    
 
 // </editor-fold>
     
@@ -212,7 +249,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setCurrentCollectingCentre(Institution currentCollectingCentre) {
         this.currentCollectingCentre = currentCollectingCentre;
     }
- 
+
     public List<BillLight> getPandingCCpaymentBills() {
         return pandingCCpaymentBills;
     }
@@ -260,7 +297,13 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setTotalCCReceiveAmount(double totalCCReceiveAmount) {
         this.totalCCReceiveAmount = totalCCReceiveAmount;
     }
-    
-// </editor-fold>
 
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+// </editor-fold>
 }
