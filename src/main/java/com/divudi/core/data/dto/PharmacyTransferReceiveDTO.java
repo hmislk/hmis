@@ -73,8 +73,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
     public PharmacyTransferReceiveDTO(Long billId, Object deptId, Date createdAt,
                                     Object departmentName, Object fromDepartmentName,
                                     Object transporterName, Object cancelled, Object refunded,
-                                    Object comments, Object costValue, Object purchaseValue,
-                                    Object transferValue, Object saleValue) {
+                                    Object comments, Object costValue, Object purchaseValue, Object transferValue, Object saleValue) {
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;
@@ -223,7 +222,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         this.costValue = costValue;
     }
 
-    public BigDecimal getPurchaseValue() {
+    public BigDecimal getPurchaseValueBigDecimal() {
         return purchaseValue;
     }
 
@@ -255,6 +254,12 @@ public class PharmacyTransferReceiveDTO implements Serializable {
     // Returns the cost value for "Cost Value" column - Double for XHTML display
     public Double getCostValueDouble() {
         return costValue != null ? costValue.doubleValue() : 0.0;
+    }
+    
+    // IMPORTANT: This returns the actual purchase value for "Purchase Value" column
+    // The purchaseValue field contains totalPurchaseValue from BillFinanceDetails
+    public Double getPurchaseValue() {
+        return purchaseValue != null ? purchaseValue.doubleValue() : 0.0;
     }
     
     // Returns the purchase value for "Purchase Value" column - Double for XHTML display

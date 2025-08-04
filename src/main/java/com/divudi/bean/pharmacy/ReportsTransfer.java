@@ -52,6 +52,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -2344,11 +2346,17 @@ public class ReportsTransfer implements Serializable {
         try {
             transferReceiveDtos = (List<PharmacyTransferReceiveDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
-            // Log the exception for debugging
-            // logger.error("Failed to fetch transfer receive DTOs", e);
+            String msg = "Failed to fetch transfer receive DTOs";
+            String context = " From: "
+                    + (fromDepartment == null ? "All" : fromDepartment.getName())
+                    + " To: "
+                    + (toDepartment == null ? "All" : toDepartment.getName())
+                    + " Between: " + fromDate + " and " + toDate;
+            Logger.getLogger(ReportsTransfer.class.getName()).log(Level.SEVERE, msg + context, e);
+            JsfUtil.addErrorMessage(e, msg);
             transferReceiveDtos = new ArrayList<>();
         }
-        // Calculate totals from DTOs 
+        // Calculate totals from DTOs
         totalsValue = 0.0;
         netTotalValues = 0.0;
         costValue = 0.0;
