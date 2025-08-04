@@ -3566,6 +3566,57 @@ public class PharmacyReportController implements Serializable {
             return errorResult;
         }              
     }
+    public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue, Object paymentMethod){
+        try {
+
+        Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND " + billTypeField + " IN :billTypes ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+            
+            baseQuery.append("AND (bi.bill.paymentMethod IN :pm ");
+            baseQuery.append("OR (bi.bill.paymentMethod = :multiPm AND EXISTS ("
+                    + "SELECT p FROM Payment p "
+                    + "WHERE p.bill = bi.bill AND p.paymentMethod IN :pm)) )");
+            baseQuery.append("ORDER BY bi.bill.createdAt");
+
+            commonParams.put("ret", false);
+            commonParams.put("billTypes", billTypeValue);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+            commonParams.put("pm", paymentMethod);
+            commonParams.put("multiPm", PaymentMethod.MultiplePaymentMethods);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+                        List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+            }
+        return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            return errorResult;
+        }              
+    }
 
     public void processCostOfGoodSoldReport() {
         long startTime = System.currentTimeMillis();
@@ -3611,7 +3662,7 @@ public class PharmacyReportController implements Serializable {
             calculatePurchaseReturn();
             calculateTransferIssueValue();
             calculateTransferReceiveValue();
-//            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditValue();
 //            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
@@ -4028,6 +4079,20 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
         }
     }
+    private void calculateSaleCreditValue() {
+        try {
+            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
+            creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
+
+            Map<String, Double> saleCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), creditTypePaymentMethods);
+            cogsRows.put("Sale Credit", saleCreditValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
+        }
+    }
+
 
 
     private void calculateGrnCashAndCredit() {
