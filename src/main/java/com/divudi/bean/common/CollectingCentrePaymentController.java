@@ -116,11 +116,13 @@ public class CollectingCentrePaymentController implements Serializable {
                 + " from Bill bill "
                 + " where bill.collectingCentre=:cc "
                 + " and bill.createdAt between :fromDate and :toDate "
+                + " and bill.paid =:paid"
                 + " and bill.retired=false ";
 
         jpql += " order by bill.createdAt asc ";
         temMap.put("cc", currentCollectingCentre);
         temMap.put("fromDate", fromDate);
+        temMap.put("paid", false);
         temMap.put("toDate", toDate);
 
         pandingCCpaymentBills = billFacade.findLightsByJpql(jpql, temMap, TemporalType.TIMESTAMP);
@@ -256,9 +258,9 @@ public class CollectingCentrePaymentController implements Serializable {
 
     }
     
-    private void saveBillItemForPaymentBill(Bill paymentBill, Bill originalBill) {
+    private void saveBillItemForPaymentBill(Bill ccBill, Bill originalBill) {
         BillItem paymentBillItem = new BillItem();
-        paymentBillItem.setReferenceBill(paymentBill);
+        paymentBillItem.setReferenceBill(ccBill);
         paymentBillItem.setBill(originalBill);
         paymentBillItem.setCreatedAt(new Date());
         paymentBillItem.setCreater(sessionController.getLoggedUser());
@@ -267,11 +269,17 @@ public class CollectingCentrePaymentController implements Serializable {
         paymentBillItem.setNetValue(0.0);
         billItemFacade.create(paymentBillItem);
 
+        ccBill.setPaid(true);
+        ccBill.setPaidAmount(0.0);
+        ccBill.setPaidAt(new Date());
+        ccBill.setPaidBill(originalBill);
+        billFacade.edit(ccBill);
+        
 //      BillFee newlyCreatedBillFee = saveBillFee(paymentBillItem, p);
 //      originalBillFee.setReferenceBillFee(newlyCreatedBillFee);
 //      getBillFeeFacade().edit(originalBillFee);
 
-        paymentBill.getBillItems().add(paymentBillItem);
+        originalBill.getBillItems().add(paymentBillItem);
     }
 
 
