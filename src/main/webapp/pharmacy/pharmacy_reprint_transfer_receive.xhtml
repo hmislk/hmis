@@ -70,7 +70,7 @@
                                     <h:outputText value="Preference - grnBillDetailed = false" class="h3" ></h:outputText>
                                     <p:separator></p:separator>
                                 </h:panelGroup>
-                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />
                                 <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}" >
                                     <p:separator></p:separator>
                                 </h:panelGroup>
@@ -88,7 +88,7 @@
                                     <h:outputText value="Preference - grnBillDetailed = true" class="h3"/>
                                     <p:separator/>
                                 </h:panelGroup>
-                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}" />
                                 <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}">
                                     <p:separator/>
                                 </h:panelGroup>

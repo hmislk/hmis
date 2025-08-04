@@ -152,7 +152,6 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', true)}"
                         width="4em"
                         class="text-end">
                         <f:facet name="header">
@@ -163,6 +162,18 @@
                         </h:outputLabel>
                     </p:column>
 
+                    
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', false)}"
+                        width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Retail Rate"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                            <f:convertNumber pattern="#0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    
                     <p:column
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', false)}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
@@ -170,7 +181,7 @@
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
                         <h:outputLabel
-                            value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate*bip.pharmaceuticalBillItem.qtyInUnit}">
+                            value="#{bip.billItemFinanceDetails.valueAtPurchaseRate}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                         <f:facet name="footer">
@@ -198,12 +209,12 @@
                             <h:outputLabel value="Retail Value"/>
                         </f:facet>
                         <h:outputLabel styleClass="retail-value"
-                                       value="#{bip.netValue}">
+                                       value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
 
                         <f:facet name="footer">
-                            <h:outputLabel styleClass="totalRetailValue" value="#{cc.attrs.bill.netTotal}">
+                            <h:outputLabel styleClass="totalRetailValue" value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
