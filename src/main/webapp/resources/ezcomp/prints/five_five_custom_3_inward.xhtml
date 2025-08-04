@@ -230,7 +230,7 @@
                             </ui:repeat>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                            <ui:repeat value="#{billSearch.groupBillItemByName(billBeanController.fetchBillItems(cc.attrs.bill))}" var="item" varStatus="s">
+                            <ui:repeat value="#{billSearch.groupBillItemByNameFromBill(cc.attrs.bill)}" var="item" varStatus="s">
                                 <tr>
                                     <!-- Display the item number across all items -->
                                     <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
