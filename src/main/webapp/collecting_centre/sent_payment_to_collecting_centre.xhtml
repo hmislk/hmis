@@ -135,6 +135,10 @@
                                         <p:badge value="Refunded" rendered="#{bf.billItem.refunded}" severity="warning"></p:badge>
                                     </p:column>
                                     
+                                    <p:column headerText="Reference Number" width="9em;" style="padding:8px;">
+                                        <h:outputLabel value="#{b.referenceNumber}"></h:outputLabel>
+                                    </p:column>
+                                    
                                     <p:column headerText="Bill At" width="8em" style="padding:8px;">   
                                         <h:outputLabel value="#{b.billDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -174,8 +178,10 @@
                                         <p:commandButton 
                                             id="btnPay"
                                             ajax="false"
-                                            value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
+                                            value="Settle Payment" 
                                             style="float: right;"
+                                            icon="fas fa-plus"
+                                            action="#{collectingCentrePaymentController.settlePaymentBill()}"
                                             class="ui-button-success" >
                                         </p:commandButton>
                                     </f:facet>

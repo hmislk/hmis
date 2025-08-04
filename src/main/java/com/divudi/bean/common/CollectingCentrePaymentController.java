@@ -90,7 +90,7 @@ public class CollectingCentrePaymentController implements Serializable {
         String jpql;
         Map temMap = new HashMap();
 
-        jpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
+        jpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
                 + " from Bill bill "
                 + " where bill.collectingCentre=:cc "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -143,14 +143,34 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public void performCalculations() {
-        payingTotalCCAmount = 0.0;
+        double totalHospitalAmount = 0.0;
 
         for (BillLight bl : selectedCCpaymentBills) {
-            payingTotalCCAmount += bl.getCcTotal();
+            totalHospitalAmount += bl.getHospitalTotal();
         }
-        System.out.println("payingTotalCCAmount = " + payingTotalCCAmount);
-
+        double payAmount = totalCCReceiveAmount - totalHospitalAmount;
+        
+        if(payAmount < 0.0){
+            payingTotalCCAmount = 0.0;
+        }else{
+            payingTotalCCAmount = payAmount;
+        }
+        
+        System.out.println("payingCCAmount = " + payingTotalCCAmount);
+        
     }
+    
+    public void settlePaymentBill() {
+        System.out.println("Settle Payment Bill");
+        saveBill();
+        
+    }
+    
+    public void saveBill() {
+        System.out.println("Save Bill");
+    }
+    
+    
 
 // </editor-fold>
     
