@@ -1986,6 +1986,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             m.put("td", toDate);
             m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
+            jpql += " and ah.bill.retired = false ";
+
             if (collectingCentre != null) {
                 jpql += " and ah.agency = :cc ";
                 m.put("cc", collectingCentre);
@@ -2010,15 +2012,34 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         if (histories != null) {
             for (AgentHistory current : histories) {
+                // Check for balance calculation errors within the current transaction
+                double balanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
+                double transactionValue = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getTransactionValue());
+                double balanceAfter = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceAfterTransaction());
+                double expectedBalanceAfter = balanceBefore + transactionValue;
+
+                double transactionDiff = Math.abs(expectedBalanceAfter - balanceAfter);
+
+                if (transactionDiff > 0.01) { // Transaction calculation error
+                    if (!errors.contains(current)) {
+                        errors.add(current);
+                    }
+                }
+
+                // Check for balance continuation errors between transactions
                 if (previous != null) {
                     double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
                     double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
 
-                    double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
+                    double continuationDiff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
 
-                    if (diff > 1.0) { // Significant error
-                        errors.add(previous);
-                        errors.add(current);
+                    if (continuationDiff > 0.01) { // Balance continuation error
+                        if (!errors.contains(previous)) {
+                            errors.add(previous);
+                        }
+                        if (!errors.contains(current)) {
+                            errors.add(current);
+                        }
                     }
                 }
                 previous = current;
@@ -2032,9 +2053,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired = false "
+                + " and ah.bill.retired = false "
                 + " and ah.createdAt between :fd and :td "
                 + " and ah.agency = :cc "
-                + " order by ah.bill.id";
+                + " order by ah.createdAt, ah.bill.id";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -2059,6 +2081,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String jpql = "select distinct ah.agency "
                 + " from AgentHistory ah "
                 + " where ah.retired = false "
+                + " and ah.bill.retired = false "
                 + " and ah.agency is not null ";
 
         Map<String, Object> params = new HashMap<>();
@@ -3022,9 +3045,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         switch (reportTemplateFileIndexName) {
             case "Stock Correction":
                 return "/reports/inventoryReports/stock_correction?faces-redirect=true";
-            case "GRN Cash Total":
+            case "GRN Cash":
                 return "/reports/inventoryReports/grn_cash?faces-redirect=true";
-            case "GRN Credit Total":
+            case "GRN Credit":
                 return "/reports/inventoryReports/grn_credit?faces-redirect=true";
             case "Drug Return IP":
                 return "/reports/inventoryReports/ip_drug_return?faces-redirect=true";
@@ -3034,18 +3057,18 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
-            case "Transfer Issue Value":
+            case "Transfer Issue":
                 return "/reports/inventoryReports/transfer_issue?faces-redirect=true";
-            case "Transfer Receive Value":
+            case "Transfer Receive":
                 return "/reports/inventoryReports/transfer_receive?faces-redirect=true";
-            case "Sale Credit Value":
+            case "Sale Credit":
                 return "/reports/inventoryReports/opd_credit?faces-redirect=true";
-            case "BHT Issue Value":
+            case "BHT Issue":
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
             case "Sale Credit Card":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
-            case "Closing Stock Value":
-            case "Opening Stock Value":
+            case "Closing Stock":
+            case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
             case "Sale Cash":
                 return "/reports/inventoryReports/opd_sale_cash?faces-redirect=true";

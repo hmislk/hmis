@@ -12,8 +12,12 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.core.entity.ApiKey;
@@ -24,6 +28,7 @@ import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -35,6 +40,7 @@ import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.facade.ApiKeyFacade;
@@ -120,7 +126,7 @@ public class ChannelService {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     private static final Logger LOGGER = Logger.getLogger(ChannelService.class.getName());
 
     @PermitAll //TODO: Fix this to appropriate roles .
@@ -633,9 +639,9 @@ public class ChannelService {
         return getBillFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
 
-    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, OnlineBookingStatus status) {
+    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, List<OnlineBookingStatus> status) {
         String sql = "Select ob from OnlineBooking ob"
-                + " where ob.onlineBookingStatus = :status "
+                + " where ob.onlineBookingStatus in :status "
                 + " and ob.retired = :retire "
                 + " and ob.paidToHospital = :paid "
                 + " and ob.createdAt between :from and :to";
@@ -658,7 +664,20 @@ public class ChannelService {
 
         sql += " order by ob.createdAt desc";
 
-        return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+        List<OnlineBooking> list = getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+        List<OnlineBooking> listNew = new ArrayList<>();
+
+        for (OnlineBooking ob : list) {
+            if (ob.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
+                if (findBillFromOnlineBooking(ob).getPaidBill() != null && findBillFromOnlineBooking(ob).getPaidBill().getCancelledBill().getPaymentMethod() != PaymentMethod.OnlineBookingAgent) {
+                    listNew.add(ob);
+                }
+            } else {
+                listNew.add(ob);
+            }
+        }
+
+        return listNew;
     }
 
     public List<OnlineBooking> fetchAllOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, Boolean paid, List<OnlineBookingStatus> status) {
@@ -766,31 +785,31 @@ public class ChannelService {
         return billItemFacade.findByJpql(jpql, params);
 
     }
-    
+
     //this is for physical agentBookings not for online bookings
-    public boolean checkDuplicateAgentRefNo(Institution creditCompany, String refNo){
+    public boolean checkDuplicateAgentRefNo(Institution creditCompany, String refNo) {
 
         Map params = new HashMap();
         params.put("type", BillType.ChannelAgent);
         params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         params.put("retire", false);
         params.put("refNo", refNo);
-        
+
         StringBuilder sql = new StringBuilder("Select count(bill) from Bill bill where "
                 + " bill.billType = :type and bill.billTypeAtomic = :bta and bill.agentRefNo = :refNo and"
                 + " bill.retired = :retire");
-        
-        if(creditCompany != null){
+
+        if (creditCompany != null) {
             sql.append(" and bill.creditCompany = :company");
             params.put("company", creditCompany);
         }
-        
+
         Long count = getBillFacade().countByJpql(sql.toString(), params);
-        
-        if(count != null && count > 0){
+
+        if (count != null && count > 0) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -1180,6 +1199,249 @@ public class ChannelService {
 
     }
 
+    public List<Payment> fetchCardPaymentsFromChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus) {
+        String jpql = "Select p from Payment p where "
+                + " p.bill.billType = :bt and p.bill.billTypeAtomic = :bta "
+                + " and p.bill.paymentMethod = :type"
+                + " and p.bill.retired = false "
+                + " and p.bill.createdAt between :fromDate and :toDate ";
+
+        Map params = new HashMap();
+        params.put("bt", BillType.ChannelCash);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        params.put("type", PaymentMethod.Card);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += "and p.bill.institution = :ins";
+            params.put("ins", institution);
+        }
+
+        jpql += " order by p.bill.createdAt desc";
+
+        List<Payment> list = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("Summery")) {
+            List<Payment> newList = new ArrayList<>();
+            for (Payment p : list) {
+                if (p.getBill() instanceof BilledBill) {
+                    newList.add(p);
+                }
+            }
+
+            return newList;
+        } else {
+            return list;
+        }
+    }
+
+    public List<Bill> fetchAgentDirectFundBills(SearchKeyword searchKeyword, Date fromDate, Date toDate, Institution institution) {
+
+        String sql = "select bill from Bill bill where "
+                + " bill.billType in :bt "
+                + " and bill.retired = false"
+                + " and bill.billTypeAtomic in :bta "
+                + " and bill.createdAt BETWEEN :fd AND :td";
+
+        Map params = new HashMap();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        List<BillType> btList = new ArrayList<>();
+        btList.add(BillType.ChannelOnlineBookingAgentPaidToHospital);
+        btList.add(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+        params.put("bt", btList);
+        
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+        btaList.add(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
+        params.put("bta", btaList);
+
+        if (institution != null) {
+            sql += " and bill.toInstitution = :ins ";
+            params.put("ins", institution);
+        }
+
+        if (searchKeyword != null) {
+
+            if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().equals("")) {
+                sql += " and  ((bill.insId) like :billNo )";
+                params.put("billNo", "%" + searchKeyword.getBillNo().trim().toUpperCase() + "%");
+            }
+
+            if (searchKeyword.getNetTotal() != null && !searchKeyword.getNetTotal().trim().equals("")) {
+                sql += " and  ((bill.netTotal) = :netTotal )";
+                params.put("netTotal", "%" + searchKeyword.getNetTotal().trim().toUpperCase() + "%");
+            }
+
+            if (searchKeyword.getFromInstitution() != null && !searchKeyword.getFromInstitution().trim().equals("")) {
+                sql += " and  ((bill.fromInstitution.name) like :frmIns )";
+                params.put("frmIns", "%" + searchKeyword.getFromInstitution().trim().toUpperCase() + "%");
+            }
+
+            if (searchKeyword.getNumber() != null && !searchKeyword.getNumber().trim().equals("")) {
+                sql += " and  ((bill.fromInstitution.institutionCode) like :num )";
+                params.put("num", "%" + searchKeyword.getNumber().trim().toUpperCase() + "%");
+            }
+
+        }
+
+        sql += " order by bill.createdAt desc";
+
+        List<Bill> list = billFacade.findByJpql(sql, params, TemporalType.TIMESTAMP);
+        System.out.println("end "+list.size());
+
+        return list;
+    }
+
+    public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status, String reportStatus) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
+                + "bill, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (status != null && status.equalsIgnoreCase("Scanning")) {
+            jpql += "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
+            parameters.put("catogery", "Scanning");
+
+            bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+            bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+
+        } else if (status != null && status.equalsIgnoreCase("Agent")) {
+            jpql += " and bill.billType = :type ";
+            parameters.put("type", BillType.ChannelAgent);
+
+            bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+            bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        }
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        //List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+        jpql += "AND bill.billTypeAtomic IN :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (staff != null) {
+            jpql += "AND bill.staff = :stf ";
+            parameters.put("stf", staff);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        // Ensure proper grouping
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.createRowValuesFromBill();
+        bundle.calculateTotals();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            if (bundle.getLong1() != null) { //long1 for billTotals
+                bundle.setLong1(bundle.getLong1() + (long) row.getBill().getTotal());
+            } else {
+                bundle.setLong1((long) row.getBill().getTotal());
+            }
+
+            if (bundle.getLong2() != null) { //long2 for hospitalfee totals
+                bundle.setLong2(bundle.getLong2() + (long) row.getBill().getHospitalFee());
+            } else {
+                bundle.setLong2((long) row.getBill().getHospitalFee());
+            }
+
+            if (bundle.getLong3() != null) { //long3 for stafffee totals
+                bundle.setLong3(bundle.getLong3() + (long) row.getBill().getStaffFee());
+            } else {
+                bundle.setLong3((long) row.getBill().getStaffFee());
+            }
+        }
+
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("Summery")) {
+            List<ReportTemplateRow> newList = removeCancelAndREfundBillsFromDTO(bundle.getReportTemplateRows());
+            bundle.setReportTemplateRows(newList);
+            return bundle;
+        } else {
+            return bundle;
+        }
+
+    }
+
+    public List<ReportTemplateRow> removeCancelAndREfundBillsFromDTO(List<ReportTemplateRow> dto) {
+        List<ReportTemplateRow> newList = new ArrayList<>();
+
+        if (dto != null && !dto.isEmpty()) {
+            for (ReportTemplateRow row : dto) {
+                if ((row.getBill() instanceof CancelledBill) || (row.getBill() instanceof RefundBill)) {
+                    continue;
+                } else {
+                    newList.add(row);
+                }
+            }
+        }
+
+        return newList;
+    }
+
+    public List<BillSession> fetchScanningSessionBillSessions(Date fromDate, Date toDate, Institution institution) {
+
+        StringBuilder sql = new StringBuilder("Select bs from BillSession bs where "
+                + " bs.bill.billType <> :type "
+                + " and bs.sessionInstance.originatingSession.category.name = :category "
+                + " and bs.bill.retired = :state "
+                + " and bs.createdAt between :fromDate and :toDate");
+
+        Map params = new HashMap();
+        params.put("type", BillType.ChannelOnCall);
+        params.put("category", "Scanning");
+        params.put("state", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            sql.append(" and bs.institution = :ins");
+            params.put("ins", institution);
+        }
+
+        sql.append(" order by bs.createdAt desc");
+
+        List<BillSession> list = billSessionFacade.findByJpql(sql.toString(), params, TemporalType.TIMESTAMP);
+        return list;
+    }
+
     public List<SessionInstance> findSessionInstanceFromId(String id) {
         String jpql = "Select ss from SessionInstance ss "
                 + " Where ss.completed = false "
@@ -1342,6 +1604,8 @@ public class ChannelService {
         if (bill.getPaidBill() != null) {
             bill.getPaidBill().setCancelled(true);
         }
+
+        List<Payment> payments = createPayment(cb, PaymentMethod.Agent);
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bill);
         getBillFacade().edit(bill.getReferenceBill());
@@ -1690,6 +1954,52 @@ public class ChannelService {
 
     }
 
+    public List<SessionInstance> findSessionInstanceForDoctorSessions(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
+        List<SessionInstance> sessionInstances;
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret "
+                + " and i.cancelled = false"
+                + " and i.completed = false");
+
+        // Handle sessionDate equality check
+        if (sessionDate != null) {
+            jpql.append(" and i.sessionDate >= :sd ");
+            m.put("sd", sessionDate);
+        } else if (sessionDate == null) {
+            Date today = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(today);
+            cal.add(Calendar.DAY_OF_YEAR, (configOptionApplicationController.getLongValueByKey("How Many days sessions need to share with online booking agent through API", 14L)).intValue());
+            Date toDate = cal.getTime();
+
+            jpql.append(" and i.sessionDate between :sd and :td ");
+            m.put("sd", new Date());
+            m.put("td", toDate);
+
+        }
+
+        // Additional conditions for consultant, institution, and specialities
+        if (doctorList != null && !doctorList.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff in :os");
+            m.put("os", doctorList);
+        }
+        if (institution != null && !institution.isEmpty()) {
+            jpql.append(" and i.originatingSession.institution in :ins");
+            m.put("ins", institution);
+        }
+        if (specialities != null && !specialities.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff.speciality in :spe ");
+            m.put("spe", specialities);
+        }
+
+        jpql.append(" order by i.sessionDate, i.sessionTime asc");
+
+        m.put("ret", false);
+
+        sessionInstances = sessionInstanceFacade.findByJpqlWithoutCache(jpql.toString(), m, TemporalType.TIMESTAMP);
+        return sessionInstances;
+    }
+
     public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
         List<SessionInstance> sessionInstances;
         Map<String, Object> m = new HashMap<>();
@@ -1702,8 +2012,16 @@ public class ChannelService {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", sessionDate);
         } else if (sessionDate == null) {
-            jpql.append(" and i.sessionDate >= :sd ");
+            Date today = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(today);
+            cal.add(Calendar.DAY_OF_YEAR, configOptionApplicationController.getIntegerValueByKey("How Many days sessions need to share with online booking agent", 14));
+            Date toDate = cal.getTime();
+
+            jpql.append(" and i.sessionDate between :sd and :td ");
             m.put("sd", new Date());
+            m.put("td", toDate);
+
         }
 
         // Additional conditions for consultant, institution, and specialities

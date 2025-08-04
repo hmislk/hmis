@@ -459,6 +459,7 @@ public enum Privileges {
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
+    PharmacyDisbursementFinalizeRequest("Pharmacy Disbursement Finalize Request"),
     PharmacyDisbursementIssurForRequest("Pharmacy Disbursement Issue for Request"),
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
@@ -477,7 +478,9 @@ public enum Privileges {
     PharmacyRetailTransactionMenue("Pharmacy Retail Transaction Menu"),
     PharmacyRetailTransaction("Pharmacy Retail Transaction"),
     PharmacySale("Pharmacy Sale"),
+    PharmacySaleQuick("Pharmacy Sale - Quick"),
     PharmacySaleForCashier("Pharmacy Sale for Cashier"),
+    PharmacySaleForCashierQuick("Pharmacy Sale for Cashier - Quick"),
     PharmacySaleWithOutStock("Pharmacy Sale without Stock"),
     PharmacySearchSaleBill("Pharmacy Search Sale Bill"),
     PharmacySearchSalePreBill("Pharmacy Search Sale Pre-Bill"),
@@ -511,6 +514,7 @@ public enum Privileges {
     PharmacyAdjustmentDepartmentStockBySingleItemQTY("Pharmacy Adjustment Department Stock by Single Item Quantity"),
     PharmacyAdjustmentStaffStockAdjustment("Pharmacy Adjustment Staff Stock Adjustment"),
     PharmacyAdjustmentPurchaseRate("Pharmacy Adjustment Purchase Rate"),
+    PharmacyAdjustmentCostRate("Pharmacy Adjustment Cost Rate"),
     PharmacyAdjustmentSaleRate("Pharmacy Adjustment Sale Rate"),
     PharmacyAdjustmentWholeSaleRate("Pharmacy Adjustment Wholesale Rate"),
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
@@ -818,6 +822,8 @@ public enum Privileges {
             // Retail Transactions
             case PharmacyRetailTransaction:
             case PharmacySale:
+            case PharmacySaleQuick:
+            case PharmacySaleForCashierQuick:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
             case PharmacySearchSaleBill:
@@ -851,6 +857,7 @@ public enum Privileges {
             case PharmacyAdjustmentDepartmentStockBySingleItemQTY:
             case PharmacyAdjustmentStaffStockAdjustment:
             case PharmacyAdjustmentPurchaseRate:
+            case PharmacyAdjustmentCostRate:
             case PharmacyAdjustmentSaleRate:
             case PharmacyAdjustmentWholeSaleRate:
             case PharmacyAdjustmentExpiryDate:

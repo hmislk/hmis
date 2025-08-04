@@ -93,6 +93,8 @@ public class ConfigOptionApplicationController implements Serializable {
     @PostConstruct
     public void init() {
         loadApplicationOptions();
+        loadPharmacyAnalyticsConfigurationDefaults();
+        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
@@ -105,9 +107,13 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyConfigurationDefaults();
         loadPharmacyIssueReceiptConfigurationDefaults();
         loadPharmacyTransferIssueReceiptConfigurationDefaults();
+        loadPharmacyTransferReceiveReceiptConfigurationDefaults();
         loadPharmacyTransferRequestReceiptConfigurationDefaults();
         loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
+        loadPharmacyCommonBillConfigurationDefaults();
+        loadPharmacyAdjustmentReceiptConfigurationDefaults();
         loadPatientNameConfigurationDefaults();
+        loadSecurityConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -145,6 +151,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
         getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
+        getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -212,6 +219,8 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "    font-family: Verdana, sans-serif;\n"
                 + "    font-size: 12px;\n"
                 + "    color: #000;\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
                 + "}\n"
                 + ".receipt-header, .receipt-title, .receipt-separator, .receipt-summary {\n"
                 + "    margin-bottom: 10px;\n"
@@ -261,8 +270,85 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "    margin-top: 20px;\n"
                 + "    text-align: right;\n"
                 + "    text-decoration: overline;\n"
+                + "}\n"
+                + "@media print {\n"
+                + "  .receipt-container {\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
+                + "    page-break-after: always;\n"
+                + "  }\n"
                 + "}"
         );
+    }
+
+    private void loadPharmacyTransferReceiveReceiptConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Transfer Receive Receipt CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
+                + "}\n"
+                + ".receipt-header, .receipt-title, .receipt-separator, .receipt-summary {\n"
+                + "    margin-bottom: 10px;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 16px;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 11px;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "    text-decoration: underline;\n"
+                + "}\n"
+                + ".receipt-details-table, .receipt-items-table, .receipt-summary-table {\n"
+                + "    width: 100%;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-items-header {\n"
+                + "    font-weight: bold;\n"
+                + "    border-bottom: 1px solid #ccc;\n"
+                + "}\n"
+                + ".item-name, .item-qty, .item-rate, .item-value {\n"
+                + "    padding: 4px;\n"
+                + "    text-align: left;\n"
+                + "}\n"
+                + ".item-qty, .item-rate, .item-value {\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + ".summary-label {\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".summary-value {\n"
+                + "    text-align: right;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".total-amount {\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".receipt-cashier {\n"
+                + "    margin-top: 20px;\n"
+                + "    text-align: right;\n"
+                + "    text-decoration: overline;\n"
+                + "}\n"
+                + "@media print {\n"
+                + "  .receipt-container {\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
+                + "    page-break-after: always;\n"
+                + "  }\n"
+                + "}"
+        );
+        getLongTextValueByKey("Pharmacy Transfer Receive Receipt Header", "");
+        getLongTextValueByKey("Pharmacy Transfer Receive Receipt Footer", "");
     }
 
     private void loadPharmacyTransferRequestReceiptConfigurationDefaults() {
@@ -271,6 +357,8 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "    font-family: Verdana, sans-serif;\n"
                 + "    font-size: 12px;\n"
                 + "    color: #000;\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
                 + "}\n"
                 + ".receipt-header, .receipt-title, .receipt-separator, .receipt-summary {\n"
                 + "    margin-bottom: 10px;\n"
@@ -320,6 +408,13 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "    margin-top: 20px;\n"
                 + "    text-align: right;\n"
                 + "    text-decoration: overline;\n"
+                + "}\n"
+                + "@media print {\n"
+                + "  .receipt-container {\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
+                + "    page-break-after: always;\n"
+                + "  }\n"
                 + "}"
         );
     }
@@ -410,9 +505,284 @@ public class ConfigOptionApplicationController implements Serializable {
         );
     }
 
+    private void loadPharmacyCommonBillConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Common Bill CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
+                + "    page-break-inside: avoid;\n"
+                + "}\n"
+                + ".receipt-header {\n"
+                + "    margin-bottom: 15px;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 18px;\n"
+                + "    margin-bottom: 5px;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    font-size: 10px;\n"
+                + "    margin-bottom: 10px;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 16px;\n"
+                + "    font-weight: bold;\n"
+                + "    margin: 15px 0;\n"
+                + "    text-decoration: underline;\n"
+                + "}\n"
+                + ".receipt-separator {\n"
+                + "    margin: 10px 0;\n"
+                + "    border-top: 1px solid #333;\n"
+                + "}\n"
+                + ".receipt-details-table {\n"
+                + "    width: 100%;\n"
+                + "    margin-bottom: 15px;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-details-table td {\n"
+                + "    padding: 3px 5px;\n"
+                + "    vertical-align: top;\n"
+                + "}\n"
+                + ".receipt-details-table td:first-child {\n"
+                + "    font-weight: bold;\n"
+                + "    width: 20%;\n"
+                + "}\n"
+                + ".receipt-details-table td:nth-child(2) {\n"
+                + "    width: 5%;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".noBorder, .noBorder td, .noBorder th {\n"
+                + "    border: none !important;\n"
+                + "}\n"
+                + ".normalFont {\n"
+                + "    font-size: 12px;\n"
+                + "}\n"
+                + ".text-end {\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + "@media print {\n"
+                + "    .receipt-container {\n"
+                + "        margin: 0;\n"
+                + "        page-break-after: always;\n"
+                + "    }\n"
+                + "}\n"
+        );
+        getLongTextValueByKey("Pharmacy Common Bill Header", "");
+        getLongTextValueByKey("Pharmacy Common Bill Footer", "");
+    }
+
+    private void loadPharmacyAdjustmentReceiptConfigurationDefaults() {
+        // Purchase Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Purchase Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Footer", "");
+
+        // Cost Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Cost Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Cost Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Cost Rate Footer", "");
+
+        // Retail Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Retail Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Retail Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Retail Rate Footer", "");
+
+        // Stock Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Stock CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Stock Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Stock Footer", "");
+
+        // Wholesale Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Footer", "");
+    }
+
     private void loadPatientNameConfigurationDefaults() {
         getBooleanValueByKey("Capitalize Entire Patient Name", false);
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+    }
+
+    private void loadSecurityConfigurationDefaults() {
+        getBooleanValueByKey("prevent_password_reuse", false);
+    }
+
+    private void loadPharmacyAnalyticsConfigurationDefaults() {
+        List<String> tabOptions = Arrays.asList(
+                "Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Financial Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Stock Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Item Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Movement Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Retail Sale Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Wholesale Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Inpatient Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Procurement Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Disbursement Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Adjustment Reports Tab",
+                "Pharmacy Analytics - Show Pharmacy Analytics Disposal Reports Tab"
+        );
+        tabOptions.forEach(k -> getBooleanValueByKey(k, true));
+
+        List<String> buttonOptions = Arrays.asList(
+                "Pharmacy Analytics - Show Pharmacy Income Report",
+                "Pharmacy Analytics - Show Pharmacy Income and Cost",
+                "Pharmacy Analytics - Show Daily Stock Values",
+                "Pharmacy Analytics - Show Bill Types",
+                "Pharmacy Analytics - Show Cash In/Out Report",
+                "Pharmacy Analytics - Show Cashier Report",
+                "Pharmacy Analytics - Show Cashier Summary",
+                "Pharmacy Analytics - Show All Cashier Report",
+                "Pharmacy Analytics - Show All Cashier Summary",
+                "Pharmacy Analytics - Show Cashier Detailed Report by Department",
+                "Pharmacy Analytics - Show Pharmacy Sale Summary",
+                "Pharmacy Analytics - Show Pharmacy Sale Summary Date",
+                "Pharmacy Analytics - Show All Department Sale Summary",
+                "Pharmacy Analytics - Show Sale Summary - By Bill Type",
+                "Pharmacy Analytics - Show Sale Summary - By Payment Method",
+                "Pharmacy Analytics - Show Sale Summary - By Payment Method (By Bill)",
+                "Pharmacy Analytics - Show Stock Overview Report",
+                "Pharmacy Analytics - Show Stock Report by Batch",
+                "Pharmacy Analytics - Show Expiring Stock Report by Batch",
+                "Pharmacy Analytics - Show Stock Report by Expiry",
+                "Pharmacy Analytics - Show Zero Stock Item Report",
+                "Pharmacy Analytics - Show Suppliers Expiring Stocks",
+                "Pharmacy Analytics - Show Stock Report by Item",
+                "Pharmacy Analytics - Show Stock Report by Item - Order by VMP",
+                "Pharmacy Analytics - Show Stock Report by Product",
+                "Pharmacy Analytics - Show Stock Report of Single Product",
+                "Pharmacy Analytics - Show Supplier Stock Report",
+                "Pharmacy Analytics - Show Suppliers Stock Summary",
+                "Pharmacy Analytics - Show Category Stock Report",
+                "Pharmacy Analytics - Show Category Stock Summary",
+                "Pharmacy Analytics - Show All Staff Stock",
+                "Pharmacy Analytics - Show Stock History",
+                "Pharmacy Analytics - Show Before Stock Taking Report",
+                "Pharmacy Analytics - Show After Stock Taking Report",
+                "Pharmacy Analytics - Show Stock Taking Report(New)",
+                "Pharmacy Analytics - Show Stock With Movement",
+                "Pharmacy Analytics - Show Stock Summary (with Suppliers)",
+                "Pharmacy Analytics - Show Stock Report (with Suppliers)",
+                "Pharmacy Analytics - Show Stock Report by Batch for Export",
+                "Pharmacy Analytics - Show Bin Card",
+                "Pharmacy Analytics - Show Items (AMP) List",
+                "Pharmacy Analytics - Show Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List",
+                "Pharmacy Analytics - Show Single Items Summary",
+                "Pharmacy Analytics - Show All Items Summary",
+                "Pharmacy Analytics - Show Items Without Distributor",
+                "Pharmacy Analytics - Show Items With Suppliers and Prices",
+                "Pharmacy Analytics - Show Items With Distributor",
+                "Pharmacy Analytics - Show Items With Multiple Distributor(Items Only)",
+                "Pharmacy Analytics - Show Item With Multiple Distributor",
+                "Pharmacy Analytics - Show ROL and ROQ Management",
+                "Pharmacy Analytics - Show Reorder Analysis",
+                "Pharmacy Analytics - Show Movement Report Stock By Date",
+                "Pharmacy Analytics - Show Movement Report Stock By Date - By Batch",
+                "Pharmacy Analytics - Show Pharmacy All Report",
+                "Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report",
+                "Pharmacy Analytics - Show Sale Report",
+                "Pharmacy Analytics - Show Prescription Report",
+                "Pharmacy Analytics - Show Institution Item Movement",
+                "Pharmacy Analytics - Show Fast Moving",
+                "Pharmacy Analytics - Show Slow Moving",
+                "Pharmacy Analytics - Show Non Moving",
+                "Pharmacy Analytics - Show Prescription Summary",
+                "Pharmacy Analytics - Show Presciption List",
+                "Pharmacy Analytics - Show List of Pharmacy Bills",
+                "Pharmacy Analytics - Show Retail Sale Bill List",
+                "Pharmacy Analytics - Show Sale Detail - By Bill",
+                "Pharmacy Analytics - Show Sale Detail - By Bill Items",
+                "Pharmacy Analytics - Show Sale Detail - By Discount Scheme",
+                "Pharmacy Analytics - Show Sale Summary By Discount Scheme Summary",
+                "Pharmacy Analytics - Show Sale Detail - By Payment Method",
+                "Pharmacy Analytics - Show Pharmacy Sale Report",
+                "Pharmacy Analytics - Show Pharmacy Wholesale Report",
+                "Pharmacy Analytics - Show Pharmacy Wholesale Credit Bills",
+                "Pharmacy Analytics - Show BHT Issue - By Bill",
+                "Pharmacy Analytics - Show BHT Issue - By Bill Item",
+                "Pharmacy Analytics - Show BHT Issue - By Item",
+                "Pharmacy Analytics - Show BHT Issue - Staff",
+                "Pharmacy Analytics - Show BHT Issue With Margin Report",
+                "Pharmacy Analytics - Show Pharmacy Procurement Report",
+                "Pharmacy Analytics - Show GRN Summary",
+                "Pharmacy Analytics - Show Department Stock By Batch",
+                "Pharmacy Analytics - Show Purchase Orders Not Approved",
+                "Pharmacy Analytics - Show Department Stock By Batch to Upload",
+                "Pharmacy Analytics - Show Item - wise Purchase/Good Receive",
+                "Pharmacy Analytics - Show Purcharse Bill with Supplier",
+                "Pharmacy Analytics - Show Pharmacy GRN Report",
+                "Pharmacy Analytics - Show Pharmacy GRN and purchase Report",
+                "Pharmacy Analytics - Show GRN Purchase Items by Supplier",
+                "Pharmacy Analytics - Show GRN Summary By Supplier",
+                "Pharmacy Analytics - Show GRN Bill Item Report",
+                "Pharmacy Analytics - Show GRN Registry",
+                "Pharmacy Analytics - Show GRN Return List",
+                "Pharmacy Analytics - Show Purchase Order Summary",
+                "Pharmacy Analytics - Show Purchase Bills by Department",
+                "Pharmacy Analytics - Show Purchase Summary By Supplier",
+                "Pharmacy Analytics - Show Purchase Summary (Credit / Cash )",
+                "Pharmacy Analytics - Show Purchase and GRN Summary (Credit / Cash )",
+                "Pharmacy Analytics - Show Purchase Summary By Supplier (Credit / Cash)",
+                "Pharmacy Analytics - Show Purchase Bill Item",
+                "Pharmacy Analytics - Show GRN Payment Summary",
+                "Pharmacy Analytics - Show GRN Payment Summary By Supplier",
+                "Pharmacy Analytics - Show Pharmacy Return Without Traising",
+                "Pharmacy Analytics - Show Procurement Bill Item List",
+                "Pharmacy Analytics - Show Transfer Issue By Bill Item",
+                "Pharmacy Analytics - Show Transfer Receive By Bill Item",
+                "Pharmacy Analytics - Show Transfer Issue by Bill",
+                "Pharmacy Analytics - Show Transfer Receive by Bill",
+                "Pharmacy Analytics - Show Transfer Issue by Bill(Summary)",
+                "Pharmacy Analytics - Show Transfer Receive by Bill(Summary)",
+                "Pharmacy Analytics - Show Report Transfer Issued not Recieved",
+                "Pharmacy Analytics - Show Staff Stock Report",
+                "Pharmacy Analytics - Show Transfer Report Summary",
+                "Pharmacy Analytics - Show Transfer Issue Summary Report By Date",
+                "Pharmacy Analytics - Show Transfer Receive Vs BHT Issue Quntity Totals By Item",
+                "Pharmacy Analytics - Show Item-vice adjustments",
+                "Pharmacy Analytics - Show Unit Issue by bill",
+                "Pharmacy Analytics - Show Unit Issue by Department",
+                "Pharmacy Analytics - Show Unit Issue by Item (Batch)",
+                "Pharmacy Analytics - Show Unit Issue by Item"
+        );
+
+        buttonOptions.forEach(k -> getBooleanValueByKey(k, true));
+    }
+
+    private void loadReportMethodConfigurationDefaults() {
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+
+        // Lab Reports
+        getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
+        getBooleanValueByKey("Lab Daily Summary Report - Optimized Method", false);
+        getBooleanValueByKey("Test Wise Count Report - Legacy Method", true);
+        getBooleanValueByKey("Test Wise Count Report - Optimized Method", false);
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+        getBooleanValueByKey("OPD Income Report - Legacy Method", true);
+        getBooleanValueByKey("OPD Income Report - Optimized Method", false);
+
+        // Pharmacy Reports
+        getBooleanValueByKey("Pharmacy Transfer Issue Bill Report - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Transfer Issue Bill Report - Optimized Method", false);
+        getBooleanValueByKey("Pharmacy Income Report - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Income Report - Optimized Method", false);
+        getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
+
     }
 
     public ConfigOption getApplicationOption(String key) {
@@ -436,15 +806,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public List<Denomination> getDenominations() {
-//        if (denominations == null) {
-//            initializeDenominations();
-//        }
-//        for (Denomination d : denominations) {
-//            d.setCount(0);
-//        }
-//        return denominations;
-//    }
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -452,15 +813,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public ConfigOption getOptionValueByKey(String key) {
-//        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("key", key);
-//        params.put("scope", OptionScope.APPLICATION);
-//        jpql.append(" AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL");
-//        ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-//        return option;
-//    }
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
@@ -546,6 +898,30 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.LONG_TEXT, defaultValue);
         }
         return option.getOptionValue();
+    }
+
+    public String getPharmacyBillCSSWithFallback(String specificKey) {
+        String specificCSS = getLongTextValueByKey(specificKey);
+        if (specificCSS != null && !specificCSS.trim().isEmpty()) {
+            return specificCSS;
+        }
+        return getLongTextValueByKey("Pharmacy Common Bill CSS");
+    }
+
+    public String getPharmacyBillHeaderWithFallback(String specificKey) {
+        String specificHeader = getLongTextValueByKey(specificKey);
+        if (specificHeader != null && !specificHeader.trim().isEmpty()) {
+            return specificHeader;
+        }
+        return getLongTextValueByKey("Pharmacy Common Bill Header");
+    }
+
+    public String getPharmacyBillFooterWithFallback(String specificKey) {
+        String specificFooter = getLongTextValueByKey(specificKey);
+        if (specificFooter != null && !specificFooter.trim().isEmpty()) {
+            return specificFooter;
+        }
+        return getLongTextValueByKey("Pharmacy Common Bill Footer");
     }
 
     public void setLongTextValueByKey(String key, String value) {
@@ -667,6 +1043,40 @@ public class ConfigOptionApplicationController implements Serializable {
         option.setOptionValue(Boolean.toString(value));
         optionFacade.edit(option);
         loadApplicationOptions();
+    }
+
+    public boolean isPreventPasswordReuse() {
+        return getBooleanValueByKey("prevent_password_reuse", false);
+    }
+
+    public void setPreventPasswordReuse(boolean value) {
+        setBooleanValueByKey("prevent_password_reuse", value);
+    }
+
+    public ConfigOption getPreventPasswordReuseOption() {
+        return getApplicationOption("prevent_password_reuse");
+    }
+
+    public int getPasswordHistoryLimit() {
+        return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public void setIntegerValueByKey(String key, int value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.INTEGER, Integer.toString(value));
+        }
+        option.setOptionValue(Integer.toString(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
+    public void setPasswordHistoryLimit(int value) {
+        setIntegerValueByKey("password_history_limit", value);
+    }
+
+    public ConfigOption getPasswordHistoryLimitOption() {
+        return getApplicationOption("password_history_limit");
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {

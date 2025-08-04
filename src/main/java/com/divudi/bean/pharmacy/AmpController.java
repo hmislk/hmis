@@ -107,6 +107,7 @@ public class AmpController implements Serializable {
     private ItemController itemController;
 
     private boolean duplicateCode;
+    private boolean editable;
 
     private UploadedFile file;
 
@@ -425,12 +426,31 @@ public class AmpController implements Serializable {
         }
         return a;
     }
+
+    public List<Amp> completeAmpWithRetired(String qry) {
+        List<Amp> a = null;
+        Map m = new HashMap();
+        m.put("n", "%" + qry + "%");
+        m.put("dep", DepartmentType.Store);
+        if (qry != null) {
+            a = getFacade().findByJpql("select c from Amp c where "
+                    + " (c.departmentType!=:dep or c.departmentType is null) "
+                    + " and ((c.name) like :n or (c.code)  "
+                    + "like :n or (c.barcode) like :n) order by c.name", m, 30);
+        }
+
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
+
     List<Amp> ampList = null;
 
     public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
         List<Item> a = new ArrayList<>();
-        a.addAll(completeAmp(qry));
-        a.addAll(itemController.completeStoreItemOnly(qry));
+        a.addAll(completeAmpWithRetired(qry));
+        a.addAll(itemController.completeStoreItemOnlyWithRetired(qry));
 
         return a;
     }
@@ -528,9 +548,28 @@ public class AmpController implements Serializable {
         current = new Amp();
         current.setItemType(ItemType.Amp);
         current.setDepartmentType(DepartmentType.Pharmacy);
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void listnerCategorySelect() {
+        if (getCurrent().getCategory() == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            getCurrent().setCode("");
+            return;
+        }
         if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().isEmpty()) {
             getCurrent().getCategory().setDescription(getCurrent().getName());
         }
@@ -891,6 +930,7 @@ public class AmpController implements Serializable {
         }
         recreateModel();
         // getItems();
+        editable = false;
     }
 
     public void saveAmp(Amp amp) {
@@ -955,6 +995,7 @@ public class AmpController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private AmpFacade getFacade() {
@@ -1085,6 +1126,14 @@ public class AmpController implements Serializable {
 
     public void setDuplicateCode(boolean duplicateCode) {
         this.duplicateCode = duplicateCode;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

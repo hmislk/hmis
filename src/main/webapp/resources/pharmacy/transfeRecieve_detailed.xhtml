@@ -52,7 +52,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Transfer Recieve Note"   />       
+                <h:outputLabel value="Transfer Receive Note"   />       
                 <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
             </div>
 
@@ -90,7 +90,8 @@
 
             <div >
 
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont compact-table" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip"
+                             style="line-height: 1.1;">
 
                     <p:column style="text-align: left;">
                         <f:facet name="header">

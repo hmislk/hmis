@@ -1,28 +1,9 @@
 package com.divudi.core.data;
 
-import static com.divudi.core.data.BillCategory.BILL;
-import static com.divudi.core.data.BillCategory.CANCELLATION;
-import static com.divudi.core.data.BillCategory.PAYMENTS;
-import static com.divudi.core.data.BillCategory.PREBILL;
-import static com.divudi.core.data.BillCategory.REFUND;
-import static com.divudi.core.data.PaymentMethod.Agent;
-import static com.divudi.core.data.PaymentMethod.Card;
-import static com.divudi.core.data.PaymentMethod.Cash;
-import static com.divudi.core.data.PaymentMethod.Cheque;
-import static com.divudi.core.data.PaymentMethod.Credit;
-import static com.divudi.core.data.PaymentMethod.IOU;
-import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.core.data.PaymentMethod.None;
-import static com.divudi.core.data.PaymentMethod.OnCall;
-import static com.divudi.core.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.core.data.PaymentMethod.PatientDeposit;
-import static com.divudi.core.data.PaymentMethod.PatientPoints;
-import static com.divudi.core.data.PaymentMethod.Slip;
-import static com.divudi.core.data.PaymentMethod.Staff;
-import static com.divudi.core.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.core.data.PaymentMethod.Voucher;
-import static com.divudi.core.data.PaymentMethod.YouOweMe;
-import static com.divudi.core.data.PaymentMethod.ewallet;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
+import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -72,6 +53,7 @@ public class IncomeBundle implements Serializable {
 
     private double saleValue;
     private double purchaseValue;
+    private double costValue;
     private double grossProfitValue;
 
     private double onCallValue;
@@ -241,6 +223,10 @@ public class IncomeBundle implements Serializable {
                         bill.setDiscount(Math.abs(bill.getDiscount()));
                         bill.setMargin(-Math.abs(bill.getMargin()));
                         break;
+                    case CANCELLATION:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
                 }
             }
 
@@ -253,6 +239,10 @@ public class IncomeBundle implements Serializable {
                         billItem.setMarginValue(Math.abs(billItem.getMarginValue()));
                         break;
                     case REFUND:
+                        billItem.setDiscount(Math.abs(billItem.getDiscount()));
+                        billItem.setMarginValue(-Math.abs(billItem.getMarginValue()));
+                        break;
+                    case CANCELLATION:
                         billItem.setDiscount(Math.abs(billItem.getDiscount()));
                         billItem.setMarginValue(-Math.abs(billItem.getMarginValue()));
                         break;
@@ -301,6 +291,44 @@ public class IncomeBundle implements Serializable {
                         rows.add(incomeRow);
                     }
                 }
+            } else if (firstElement instanceof PharmacyIncomeBillDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof PharmacyIncomeBillDTO) {
+                        PharmacyIncomeBillDTO dto = (PharmacyIncomeBillDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof OpdIncomeReportDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof OpdIncomeReportDTO) {
+                        OpdIncomeReportDTO dto = (OpdIncomeReportDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof LabIncomeReportDTO) {
+                // Process list as IncomeRows for Laboratory reports
+                for (Object obj : entries) {
+                    if (obj instanceof LabIncomeReportDTO) {
+                        LabIncomeReportDTO dto = (LabIncomeReportDTO) obj;
+                        if (dto != null) {
+                            IncomeRow ir = new IncomeRow(dto);
+                            rows.add(ir);
+                        }
+                    }
+                }
+            } else if (firstElement instanceof PharmacyIncomeBillItemDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof PharmacyIncomeBillItemDTO) {
+                        PharmacyIncomeBillItemDTO dto = (PharmacyIncomeBillItemDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
+                    }
+                }
             }
         }
     }
@@ -314,9 +342,11 @@ public class IncomeBundle implements Serializable {
         }
     }
 
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
+        costValue = 0;
         grossProfitValue = 0;
 
         for (IncomeRow r : getRows()) {
@@ -342,17 +372,20 @@ public class IncomeBundle implements Serializable {
             }
 
             Double pRate = b.getPurchaseRate();
+            Double cRate = b.getItemBatch() != null ? b.getItemBatch().getCostRate() : null;
 
-            if (q == null || rRate == null || pRate == null) {
+            if (q == null || rRate == null || pRate == null || cRate == null) {
                 continue;
             }
 
             double qty = Math.abs(q);
             double retail = Math.abs(rRate);
             double purchase = Math.abs(pRate);
+            double cost = Math.abs(cRate);
 
             double retailTotal = 0;
             double purchaseTotal = 0;
+            double costTotal = 0;
             double grossProfit = 0;
 
             switch (bc) {
@@ -361,14 +394,16 @@ public class IncomeBundle implements Serializable {
                 case PREBILL:
                     retailTotal = retail * qty;
                     purchaseTotal = purchase * qty;
-                    grossProfit = (retail - purchase) * qty;
+                    costTotal = cost * qty;
+                    grossProfit = (retail - cost) * qty;
                     break;
 
                 case CANCELLATION:
                 case REFUND:
                     retailTotal = -retail * qty;
                     purchaseTotal = -purchase * qty;
-                    grossProfit = -(retail - purchase) * qty;
+                    costTotal = -cost * qty;
+                    grossProfit = -(retail - cost) * qty;
                     break;
 
                 default:
@@ -377,6 +412,7 @@ public class IncomeBundle implements Serializable {
 
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
+            costValue += costTotal;
             grossProfitValue += grossProfit;
         }
     }
@@ -737,7 +773,7 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
-// Contribution by ChatGPT - adapted based on provided instructions
+    // Contribution by ChatGPT - adapted based on provided instructions
     public void generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType() {
         Map<String, IncomeRow> grouped = new LinkedHashMap<>();
 
@@ -1122,7 +1158,7 @@ public class IncomeBundle implements Serializable {
         r.setNetTotal(b.getNetTotal());
         r.setDiscount(b.getDiscount());
         r.setServiceCharge(b.getMargin());
-        r.setActualTotal(b.getTotal() - b.getServiceCharge());
+        r.setActualTotal(r.getNetTotal() - r.getServiceCharge());
 
         PaymentMethod pm = b.getPaymentMethod();
 
@@ -2180,4 +2216,11 @@ public class IncomeBundle implements Serializable {
         this.grossProfitValue = grossProfitValue;
     }
 
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
 }

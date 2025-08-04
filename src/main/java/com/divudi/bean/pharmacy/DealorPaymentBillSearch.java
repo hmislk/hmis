@@ -188,10 +188,8 @@ public class DealorPaymentBillSearch implements Serializable {
 //        List<Bill> userBills;
 //        if (getUser() == null) {
 //            userBills = new ArrayList<>();
-//            //////// // System.out.println("user is null");
 //        } else {
 //            userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-//            //////// // System.out.println("user ok");
 //        }
 //        if (userBills == null) {
 //            userBills = new ArrayList<>();
@@ -357,7 +355,6 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBillType(BillType.GrnPayment);
         rb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
-        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic());
 
         rb.setBillDate(new Date());
         rb.setBillTime(new Date());
@@ -463,7 +460,6 @@ public class DealorPaymentBillSearch implements Serializable {
             bill.setCancelled(true);
             bill.setCancelledBill(cb);
             JsfUtil.addSuccessMessage("Successfully Cancelled");
-            System.out.println("JsfUtil.addSuccessMessage(Successfully Cancelled);");
             getBilledBillFacade().edit(bill);
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
@@ -509,7 +505,6 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -654,13 +649,10 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //////// // System.out.println("getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////// // System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();

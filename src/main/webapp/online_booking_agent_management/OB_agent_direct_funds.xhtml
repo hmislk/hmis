@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="/online_booking_agent_management/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form  >
+                    <h:panelGroup >
+                        <p:panel rendered="#{onlineBookingAgentController.printBill eq null}" >
+                            <f:facet name="header" >
+                                <div class="d-flex justify-content-between">
+                                    <h:outputLabel value="Online Booking Agency Direct Funds" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            id="btnSettle" 
+                                            value="Settle" 
+                                            class="ui-button-success"
+                                            icon="fa fa-check"
+                                            action="#{onlineBookingAgentController.settleDirectFundBill()}" 
+                                            ajax="false"  
+                                            style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                                        </p:commandButton> 
+                                        <p:defaultCommand target="btnSettle"/>
+                                        <p:commandButton 
+                                            value="New Bill" 
+                                            ajax="false" 
+                                            icon="fa fa-plus"
+                                            class="ui-button-warning"
+                                            action="#{onlineBookingAgentController.clearPreviousValues()}"  >
+                                        </p:commandButton>
+                                    </div>
+
+                                </div>
+                            </f:facet>
+
+                            <div class="row my-2">
+
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Institution"/>
+                                </div>
+                                <div class="col-md-7">
+                                    <p:selectOneMenu class="w-100" value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
+                                        <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                        <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                        <p:ajax event="itemSelect" process="@this"/>
+                                    </p:selectOneMenu>
+                                
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <p:outputLabel value="Agency" />
+                                </div>
+                                <div class="col-md-7">
+                                    <p:selectOneMenu  id="lstSelect"
+                                                      value="#{onlineBookingAgentController.agentForBookings}" 
+                                                      style="width: 100%"
+
+                                                      filter="true">
+                                        <f:selectItems  value="#{onlineBookingAgentController.allAgents}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                        <p:ajax process="lstSelect" >
+                                        </p:ajax>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <div class="row my-2 d-flex align-items-center">
+                                <div class="col-md-2">
+                                    <p:outputLabel value="Payment" />
+                                </div>
+                                <div class="col-md-2">
+                                    <p:selectOneMenu  
+                                        id="cmbPs" 
+                                        class="w-100"
+                                        value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}"> 
+                                        <f:selectItem itemLabel="Payment Method"></f:selectItem>
+                                        <f:selectItems value="#{enumController.getPaymentMethodsforAgencyManagement()}"/>
+                                        <p:ajax process="@this" update="paymentDetails" event="change" />
+                                    </p:selectOneMenu>
+                                </div>
+
+                            </div>
+                            <div class="row my-2">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-7">
+                                    <div>
+                                        <h:panelGroup id="paymentDetails">
+                                            <h:panelGroup id="creditCard" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Card'}">
+                                                <pa:creditCard paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Cheque'}">
+                                                <pa:cheque paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Slip'}">
+                                                <pa:slip paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cash"  rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Cash'}">
+                                                <p:inputText autocomplete="off" value="#{onlineBookingAgentController.paidToHospitalDirectFundBill.netTotal}"/> 
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row my-2">
+                                <div class="col-md-2"></div>
+
+
+                            </div>
+
+
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <p:outputLabel value="Description"/>
+                                </div>
+                                <div class="col-md-7">
+                                    <p:inputTextarea 
+                                        class="w-100"
+                                        value="#{onlineBookingAgentController.paidToHospitalDirectFundBill.comments}"/>    
+                                </div>
+                            </div>
+
+                        </p:panel>
+                    </h:panelGroup>
+
+
+                    <p:panel rendered="#{onlineBookingAgentController.printBill ne null}" >     
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Agency Payment Bill"/> 
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="false"
+                                        icon="fa fa-print"
+                                        action="#" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="New Bill" 
+                                        ajax="false" 
+                                        icon="fa fa-plus"
+                                        class="ui-button-warning"
+                                        action="#{onlineBookingAgentController.clearPreviousValues}"  >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                        </f:facet>
+                        <h:panelGroup id="gpBillPreview">
+                            <bi:cc_payment_receipt_bill billController="#{onlineBookingAgentController}"  bill="#{onlineBookingAgentController.paidToHospitalDirectFundBill}" dup="false"/>     
+                        </h:panelGroup>
+
+                    </p:panel>        
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+
+

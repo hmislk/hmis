@@ -66,6 +66,20 @@ public class DealerController implements Serializable {
         return institutionList;
     }
 
+    public List<Institution> completeActiveDealor(String query) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where c.retired=false and c.inactive=false and "
+                + " c.institutionType =:t and (c.name) like :q order by c.name ";
+        m.put("t", InstitutionType.Dealer);
+        m.put("q", "%" + query.toUpperCase() + "%");
+        institutionList = getEjbFacade().findByJpql(sql, m);
+
+        return institutionList;
+    }
+
     public List<Institution> findAllDealors() {
 
         String sql;
