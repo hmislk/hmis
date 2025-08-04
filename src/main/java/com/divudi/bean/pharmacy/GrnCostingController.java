@@ -1809,6 +1809,36 @@ public class GrnCostingController implements Serializable {
         }
         return total;
     }
+    
+    // Method to get expenses considered for costing total
+    public double getExpensesTotalConsideredForCosting() {
+        if (getBillExpenses() == null || getBillExpenses().isEmpty()) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem expense : getBillExpenses()) {
+            if (expense.isConsideredForCosting()) {
+                total += expense.getNetValue();
+            }
+        }
+        return total;
+    }
+    
+    // Method to get expenses not considered for costing total
+    public double getExpensesTotalNotConsideredForCosting() {
+        if (getBillExpenses() == null || getBillExpenses().isEmpty()) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem expense : getBillExpenses()) {
+            if (!expense.isConsideredForCosting()) {
+                total += expense.getNetValue();
+            }
+        }
+        return total;
+    }
 
     public void removeExpense(BillItem expense) {
         if (expense == null) {
