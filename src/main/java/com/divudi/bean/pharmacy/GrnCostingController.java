@@ -1728,10 +1728,10 @@ public class GrnCostingController implements Serializable {
     }
 
     public void addExpense() {
-        if (getBill().getId() == null) {
-            getBillFacade().create(getBill());
-            if (getBill().getBillFinanceDetails() == null) {
-                getBill().setBillFinanceDetails(new BillFinanceDetails(getBill()));
+        if (getGrnBill().getId() == null) {
+            getBillFacade().create(getGrnBill());
+            if (getGrnBill().getBillFinanceDetails() == null) {
+                getGrnBill().setBillFinanceDetails(new BillFinanceDetails(getGrnBill()));
             }
         }
         if (getCurrentExpense().getItem() == null) {
@@ -1755,9 +1755,9 @@ public class GrnCostingController implements Serializable {
         getBillExpenses().add(currentExpense);
         System.out.println("DEBUG: Added to controller list. Controller list size: " + getBillExpenses().size());
         
-        // IMPORTANT: Also add to the Bill entity's expense list
-        getBill().getBillExpenses().add(currentExpense);
-        System.out.println("DEBUG: Added to bill entity list. Bill list size: " + getBill().getBillExpenses().size());
+        // IMPORTANT: Also add to the GRN Bill entity's expense list
+        getGrnBill().getBillExpenses().add(currentExpense);
+        System.out.println("DEBUG: Added to GRN bill entity list. Bill list size: " + getGrnBill().getBillExpenses().size());
         
         // Recalculate expense totals after adding new expense
         recalculateExpenseTotals();
@@ -1766,11 +1766,11 @@ public class GrnCostingController implements Serializable {
         calculateBillTotalsFromItems();
         
         // Distribute proportional bill values (including expenses considered for costing) to line items
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         
-        // Persist the updated bill
-        if (getBill().getId() != null) {
-            getBillFacade().edit(getBill());
+        // Persist the updated GRN bill
+        if (getGrnBill().getId() != null) {
+            getBillFacade().edit(getGrnBill());
         }
         
         currentExpense = null;
@@ -1795,19 +1795,19 @@ public class GrnCostingController implements Serializable {
             }
         }
         
-        getBill().setExpenseTotal(totalExpenses);
-        getBill().setExpensesTotalConsideredForCosting(expensesForCosting);
-        getBill().setExpensesTotalNotConsideredForCosting(expensesNotForCosting);
+        getGrnBill().setExpenseTotal(totalExpenses);
+        getGrnBill().setExpensesTotalConsideredForCosting(expensesForCosting);
+        getGrnBill().setExpensesTotalNotConsideredForCosting(expensesNotForCosting);
     }
     
     // Method to handle expense costing checkbox changes
     public void updateExpenseCosting(BillItem expense) {
         recalculateExpenseTotals();
         calculateBillTotalsFromItems();
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         
-        if (getBill().getId() != null) {
-            billFacade.edit(getBill());
+        if (getGrnBill().getId() != null) {
+            billFacade.edit(getGrnBill());
         }
     }
     
@@ -1867,16 +1867,16 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        if (getBill().getBillExpenses() != null) {
-            getBill().getBillExpenses().remove(expense);
+        if (getGrnBill().getBillExpenses() != null) {
+            getGrnBill().getBillExpenses().remove(expense);
         }
 
         recalculateExpenseTotals();
         calculateBillTotalsFromItems();
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
-        if (getBill().getId() != null) {
-            billFacade.edit(getBill());
+        if (getGrnBill().getId() != null) {
+            billFacade.edit(getGrnBill());
         }
     }
 
