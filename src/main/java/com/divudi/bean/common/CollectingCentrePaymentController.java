@@ -4,8 +4,12 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
@@ -34,6 +38,10 @@ public class CollectingCentrePaymentController implements Serializable {
     BillFacade billFacade;
     @EJB
     private BillNumberGenerator billNumberGenerator;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    BillItemFacade billItemFacade;
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -57,6 +65,8 @@ public class CollectingCentrePaymentController implements Serializable {
     private double totalCCReceiveAmount = 0.0;
     private double payingTotalCCAmount = 0.0;
     private PaymentMethod paymentMethod;
+    
+    private boolean printPriview;
 
 // </editor-fold>
     
@@ -88,6 +98,8 @@ public class CollectingCentrePaymentController implements Serializable {
         currentCollectingCentre = null;
         totalCCReceiveAmount = 0.0;
         payingTotalCCAmount = 0.0;
+        paymentMethod = null;
+        printPriview = false;
     }
 
     public void findPendingCCBills() {
@@ -174,11 +186,22 @@ public class CollectingCentrePaymentController implements Serializable {
 
     public void settlePaymentBill() {
         System.out.println("Settle Payment Bill");
-        saveBill();
+        Bill newlyBill = saveBill();
+        createPayment(newlyBill,paymentMethod);
+        
+        for(BillLight b : selectedCCpaymentBills){
+            Bill bill = billFacade.find(b.getId());
+            saveBillItemForPaymentBill(bill,newlyBill);
+        }
+        
+        // Update CC Balance
+        // Update Drower
+        
+        printPriview = true;
 
     }
 
-    public void saveBill() {
+    public Bill saveBill() {
         System.out.println("Save Bill");
         Bill ccAgentPaymentBill = new Bill();
         
@@ -207,7 +230,50 @@ public class CollectingCentrePaymentController implements Serializable {
         } else {
             billFacade.edit(ccAgentPaymentBill);
         }
+        
+        return ccAgentPaymentBill;
     }
+    
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+    
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+        p.setInstitution(sessionController.getInstitution());
+        p.setDepartment(sessionController.getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(sessionController.getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+
+        if (p.getId() == null) {
+            paymentFacade.create(p);
+        }
+
+    }
+    
+    private void saveBillItemForPaymentBill(Bill paymentBill, Bill originalBill) {
+        BillItem paymentBillItem = new BillItem();
+        paymentBillItem.setReferenceBill(paymentBill);
+        paymentBillItem.setBill(originalBill);
+        paymentBillItem.setCreatedAt(new Date());
+        paymentBillItem.setCreater(sessionController.getLoggedUser());
+        paymentBillItem.setDiscount(0.0);
+        paymentBillItem.setGrossValue(0.0);
+        paymentBillItem.setNetValue(0.0);
+        billItemFacade.create(paymentBillItem);
+
+//      BillFee newlyCreatedBillFee = saveBillFee(paymentBillItem, p);
+//      originalBillFee.setReferenceBillFee(newlyCreatedBillFee);
+//      getBillFeeFacade().edit(originalBillFee);
+
+        paymentBill.getBillItems().add(paymentBillItem);
+    }
+
 
 // </editor-fold>
     
@@ -306,4 +372,12 @@ public class CollectingCentrePaymentController implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 // </editor-fold>
+
+    public boolean isPrintPriview() {
+        return printPriview;
+    }
+
+    public void setPrintPriview(boolean printPriview) {
+        this.printPriview = printPriview;
+    }
 }
