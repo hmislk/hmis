@@ -258,9 +258,7 @@
                                         value="View"
                                         icon="pi pi-eye"
                                         styleClass="ui-button-secondary"
-                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueById()}">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{i.billId}" />
-                                    </p:commandButton>
+                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueByIdWithParam(i.billId)}" />
                                 </p:column>
 
                             </p:dataTable>
