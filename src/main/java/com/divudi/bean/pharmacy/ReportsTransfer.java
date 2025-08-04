@@ -39,7 +39,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
-import com.divudi.core.data.dto.PharmacyTransferIssueDTO;
+import com.divudi.core.data.dto.PharmacyTransferIssueBillDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceiveDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO;
@@ -128,7 +128,7 @@ public class ReportsTransfer implements Serializable {
 
     private List<BillItem> transferItems;
     private List<Bill> transferBills;
-    private List<PharmacyTransferIssueDTO> transferIssueDtos; // DTO for efficient display
+    private List<PharmacyTransferIssueBillDTO> transferIssueDtos; // DTO for efficient display
     private List<PharmacyTransferReceiveDTO> transferReceiveDtos; // DTO for efficient display
     private List<PharmacyTransferIssueBillItemDTO> transferIssueBillItemDtos; // DTO for item level display
     private List<PharmacyTransferReceiveBillItemDTO> transferReceiveBillItemDtos; // DTO for receive item level display
@@ -701,7 +701,7 @@ public class ReportsTransfer implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferIssueDTO(")
+        jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferIssueBillDTO(")
                 .append("b.id, ")
                 .append("COALESCE(b.deptId, ''), ")
                 .append("b.createdAt, ")
@@ -743,7 +743,7 @@ public class ReportsTransfer implements Serializable {
         // Execute the DTO query
         // Execute the DTO query
         try {
-            transferIssueDtos = (List<PharmacyTransferIssueDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            transferIssueDtos = (List<PharmacyTransferIssueBillDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             // Log the exception for debugging
             // logger.error("Failed to fetch transfer issue DTOs", e);
@@ -756,7 +756,7 @@ public class ReportsTransfer implements Serializable {
         purchaseValue = 0.0;
         transferValue = 0.0;
         if (transferIssueDtos != null) {
-            for (PharmacyTransferIssueDTO dto : transferIssueDtos) {
+            for (PharmacyTransferIssueBillDTO dto : transferIssueDtos) {
                 if (dto.getSaleValue() != null) {
                     totalsValue += dto.getSaleValue();
                 }
@@ -2828,11 +2828,11 @@ public class ReportsTransfer implements Serializable {
         this.transferBills = transferBills;
     }
 
-    public List<PharmacyTransferIssueDTO> getTransferIssueDtos() {
+    public List<PharmacyTransferIssueBillDTO> getTransferIssueDtos() {
         return transferIssueDtos;
     }
 
-    public void setTransferIssueDtos(List<PharmacyTransferIssueDTO> transferIssueDtos) {
+    public void setTransferIssueDtos(List<PharmacyTransferIssueBillDTO> transferIssueDtos) {
         this.transferIssueDtos = transferIssueDtos;
     }
 
