@@ -376,6 +376,10 @@ public class BillSearch implements Serializable {
         return billService.fetchBillPayments(bill);
     }
     
+    public List<BillItem> groupBillItemByNameFromBill(Bill b){
+        return groupBillItemByName(billService.fetchBillItems(b));
+    }
+    
     public List<BillItem> groupBillItemByName(List<BillItem> billItems) {
         Map<String, BillItem> groupedMap = new HashMap<>();
 
