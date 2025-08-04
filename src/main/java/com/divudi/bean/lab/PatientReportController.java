@@ -2594,6 +2594,10 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && ix != null) {
             r = new PatientReport();
+            Patient pt = pi.getPatient();
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
@@ -2653,6 +2657,10 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            Patient pt = pi.getPatient();
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setReportType(ReportType.GENARATE);
             r.setSampleIDs(sampleIds);
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -2700,6 +2708,10 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            Patient pt = pi.getPatient();
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setSampleIDs(sampleIds);
             r.setReportType(ReportType.UPLOAD);
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -2780,6 +2792,10 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            Patient pt = pi.getPatient();
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setReportType(ReportType.GENARATE);
             r.setCreater(getSessionController().getLoggedUser());
