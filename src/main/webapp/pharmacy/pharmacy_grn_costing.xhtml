@@ -321,7 +321,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
                                         </div>
-                                        <div class="col-4">
+                                        <div class="col-3">
                                             <h:outputLabel 
                                                 class="w-100 m-1"
                                                 value="Description"/><br/>
@@ -332,6 +332,14 @@
                                             </p:inputText>
                                         </div>
                                         <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Considered for Costing"/><br/>
+                                            <div class="w-100 m-1 d-flex align-items-center justify-content-center" style="height: 38px;">
+                                                <p:selectBooleanCheckbox value="#{grnCostingController.currentExpense.consideredForCosting}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
                                             <h:outputLabel 
                                                 class="w-100 m-1"
                                                 value="&nbsp;"/><br/>
@@ -363,6 +371,13 @@
                                     </p:column>
                                     <p:column headerText="Description" >
                                         <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Considered for Costing" >
+                                        <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
+                                            <p:ajax event="change"
+                                                    listener="#{grnCostingController.updateExpenseCosting(be)}"
+                                                    update="@parent :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
                                     </p:column>
                                     <p:column headerText="Delete" >
                                         <p:commandButton
@@ -524,11 +539,28 @@
                                     value="#{grnCostingController.grnBill.billFinanceDetails.lineDiscount}" >
                                 </p:outputLabel>
 
-                                <p:outputLabel value="Sum of Expenses"/>
+                                <p:outputLabel value="Bill Expenses"/>
                                 <p:outputLabel
                                     id="txtBillExpenses"
                                     class="text-end w-100"
-                                    value="#{grnCostingController.grnBill.expenseTotal}" >
+                                    value="#{grnCostingController.billExpensesTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Bill Expenses (Considered for Costing)"/>
+                                <p:outputLabel
+                                    id="expensesConsidered"
+                                    class="text-end w-100"
+                                    value="#{grnCostingController.grnBill.expensesTotalConsideredForCosting}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Bill Expenses (Not Considered for Costing)"/>
+                                <p:outputLabel
+                                    id="expensesNotConsidered"
+                                    class="text-end w-100"
+                                    value="#{grnCostingController.grnBill.expensesTotalNotConsideredForCosting}">
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Total Discount"/>
