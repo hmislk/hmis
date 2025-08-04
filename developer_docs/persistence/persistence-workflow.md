@@ -1,6 +1,62 @@
 # Persistence.xml Database Configuration Workflow
 
-## IMPORTANT: Automatic Git Push Behavior
+## AUTOMATION SCRIPTS (RECOMMENDED)
+
+### One-Command Solution
+
+**Windows (Primary Development Environment):**
+```cmd
+REM Instead of: git push
+REM Use this:
+scripts\safe-push.bat
+
+REM Or with parameters:
+scripts\safe-push.bat origin main
+```
+
+**Linux (Server Environment):**
+```bash
+# Instead of: git push
+# Use this:
+./scripts/safe-push.sh
+
+# Or with parameters:
+./scripts/safe-push.sh origin main
+```
+
+This script automatically:
+1. Backs up your current local JNDI names
+2. Replaces them with environment variables
+3. Pushes to GitHub
+4. Restores your local JNDI names
+
+### Manual Step-by-Step Control
+
+**Windows:**
+```cmd
+REM 1. Prepare for push (backs up and replaces JNDI names)
+scripts\prepare-for-push.bat
+
+REM 2. Push your changes
+git push
+
+REM 3. Restore local configuration
+scripts\restore-local-jndi.bat
+```
+
+**Linux:**
+```bash
+# 1. Prepare for push (backs up and replaces JNDI names)
+./scripts/prepare-for-push.sh
+
+# 2. Push your changes
+git push
+
+# 3. Restore local configuration
+./scripts/restore-local-jndi.sh
+```
+
+## LEGACY: Manual Git Push Behavior
 
 When asked to push changes to GitHub, Claude should AUTOMATICALLY:
 
@@ -27,3 +83,30 @@ The JNDI names change based on environment and will be manually updated:
 
 ## Key Principle
 Use the **last choice in history** - whatever JNDI names are currently in the file should be restored after pushing.
+
+## Script Details
+
+### Available Scripts
+
+**Windows (Primary Development):**
+- **`scripts\safe-push.bat`** - Complete automation (recommended)
+- **`scripts\prepare-for-push.bat`** - Prepare persistence.xml for GitHub push
+- **`scripts\restore-local-jndi.bat`** - Restore local JNDI configuration
+
+**Linux (Server Environment):**
+- **`scripts/safe-push.sh`** - Complete automation (recommended)
+- **`scripts/prepare-for-push.sh`** - Prepare persistence.xml for GitHub push
+- **`scripts/restore-local-jndi.sh`** - Restore local JNDI configuration
+
+### How It Works
+1. Scripts detect current JNDI names in persistence.xml
+2. Create backup files (.jndi-backup-main, .jndi-backup-audit)
+3. Replace with environment variables for GitHub compatibility
+4. After push, restore original local names from backup
+5. Clean up backup files
+
+### Benefits
+- ✅ Eliminates QA deployment blockers
+- ✅ Maintains local development functionality  
+- ✅ Prevents manual errors
+- ✅ One-command simplicity
