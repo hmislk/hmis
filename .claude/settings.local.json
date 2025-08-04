@@ -14,7 +14,19 @@
       "Bash(git checkout:*)",
       "Bash(git add:*)",
       "Bash(gh issue create:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git branch:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(cp:*)",
+      "Bash(javac:*)",
+      "Bash(mvn compile:*)",
+      "Bash(./mvnw compile:*)",
+      "Bash(wc:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh issue list:*)"
     ],
     "deny": []
   }
