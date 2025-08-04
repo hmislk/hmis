@@ -3654,7 +3654,7 @@ public class PharmacyReportController implements Serializable {
 
     public void calculateStockCorrectionRow() {
         Map<String, Double> stockCorrection = calculateStockCorrectionValues();
-        cogsRows.put("Stock Corection", stockCorrection);
+        cogsRows.put("Stock Correction", stockCorrection);
     }
 
     public void calculateGrnCashAndCreditRows() {
