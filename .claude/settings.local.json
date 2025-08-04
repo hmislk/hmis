@@ -10,7 +10,11 @@
       "Bash(./scripts/safe-push.sh:*)",
       "Bash(git merge:*)",
       "Bash(git push:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(gh issue create:*)",
+      "Bash(cd:*)"
     ],
     "deny": []
   }

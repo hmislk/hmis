@@ -245,24 +245,24 @@ public class PharmacyTransferIssueBillDTO implements Serializable {
     }
     
     // Nested classes for XHTML compatibility
-    public static class FromDepartment {
+    public static class FromDepartment implements Serializable {
         private String name;
         public FromDepartment(String name) { this.name = name; }
         public String getName() { return name; }
     }
     
-    public static class ToDepartment {
+    public static class ToDepartment implements Serializable {
         private String name;
         public ToDepartment(String name) { this.name = name; }
         public String getName() { return name; }
     }
     
-    public static class ToStaff {
+    public static class ToStaff implements Serializable {
         private String personName;
         public ToStaff(String personName) { this.personName = personName; }
         public Person getPerson() { return new Person(personName); }
         
-        public static class Person {
+        public static class Person implements Serializable {
             private String name;
             public Person(String name) { this.name = name; }
             public String getName() { return name; }

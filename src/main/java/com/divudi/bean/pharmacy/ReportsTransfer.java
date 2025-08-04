@@ -39,7 +39,6 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
-import com.divudi.core.data.dto.PharmacyTransferIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueBillDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceiveDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO;
