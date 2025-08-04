@@ -797,7 +797,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
 
             getBill().setExpenseTotal(-Math.abs(totalForExpenses));
-            getBill().setNetTotal(getBill().getNetTotal() + totalForExpenses);
+            // Note: NetTotal is already correctly calculated by the service and includes expenses
+            // Removed: getBill().setNetTotal(getBill().getNetTotal() + totalForExpenses);
         }
 
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
@@ -887,11 +888,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public double getNetTotal() {
-
+        // If NetTotal has already been calculated by the service (includes expenses), return it as-is
+        if (getBill().getNetTotal() != 0.0) {
+            return getBill().getNetTotal(); // Return the calculated value (negative for purchases)
+        }
+        
+        // Fallback calculation for cases where service hasn't calculated yet
         double tmp = getBill().getTotal() + getBill().getTax() - getBill().getDiscount();
         getBill().setNetTotal(0 - tmp);
 
-        return tmp;
+        return 0 - tmp; // Return negative value for purchase transactions
     }
 
     public void calTotal() {
