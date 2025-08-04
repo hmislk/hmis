@@ -1705,6 +1705,9 @@ public class GrnCostingController implements Serializable {
         if (currentExpense == null) {
             currentExpense = new BillItem();
             currentExpense.setQty(1.0);
+            // Explicitly set default value for consideredForCosting
+            currentExpense.setConsideredForCosting(true);
+            System.out.println("DEBUG: Created new currentExpense with consideredForCosting = " + currentExpense.isConsideredForCosting());
         }
         return currentExpense;
     }
@@ -1738,6 +1741,9 @@ public class GrnCostingController implements Serializable {
 
         currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
         currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
+
+        System.out.println("DEBUG: Adding expense '" + (currentExpense.getItem() != null ? currentExpense.getItem().getName() : "Unknown") + 
+                         "' - Value: " + currentExpense.getNetValue() + ", Considered: " + currentExpense.isConsideredForCosting());
 
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);

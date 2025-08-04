@@ -185,14 +185,23 @@ public class PharmacyCostingService {
         double expensesTotalNotConsideredForCosting = 0.0;
         
         if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
+            System.out.println("DEBUG: Processing " + bill.getBillExpenses().size() + " bill expenses");
             for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
-                expenseTotal += expense.getNetValue();
-                if (expense.isConsideredForCosting()) {
-                    expensesTotalConsideredForCosting += expense.getNetValue();
+                double expenseValue = expense.getNetValue();
+                boolean isConsidered = expense.isConsideredForCosting();
+                System.out.println("DEBUG: Expense '" + (expense.getItem() != null ? expense.getItem().getName() : "Unknown") + 
+                                 "' - Value: " + expenseValue + ", Considered: " + isConsidered);
+                
+                expenseTotal += expenseValue;
+                if (isConsidered) {
+                    expensesTotalConsideredForCosting += expenseValue;
                 } else {
-                    expensesTotalNotConsideredForCosting += expense.getNetValue();
+                    expensesTotalNotConsideredForCosting += expenseValue;
                 }
             }
+            System.out.println("DEBUG: Final totals - Total: " + expenseTotal + 
+                             ", Considered: " + expensesTotalConsideredForCosting + 
+                             ", Not Considered: " + expensesTotalNotConsideredForCosting);
         }
         
         // Set the recalculated expense totals
