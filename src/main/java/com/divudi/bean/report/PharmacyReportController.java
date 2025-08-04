@@ -3610,7 +3610,7 @@ public class PharmacyReportController implements Serializable {
             calculateStockConsumption();
             calculatePurchaseReturn();
             calculateTransferIssueValue();
-//            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+            calculateTransferReceiveValue();
 //            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
 //            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
@@ -3947,22 +3947,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     
-    private void calculateTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("Doctype", BillType.PharmacyTransferReceive);
-
-            double totalTransferReceiveValue = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Transfer Receive Value", totalTransferReceiveValue);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
-            cogs.put("ERROR", -1.0);
-        }
-    }
+    
 
     
 
@@ -4034,6 +4019,15 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void calculateTransferReceiveValue() {
+        try {
+            Map<String, Double> transferReceives = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferReceive));
+            cogsRows.put("Transfer Receive", transferReceives);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
+        }
+    }
 
 
     private void calculateGrnCashAndCredit() {
