@@ -1707,7 +1707,6 @@ public class GrnCostingController implements Serializable {
             currentExpense.setQty(1.0);
             // Explicitly set default value for consideredForCosting
             currentExpense.setConsideredForCosting(true);
-            System.out.println("DEBUG: Created new currentExpense with consideredForCosting = " + currentExpense.isConsideredForCosting());
         }
         return currentExpense;
     }
@@ -1715,7 +1714,6 @@ public class GrnCostingController implements Serializable {
     // Method called when expense item is selected from autocomplete
     public void onExpenseItemSelect() {
         // This method is called when an expense item is selected from the autocomplete
-        System.out.println("DEBUG: Expense item selected: " + (getCurrentExpense().getItem() != null ? getCurrentExpense().getItem().getName() : "None"));
     }
 
     public BilledBill getBill() {
@@ -1748,16 +1746,11 @@ public class GrnCostingController implements Serializable {
         currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
         currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
 
-        System.out.println("DEBUG: Adding expense '" + (currentExpense.getItem() != null ? currentExpense.getItem().getName() : "Unknown") + 
-                         "' - Value: " + currentExpense.getNetValue() + ", Considered: " + currentExpense.isConsideredForCosting());
-
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
-        System.out.println("DEBUG: Added to controller list. Controller list size: " + getBillExpenses().size());
         
         // IMPORTANT: Also add to the GRN Bill entity's expense list
         getGrnBill().getBillExpenses().add(currentExpense);
-        System.out.println("DEBUG: Added to GRN bill entity list. Bill list size: " + getGrnBill().getBillExpenses().size());
         
         // Recalculate expense totals after adding new expense
         recalculateExpenseTotals();
