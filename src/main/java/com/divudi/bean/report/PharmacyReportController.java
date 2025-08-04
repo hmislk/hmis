@@ -3663,7 +3663,7 @@ public class PharmacyReportController implements Serializable {
             calculateTransferIssueValue();
             calculateTransferReceiveValue();
             calculateSaleCreditValue();
-//            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateBhtIssueValue();
 //            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
 
@@ -3957,23 +3957,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
-            params.put("Doctype", BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            jpql.append("ORDER BY sh2.createdAt");
-
-            double totalBhtIssueValue = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("BHT Issue Value", totalBhtIssueValue);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
+    
     private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
@@ -4090,6 +4074,19 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
+        }
+    }
+
+    private void calculateBhtIssueValue() {
+        try {
+             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+
+            Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            cogsRows.put("BHT Issue", bhtIssues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
         }
     }
 
