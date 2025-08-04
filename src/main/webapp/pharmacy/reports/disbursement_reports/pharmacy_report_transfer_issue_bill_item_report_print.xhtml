@@ -175,6 +175,24 @@
                                                 <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Cost Value" style="margin-right: 1mm;"/>
                                                 </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Retail Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Retail Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Purchase Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Purchase Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Transfer Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Transfer Value" style="margin-right: 1mm;"/>
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -200,12 +218,42 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{i.costRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{i.costValue}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{i.retailRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{i.retailValue}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{i.purchaseRate}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{i.purchaseValue}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{i.transferRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{i.transferValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -221,7 +269,25 @@
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{reportsTransfer.costValue}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{reportsTransfer.retailValue}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{reportsTransfer.purchaseValue}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{reportsTransfer.transferValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>

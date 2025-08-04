@@ -33,7 +33,7 @@ This document lists key pages reachable from the **Pharmacy** menu. Each entry s
 | **Pharmacy → Purchase → GRN** | `/faces/pharmacy/pharmacy_grn.xhtml` | `PharmacyGoodReceive` | |
 | **Pharmacy → Purchase → Purchase Order** | `/faces/pharmacy/pharmacy_purhcase_order_list.xhtml` | `PharmacyOrderCreation` | |
 | **Pharmacy → Stock → Transfer Request** | `/faces/pharmacy/pharmacy_transfer_request.xhtml` | `PharmacyTransferRequest` | |
-| **Pharmacy → Stock → Issue Stock** | `/faces/pharmacy/pharmacy_transfer_issue.xhtml` | `PharmacyTransferIssue` | |
+| **Pharmacy → Stock → Issue Stock** | `/faces/pharmacy/pharmacy_transfer_issue.xhtml` | `PharmacyTransferIssue` | Colour-coded autocomplete when `Display Colours for Stock Autocomplete Items` is true |
 | **Pharmacy → Stock → Receive Stock** | `/faces/pharmacy/pharmacy_transfer_receive.xhtml` | `PharmacyTransferRecive` | |
 | **Pharmacy → Stock → Bin Card** | `/faces/pharmacy/bin_card.xhtml` | `Pharmacy` | |
 | **Pharmacy → Reports → Sale by Date Summary** | `/faces/pharmacy/pharmacy_report_sale_by_date_summery.xhtml` | `ReportsSearchCashCardOwn` | |

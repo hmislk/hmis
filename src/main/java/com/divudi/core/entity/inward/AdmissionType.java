@@ -29,6 +29,7 @@ public class AdmissionType extends Category implements Serializable {
     @ManyToOne
     RoomFacilityCharge roomFacilityCharge;
     int additionToCount;
+    private boolean generateSeparateAdmissionNumber;
 
     public int getAdditionToCount() {
         return additionToCount;
@@ -84,6 +85,14 @@ public class AdmissionType extends Category implements Serializable {
 
     public void setAdmissionTypeEnum(AdmissionTypeEnum admissionTypeEnum) {
         this.admissionTypeEnum = admissionTypeEnum;
+    }
+
+    public boolean isGenerateSeparateAdmissionNumber() {
+        return generateSeparateAdmissionNumber;
+    }
+
+    public void setGenerateSeparateAdmissionNumber(boolean generateSeparateAdmissionNumber) {
+        this.generateSeparateAdmissionNumber = generateSeparateAdmissionNumber;
     }
 
 

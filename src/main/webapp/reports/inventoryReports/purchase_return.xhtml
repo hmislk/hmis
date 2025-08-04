@@ -240,12 +240,22 @@
                             </p:column>
                             <p:column headerText="Ref Doc No (Original bill No)" width="5em">
                                 <p:commandLink 
+                                    rendered="#{f.pharmaceuticalBillItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'}"
                                     value="#{f.bill.referenceBill.deptId}" 
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{f.pharmaceuticalBillItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
+                                    value="#{f.pharmaceuticalBillItem.billItem.bill.billedBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pharmaceuticalBillItem.billItem.bill.billedBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="QTY" width="5em">

@@ -227,7 +227,14 @@
                                 <h:outputText value="#{f.item.code}" />
                             </p:column>
                             <p:column headerText="Doc No">
-                                <h:outputText value="#{f.bill.deptId}" />
+                                <p:commandLink 
+                                    value="#{f.bill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Batch Code">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
