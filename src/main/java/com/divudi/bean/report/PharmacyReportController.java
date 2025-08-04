@@ -3664,7 +3664,7 @@ public class PharmacyReportController implements Serializable {
             calculateTransferReceiveValue();
             calculateSaleCreditValue();
             calculateBhtIssueValue();
-//            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditCard();
 //            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
 
         
@@ -3939,24 +3939,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
-            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
-            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
-            params.put("pm", PaymentMethod.Card);
-            jpql.append("ORDER BY sh2.createdAt");
-
-            double totalSaleCreditCard = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Sale Credit Card", totalSaleCreditCard);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
+    
     
     private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
@@ -4089,6 +4072,16 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
         }
     }
+    private void calculateSaleCreditCard() {
+        try {
+            Map<String, Double> saleCreditCardValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Card));
+            cogsRows.put("Sale Credit Card", saleCreditCardValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
+        }
+    }
+
 
 
 
