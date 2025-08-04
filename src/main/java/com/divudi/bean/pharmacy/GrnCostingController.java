@@ -787,9 +787,12 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
         getGrnBill().setBillExpenses(billExpenses);
-        getGrnBill().setExpenseTotal(calExpenses());
-//        calGrossTotal();
-        getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
+        
+        // Recalculate expense totals using the new categorization method
+        recalculateExpenseTotals();
+        
+        // Note: NetTotal is already correctly calculated by the service and includes expenses
+        // Removed expense doubling line: getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
         getBillFacade().edit(getGrnBill());
@@ -1264,6 +1267,12 @@ public class GrnCostingController implements Serializable {
     }
 
     public void calculateBillTotalsFromItems() {
+        pharmacyCostingService.calculateBillTotalsFromItemsForPurchases(getGrnBill(), getBillItems());
+    }
+    
+    // Keep the old method for backward compatibility if needed
+    @Deprecated
+    public void calculateBillTotalsFromItemsOld() {
         int serialNo = 0;
 
         // Bill-level inputs: do not calculate here
@@ -1712,6 +1721,9 @@ public class GrnCostingController implements Serializable {
     public void addExpense() {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
+            if (getBill().getBillFinanceDetails() == null) {
+                getBill().setBillFinanceDetails(new BillFinanceDetails(getBill()));
+            }
         }
         if (getCurrentExpense().getItem() == null) {
             JsfUtil.addErrorMessage("Expense ?");
@@ -1729,8 +1741,73 @@ public class GrnCostingController implements Serializable {
 
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
+        
+        // IMPORTANT: Also add to the Bill entity's expense list
+        getBill().getBillExpenses().add(currentExpense);
+        
+        // Recalculate expense totals after adding new expense
+        recalculateExpenseTotals();
+        
+        // Recalculate entire bill totals with updated expense categorization
+        calculateBillTotalsFromItems();
+        
+        // Distribute proportional bill values (including expenses considered for costing) to line items
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        
+        // Persist the updated bill
+        if (getBill().getId() != null) {
+            getBillFacade().edit(getBill());
+        }
+        
         currentExpense = null;
-
+    }
+    
+    // Method to recalculate expense totals based on costing categorization
+    public void recalculateExpenseTotals() {
+        double totalExpenses = 0.0;
+        double expensesForCosting = 0.0;
+        double expensesNotForCosting = 0.0;
+        
+        if (getBillExpenses() != null) {
+            for (BillItem expense : getBillExpenses()) {
+                double expenseValue = expense.getNetValue();
+                totalExpenses += expenseValue;
+                
+                if (expense.isConsideredForCosting()) {
+                    expensesForCosting += expenseValue;
+                } else {
+                    expensesNotForCosting += expenseValue;
+                }
+            }
+        }
+        
+        getBill().setExpenseTotal(totalExpenses);
+        getBill().setExpensesTotalConsideredForCosting(expensesForCosting);
+        getBill().setExpensesTotalNotConsideredForCosting(expensesNotForCosting);
+    }
+    
+    // Method to handle expense costing checkbox changes
+    public void updateExpenseCosting(BillItem expense) {
+        recalculateExpenseTotals();
+        calculateBillTotalsFromItems();
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        
+        if (getBill().getId() != null) {
+            billFacade.edit(getBill());
+        }
+    }
+    
+    // Method to get total bill expenses for display
+    public double getBillExpensesTotal() {
+        if (getBillExpenses() == null || getBillExpenses().isEmpty()) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem expense : getBillExpenses()) {
+            total += expense.getNetValue();
+        }
+        return total;
     }
 
     public void removeExpense(BillItem expense) {
@@ -1750,7 +1827,13 @@ public class GrnCostingController implements Serializable {
             getBill().getBillExpenses().remove(expense);
         }
 
-        calTotal();
+        recalculateExpenseTotals();
+        calculateBillTotalsFromItems();
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+
+        if (getBill().getId() != null) {
+            billFacade.edit(getBill());
+        }
     }
 
     public double calExpenses() {
