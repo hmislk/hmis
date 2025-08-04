@@ -294,6 +294,23 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     /**
+     * Used by DTO reports where only the bill id is available.
+     */
+    public String navigateToReprintPharmacyTransferReceiveById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true";
+    }
+
+    /**
      * Used by DTO reports where the bill id is passed as a parameter.
      * This avoids potential ViewExpiredException issues with f:setPropertyActionListener.
      */
