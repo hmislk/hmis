@@ -5,7 +5,9 @@
       "Bash(gh pr create:*)",
       "Bash(chmod:*)",
       "Bash(scriptsprepare-for-push.bat)",
-      "Bash(scripts/prepare-for-push.bat)"
+      "Bash(scripts/prepare-for-push.bat)",
+      "Bash(scriptssafe-push.bat)",
+      "Bash(./scripts/safe-push.sh:*)"
     ],
     "deny": []
   }
