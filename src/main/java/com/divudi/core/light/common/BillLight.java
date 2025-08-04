@@ -31,6 +31,7 @@ public class BillLight {
     private Department toDpartment;
     private Double ccTotal;
     private Double hospitalTotal;
+    private String referenceNumber;
 
     public BillLight() {
     }
@@ -105,9 +106,10 @@ public class BillLight {
         this.patientId = patientId;
     }
 
-    public BillLight(Long id, String billNo, Date billDate, String patientName, Double ccTotal, Double hospitalTotal) {
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, String patientName, Double ccTotal, Double hospitalTotal) {
         this.id = id;
         this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
         this.billDate = billDate;
         this.patientName = patientName;
         this.ccTotal = ccTotal;
@@ -296,6 +298,14 @@ public class BillLight {
 
     public void setHospitalTotal(Double hospitalTotal) {
         this.hospitalTotal = hospitalTotal;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
     
 }
