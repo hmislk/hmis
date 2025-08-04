@@ -3520,6 +3520,52 @@ public class PharmacyReportController implements Serializable {
             }
         }
     }
+    
+    public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue){
+        try {
+
+        Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND " + billTypeField + " IN :billTypes ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
+                    .append("ORDER BY bi.bill.createdAt");
+
+
+            commonParams.put("ret", false);
+            commonParams.put("billTypes", billTypeValue);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+                        List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+            }
+        return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            return errorResult;
+        }              
+    }
 
     public void processCostOfGoodSoldReport() {
         long startTime = System.currentTimeMillis();
@@ -3556,27 +3602,10 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void calculateCogsOtherComponentsRows() {        
-            Map<String, Object> commonParams = new HashMap<>();
-            StringBuilder baseQuery = new StringBuilder();
-
-            baseQuery.append("SELECT ")
-                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
-                    .append("FROM BillItem bi ")
-                    .append("WHERE bi.retired = :ret ")
-//                    .append("AND bi.bill.billTypeAtomic IN :btas ")
-                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
-
-            commonParams.put("ret", false);
-//            commonParams.put("btas", billTypeAtomics);
-            commonParams.put("fd", fromDate);
-            commonParams.put("td", toDate);
-
-            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
-            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
-            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             
-            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+
+            
+            calculateDrugReturnIp();
 //            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
 //            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
 //            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
@@ -3798,16 +3827,16 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "sh2.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "sh2.department", "dep", department);
 
-            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
-            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
-            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
-            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
-            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
-            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
-            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
-            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
-            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
-            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
+//            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+//            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+//            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
+//            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
+//            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+//            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+//            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+//            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+//            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+//            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
             calculateClosingStockValue();
 
         } catch (Exception e) {
@@ -3994,32 +4023,15 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateDrugReturnIp(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateDrugReturnIp() {
         try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-
-            jpql.append("AND bi.bill.billTypeAtomic IN :btas ");
-            jpql.append("ORDER BY bi.bill.createdAt");
-            params.put("btas", billTypeAtomics);
-
-            List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            Map<String, Double> result = new HashMap<>();
-
-            if (results != null && !results.isEmpty()) {
-                Object[] totals = results.get(0);
-                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
-                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
-            } else {
-                result.put("purchaseValue", 0.0);
-                result.put("costValue", 0.0);
-            }
-            cogsRows.put("Drug Return IP", result);
+            Map<String, Double> ipDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            cogsRows.put("Drug Return IP", ipDrugReturns);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
