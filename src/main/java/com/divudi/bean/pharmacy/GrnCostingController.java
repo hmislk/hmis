@@ -1711,6 +1711,12 @@ public class GrnCostingController implements Serializable {
         }
         return currentExpense;
     }
+    
+    // Method called when expense item is selected from autocomplete
+    public void onExpenseItemSelect() {
+        // This method is called when an expense item is selected from the autocomplete
+        System.out.println("DEBUG: Expense item selected: " + (getCurrentExpense().getItem() != null ? getCurrentExpense().getItem().getName() : "None"));
+    }
 
     public BilledBill getBill() {
         if (bill == null) {
@@ -1747,9 +1753,11 @@ public class GrnCostingController implements Serializable {
 
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
+        System.out.println("DEBUG: Added to controller list. Controller list size: " + getBillExpenses().size());
         
         // IMPORTANT: Also add to the Bill entity's expense list
         getBill().getBillExpenses().add(currentExpense);
+        System.out.println("DEBUG: Added to bill entity list. Bill list size: " + getBill().getBillExpenses().size());
         
         // Recalculate expense totals after adding new expense
         recalculateExpenseTotals();
