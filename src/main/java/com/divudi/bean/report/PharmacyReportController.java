@@ -3520,11 +3520,11 @@ public class PharmacyReportController implements Serializable {
             }
         }
     }
-    
-    public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue){
+
+    public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue) {
         try {
 
-        Map<String, Object> commonParams = new HashMap<>();
+            Map<String, Object> commonParams = new HashMap<>();
             StringBuilder baseQuery = new StringBuilder();
 
             baseQuery.append("SELECT ")
@@ -3536,7 +3536,6 @@ public class PharmacyReportController implements Serializable {
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
                     .append("ORDER BY bi.bill.createdAt");
 
-
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
             commonParams.put("fd", fromDate);
@@ -3545,7 +3544,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
-                        List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
             Map<String, Double> result = new HashMap<>();
 
@@ -3557,19 +3556,20 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
             }
-        return result;
+            return result;
 
         } catch (Exception e) {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
             return errorResult;
-        }              
+        }
     }
-    public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue, Object paymentMethod){
+
+    public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue, Object paymentMethod) {
         try {
 
-        Map<String, Object> commonParams = new HashMap<>();
+            Map<String, Object> commonParams = new HashMap<>();
             StringBuilder baseQuery = new StringBuilder();
 
             baseQuery.append("SELECT ")
@@ -3579,7 +3579,7 @@ public class PharmacyReportController implements Serializable {
                     .append("WHERE bi.retired = :ret ")
                     .append("AND " + billTypeField + " IN :billTypes ")
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
-            
+
             baseQuery.append("AND (bi.bill.paymentMethod IN :pm ");
             baseQuery.append("OR (bi.bill.paymentMethod = :multiPm AND EXISTS ("
                     + "SELECT p FROM Payment p "
@@ -3596,7 +3596,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
-                        List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
             Map<String, Double> result = new HashMap<>();
 
@@ -3608,14 +3608,14 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
             }
-        return result;
+            return result;
 
         } catch (Exception e) {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
             return errorResult;
-        }              
+        }
     }
 
     public void processCostOfGoodSoldReport() {
@@ -3626,8 +3626,7 @@ public class PharmacyReportController implements Serializable {
             calculateOpeningStockRow();
             calculateStockCorrectionRow();
             calculateGrnCashAndCreditRows();
-//            calculateCogsOtherComponentsRows();
-            
+
             calculateDrugReturnIp();
             calculateDrugReturnOp();
             calculateStockConsumption();
@@ -3638,8 +3637,8 @@ public class PharmacyReportController implements Serializable {
             calculateBhtIssueValue();
             calculateSaleCreditCard();
             calculateSaleCash();
-            
-            Map<String, Double> calculatedClosingStockByCogsRowValues =calculateClosingStockValueByCalculatedRows();
+
+            Map<String, Double> calculatedClosingStockByCogsRowValues = calculateClosingStockValueByCalculatedRows();
             calculateClosingStockRow(); //
             calculateVariance(calculatedClosingStockByCogsRowValues);
 
@@ -3667,32 +3666,13 @@ public class PharmacyReportController implements Serializable {
         calculateGrnCashAndCreditValues();
     }
 
-    public void calculateCogsOtherComponentsRows() {        
-            
-
-//            
-//            calculateDrugReturnIp();
-//            calculateDrugReturnOp();
-//            calculateStockConsumption();
-//            calculatePurchaseReturn();
-//            calculateTransferIssueValue();
-//            calculateTransferReceiveValue();
-//            calculateSaleCreditValue();
-//            calculateBhtIssueValue();
-//            calculateSaleCreditCard();
-//            calculateSaleCash();
-//            Map<String, Double> calculatedClosingStockByCogsRowValues =calculateClosingStockValueByCalculatedRows();
-//            calculateVariance(calculatedClosingStockByCogsRowValues);
-        
-    }
-
     public void calculateClosingStockRow() {
         Map<String, Double> closingStock = calculateStockTotals(toDate);
         synchronized (cogsRows) {
             cogsRows.put("Closing Stock", closingStock);
         }
     }
-    
+
     public void exportBatchWisePharmacyStockToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -3845,151 +3825,85 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private Map<String, Double> cogs = new HashMap<>();
-
-    public void processCostOfGoodSold() {
-        cogs = new LinkedHashMap<>();
-
-        try {
-            if (fromDate == null) {
-                cogs.put("ERROR", -1.0);
-                return;
-            }
-
-            calculateOpeningStock();
-            calculateStockCorrection();
-            calculateGrnCashAndCredit();
-            calculateCogsOtherComponents();
-            calculateClosingStock();
-//            calculateVariance();
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
-    private void calculateCogsOtherComponents() {
-        try {
-            StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.bill.netTotal) FROM StockHistory sh2 "
-                    + "WHERE sh2.retired = false "
-                    + "AND sh2.createdAt BETWEEN :fd AND :td ");
-
-            Map<String, Object> commonParams = new HashMap<>();
-//            commonParams.put("depty", DepartmentType.Pharmacy);
-            commonParams.put("fd", fromDate);
-            commonParams.put("td", toDate);
-
-            addFilter(baseQuery, commonParams, "sh2.institution", "ins", institution);
-            addFilter(baseQuery, commonParams, "sh2.department.site", "sit", site);
-            addFilter(baseQuery, commonParams, "sh2.department", "dep", department);
-
-//            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
-//            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
-//            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
-//            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
-//            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
-//            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
-//            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
-//            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
-//            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
-//            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
-//            calculateClosingStockValue();
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in COGS components");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
     double totalCalculatedClosingStockPurchaseValue = 0.0;
     double totalCalculatedClosingStockCostValue = 0.0;
 
     private Map<String, Double> calculateClosingStockValueByCalculatedRows() {
-    try {
-        Map<String, Double> calculatedClosingStockByCogsRows = new HashMap<>();
-        
-        // Calculate totals from cogsRows (assuming cogsRows contains the stock data)
-        // Filter out non-numeric values and the result entry we're about to add
-        totalCalculatedClosingStockPurchaseValue = this.cogsRows.entrySet().stream()
-            .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
-            .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
-            .mapToDouble(entry -> {
-                Object value = entry.getValue();
-                if (value instanceof Number) {
-                    return ((Number) value).doubleValue();
-                } else if (value instanceof Map) {
-                    Map<?, ?> map = (Map<?, ?>) value;
-                    Object purchaseValue = map.get("purchaseValue");
-                    return purchaseValue instanceof Number ? ((Number) purchaseValue).doubleValue() : 0.0;
-                }
-                return 0.0;
-            })
-            .sum();
-            
-        totalCalculatedClosingStockCostValue = this.cogsRows.entrySet().stream()
-            .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
-            .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
-            .mapToDouble(entry -> {
-                Object value = entry.getValue();
-                if (value instanceof Number) {
-                    return ((Number) value).doubleValue();
-                } else if (value instanceof Map) {
-                    Map<?, ?> map = (Map<?, ?>) value;
-                    Object costValue = map.get("costValue");
-                    return costValue instanceof Number ? ((Number) costValue).doubleValue() : 0.0;
-                }
-                return 0.0;
-            })
-            .sum();
-        
-        // Add calculated values to the map
-        calculatedClosingStockByCogsRows.put("purchaseValue", totalCalculatedClosingStockPurchaseValue);
-        calculatedClosingStockByCogsRows.put("costValue", totalCalculatedClosingStockCostValue);
-            
-        // Store the result back in cogsRows
-        cogsRows.put("Calculated Closing Stock Value", calculatedClosingStockByCogsRows);
-        return calculatedClosingStockByCogsRows;
-        
-    } catch (Exception e) {
-         Map<String, Double> error = new HashMap<>();
-        JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
-        return error;
-    }
-}
-    private void calculateVariance(Map<String, Double> calculatedClosingStockByCogsRowValues) {
-    try {
-        Map<String, Double> varianceMap = new HashMap<>();
-        
-        // Get closing stock values from the database query (assuming this is already calculated)
-        Map<String, Double> closingStockFromDB = (Map<String, Double>) cogsRows.get("Closing Stock");
-        
-        // Calculate purchase value variance
-        double calculatedPurchaseValue = calculatedClosingStockByCogsRowValues.getOrDefault("purchaseValue", 0.0);
-        double dbPurchaseValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("purchaseValue", 0.0) : 0.0;
-        double purchaseVariance = calculatedPurchaseValue - dbPurchaseValue;
-        
-        // Calculate cost value variance  
-        double calculatedCostValue = calculatedClosingStockByCogsRowValues.getOrDefault("costValue", 0.0);
-        double dbCostValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("costValue", 0.0) : 0.0;
-        double costVariance = calculatedCostValue - dbCostValue;
-        
-        // Store variances in the map
-        varianceMap.put("purchaseValue", purchaseVariance);
-        varianceMap.put("costValue", costVariance);
-        
-        // Add variance map to cogsRows
-        cogsRows.put("Variance", varianceMap);
-        
-    } catch (Exception e) {
-        JsfUtil.addErrorMessage(e, "Error calculating variance");
-        Map<String, Double> errorMap = new HashMap<>();
-        errorMap.put("ERROR", -1.0);
-        cogsRows.put("Variance", errorMap);
-    }
-}
+        try {
+            Map<String, Double> calculatedClosingStockByCogsRows = new HashMap<>();
 
-    
+            totalCalculatedClosingStockPurchaseValue = this.cogsRows.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+                    .mapToDouble(entry -> {
+                        Object value = entry.getValue();
+                        if (value instanceof Number) {
+                            return ((Number) value).doubleValue();
+                        } else if (value instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) value;
+                            Object purchaseValue = map.get("purchaseValue");
+                            return purchaseValue instanceof Number ? ((Number) purchaseValue).doubleValue() : 0.0;
+                        }
+                        return 0.0;
+                    })
+                    .sum();
+
+            totalCalculatedClosingStockCostValue = this.cogsRows.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+                    .mapToDouble(entry -> {
+                        Object value = entry.getValue();
+                        if (value instanceof Number) {
+                            return ((Number) value).doubleValue();
+                        } else if (value instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) value;
+                            Object costValue = map.get("costValue");
+                            return costValue instanceof Number ? ((Number) costValue).doubleValue() : 0.0;
+                        }
+                        return 0.0;
+                    })
+                    .sum();
+
+            calculatedClosingStockByCogsRows.put("purchaseValue", totalCalculatedClosingStockPurchaseValue);
+            calculatedClosingStockByCogsRows.put("costValue", totalCalculatedClosingStockCostValue);
+
+            cogsRows.put("Calculated Closing Stock Value", calculatedClosingStockByCogsRows);
+            return calculatedClosingStockByCogsRows;
+
+        } catch (Exception e) {
+            Map<String, Double> error = new HashMap<>();
+            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
+            return error;
+        }
+    }
+
+    private void calculateVariance(Map<String, Double> calculatedClosingStockByCogsRowValues) {
+        try {
+            Map<String, Double> varianceMap = new HashMap<>();
+
+            Map<String, Double> closingStockFromDB = (Map<String, Double>) cogsRows.get("Closing Stock");
+
+            double calculatedPurchaseValue = calculatedClosingStockByCogsRowValues.getOrDefault("purchaseValue", 0.0);
+            double dbPurchaseValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("purchaseValue", 0.0) : 0.0;
+            double purchaseVariance = calculatedPurchaseValue - dbPurchaseValue;
+
+            double calculatedCostValue = calculatedClosingStockByCogsRowValues.getOrDefault("costValue", 0.0);
+            double dbCostValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("costValue", 0.0) : 0.0;
+            double costVariance = calculatedCostValue - dbCostValue;
+
+            varianceMap.put("purchaseValue", purchaseVariance);
+            varianceMap.put("costValue", costVariance);
+
+            cogsRows.put("Variance", varianceMap);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating variance");
+            Map<String, Double> errorMap = new HashMap<>();
+            errorMap.put("ERROR", -1.0);
+            cogsRows.put("Variance", errorMap);
+        }
+    }
+
     private void calculateDrugReturnIp() {
         try {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -4019,6 +3933,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating OP returns");
         }
     }
+
     private void calculateStockConsumption() {
         try {
             Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyIssue));
@@ -4028,6 +3943,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
         }
     }
+
     private void calculatePurchaseReturn() {
         try {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -4047,6 +3963,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
         }
     }
+
     private void calculateTransferIssueValue() {
         try {
             Map<String, Double> transferIssues = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferIssue));
@@ -4066,6 +3983,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
         }
     }
+
     private void calculateSaleCreditValue() {
         try {
             List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
@@ -4082,7 +4000,7 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateBhtIssueValue() {
         try {
-             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 
             Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
@@ -4092,6 +4010,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
         }
     }
+
     private void calculateSaleCreditCard() {
         try {
             Map<String, Double> saleCreditCardValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Card));
@@ -4101,6 +4020,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
         }
     }
+
     private void calculateSaleCash() {
         try {
             Map<String, Double> saleCashValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Cash));
@@ -4109,170 +4029,6 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
         }
-    }
-
-
-
-
-
-    private void calculateGrnCashAndCredit() {
-        try {
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-
-            StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
-                    .append("WHERE b.retired = false ")
-                    .append("AND b.billTypeAtomic IN :bType ")
-                    .append("AND b.createdAt BETWEEN :fd AND :td ")
-                    .append("AND b.paymentMethod IN (:cash, :credit) ");
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("bType", billTypeAtomics);
-            params.put("fd", fromDate);
-            params.put("td", toDate);
-            params.put("cash", PaymentMethod.Cash);
-            params.put("credit", PaymentMethod.Credit);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-            jpql.append(" GROUP BY b.paymentMethod");
-
-            List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            Map<PaymentMethod, Double> totalsByMethod = results.stream()
-                    .collect(Collectors.toMap(
-                            r -> (PaymentMethod) r[0],
-                            r -> r[1] != null ? ((Number) r[1]).doubleValue() : 0.0
-                    ));
-
-            cogs.put("GRN Cash Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Cash, 0.0));
-            cogs.put("GRN Credit Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Credit, 0.0));
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
-    private void calculateStockCorrection() {
-        try {
-            List<BillType> billTypes = Arrays.asList(
-                    BillType.PharmacyAdjustmentSaleRate,
-                    BillType.PharmacyAdjustmentPurchaseRate,
-                    BillType.PharmacyAdjustmentWholeSaleRate
-            );
-
-            StringBuilder jpql = new StringBuilder("SELECT SUM(sh2.pbItem.qty * (sh2.pbItem.afterAdjustmentValue - sh2.pbItem.beforeAdjustmentValue)) "
-                    + "FROM StockHistory sh2 "
-                    + "WHERE sh2.retired = false "
-                    + "AND sh2.createdAt BETWEEN :fd AND :td "
-                    + "AND (sh2.itemBatch.item.departmentType IS NULL OR sh2.itemBatch.item.departmentType = :depty) "
-                    + "AND sh2.pbItem.billItem.bill.billType IN :doctype");
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("depty", DepartmentType.Pharmacy);
-            params.put("fd", fromDate);
-            params.put("td", toDate);
-            params.put("doctype", billTypes);
-
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
-            Double totalCorrection = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            cogs.put("Stock Correction", totalCorrection != null ? totalCorrection : 0.0);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
-    private void calculateOpeningStock() {
-        try {
-            StringBuilder jpql = new StringBuilder();
-            Map<String, Object> params = new HashMap<>();
-
-            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.purcahseRate) ")
-                    .append("FROM StockHistory sh ")
-                    .append("WHERE sh.retired = false ")
-                    .append("AND sh.id IN (")
-                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
-                    .append("  WHERE sh2.retired = false ")
-                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
-                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
-                    .append("  AND sh2.createdAt < :et ");
-
-            params.put("depty", DepartmentType.Pharmacy);
-            params.put("et", CommonFunctions.getStartOfDay(fromDate));
-
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
-            jpql.append("  GROUP BY sh2.itemBatch.item ")
-                    .append(") ");
-
-            addFilter(jpql, params, "sh.institution", "ins", institution);
-            addFilter(jpql, params, "sh.department.site", "sit", site);
-            addFilter(jpql, params, "sh.department", "dep", department);
-
-            Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            cogs.put("Opening Stock Value", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
-    private void calculateClosingStock() {
-        try {
-            StringBuilder jpql = new StringBuilder();
-            Map<String, Object> params = new HashMap<>();
-
-            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
-                    .append("FROM StockHistory sh ")
-                    .append("WHERE sh.retired = false ")
-                    .append("AND sh.id IN (")
-                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
-                    .append("  WHERE sh2.retired = false ")
-                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
-                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
-                    .append("  AND sh2.createdAt < :et ");
-
-            params.put("depty", DepartmentType.Pharmacy);
-            params.put("et", CommonFunctions.getStartOfDay(toDate));
-
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
-            jpql.append("  GROUP BY sh2.itemBatch.item ")
-                    .append(") ");
-
-            addFilter(jpql, params, "sh.institution", "ins", institution);
-            addFilter(jpql, params, "sh.department.site", "sit", site);
-            addFilter(jpql, params, "sh.department", "dep", department);
-
-            Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
-//            totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in calculate closing Stock");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
-    public Map<String, Double> getCogs() {
-        return Collections.unmodifiableMap(cogs);
-    }
-
-    public void setCogs(Map<String, Double> cogs) {
-        this.cogs = new HashMap<>(cogs);
     }
 
     @Deprecated
