@@ -21,7 +21,8 @@ public class PharmacyTransferReceiveDTO implements Serializable {
     private String cancelledBillDeptId;
     private String comments;
     private BigDecimal costValue;     // Sum of totalCostValue from BillFinanceDetails
-    private BigDecimal transferValue; // Sum of lineNetTotal from BillItemFinanceDetails 
+    private BigDecimal purchaseValue; // Sum of totalPurchaseValue from BillFinanceDetails
+    private BigDecimal transferValue; // Sum of lineNetTotal from BillItemFinanceDetails
     private BigDecimal saleValue;    // Sum of valueAtRetailRate from BillItemFinanceDetails
     
     // Default constructor
@@ -29,10 +30,10 @@ public class PharmacyTransferReceiveDTO implements Serializable {
     }
     
     // Constructor for direct JPQL query with aggregated values
-    public PharmacyTransferReceiveDTO(Long billId, String deptId, Date createdAt, 
-                                    String departmentName, String fromDepartmentName, 
+    public PharmacyTransferReceiveDTO(Long billId, String deptId, Date createdAt,
+                                    String departmentName, String fromDepartmentName,
                                     String transporterName, Boolean cancelled, Boolean refunded,
-                                    String comments, BigDecimal costValue, BigDecimal saleValue) {
+                                    String comments, BigDecimal costValue, BigDecimal purchaseValue, BigDecimal saleValue) {
         this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
@@ -43,14 +44,16 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         this.refunded = refunded;
         this.comments = comments;
         this.costValue = costValue;
+        this.purchaseValue = purchaseValue;
         this.saleValue = saleValue;
     }
-    
-    // Constructor for JPQL queries with all three financial values
-    public PharmacyTransferReceiveDTO(Long billId, String deptId, Date createdAt, 
-                                    String departmentName, String fromDepartmentName, 
+
+    // Constructor for JPQL queries with all financial values
+    public PharmacyTransferReceiveDTO(Long billId, String deptId, Date createdAt,
+                                    String departmentName, String fromDepartmentName,
                                     String transporterName, Boolean cancelled, Boolean refunded,
-                                    String comments, BigDecimal costValue, BigDecimal transferValue, BigDecimal saleValue) {
+                                    String comments, BigDecimal costValue, BigDecimal purchaseValue,
+                                    BigDecimal transferValue, BigDecimal saleValue) {
         this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
@@ -61,15 +64,16 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         this.refunded = refunded;
         this.comments = comments;
         this.costValue = costValue;
+        this.purchaseValue = purchaseValue;
         this.transferValue = transferValue;
         this.saleValue = saleValue;
     }
-    
+
     // Constructor for JPQL queries with COALESCE (handles Object types from COALESCE)
-    public PharmacyTransferReceiveDTO(Long billId, Object deptId, Date createdAt, 
-                                    Object departmentName, Object fromDepartmentName, 
+    public PharmacyTransferReceiveDTO(Long billId, Object deptId, Date createdAt,
+                                    Object departmentName, Object fromDepartmentName,
                                     Object transporterName, Object cancelled, Object refunded,
-                                    Object comments, Object costValue, Object transferValue, Object saleValue) {
+                                    Object comments, Object costValue, Object purchaseValue, Object transferValue, Object saleValue) {
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;
@@ -84,7 +88,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         } else {
             this.cancelled = false;
         }
-        
+
         if (refunded instanceof Boolean) {
             this.refunded = (Boolean) refunded;
         } else if (refunded instanceof Number) {
@@ -93,7 +97,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
             this.refunded = false;
         }
         this.comments = comments != null ? comments.toString() : "";
-        
+
         // Handle BigDecimal conversion for financial values
         if (costValue instanceof BigDecimal) {
             this.costValue = (BigDecimal) costValue;
@@ -102,7 +106,15 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         } else {
             this.costValue = BigDecimal.ZERO;
         }
-        
+
+        if (purchaseValue instanceof BigDecimal) {
+            this.purchaseValue = (BigDecimal) purchaseValue;
+        } else if (purchaseValue instanceof Double) {
+            this.purchaseValue = BigDecimal.valueOf((Double) purchaseValue);
+        } else {
+            this.purchaseValue = BigDecimal.ZERO;
+        }
+
         if (transferValue instanceof BigDecimal) {
             this.transferValue = (BigDecimal) transferValue;
         } else if (transferValue instanceof Double) {
@@ -110,7 +122,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         } else {
             this.transferValue = BigDecimal.ZERO;
         }
-        
+
         if (saleValue instanceof BigDecimal) {
             this.saleValue = (BigDecimal) saleValue;
         } else if (saleValue instanceof Double) {
@@ -210,6 +222,14 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         this.costValue = costValue;
     }
 
+    public BigDecimal getPurchaseValueBigDecimal() {
+        return purchaseValue;
+    }
+
+    public void setPurchaseValue(BigDecimal purchaseValue) {
+        this.purchaseValue = purchaseValue;
+    }
+
     public BigDecimal getTransferValue() {
         return transferValue;
     }
@@ -236,17 +256,22 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         return costValue != null ? costValue.doubleValue() : 0.0;
     }
     
-    // IMPORTANT: This should return the actual purchase value for "Purchase Value" column
-    // The costValue field contains totalCostValue from BillFinanceDetails
+    // IMPORTANT: This returns the actual purchase value for "Purchase Value" column
+    // The purchaseValue field contains totalPurchaseValue from BillFinanceDetails
     public Double getPurchaseValue() {
-        return costValue != null ? costValue.doubleValue() : 0.0;
+        return purchaseValue != null ? purchaseValue.doubleValue() : 0.0;
     }
     
+    // Returns the purchase value for "Purchase Value" column - Double for XHTML display
+    public Double getPurchaseValueDouble() {
+        return purchaseValue != null ? purchaseValue.doubleValue() : 0.0;
+    }
+
     // Returns the transfer value for "Transfer Value" column - Double for XHTML display
     public Double getTransferValueDouble() {
         return transferValue != null ? transferValue.doubleValue() : 0.0;
     }
-    
+
     // The XHTML expects this method name specifically - returns Double for display
     public Double getSaleValue() {
         return saleValue != null ? saleValue.doubleValue() : 0.0;
