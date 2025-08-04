@@ -88,7 +88,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         } else {
             this.cancelled = false;
         }
-        
+
         if (refunded instanceof Boolean) {
             this.refunded = (Boolean) refunded;
         } else if (refunded instanceof Number) {
@@ -97,7 +97,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
             this.refunded = false;
         }
         this.comments = comments != null ? comments.toString() : "";
-        
+
         // Handle BigDecimal conversion for financial values
         if (costValue instanceof BigDecimal) {
             this.costValue = (BigDecimal) costValue;
@@ -262,11 +262,16 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         return purchaseValue != null ? purchaseValue.doubleValue() : 0.0;
     }
     
+    // Returns the purchase value for "Purchase Value" column - Double for XHTML display
+    public Double getPurchaseValueDouble() {
+        return purchaseValue != null ? purchaseValue.doubleValue() : 0.0;
+    }
+
     // Returns the transfer value for "Transfer Value" column - Double for XHTML display
     public Double getTransferValueDouble() {
         return transferValue != null ? transferValue.doubleValue() : 0.0;
     }
-    
+
     // The XHTML expects this method name specifically - returns Double for display
     public Double getSaleValue() {
         return saleValue != null ? saleValue.doubleValue() : 0.0;
