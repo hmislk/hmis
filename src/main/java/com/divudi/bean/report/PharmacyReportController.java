@@ -3606,7 +3606,7 @@ public class PharmacyReportController implements Serializable {
 
             
             calculateDrugReturnIp();
-//            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+            calculateDrugReturnOp();
 //            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
 //            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
 //            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
@@ -4035,28 +4035,21 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
-            cogs.put("ERROR", -1.0);
         }
     }
 
-    private void calculateDrugReturnOp(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateDrugReturnOp() {
         try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :opDoctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("opDoctype", billTypeAtomics);
-
-            double totalReturnsOp = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Drug Return Op", totalReturnsOp);
+            Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            cogsRows.put("Drug Return Op", opDrugReturns);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating OP returns");
-            cogs.put("ERROR", -1.0);
         }
     }
 
