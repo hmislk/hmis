@@ -3632,6 +3632,7 @@ public class PharmacyReportController implements Serializable {
             calculateDrugReturnOp();
             calculateStockConsumption();
             calculatePurchaseReturn();
+            calculateStockAdjustment();
             calculateTransferIssueValue();
             calculateTransferReceiveValue();
             calculateSaleCreditValue();
@@ -3729,6 +3730,84 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
+        }
+    }
+
+    private void calculateStockAdjustment() {
+        try {
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
+            billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+
+            // Query for Stock Adjustment Issues (negative quantities)
+            Map<String, Object> paramsIssue = new HashMap<>();
+            StringBuilder jpqlIssue = new StringBuilder();
+            jpqlIssue.append("SELECT ")
+                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billType IN :btas ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
+                    .append("AND bi.pharmaceuticalBillItem.qty < 0.0 ");
+
+            paramsIssue.put("ret", false);
+            paramsIssue.put("btas", billTypes);
+            paramsIssue.put("fd", fromDate);
+            paramsIssue.put("td", toDate);
+            addFilter(jpqlIssue, paramsIssue, "bi.bill.institution", "ins", institution);
+            addFilter(jpqlIssue, paramsIssue, "bi.bill.department.site", "sit", site);
+            addFilter(jpqlIssue, paramsIssue, "bi.bill.department", "dep", department);
+
+            // Query for Stock Adjustment Receives (positive quantities)
+            Map<String, Object> paramsReceive = new HashMap<>();
+            StringBuilder jpqlReceive = new StringBuilder();
+            jpqlReceive.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billType IN :btas ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
+                    .append("AND bi.pharmaceuticalBillItem.qty > 0.0 ");
+
+            paramsReceive.put("ret", false);
+            paramsReceive.put("btas", billTypes);
+            paramsReceive.put("fd", fromDate);
+            paramsReceive.put("td", toDate);
+            addFilter(jpqlReceive, paramsReceive, "bi.bill.institution", "ins", institution);
+            addFilter(jpqlReceive, paramsReceive, "bi.bill.department.site", "sit", site);
+            addFilter(jpqlReceive, paramsReceive, "bi.bill.department", "dep", department);
+
+            // Execute queries
+            List<Object[]> resultsStockAdjustmentReceives = facade.findRawResultsByJpql(jpqlReceive.toString(), paramsReceive, TemporalType.TIMESTAMP);
+            List<Object[]> resultsStockAdjustmentIssue = facade.findRawResultsByJpql(jpqlIssue.toString(), paramsIssue, TemporalType.TIMESTAMP);
+
+            Map<String, Double> resultIssue = new HashMap<>();
+            if (resultsStockAdjustmentIssue != null && !resultsStockAdjustmentIssue.isEmpty()) {
+                Object[] totals = resultsStockAdjustmentIssue.get(0);
+                resultIssue.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                resultIssue.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                resultIssue.put("purchaseValue", 0.0);
+                resultIssue.put("costValue", 0.0);
+            }
+
+            Map<String, Double> resultReceive = new HashMap<>();
+            if (resultsStockAdjustmentReceives != null && !resultsStockAdjustmentReceives.isEmpty()) {
+                Object[] totals = resultsStockAdjustmentReceives.get(0);
+                resultReceive.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                resultReceive.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+            } else {
+                resultReceive.put("purchaseValue", 0.0);
+                resultReceive.put("costValue", 0.0);
+            }
+
+            cogsRows.put("Stock Adjustment Receive", resultReceive);
+            cogsRows.put("Stock Adjustment Issue", resultIssue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock adjustment");
         }
     }
 
