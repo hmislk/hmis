@@ -3609,7 +3609,7 @@ public class PharmacyReportController implements Serializable {
             calculateDrugReturnOp();
             calculateStockConsumption();
             calculatePurchaseReturn();
-//            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateTransferIssueValue();
 //            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
 //            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
@@ -3946,23 +3946,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("Doctype", BillType.PharmacyTransferIssue);
-
-            double totalTransferIssueValue = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Transfer Issue Value", totalTransferIssueValue);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
+    
     private void calculateTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
@@ -4032,19 +4016,24 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            Map<String, Double> purchaseReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("Doctype", billTypeAtomics);
-
-            double totalPurchaseReturn = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Purchase Return", totalPurchaseReturn);
+            cogsRows.put("Purchase Return", purchaseReturns);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
-            cogs.put("ERROR", -1.0);
         }
     }
+    private void calculateTransferIssueValue() {
+        try {
+            Map<String, Double> transferIssues = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferIssue));
+            cogsRows.put("Transfer Issue", transferIssues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
+        }
+    }
+
 
 
     private void calculateGrnCashAndCredit() {
