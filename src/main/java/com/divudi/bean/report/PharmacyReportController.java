@@ -3607,7 +3607,7 @@ public class PharmacyReportController implements Serializable {
             
             calculateDrugReturnIp();
             calculateDrugReturnOp();
-//            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
+            calculateStockConsumption();
 //            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
 //            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
 //            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
@@ -4006,23 +4006,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateStockConsumption(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billType = :conDoctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("conDoctype", BillType.PharmacyIssue);
-
-            double totalConsumption = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Stock Consumption", totalConsumption);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
+    
     private void calculateDrugReturnIp() {
         try {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -4052,6 +4036,16 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating OP returns");
         }
     }
+    private void calculateStockConsumption() {
+        try {
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyIssue));
+            cogsRows.put("Stock Consumption", stockConsumptions);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
+        }
+    }
+
 
     private void calculateGrnCashAndCredit() {
         try {
