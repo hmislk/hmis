@@ -3626,8 +3626,23 @@ public class PharmacyReportController implements Serializable {
             calculateOpeningStockRow();
             calculateStockCorrectionRow();
             calculateGrnCashAndCreditRows();
-            calculateCogsOtherComponentsRows();
-            calculateClosingStockRow();
+//            calculateCogsOtherComponentsRows();
+            
+            calculateDrugReturnIp();
+            calculateDrugReturnOp();
+            calculateStockConsumption();
+            calculatePurchaseReturn();
+            calculateTransferIssueValue();
+            calculateTransferReceiveValue();
+            calculateSaleCreditValue();
+            calculateBhtIssueValue();
+            calculateSaleCreditCard();
+            calculateSaleCash();
+            
+            Map<String, Double> calculatedClosingStockByCogsRowValues =calculateClosingStockValueByCalculatedRows();
+            calculateClosingStockRow(); //
+            calculateVariance(calculatedClosingStockByCogsRowValues);
+
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "error");
         }
@@ -3655,18 +3670,19 @@ public class PharmacyReportController implements Serializable {
     public void calculateCogsOtherComponentsRows() {        
             
 
-            
-            calculateDrugReturnIp();
-            calculateDrugReturnOp();
-            calculateStockConsumption();
-            calculatePurchaseReturn();
-            calculateTransferIssueValue();
-            calculateTransferReceiveValue();
-            calculateSaleCreditValue();
-            calculateBhtIssueValue();
-            calculateSaleCreditCard();
-            calculateSaleCash();
-
+//            
+//            calculateDrugReturnIp();
+//            calculateDrugReturnOp();
+//            calculateStockConsumption();
+//            calculatePurchaseReturn();
+//            calculateTransferIssueValue();
+//            calculateTransferReceiveValue();
+//            calculateSaleCreditValue();
+//            calculateBhtIssueValue();
+//            calculateSaleCreditCard();
+//            calculateSaleCash();
+//            Map<String, Double> calculatedClosingStockByCogsRowValues =calculateClosingStockValueByCalculatedRows();
+//            calculateVariance(calculatedClosingStockByCogsRowValues);
         
     }
 
@@ -3845,21 +3861,11 @@ public class PharmacyReportController implements Serializable {
             calculateGrnCashAndCredit();
             calculateCogsOtherComponents();
             calculateClosingStock();
-            calculateVariance();
+//            calculateVariance();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
             cogs.put("ERROR", -1.0);
-        }
-    }
-
-    private double executeQueryAndCalculateTotal(StringBuilder query, Map<String, Object> params) {
-        try {
-            return facade.findDoubleByJpql(query.toString(), params, TemporalType.TIMESTAMP);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in executing aggregate query");
-            return -1.0;
         }
     }
 
@@ -3888,7 +3894,7 @@ public class PharmacyReportController implements Serializable {
 //            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
-            calculateClosingStockValue();
+//            calculateClosingStockValue();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in COGS components");
@@ -3896,61 +3902,92 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    double totalCalculatedClosingStockValue = 0.0;
-    double totalClosingStockValueByDatabaseQuery = 0.0;
+    double totalCalculatedClosingStockPurchaseValue = 0.0;
+    double totalCalculatedClosingStockCostValue = 0.0;
 
-    private void calculateClosingStockValue() {
-        try {
-            totalCalculatedClosingStockValue = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
-            cogs.put("Calculated Closing Stock Value", totalCalculatedClosingStockValue);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
-            cogs.put("ERROR", -1.0);
-        }
+    private Map<String, Double> calculateClosingStockValueByCalculatedRows() {
+    try {
+        Map<String, Double> calculatedClosingStockByCogsRows = new HashMap<>();
+        
+        // Calculate totals from cogsRows (assuming cogsRows contains the stock data)
+        // Filter out non-numeric values and the result entry we're about to add
+        totalCalculatedClosingStockPurchaseValue = this.cogsRows.entrySet().stream()
+            .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+            .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+            .mapToDouble(entry -> {
+                Object value = entry.getValue();
+                if (value instanceof Number) {
+                    return ((Number) value).doubleValue();
+                } else if (value instanceof Map) {
+                    Map<?, ?> map = (Map<?, ?>) value;
+                    Object purchaseValue = map.get("purchaseValue");
+                    return purchaseValue instanceof Number ? ((Number) purchaseValue).doubleValue() : 0.0;
+                }
+                return 0.0;
+            })
+            .sum();
+            
+        totalCalculatedClosingStockCostValue = this.cogsRows.entrySet().stream()
+            .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+            .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+            .mapToDouble(entry -> {
+                Object value = entry.getValue();
+                if (value instanceof Number) {
+                    return ((Number) value).doubleValue();
+                } else if (value instanceof Map) {
+                    Map<?, ?> map = (Map<?, ?>) value;
+                    Object costValue = map.get("costValue");
+                    return costValue instanceof Number ? ((Number) costValue).doubleValue() : 0.0;
+                }
+                return 0.0;
+            })
+            .sum();
+        
+        // Add calculated values to the map
+        calculatedClosingStockByCogsRows.put("purchaseValue", totalCalculatedClosingStockPurchaseValue);
+        calculatedClosingStockByCogsRows.put("costValue", totalCalculatedClosingStockCostValue);
+            
+        // Store the result back in cogsRows
+        cogsRows.put("Calculated Closing Stock Value", calculatedClosingStockByCogsRows);
+        return calculatedClosingStockByCogsRows;
+        
+    } catch (Exception e) {
+         Map<String, Double> error = new HashMap<>();
+        JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
+        return error;
     }
-
-    private void calculateVariance() {
-        try {
-            double variance = totalCalculatedClosingStockValue - totalClosingStockValueByDatabaseQuery;
-            cogs.put("Variance", variance);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating variance");
-            cogs.put("ERROR", -1.0);
-        }
+}
+    private void calculateVariance(Map<String, Double> calculatedClosingStockByCogsRowValues) {
+    try {
+        Map<String, Double> varianceMap = new HashMap<>();
+        
+        // Get closing stock values from the database query (assuming this is already calculated)
+        Map<String, Double> closingStockFromDB = (Map<String, Double>) cogsRows.get("Closing Stock");
+        
+        // Calculate purchase value variance
+        double calculatedPurchaseValue = calculatedClosingStockByCogsRowValues.getOrDefault("purchaseValue", 0.0);
+        double dbPurchaseValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("purchaseValue", 0.0) : 0.0;
+        double purchaseVariance = calculatedPurchaseValue - dbPurchaseValue;
+        
+        // Calculate cost value variance  
+        double calculatedCostValue = calculatedClosingStockByCogsRowValues.getOrDefault("costValue", 0.0);
+        double dbCostValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("costValue", 0.0) : 0.0;
+        double costVariance = calculatedCostValue - dbCostValue;
+        
+        // Store variances in the map
+        varianceMap.put("purchaseValue", purchaseVariance);
+        varianceMap.put("costValue", costVariance);
+        
+        // Add variance map to cogsRows
+        cogsRows.put("Variance", varianceMap);
+        
+    } catch (Exception e) {
+        JsfUtil.addErrorMessage(e, "Error calculating variance");
+        Map<String, Double> errorMap = new HashMap<>();
+        errorMap.put("ERROR", -1.0);
+        cogsRows.put("Variance", errorMap);
     }
-
-    
-    
-    
-    private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-
-            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
-            creditTypePaymentMethods.add(PaymentMethod.Credit);
-            creditTypePaymentMethods.add(PaymentMethod.Staff);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
-            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod in :pm ");
-            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
-            params.put("pm", creditTypePaymentMethods);
-            jpql.append("ORDER BY sh2.createdAt");
-
-            double totalSaleCreditValue = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Sale Credit Value", totalSaleCreditValue);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
-            cogs.put("ERROR", -1.0);
-        }
-    }
-
-    
-    
-
-    
+}
 
     
     private void calculateDrugReturnIp() {
@@ -4222,7 +4259,7 @@ public class PharmacyReportController implements Serializable {
 
             Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
-            totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
+//            totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculate closing Stock");
