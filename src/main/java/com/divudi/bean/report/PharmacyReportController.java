@@ -105,8 +105,6 @@ import java.util.HashSet;
 
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -3619,7 +3617,6 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processCostOfGoodSoldReport() {
-        long startTime = System.currentTimeMillis();
 
         cogsRows.clear();
         try {
@@ -3639,15 +3636,13 @@ public class PharmacyReportController implements Serializable {
             calculateSaleCash();
 
             Map<String, Double> calculatedClosingStockByCogsRowValues = calculateClosingStockValueByCalculatedRows();
-            calculateClosingStockRow(); //
+            calculateClosingStockRow();
             calculateVariance(calculatedClosingStockByCogsRowValues);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "error");
         }
-        long endTime = System.currentTimeMillis();
-        long duration = endTime - startTime;
-        System.out.println("processCostOfGoodSoldReport execution time: " + duration + " milliseconds");
+
     }
 
     public void calculateOpeningStockRow() {
@@ -3670,6 +3665,211 @@ public class PharmacyReportController implements Serializable {
         Map<String, Double> closingStock = calculateStockTotals(toDate);
         synchronized (cogsRows) {
             cogsRows.put("Closing Stock", closingStock);
+        }
+    }
+
+    private void calculateDrugReturnIp() {
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+            Map<String, Double> ipDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            cogsRows.put("Drug Return IP", ipDrugReturns);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
+        }
+    }
+
+    private void calculateDrugReturnOp() {
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+            Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            cogsRows.put("Drug Return Op", opDrugReturns);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating OP returns");
+        }
+    }
+
+    private void calculateStockConsumption() {
+        try {
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyIssue));
+            cogsRows.put("Stock Consumption", stockConsumptions);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
+        }
+    }
+
+    private void calculatePurchaseReturn() {
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            Map<String, Double> purchaseReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+
+            cogsRows.put("Purchase Return", purchaseReturns);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
+        }
+    }
+
+    private void calculateTransferIssueValue() {
+        try {
+            Map<String, Double> transferIssues = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferIssue));
+            cogsRows.put("Transfer Issue", transferIssues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
+        }
+    }
+
+    private void calculateTransferReceiveValue() {
+        try {
+            Map<String, Double> transferReceives = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferReceive));
+            cogsRows.put("Transfer Receive", transferReceives);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
+        }
+    }
+
+    private void calculateSaleCreditValue() {
+        try {
+            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
+            creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
+
+            Map<String, Double> saleCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), creditTypePaymentMethods);
+            cogsRows.put("Sale Credit", saleCreditValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
+        }
+    }
+
+    private void calculateBhtIssueValue() {
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+
+            Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            cogsRows.put("BHT Issue", bhtIssues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
+        }
+    }
+
+    private void calculateSaleCreditCard() {
+        try {
+            Map<String, Double> saleCreditCardValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Card));
+            cogsRows.put("Sale Credit Card", saleCreditCardValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
+        }
+    }
+
+    private void calculateSaleCash() {
+        try {
+            Map<String, Double> saleCashValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Cash));
+            cogsRows.put("Sale Cash", saleCashValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
+        }
+    }
+    double totalCalculatedClosingStockPurchaseValue = 0.0;
+    double totalCalculatedClosingStockCostValue = 0.0;
+
+    private Map<String, Double> calculateClosingStockValueByCalculatedRows() {
+        try {
+            Map<String, Double> calculatedClosingStockByCogsRows = new HashMap<>();
+
+            totalCalculatedClosingStockPurchaseValue = this.cogsRows.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+                    .mapToDouble(entry -> {
+                        Object value = entry.getValue();
+                        if (value instanceof Number) {
+                            return ((Number) value).doubleValue();
+                        } else if (value instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) value;
+                            Object purchaseValue = map.get("purchaseValue");
+                            return purchaseValue instanceof Number ? ((Number) purchaseValue).doubleValue() : 0.0;
+                        }
+                        return 0.0;
+                    })
+                    .sum();
+
+            totalCalculatedClosingStockCostValue = this.cogsRows.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+                    .mapToDouble(entry -> {
+                        Object value = entry.getValue();
+                        if (value instanceof Number) {
+                            return ((Number) value).doubleValue();
+                        } else if (value instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) value;
+                            Object costValue = map.get("costValue");
+                            return costValue instanceof Number ? ((Number) costValue).doubleValue() : 0.0;
+                        }
+                        return 0.0;
+                    })
+                    .sum();
+
+            calculatedClosingStockByCogsRows.put("purchaseValue", totalCalculatedClosingStockPurchaseValue);
+            calculatedClosingStockByCogsRows.put("costValue", totalCalculatedClosingStockCostValue);
+
+            cogsRows.put("Calculated Closing Stock Value", calculatedClosingStockByCogsRows);
+            return calculatedClosingStockByCogsRows;
+
+        } catch (Exception e) {
+            Map<String, Double> error = new HashMap<>();
+            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
+            return error;
+        }
+    }
+
+    private void calculateVariance(Map<String, Double> calculatedClosingStockByCogsRowValues) {
+        try {
+            Map<String, Double> varianceMap = new HashMap<>();
+
+            Map<String, Double> closingStockFromDB = (Map<String, Double>) cogsRows.get("Closing Stock");
+
+            double calculatedPurchaseValue = calculatedClosingStockByCogsRowValues.getOrDefault("purchaseValue", 0.0);
+            double dbPurchaseValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("purchaseValue", 0.0) : 0.0;
+            double purchaseVariance = calculatedPurchaseValue - dbPurchaseValue;
+
+            double calculatedCostValue = calculatedClosingStockByCogsRowValues.getOrDefault("costValue", 0.0);
+            double dbCostValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("costValue", 0.0) : 0.0;
+            double costVariance = calculatedCostValue - dbCostValue;
+
+            varianceMap.put("purchaseValue", purchaseVariance);
+            varianceMap.put("costValue", costVariance);
+
+            cogsRows.put("Variance", varianceMap);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating variance");
+            Map<String, Double> errorMap = new HashMap<>();
+            errorMap.put("ERROR", -1.0);
+            cogsRows.put("Variance", errorMap);
         }
     }
 
@@ -3822,212 +4022,6 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
             Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
-        }
-    }
-
-    double totalCalculatedClosingStockPurchaseValue = 0.0;
-    double totalCalculatedClosingStockCostValue = 0.0;
-
-    private Map<String, Double> calculateClosingStockValueByCalculatedRows() {
-        try {
-            Map<String, Double> calculatedClosingStockByCogsRows = new HashMap<>();
-
-            totalCalculatedClosingStockPurchaseValue = this.cogsRows.entrySet().stream()
-                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
-                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
-                    .mapToDouble(entry -> {
-                        Object value = entry.getValue();
-                        if (value instanceof Number) {
-                            return ((Number) value).doubleValue();
-                        } else if (value instanceof Map) {
-                            Map<?, ?> map = (Map<?, ?>) value;
-                            Object purchaseValue = map.get("purchaseValue");
-                            return purchaseValue instanceof Number ? ((Number) purchaseValue).doubleValue() : 0.0;
-                        }
-                        return 0.0;
-                    })
-                    .sum();
-
-            totalCalculatedClosingStockCostValue = this.cogsRows.entrySet().stream()
-                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
-                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
-                    .mapToDouble(entry -> {
-                        Object value = entry.getValue();
-                        if (value instanceof Number) {
-                            return ((Number) value).doubleValue();
-                        } else if (value instanceof Map) {
-                            Map<?, ?> map = (Map<?, ?>) value;
-                            Object costValue = map.get("costValue");
-                            return costValue instanceof Number ? ((Number) costValue).doubleValue() : 0.0;
-                        }
-                        return 0.0;
-                    })
-                    .sum();
-
-            calculatedClosingStockByCogsRows.put("purchaseValue", totalCalculatedClosingStockPurchaseValue);
-            calculatedClosingStockByCogsRows.put("costValue", totalCalculatedClosingStockCostValue);
-
-            cogsRows.put("Calculated Closing Stock Value", calculatedClosingStockByCogsRows);
-            return calculatedClosingStockByCogsRows;
-
-        } catch (Exception e) {
-            Map<String, Double> error = new HashMap<>();
-            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
-            return error;
-        }
-    }
-
-    private void calculateVariance(Map<String, Double> calculatedClosingStockByCogsRowValues) {
-        try {
-            Map<String, Double> varianceMap = new HashMap<>();
-
-            Map<String, Double> closingStockFromDB = (Map<String, Double>) cogsRows.get("Closing Stock");
-
-            double calculatedPurchaseValue = calculatedClosingStockByCogsRowValues.getOrDefault("purchaseValue", 0.0);
-            double dbPurchaseValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("purchaseValue", 0.0) : 0.0;
-            double purchaseVariance = calculatedPurchaseValue - dbPurchaseValue;
-
-            double calculatedCostValue = calculatedClosingStockByCogsRowValues.getOrDefault("costValue", 0.0);
-            double dbCostValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("costValue", 0.0) : 0.0;
-            double costVariance = calculatedCostValue - dbCostValue;
-
-            varianceMap.put("purchaseValue", purchaseVariance);
-            varianceMap.put("costValue", costVariance);
-
-            cogsRows.put("Variance", varianceMap);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating variance");
-            Map<String, Double> errorMap = new HashMap<>();
-            errorMap.put("ERROR", -1.0);
-            cogsRows.put("Variance", errorMap);
-        }
-    }
-
-    private void calculateDrugReturnIp() {
-        try {
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-            Map<String, Double> ipDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
-            cogsRows.put("Drug Return IP", ipDrugReturns);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
-        }
-    }
-
-    private void calculateDrugReturnOp() {
-        try {
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-
-            Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
-            cogsRows.put("Drug Return Op", opDrugReturns);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating OP returns");
-        }
-    }
-
-    private void calculateStockConsumption() {
-        try {
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyIssue));
-            cogsRows.put("Stock Consumption", stockConsumptions);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
-        }
-    }
-
-    private void calculatePurchaseReturn() {
-        try {
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
-            Map<String, Double> purchaseReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
-
-            cogsRows.put("Purchase Return", purchaseReturns);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
-        }
-    }
-
-    private void calculateTransferIssueValue() {
-        try {
-            Map<String, Double> transferIssues = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferIssue));
-            cogsRows.put("Transfer Issue", transferIssues);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
-        }
-    }
-
-    private void calculateTransferReceiveValue() {
-        try {
-            Map<String, Double> transferReceives = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyTransferReceive));
-            cogsRows.put("Transfer Receive", transferReceives);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
-        }
-    }
-
-    private void calculateSaleCreditValue() {
-        try {
-            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
-            creditTypePaymentMethods.add(PaymentMethod.Credit);
-            creditTypePaymentMethods.add(PaymentMethod.Staff);
-
-            Map<String, Double> saleCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), creditTypePaymentMethods);
-            cogsRows.put("Sale Credit", saleCreditValues);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
-        }
-    }
-
-    private void calculateBhtIssueValue() {
-        try {
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-
-            Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
-            cogsRows.put("BHT Issue", bhtIssues);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
-        }
-    }
-
-    private void calculateSaleCreditCard() {
-        try {
-            Map<String, Double> saleCreditCardValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Card));
-            cogsRows.put("Sale Credit Card", saleCreditCardValues);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
-        }
-    }
-
-    private void calculateSaleCash() {
-        try {
-            Map<String, Double> saleCashValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE), Collections.singletonList(PaymentMethod.Cash));
-            cogsRows.put("Sale Cash", saleCashValues);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
         }
     }
 
