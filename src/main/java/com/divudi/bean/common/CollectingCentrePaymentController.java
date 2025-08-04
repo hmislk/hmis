@@ -31,6 +31,7 @@ public class CollectingCentrePaymentController implements Serializable {
 
 // <editor-fold defaultstate="collapsed" desc="Controllers">
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Variables">
     private boolean ccPaymentSettlingStarted = false;
     private Date fromDate;
@@ -48,8 +49,10 @@ public class CollectingCentrePaymentController implements Serializable {
     private double payingTotalCCAmount = 0.0;
 
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
@@ -150,6 +153,7 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Date getFromDate() {
         if (fromDate == null) {
@@ -188,8 +192,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setCurrentCollectingCentre(Institution currentCollectingCentre) {
         this.currentCollectingCentre = currentCollectingCentre;
     }
-
-// </editor-fold>
+ 
     public List<BillLight> getPandingCCpaymentBills() {
         return pandingCCpaymentBills;
     }
@@ -237,5 +240,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setTotalCCReceiveAmount(double totalCCReceiveAmount) {
         this.totalCCReceiveAmount = totalCCReceiveAmount;
     }
+    
+// </editor-fold>
 
 }
