@@ -440,7 +440,6 @@ public class UserNotificationController implements Serializable {
                     break;
                 case PharmacyTransferIssue:
                     todept = n.getBill().getToDepartment();
-                    System.out.println("todept = " + todept);
                     break;
                 case PharmacyTransferRequest:
                     todept = n.getBill().getToDepartment();
@@ -459,7 +458,6 @@ public class UserNotificationController implements Serializable {
         }
 
         List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
-        System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {

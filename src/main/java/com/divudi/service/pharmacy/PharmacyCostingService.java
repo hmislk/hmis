@@ -179,13 +179,39 @@ public class PharmacyCostingService {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
         
+        // Reset and recalculate expense totals from actual bill expense items
+        double expenseTotal = 0.0;
+        double expensesTotalConsideredForCosting = 0.0;
+        double expensesTotalNotConsideredForCosting = 0.0;
+        
+        if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
+            for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
+                double expenseValue = expense.getNetValue();
+                boolean isConsidered = expense.isConsideredForCosting();
+                
+                expenseTotal += expenseValue;
+                if (isConsidered) {
+                    expensesTotalConsideredForCosting += expenseValue;
+                } else {
+                    expensesTotalNotConsideredForCosting += expenseValue;
+                }
+            }
+        }
+        
+        // Set the recalculated expense totals
+        bill.setExpenseTotal(expenseTotal);
+        bill.setExpensesTotalConsideredForCosting(expensesTotalConsideredForCosting);
+        bill.setExpensesTotalNotConsideredForCosting(expensesTotalNotConsideredForCosting);
+        
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
         bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
-        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
+        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(expensesTotalConsideredForCosting));
 
         if (billItems == null || billItems.isEmpty()) {
             return;
         }
+
+        // Note: Reset logic moved to calculateBillTotalsFromItemsForPurchases() method
 
         BigDecimal totalBasis = BigDecimal.ZERO;
         Map<BillItem, BigDecimal> itemBases = new HashMap<>();
@@ -439,6 +465,29 @@ public class PharmacyCostingService {
         System.out.println("DEBUG: SERVICE - Bill.expenseTotal at start: " + bill.getExpenseTotal());
         System.out.println("DEBUG: SERVICE - Bill.expensesTotalConsideredForCosting: " + bill.getExpensesTotalConsideredForCosting());
         System.out.println("DEBUG: SERVICE - BillItems count: " + (billItems != null ? billItems.size() : 0));
+        
+        // Reset distributed bill-level values in all line items before calculating totals
+        // Note: We only reset the DISTRIBUTED portions, not user-entered line-level values
+        if (billItems != null && !billItems.isEmpty()) {
+            for (BillItem bi : billItems) {
+                BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+                if (f != null) {
+                    // Reset only the distributed bill-level values (not user input)
+                    f.setBillExpense(BigDecimal.ZERO);
+                    f.setBillDiscount(BigDecimal.ZERO);  // This will be recalculated from bill.getDiscount()
+                    f.setBillTax(BigDecimal.ZERO);       // This will be recalculated from bill.getTax()
+                    
+                    // Reset totals to only line-level values (preserving user inputs)
+                    f.setTotalExpense(BigDecimalUtil.valueOrZero(f.getLineExpense()));
+                    f.setTotalDiscount(BigDecimalUtil.valueOrZero(f.getLineDiscount()));
+                    f.setTotalTax(BigDecimalUtil.valueOrZero(f.getLineTax()));
+                    
+                    // Reset NetTotal to LineNetTotal (no bill-level distributions)
+                    f.setNetTotal(BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+                    f.setTotalCost(BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+                }
+            }
+        }
         
         int serialNo = 0;
 

@@ -445,7 +445,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
-            
+
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
             }
@@ -549,7 +549,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
-        
 
         calculateAllRates();
 
