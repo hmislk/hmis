@@ -3608,7 +3608,7 @@ public class PharmacyReportController implements Serializable {
             calculateDrugReturnIp();
             calculateDrugReturnOp();
             calculateStockConsumption();
-//            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
+            calculatePurchaseReturn();
 //            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
 //            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
 //            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
@@ -3980,31 +3980,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculatePurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
-        try {
-            StringBuilder jpql = new StringBuilder(baseQuery);
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
-            jpql.append("ORDER BY sh2.createdAt");
-            params.put("Doctype", billTypeAtomics);
-
-            double totalPurchaseReturn = executeQueryAndCalculateTotal(jpql, params);
-            cogs.put("Purchase Return", totalPurchaseReturn);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
-            cogs.put("ERROR", -1.0);
-        }
-    }
+    
 
     
     private void calculateDrugReturnIp() {
@@ -4043,6 +4019,30 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
+        }
+    }
+    private void calculatePurchaseReturn() {
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", billTypeAtomics);
+
+            double totalPurchaseReturn = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Purchase Return", totalPurchaseReturn);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
+            cogs.put("ERROR", -1.0);
         }
     }
 
