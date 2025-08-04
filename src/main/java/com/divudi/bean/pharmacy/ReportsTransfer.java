@@ -2360,7 +2360,7 @@ public class ReportsTransfer implements Serializable {
                     totalsValue += dto.getSaleValue();
                 }
                 if (dto.getPurchaseValue() != null) {
-                    purchaseValue += dto.getPurchaseValue();
+                    purchaseValue += dto.getPurchaseValue().doubleValue();
                 }
                 if (dto.getCostValue() != null) {
                     costValue += dto.getCostValue().doubleValue();
