@@ -2051,7 +2051,7 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b.department, b.toDepartment, "
+        sql = "select b.fromDepartment, b.toDepartment, "
                 + "sum(COALESCE(bfd.lineNetTotal, 0.0)), "
                 + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
                 + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
@@ -2062,7 +2062,7 @@ public class BillBeanController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (fromDepartment != null) {
-            sql += " and b.department = :fromDept ";
+            sql += " and b.fromDepartment = :fromDept ";
             temMap.put("fromDept", fromDepartment);
         }
 
@@ -2071,8 +2071,8 @@ public class BillBeanController implements Serializable {
             temMap.put("toDept", toDepartment);
         }
 
-        sql += " group by b.department, b.toDepartment "
-                + " order by b.department.name, b.toDepartment.name ";
+        sql += " group by b.fromDepartment, b.toDepartment "
+                + " order by b.fromDepartment.name, b.toDepartment.name ";
 
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
