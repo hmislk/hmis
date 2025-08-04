@@ -77,6 +77,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -1956,6 +1957,128 @@ public class BillBeanController implements Serializable {
 
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    /**
+     * Fetch department-wise financial data using BillFinanceDetails (matching DTO approach)
+     * Returns [toDepartment/fromDepartment, netTotal, totalRetailSaleValue, totalCostValue]
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetails(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select ";
+        if (toDep) {
+            sql += " b.toDepartment";
+        } else {
+            sql += " b.fromDepartment";
+        }
+        sql += ",sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where ";
+        if (toDep) {
+            sql += " b.department=:dept ";
+        } else {
+            sql += " b.fromDepartment=:dept ";
+        }
+        sql += " and  b.billType= :bTp  "
+                + " and  b.createdAt between :fromDate and :toDate ";
+        if (toDep) {
+            sql += " group by b.toDepartment "
+                    + " order by b.toDepartment.name ";
+        } else {
+            sql += " group by b.fromDepartment"
+                    + " order by b.fromDepartment.name";
+        }
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("dept", department);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Enhanced method to fetch department-wise financial data with flexible filtering
+     * Returns [toDepartment, netTotal, totalPurchaseValue, totalRetailSaleValue, totalCostValue]
+     * Supports filtering by fromDepartment, toDepartment, both, or none
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetailsEnhanced(Date fromDate, Date toDate, 
+            Department fromDepartment, Department toDepartment, BillType bt) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b.toDepartment, "
+                + "sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.billType = :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (fromDepartment != null) {
+            sql += " and b.department = :fromDept ";
+            temMap.put("fromDept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment = :toDept ";
+            temMap.put("toDept", toDepartment);
+        }
+
+        sql += " group by b.toDepartment "
+                + " order by b.toDepartment.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Method to fetch transfer data with both from and to department information
+     * Returns [fromDepartment, toDepartment, netTotal, totalPurchaseValue, totalRetailSaleValue, totalCostValue]
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetailsWithFromAndTo(Date fromDate, Date toDate, 
+            Department fromDepartment, Department toDepartment, BillType bt) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b.department, b.toDepartment, "
+                + "sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.billType = :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (fromDepartment != null) {
+            sql += " and b.department = :fromDept ";
+            temMap.put("fromDept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment = :toDept ";
+            temMap.put("toDept", toDepartment);
+        }
+
+        sql += " group by b.department, b.toDepartment "
+                + " order by b.department.name, b.toDepartment.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {

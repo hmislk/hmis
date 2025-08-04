@@ -62,14 +62,20 @@ public class PharmaceuticalBillItem implements Serializable {
     private double retailRate;
     private double retailRatePack;
 
+    private double wholesaleRate;
+    private double wholesaleRatePack;
+
+    private double costRate;
+    private double costRatePack;
+
     private double purchaseValue;
+    @Deprecated // Not different from purchase value
     private double purchaseRatePackValue;
 
     private double retailValue;
+    @Deprecated // Not different from retail value
     private double retailPackValue;
-
-    private double wholesaleRate;
-    private double wholesaleRatePack;
+    private double costValue;
 
     private double lastPurchaseRate;
     private double lastPurchaseRatePack;
@@ -297,7 +303,6 @@ public class PharmaceuticalBillItem implements Serializable {
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
 
-
         make = ph.getMake();
         model = ph.getModel();
         code = ph.getCode();
@@ -325,7 +330,7 @@ public class PharmaceuticalBillItem implements Serializable {
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
     }
-    
+
     public void invertValue() {
         qty = 0 - qty;
         qtyPacks = 0 - qtyPacks;
@@ -475,12 +480,10 @@ public class PharmaceuticalBillItem implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    
     public double getRetailRateInUnit() {
         return retailRate;
     }
 
-    
     public void setRetailRateInUnit(double retailRate) {
         this.retailRate = retailRate;
     }
@@ -809,6 +812,31 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
 
+    public double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
+    }
+
+    public double getCostRatePack() {
+        return costRatePack;
+    }
+
+    public void setCostRatePack(double costRatePack) {
+        this.costRatePack = costRatePack;
+    }
+
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
+
+    
+    
 }

@@ -6,6 +6,52 @@ This guide provides detailed instructions for deploying the latest development c
 
 The HMIS project uses GitHub Actions for automated CI/CD deployment to QA environments. Deployments are triggered by pushing code to specific branch names that correspond to each environment.
 
+## ⚠️ Critical Configuration Requirements
+
+**IMPORTANT**: Before any QA deployment, verify that `src/main/resources/META-INF/persistence.xml` is properly configured:
+
+### Pre-Deployment Checklist
+
+Run these commands before deploying:
+
+```bash
+# 1. Check JNDI datasources use environment variables
+grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+
+# 2. Check for hardcoded DDL generation paths
+grep -i "eclipselink.application-location" src/main/resources/META-INF/persistence.xml
+```
+
+### ✅ **CORRECT Configuration** (Required for deployments):
+
+**JNDI Datasources:**
+```xml
+<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
+<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
+```
+
+**DDL Generation:** Should NOT contain hardcoded paths
+```xml
+<!-- These lines should NOT exist in deployment persistence.xml -->
+<!-- <property name="eclipselink.application-location" value="c:/tmp/"/> -->
+```
+
+### ❌ **INCORRECT Configuration** (Will cause deployment failures):
+
+**Hardcoded JNDI:**
+```xml
+<jta-data-source>jdbc/coop</jta-data-source>
+<jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+```
+
+**Hardcoded DDL paths:**
+```xml
+<property name="eclipselink.application-location" value="c:/tmp/"/>
+<property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+```
+
+The GitHub Actions workflow automatically replaces environment variables with environment-specific values during build.
+
 ## Environment Details
 
 | Environment | Branch Name | Application URL | JDBC DataSource |
@@ -288,7 +334,42 @@ gh auth login
 - Contact repository administrator for access
 - Verify you're using the correct GitHub account
 
-#### 4. **Force Push Rejected (QA2/QA3)**
+#### 3.1. **🚨 CRITICAL: Applications Not Starting (404 Errors)**
+**Symptoms:** 
+- Deployment completes successfully but applications return 404 errors
+- `curl https://qa.carecode.org/qa1/faces/index1.xhtml` returns 404
+
+**Most Common Cause:** Hardcoded JNDI datasources in persistence.xml
+
+**Solution:**
+1. **Check persistence.xml configuration:**
+   ```bash
+   grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+   ```
+   
+2. **Expected output (CORRECT):**
+   ```xml
+   <jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
+   <jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
+   ```
+
+3. **If you see hardcoded values (INCORRECT):**
+   ```xml
+   <jta-data-source>jdbc/coop</jta-data-source>
+   <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+   ```
+   
+   **Fix immediately:**
+   - Replace with environment variables
+   - Create PR with the fix
+   - Redeploy all affected QA environments
+
+4. **Verify build logs show proper replacement:**
+   ```bash
+   gh run view [RUN_ID] --log | grep "Update JDBC Data Sources"
+   ```
+
+#### 4. **Force Push Rejected (All QA Environments)**
 **Error:** `remote: error: GH013: Repository rule violations found`
 **Solution:** This is normal for protected branches. Use the Pull Request method instead.
 
@@ -370,6 +451,17 @@ After successful deployment, applications will be available at:
 - **QA1**: https://qa.carecode.org/qa1/faces/index1.xhtml
 - **QA2**: https://qa.carecode.org/qa2/faces/index1.xhtml
 - **QA3**: https://qa.carecode.org/qa3/faces/index1.xhtml
+
+## Advanced Troubleshooting
+
+For complex deployment failures involving server infrastructure issues, see the comprehensive troubleshooting guide:
+📋 **[QA Troubleshooting Guide](qa-troubleshooting.md)**
+
+Common server-side issues include:
+- EclipseLink DDL generation path errors
+- Payara admin authentication failures  
+- Application state mismatches
+- Missing server directories or files
 
 ## Security Notes
 
