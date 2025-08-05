@@ -7,11 +7,8 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.*;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.data.BillType;
-import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.FeeType;
-import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.BillItemWithFee;
 import com.divudi.core.data.table.String1Value5;
 
@@ -995,8 +992,11 @@ public class ServiceSummery implements Serializable {
             double proportion = paidValue / billNetTotal;
 
             // Proportionally allocate total and discount
+            boolean isCancelledBill = bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill);
+            double billProportionalDiscount = billDiscount * proportion;
+
             totalBill += billTotal * proportion;
-            discountBill += billDiscount * proportion;
+            discountBill += isCancelledBill ? (billProportionalDiscount > 0 ? -billProportionalDiscount:billProportionalDiscount) : billProportionalDiscount;
             netTotalBill += paidValue; // The payment amount is already the proportional net
         }
     }

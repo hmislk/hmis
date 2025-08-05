@@ -112,7 +112,12 @@
 
                         <p:column headerText="Discount" style="text-align: right">
                             <f:facet name="header"><p:outputLabel value="Discount"/></f:facet>
-                            <p:outputLabel value="#{p.discountValue}">
+                            <p:outputLabel rendered="#{p.bill.billClassType ne 'CancelledBill' and p.bill.billClassType ne 'RefundBill' }"
+                                           value="#{p.discountValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:outputLabel>
+                            <p:outputLabel rendered="#{p.bill.billClassType eq 'CancelledBill' or p.bill.billClassType eq 'RefundBill' }"
+                                           value="#{p.discountValue > 0 ? -p.discountValue : p.discountValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <f:facet name="footer">
