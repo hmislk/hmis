@@ -3057,6 +3057,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
+            case "Stock Adjustment Receive":
+                return "/reports/inventoryReports/stock_adjustment_receive?faces-redirect=true";
+            case "Stock Adjustment Issue":
+                return "/reports/inventoryReports/stock_adjustment_issue?faces-redirect=true";
             case "Transfer Issue":
                 return "/reports/inventoryReports/transfer_issue?faces-redirect=true";
             case "Transfer Receive":
