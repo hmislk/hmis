@@ -451,7 +451,6 @@ public class DataAdministrationController implements Serializable {
      * enabled.
      */
     public void migrateTransferBillItemFinanceDetails() {
-        System.out.println("=== Starting migrateTransferBillItemFinanceDetails method ===");
         executionFeedback = ""; // Reset output
 
         try {
@@ -459,12 +458,10 @@ public class DataAdministrationController implements Serializable {
             int processedCount = 0;
             int updatedCount = 0;
 
-            System.out.println("Initializing migration parameters...");
             // Process PharmacyTransferIssue and PharmacyTransferReceive bills
             Map<String, Object> params = new HashMap<>();
             List<BillType> billTypes = Arrays.asList(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
             params.put("billTypes", billTypes);
-            System.out.println("Bill types to process: " + billTypes);
 
             StringBuilder jpqlBuilder = new StringBuilder();
             jpqlBuilder.append("SELECT DISTINCT bi.bill FROM BillItem bi WHERE ");
@@ -476,23 +473,17 @@ public class DataAdministrationController implements Serializable {
                 params.put("fromDate", fromDate);
                 params.put("toDate", toDate);
                 result.append("Filtering by date range: ").append(fromDate).append(" to ").append(toDate).append("\n\n");
-                System.out.println("Date filter applied: " + fromDate + " to " + toDate);
             } else if (fromDate != null) {
                 jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate");
                 params.put("fromDate", fromDate);
                 result.append("Filtering from date: ").append(fromDate).append("\n\n");
-                System.out.println("From date filter applied: " + fromDate);
             } else if (toDate != null) {
                 jpqlBuilder.append(" AND bi.bill.createdAt <= :toDate");
                 params.put("toDate", toDate);
                 result.append("Filtering to date: ").append(toDate).append("\n\n");
-                System.out.println("To date filter applied: " + toDate);
-            } else {
-                System.out.println("No date filters applied - processing all transfer bills");
             }
 
             String jpql = jpqlBuilder.toString();
-            System.out.println("Executing JPQL query: " + jpql);
 
             List<Bill> fixingBills = billItemFacade.findObjects(jpql, params, TemporalType.TIMESTAMP)
                     .stream()
@@ -500,19 +491,15 @@ public class DataAdministrationController implements Serializable {
                     .collect(Collectors.toList());
 
             result.append("Found ").append(fixingBills.size()).append(" transfer bills to migrate.\n\n");
-            System.out.println("Found " + fixingBills.size() + " transfer bills to migrate");
 
             // Process in batches of 100 to avoid memory issues
             int batchSize = 100;
-            System.out.println("Processing bills in batches of " + batchSize);
             for (int i = 0; i < fixingBills.size(); i += batchSize) {
                 int endIndex = Math.min(i + batchSize, fixingBills.size());
                 List<Bill> fixingBillBatch = fixingBills.subList(i, endIndex);
-                System.out.println("Processing batch " + ((i / batchSize) + 1) + " with " + fixingBillBatch.size() + " bills");
 
                 for (Bill fixingBill : fixingBillBatch) {
                     try {
-                        System.out.println("Processing bill ID: " + fixingBill.getId() + " (" + fixingBill.getBillType() + ")");
 
                         // A new BillFinanceDetails is created if it is null
                         BigDecimal totalNetValue = BigDecimal.ZERO;
@@ -526,16 +513,14 @@ public class DataAdministrationController implements Serializable {
                             if (bi.getBillItemFinanceDetails() == null) {
                                 bi.setBillItemFinanceDetails(new BillItemFinanceDetails());
                                 bi.getBillItemFinanceDetails().setBillItem(bi);
-                                System.out.println("  Created new BillItemFinanceDetails for item ID: " + bi.getId());
                             }
 
                             
 
-//                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
-//                                    && bi.getPharmaceuticalBillItem() != null
-//                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
+                                    && bi.getPharmaceuticalBillItem() != null
+                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
 
-                                System.out.println("  Updating finance details for bill item ID: " + bi.getId());
                                 ItemBatch itemBatch = bi.getPharmaceuticalBillItem().getItemBatch();
                                 double qty = bi.getPharmaceuticalBillItem().getQty();
                                 BigDecimal qtyBD = BigDecimal.valueOf(qty);
@@ -545,9 +530,6 @@ public class DataAdministrationController implements Serializable {
                                 BigDecimal costRate = BigDecimal.valueOf(itemBatch.getCostRate());
                                 BigDecimal transferValue = BigDecimal.valueOf(bi.getNetValue());
                                 BigDecimal grossValue = BigDecimal.valueOf(bi.getGrossValue());
-                                
-                                System.out.println("    Item: " + (bi.getItem() != null ? bi.getItem().getName() : "Unknown"));
-                                System.out.println("    Quantity: " + qty + ", Purchase Rate: " + purchaseRate + ", Retail Rate: " + retailRate);
                                 
                                 if(bi.getPharmaceuticalBillItem().getRetailValue()==0.0){
                                     bi.getPharmaceuticalBillItem().setRetailValue(bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty() * bi.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
@@ -608,7 +590,6 @@ public class DataAdministrationController implements Serializable {
                                 }
 
                                 billItemFacade.edit(bi);
-                                System.out.println("    Successfully updated bill item finance details");
 
                                 // Aggregate totals for BillFinanceDetails
                                 totalNetValue = totalNetValue.add(transferValue);
@@ -621,14 +602,10 @@ public class DataAdministrationController implements Serializable {
 
                                 if (updatedCount % 50 == 0) {
                                     result.append("Updated ").append(updatedCount).append(" items so far...\n");
-                                    System.out.println("Progress: Updated " + updatedCount + " items so far...");
                                 }
-//                            } else {
-//                                System.out.println("  Skipping bill item ID: " + bi.getId() + " (already has valid finance details or missing pharmaceutical data)");
-//                            }
+                            }
                         }
 
-                        System.out.println("  Updating bill finance details - Net: " + totalNetValue + ", Purchase: " + totalPurchaseValue);
                         if (fixingBill.getBillFinanceDetails().getNetTotal() == null || fixingBill.getBillFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
                             fixingBill.getBillFinanceDetails().setNetTotal(totalNetValue);
                         }
@@ -646,39 +623,28 @@ public class DataAdministrationController implements Serializable {
                         }
 
                         billFacade.edit(fixingBill);
-                        System.out.println("  Successfully updated bill finance details");
 
                     } catch (Exception itemEx) {
                         result.append("Error processing bill ID ").append(fixingBill.getId())
                                 .append(": ").append(itemEx.getMessage()).append("\n");
-                        System.out.println("ERROR processing bill ID " + fixingBill.getId() + ": " + itemEx.getMessage());
-                        itemEx.printStackTrace();
                     }
                 }
 
                 // Log batch progress
                 result.append("Processed batch ").append((i / batchSize) + 1)
                         .append(" of ").append((fixingBills.size() + batchSize - 1) / batchSize).append("\n");
-                System.out.println("Completed batch " + ((i / batchSize) + 1) + " of " + ((fixingBills.size() + batchSize - 1) / batchSize));
             }
 
             result.append("\n=== Migration Summary ===\n");
             result.append("Total bills processed: ").append(processedCount).append("\n");
             result.append("Items updated: ").append(updatedCount).append("\n");
             result.append("Items skipped (already had valid data): ").append(processedCount - updatedCount).append("\n");
-            
-            System.out.println("\n=== MIGRATION SUMMARY ===");
-            System.out.println("Total bills processed: " + processedCount);
-            System.out.println("Items updated: " + updatedCount);
-            System.out.println("Items skipped: " + (processedCount - updatedCount));
 
             if (updatedCount > 0) {
                 result.append("\nMigration completed successfully! ")
                         .append("Transfer disbursement reports should now show correct rates.\n");
-                System.out.println("✓ Migration completed successfully!");
             } else {
                 result.append("\nNo items needed migration. All transfer bill items already have proper financial details.\n");
-                System.out.println("ℹ No items needed migration - all data was already correct");
             }
 
             executionFeedback = result.toString();
@@ -686,10 +652,8 @@ public class DataAdministrationController implements Serializable {
         } catch (Exception e) {
             String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
             executionFeedback = errorMsg;
-            System.out.println("FATAL ERROR in migrateTransferBillItemFinanceDetails: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("=== Finished migrateTransferBillItemFinanceDetails method ===");
     }
 
     public String getPayaraLogLocation() {
