@@ -141,6 +141,21 @@
                                         </p:inputText>
                                     </h:panelGrid>
                                 </p:panel>
+                                <p:panel class="mx-1 my-3" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company Details"/>
+                                    </f:facet>
+
+<!--                                    <ui:repeat value="#{bhtSummeryController.encounterCreditCompanies}" var="ec">
+                                        <h:panelGrid columns="3" class="w-100">
+                                            <h:outputLabel value="#{ec.institution.name}"/>
+                                            <h:outputLabel value=":"/>
+                                            <p:inputText value="#{ec.creditLimit}"> 
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                    </ui:repeat>-->
+
+                                </p:panel>
                             </h:panelGroup>
 
                             <!-- Third Column -->
@@ -149,9 +164,9 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Charges Overview"/>
                                     </f:facet>
-                                    <h:panelGroup id="crd" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
+<!--                                    <h:panelGroup id="crd" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
                                         <credit:outputCredit patientEncounter="#{bhtSummeryController.patientEncounter}"/>
-                                    </h:panelGroup>
+                                    </h:panelGroup>-->
                                     <p:panelGrid columns="2" id="tot" style="min-width: 100%;">
                                         <h:outputLabel value="Total Charges" style="font-weight: bold"/>
                                         <h:outputLabel value="#{bhtSummeryController.grantTotal}">
@@ -605,11 +620,11 @@
                         </p:column>
 
                     </p:dataTable>
-                    
-                    <h:panelGroup id="printTempBill">
+
+                    <h:panelGroup id="printTempBill" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}">
                         <bi:finalBill
                             bill="#{bhtSummeryController.tempBill}"
-                                        hosCopy="true"/>
+                            hosCopy="true"/>
                     </h:panelGroup>
 
                 </p:panel>

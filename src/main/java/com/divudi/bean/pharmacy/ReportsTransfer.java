@@ -2357,18 +2357,17 @@ public class ReportsTransfer implements Serializable {
             transferReceiveDtos = new ArrayList<>();
         }
         // Calculate totals from DTOs
-        totalsValue = 0.0;
-        netTotalValues = 0.0;
+        saleValue = 0.0;
         costValue = 0.0;
         purchaseValue = 0.0;
         transferValue = 0.0;
         if (transferReceiveDtos != null) {
             for (PharmacyTransferReceiveDTO dto : transferReceiveDtos) {
                 if (dto.getSaleValue() != null) {
-                    totalsValue += dto.getSaleValue();
+                    saleValue += dto.getSaleValue();
                 }
                 if (dto.getPurchaseValue() != null) {
-                    purchaseValue += dto.getPurchaseValue().doubleValue();
+                    purchaseValue += dto.getPurchaseValue();
                 }
                 if (dto.getCostValue() != null) {
                     costValue += dto.getCostValue().doubleValue();
