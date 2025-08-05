@@ -2079,7 +2079,7 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             e.printStackTrace();
-            billItems = new ArrayList<>();
+            billItemsDtos = new ArrayList<>();
             netTotal = 0.0;
         }
     }
