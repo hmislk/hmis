@@ -145,7 +145,7 @@ public class TransferRequestController implements Serializable {
             String toDepartment = b.getToDepartment().getName();
             String toInstitution = b.getToDepartment().getInstitution().getName();
             String billId = b.getDeptId();
-            String User = b.getCreater().getWebUserPerson().getName();
+            String user = b.getCreater().getWebUserPerson().getName();
             String billDate = (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
             String billStatus = b.getStatus() == null ? "" : b.getStatus().toString();
 
@@ -156,7 +156,7 @@ public class TransferRequestController implements Serializable {
                     .replace("{{to_dept}}", toDepartment)
                     .replace("{{to_ins}}", toInstitution)
                     .replace("{{bill_id}}", billId)
-                    .replace("{{user}}", User)
+                    .replace("{{user}}", user)
                     .replace("{{bill_date}}", billDate)
                     .replace("{{bill_status}}", billStatus);
 
