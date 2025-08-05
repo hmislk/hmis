@@ -612,7 +612,7 @@
                                                         <p:commandButton id="btnRemoveImage" action="#{inpatientClinicalDataController.removeEncounterImage()}"
                                                                          process="@this" update="imageSwitcher" icon="pi pi-trash"
                                                                          style="position: absolute; top: 5px; left: 5px;" >
-                                                            <f:setPropertyActionListener value="#{photo}" target="#{inpatientClinicalDataController.removingClinicalFindingValue}" ></f:setPropertyActionListener>
+                                                            <f:setPropertyActionListener value="#{photo}" target="#{inpatientClinicalDataController.removingCfv}" ></f:setPropertyActionListener>
                                                         </p:commandButton>
 
                                                         <p:graphicImage value="#{inpatientClinicalDataController.image}" cache="false" style="width: 100%; height: 100%; object-fit: cover;">
