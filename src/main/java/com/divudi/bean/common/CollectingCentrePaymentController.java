@@ -2,11 +2,14 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -42,13 +45,17 @@ public class CollectingCentrePaymentController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillItemFacade billItemFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
+    @Inject
+    AgentAndCcApplicationController agentAndCcApplicationController;
 // </editor-fold>
-    
+
 // <editor-fold defaultstate="collapsed" desc="Variables">
     private boolean ccPaymentSettlingStarted = false;
     private Date fromDate;
@@ -65,8 +72,13 @@ public class CollectingCentrePaymentController implements Serializable {
     private double totalCCReceiveAmount = 0.0;
     private double payingTotalCCAmount = 0.0;
     private PaymentMethod paymentMethod;
-    
+
     private boolean printPriview;
+
+    private double startingBalanseInCC = 0.0;
+    private double finalEndingBalanseInCC = 0.0;
+    
+    private double payingBalanceAcodingToCCBalabce = 0.0;
 
 // </editor-fold>
     
@@ -84,7 +96,96 @@ public class CollectingCentrePaymentController implements Serializable {
         }
 
         findPendingCCBills();
+
+        AgentHistory startingHistory = findFirstAgentHistory(currentCollectingCentre);
+        AgentHistory endingHistory = findLastAgentHistory(currentCollectingCentre);
+
+        startingBalanseInCC = startingHistory.getBalanceBeforeTransaction();
+        finalEndingBalanseInCC = endingHistory.getBalanceAfterTransaction();
+        
+        System.out.println("Starting History = " + startingHistory.getBill().getDeptId());
+        System.out.println("Ending History = " + endingHistory.getBill().getDeptId());
+
+        calculaPayingBalanceAcodingToCCBalabce(startingHistory,endingHistory);
+        
+        System.out.println("Paying Balance (Acoding to CC Balabce) = " + payingBalanceAcodingToCCBalabce);
+
         calculateTotalOfPaymentReceive();
+    }
+
+    public double calculaPayingBalanceAcodingToCCBalabce(AgentHistory startingHistory, AgentHistory endingHistory) {
+        double payingBalance = endingHistory.getBalanceAfterTransaction() - startingHistory.getBalanceBeforeTransaction();
+
+        if (payingBalance > 0.0) {
+            payingBalanceAcodingToCCBalabce = payingBalance;
+        }else{
+            payingBalanceAcodingToCCBalabce = 0.0;
+        }
+        return payingBalanceAcodingToCCBalabce;
+    }
+
+    public AgentHistory findFirstAgentHistory(Institution collectingCentre) {
+        List<HistoryType> types = new ArrayList<>();
+        types.add(HistoryType.CollectingCentreBilling);
+        types.add(HistoryType.CollectingCentreBillingCancel);
+        types.add(HistoryType.CollectingCentreBalanceUpdateBill);
+        types.add(HistoryType.CollectingCentreDeposit);
+        types.add(HistoryType.CollectingCentreDepositCancel);
+        types.add(HistoryType.CollectingCentreCreditNote);
+
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.agency =:cc "
+                + " and ah.historyType in :types "
+                + " and ah.bill.createdAt between :fromDate and :toDate "
+                + " and ah.bill.retired = false "
+                + " order by ah.bill.createdAt asc ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("cc", collectingCentre);
+        m.put("types", types);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        
+        AgentHistory h = agentHistoryFacade.findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("findLastAgentHistory = " + h);
+        
+        return h;
+
+    }
+
+    public AgentHistory findLastAgentHistory(Institution collectingCentre) {
+        List<HistoryType> types = new ArrayList<>();
+        types.add(HistoryType.CollectingCentreBilling);
+        types.add(HistoryType.CollectingCentreBillingCancel);
+        types.add(HistoryType.CollectingCentreBalanceUpdateBill);
+        types.add(HistoryType.CollectingCentreDeposit);
+        types.add(HistoryType.CollectingCentreDepositCancel);
+        types.add(HistoryType.CollectingCentreCreditNote);
+
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.agency =:cc "
+                + " and ah.historyType in :types "
+                + " and ah.bill.createdAt between :fromDate and :toDate "
+                + " and ah.bill.retired = false "
+                + " order by ah.bill.createdAt desc ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("cc", collectingCentre);
+        m.put("types", types);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        
+
+        AgentHistory h = agentHistoryFacade.findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("findLastAgentHistory = " + h);
+        return h;
+
     }
 
     public void makeNull() {
@@ -100,6 +201,9 @@ public class CollectingCentrePaymentController implements Serializable {
         payingTotalCCAmount = 0.0;
         paymentMethod = null;
         printPriview = false;
+        startingBalanseInCC = 0.0;
+        finalEndingBalanseInCC = 0.0;
+        payingBalanceAcodingToCCBalabce= 0.0;
     }
 
     public void findPendingCCBills() {
@@ -170,18 +274,12 @@ public class CollectingCentrePaymentController implements Serializable {
         if (selectedCCpaymentBills == null) {
             payingTotalCCAmount = 0.0;
         } else {
-            double totalHospitalAmount = 0.0;
+            double totalCClAmount = 0.0;
 
             for (BillLight bl : selectedCCpaymentBills) {
-                totalHospitalAmount += bl.getHospitalTotal();
+                totalCClAmount += bl.getCcTotal();
             }
-            double payAmount = totalCCReceiveAmount - totalHospitalAmount;
-
-            if (payAmount < 0.0) {
-                payingTotalCCAmount = 0.0;
-            } else {
-                payingTotalCCAmount = payAmount;
-            }
+            payingTotalCCAmount = totalCClAmount;
         }
         System.out.println("payingCCAmount = " + payingTotalCCAmount);
     }
@@ -189,16 +287,25 @@ public class CollectingCentrePaymentController implements Serializable {
     public void settlePaymentBill() {
         System.out.println("Settle Payment Bill");
         Bill newlyBill = saveBill();
-        createPayment(newlyBill,paymentMethod);
-        
-        for(BillLight b : selectedCCpaymentBills){
+        createPayment(newlyBill, paymentMethod);
+
+        for (BillLight b : selectedCCpaymentBills) {
             Bill bill = billFacade.find(b.getId());
-            saveBillItemForPaymentBill(bill,newlyBill);
+            saveBillItemForPaymentBill(bill, newlyBill);
         }
-        
+
         // Update CC Balance
-        // Update Drower
+//        agentAndCcApplicationController.updateCcBalance(
+//                currentCollectingCentre,
+//                totalHosFee,
+//                totalCCFee,
+//                totalStaffFee,
+//                ccBill.getNetTotal(),
+//                HistoryType.CollectingCentreBilling,
+//                newlyBill);
         
+        
+        // Update Drower
         printPriview = true;
 
     }
@@ -206,7 +313,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public Bill saveBill() {
         System.out.println("Save Bill");
         Bill ccAgentPaymentBill = new Bill();
-        
+
         ccAgentPaymentBill.setCreater(sessionController.getLoggedUser());
         ccAgentPaymentBill.setCreatedAt(new Date());
         ccAgentPaymentBill.setInstitution(sessionController.getInstitution());
@@ -215,15 +322,15 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setBillType(BillType.CollectingCentreAgentPayment);
         ccAgentPaymentBill.setBillDate(new Date());
         ccAgentPaymentBill.setBillTime(new Date());
-        
+
         ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
         ccAgentPaymentBill.setNetTotal(0.0);
         ccAgentPaymentBill.setTotal(0.0);
         ccAgentPaymentBill.setPaidAmount(0.0);
-        
+
         ccAgentPaymentBill.setPaymentMethod(paymentMethod);
         String billNumber = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_AGENT_PAYMENT);
-        
+
         ccAgentPaymentBill.setDeptId(billNumber);
         ccAgentPaymentBill.setInsId(billNumber);
 
@@ -232,17 +339,17 @@ public class CollectingCentrePaymentController implements Serializable {
         } else {
             billFacade.edit(ccAgentPaymentBill);
         }
-        
+
         return ccAgentPaymentBill;
     }
-    
+
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
         setPaymentMethodData(p, pm);
         return p;
     }
-    
+
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(sessionController.getInstitution());
         p.setDepartment(sessionController.getDepartment());
@@ -257,7 +364,7 @@ public class CollectingCentrePaymentController implements Serializable {
         }
 
     }
-    
+
     private void saveBillItemForPaymentBill(Bill ccBill, Bill originalBill) {
         BillItem paymentBillItem = new BillItem();
         paymentBillItem.setReferenceBill(ccBill);
@@ -274,14 +381,12 @@ public class CollectingCentrePaymentController implements Serializable {
         ccBill.setPaidAt(new Date());
         ccBill.setPaidBill(originalBill);
         billFacade.edit(ccBill);
-        
+
 //      BillFee newlyCreatedBillFee = saveBillFee(paymentBillItem, p);
 //      originalBillFee.setReferenceBillFee(newlyCreatedBillFee);
 //      getBillFeeFacade().edit(originalBillFee);
-
         originalBill.getBillItems().add(paymentBillItem);
     }
-
 
 // </editor-fold>
     
@@ -379,8 +484,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-// </editor-fold>
-
+    
     public boolean isPrintPriview() {
         return printPriview;
     }
@@ -388,4 +492,31 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setPrintPriview(boolean printPriview) {
         this.printPriview = printPriview;
     }
+
+    public double getStartingBalanseInCC() {
+        return startingBalanseInCC;
+    }
+
+    public void setStartingBalanseInCC(double startingBalanseInCC) {
+        this.startingBalanseInCC = startingBalanseInCC;
+    }
+
+    public double getFinalEndingBalanseInCC() {
+        return finalEndingBalanseInCC;
+    }
+
+    public void setFinalEndingBalanseInCC(double finalEndingBalanseInCC) {
+        this.finalEndingBalanseInCC = finalEndingBalanseInCC;
+    }
+
+    public double getPayingBalanceAcodingToCCBalabce() {
+        return payingBalanceAcodingToCCBalabce;
+    }
+
+    public void setPayingBalanceAcodingToCCBalabce(double payingBalanceAcodingToCCBalabce) {
+        this.payingBalanceAcodingToCCBalabce = payingBalanceAcodingToCCBalabce;
+    }
+    
+// </editor-fold>
+
 }

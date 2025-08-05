@@ -189,9 +189,30 @@
 
                                         <div class="row" >
                                             <div class="col" >
+                                                
+                                                <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                                    
+                                                    <h:outputLabel value="Before Transaction Balance in Collcting Centre" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.startingBalanseInCC}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="After Transaction Balance in Collcting Centre" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.finalEndingBalanseInCC}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Total Paying Amount ( Acoding to CC Balabce)" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel> 
+                                                    
+                                                </p:panelGrid>
+                                                
+                                                <hr/>
+                                                
                                                 <p:panelGrid 
                                                     id="pTotals"
                                                     columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                                   
                                                     <h:outputLabel value="Total Receive from Collcting Centre" ></h:outputLabel>
                                                     <h:outputLabel id="lblReciv" value="#{collectingCentrePaymentController.totalCCReceiveAmount}" >
                                                         <f:convertNumber pattern="#,##0.00" />
