@@ -2485,6 +2485,9 @@ public class PastPatientEncounterController implements Serializable {
 
     public void setRemovingClinicalFindingValue(ClinicalFindingValue removingClinicalFindingValue) {
         this.removingClinicalFindingValue = removingClinicalFindingValue;
+        if (removingClinicalFindingValue == null) {
+            this.removingCfv = null;
+        }
     }
 
     public Patient getPatient() {
