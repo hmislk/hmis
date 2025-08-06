@@ -432,6 +432,9 @@
                                         <p:ajax process="@this" update="grn" event="change"/>
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
                                     </p:selectOneMenu>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                        <p:selectBooleanCheckbox value="#{grnCostingController.grnBill.consignment}" itemLabel="Consignment"/>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
                                         <p:inputText  
                                             value="#{grnCostingController.grnBill.creditDuration}"

@@ -83,6 +83,10 @@
                             <p:column headerText="Payment Method" >
                                 <h:outputText value="#{b.paymentMethod.label}" ></h:outputText>
                             </p:column>
+                            <p:column headerText="Consignment" >
+                                <h:outputText value="#{b.consignment ? 'Yes' : 'No'}" />
+                            </p:column>
+
 
                             <p:column headerText="Requested Deprtment" >
                                 <h:outputLabel value="#{b.department.name}" >                                      
