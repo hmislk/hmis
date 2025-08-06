@@ -96,6 +96,8 @@ public class TransferIssueController implements Serializable {
     private VmpController vmpController;
 
     private Bill requestedBill;
+    // Bill id used when navigating from DTO tables
+    private Long requestedBillId;
     private Bill issuedBill;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
@@ -112,6 +114,11 @@ public class TransferIssueController implements Serializable {
     private Amp selectedSubstituteAmp;
     private BillItem itemForSubstitution;
 
+    /**
+     * @deprecated Use {@link #navigateToPharmacyIssueForRequestsById()} which
+     * loads the requested bill using its id from DTO tables.
+     */
+    @Deprecated
     public String navigateToPharmacyIssueForRequests() {
         if (requestedBill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -123,6 +130,18 @@ public class TransferIssueController implements Serializable {
             return "";
         }
         return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
+    }
+
+    /**
+     * Navigation helper when only the request bill id is available.
+     */
+    public String navigateToPharmacyIssueForRequestsById() {
+        if (requestedBillId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        requestedBill = billFacade.find(requestedBillId);
+        return navigateToPharmacyIssueForRequests();
     }
 
 //    public boolean isFullyIssued() {
@@ -245,6 +264,23 @@ public class TransferIssueController implements Serializable {
 
         }
         return requestedBill;
+    }
+
+    public Long getRequestedBillId() {
+        return requestedBillId;
+    }
+
+    /**
+     * Setter used by DTO based tables to pass only the bill id. The full
+     * {@link Bill} entity is fetched here when required.
+     */
+    public void setRequestedBillId(Long requestedBillId) {
+        this.requestedBillId = requestedBillId;
+        if (requestedBillId != null) {
+            this.requestedBill = billFacade.find(requestedBillId);
+        } else {
+            this.requestedBill = null;
+        }
     }
 
     public void createRequestIssueBillItems(Bill requestedBill) {
