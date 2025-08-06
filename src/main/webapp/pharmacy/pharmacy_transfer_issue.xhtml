@@ -55,6 +55,15 @@
                                         oncomplete="PF('batchDetailsDialog').show();"
                                         process="@this"
                                         class="ui-button-info ui-button-icon-only mx-1"/>
+                                    <p:commandButton
+                                        icon="pi pi-exchange"
+                                        id="btnSelectSubstitute"
+                                        title="Select a Substitute"
+                                        action="#{transferIssueController.prepareSubstitute(bItm)}"
+                                        update="substituteDlg"
+                                        oncomplete="PF('substituteDialog').show();"
+                                        process="@this"
+                                        class="ui-button-secondary ui-button-icon-only mx-1"/>
                                 </p:column>
 
                                 <p:column
@@ -193,13 +202,40 @@
 
                 <ph:history/>
 
-                <p:dialog 
-                    widgetVar="batchDetailsDialog" 
-                    modal="true" 
+                <p:dialog
+                    id="substituteDlg"
+                    widgetVar="substituteDialog"
+                    modal="true"
+                    appendTo="@(body)"
+                    header="Select a Substitute"
+                    width="50%">
+                    <p:dataTable
+                        id="substituteTable"
+                        value="#{transferIssueController.substituteAmps}"
+                        var="sAmp"
+                        selectionMode="single"
+                        selection="#{transferIssueController.selectedSubstituteAmp}">
+                        <p:column headerText="Name">
+                            <h:outputText value="#{sAmp.name}"/>
+                        </p:column>
+                    </p:dataTable>
+                    <f:facet name="footer">
+                        <p:commandButton
+                            value="Replace"
+                            action="#{transferIssueController.replaceSelectedSubstitute}"
+                            update="itemList"
+                            oncomplete="PF('substituteDialog').hide();"
+                            process="@this substituteTable"/>
+                    </f:facet>
+                </p:dialog>
+
+                <p:dialog
+                    widgetVar="batchDetailsDialog"
+                    modal="true"
                     position="top"
                     fitViewport="true"
                     appendTo="@(body)"
-                    header="Batch Details" 
+                    header="Batch Details"
                     width="40%">
                     <p:panelGrid 
                         id="batchDetailsForm" 
