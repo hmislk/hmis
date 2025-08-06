@@ -151,8 +151,6 @@ public class CollectingCentrePaymentController implements Serializable {
 
         calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory);
 
-        System.out.println("Paying Balance (Acoding to CC Balabce) = " + payingBalanceAcodingToCCBalabce);
-
         calculateTotalOfPaymentReceive();
     }
 
@@ -197,8 +195,6 @@ public class CollectingCentrePaymentController implements Serializable {
         m.put("toDate", toDate);
 
         AgentHistory h = agentHistoryFacade.findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("findLastAgentHistory = " + h);
-
         return h;
 
     }
@@ -230,17 +226,11 @@ public class CollectingCentrePaymentController implements Serializable {
         m.put("toDate", toDate);
 
         AgentHistory h = agentHistoryFacade.findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("findLastAgentHistory = " + h);
         return h;
 
     }
 
     public void findPendingCCBills() {
-        System.out.println("findPendingCCBills");
-        System.out.println("currentCollectingCentre = " + currentCollectingCentre);
-        System.out.println("fromDate = " + fromDate);
-        System.out.println("toDate = " + toDate);
-
         pandingCCpaymentBills = new ArrayList<>();
         String jpql;
         Map temMap = new HashMap();
@@ -259,11 +249,7 @@ public class CollectingCentrePaymentController implements Serializable {
         temMap.put("toDate", toDate);
 
         pandingCCpaymentBills = billFacade.findLightsByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        
-        
-
-        System.out.println("pandingCCpaymentBills = " + pandingCCpaymentBills.size());
-
+       
         totalHospitalAmount = 0.0;
         totalCCAmount = 0.0;
 
@@ -271,20 +257,15 @@ public class CollectingCentrePaymentController implements Serializable {
             totalHospitalAmount += bl.getHospitalTotal();
             totalCCAmount += bl.getCcTotal();
         }
-
-        System.out.println("totalHospitalAmount = " + totalHospitalAmount);
-        System.out.println("totalCCAmount = " + totalCCAmount);
-
     }
 
     public void calculateTotalOfPaymentReceive() {
-        System.out.println("calculateTotalOfPaymentReceive"); // Fixed typo in method name
 
         String jpql;
-        Map<String, Object> temMap = new HashMap<>(); // Use generics for type safety
+        Map<String, Object> temMap = new HashMap<>();
 
-        jpql = "SELECT SUM(b.netTotal) " // Use "SUM" (JPQL is case-insensitive, but best practice)
-                + "FROM Bill b " // Use a shorter alias for clarity
+        jpql = "SELECT SUM(b.netTotal) " 
+                + "FROM Bill b "
                 + "WHERE b.billTypeAtomic = :atomic "
                 + "AND b.fromInstitution = :cc "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
@@ -298,7 +279,6 @@ public class CollectingCentrePaymentController implements Serializable {
 
         totalCCReceiveAmount = billFacade.findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
-        System.out.println("totalCCReceiveAmount = " + totalCCReceiveAmount);
     }
 
     public void performCalculations() {
@@ -312,7 +292,6 @@ public class CollectingCentrePaymentController implements Serializable {
             }
             payingTotalCCAmount = totalCClAmount;
         }
-        System.out.println("payingCCAmount = " + payingTotalCCAmount);
     }
 
     public void settlePaymentBill() {
@@ -334,7 +313,6 @@ public class CollectingCentrePaymentController implements Serializable {
             return;
         }
 
-        System.out.println("Settle Payment Bill");
         currentPaymentBill = saveBill();
         createPayment(currentPaymentBill, paymentMethod);
 
@@ -360,7 +338,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public Bill saveBill() {
-        System.out.println("Save Bill");
         Bill ccAgentPaymentBill = new Bill();
 
         ccAgentPaymentBill.setCreater(sessionController.getLoggedUser());
