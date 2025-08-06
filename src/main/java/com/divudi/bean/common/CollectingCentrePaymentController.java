@@ -79,6 +79,7 @@ public class CollectingCentrePaymentController implements Serializable {
     private double finalEndingBalanseInCC = 0.0;
     
     private double payingBalanceAcodingToCCBalabce = 0.0;
+    private Bill currentPaymentBill;
 
 // </editor-fold>
     
@@ -87,6 +88,25 @@ public class CollectingCentrePaymentController implements Serializable {
     
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
+    }
+    
+    public void makeNull() {
+        totalHospitalAmount = 0.0;
+        totalCCAmount = 0.0;
+        fromDate = null;
+        toDate = null;
+        selectedCCpaymentBills = null;
+        pandingCCpaymentBills = null;
+        ccPaymentSettlingStarted = false;
+        currentCollectingCentre = null;
+        totalCCReceiveAmount = 0.0;
+        payingTotalCCAmount = 0.0;
+        paymentMethod = null;
+        printPriview = false;
+        startingBalanseInCC = 0.0;
+        finalEndingBalanseInCC = 0.0;
+        payingBalanceAcodingToCCBalabce= 0.0;
+        currentPaymentBill= null;
     }
 
     public void processCollectingCentrePayment() {
@@ -188,24 +208,6 @@ public class CollectingCentrePaymentController implements Serializable {
 
     }
 
-    public void makeNull() {
-        totalHospitalAmount = 0.0;
-        totalCCAmount = 0.0;
-        fromDate = null;
-        toDate = null;
-        selectedCCpaymentBills = null;
-        pandingCCpaymentBills = null;
-        ccPaymentSettlingStarted = false;
-        currentCollectingCentre = null;
-        totalCCReceiveAmount = 0.0;
-        payingTotalCCAmount = 0.0;
-        paymentMethod = null;
-        printPriview = false;
-        startingBalanseInCC = 0.0;
-        finalEndingBalanseInCC = 0.0;
-        payingBalanceAcodingToCCBalabce= 0.0;
-    }
-
     public void findPendingCCBills() {
         System.out.println("findPendingCCBills");
         System.out.println("currentCollectingCentre = " + currentCollectingCentre);
@@ -285,27 +287,45 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public void settlePaymentBill() {
+        if (ccPaymentSettlingStarted) {
+            JsfUtil.addErrorMessage("Already Started Process");
+            return;
+        }
+        
+        ccPaymentSettlingStarted = true;
+        
+        if (paymentMethod == null) {
+            ccPaymentSettlingStarted = false;
+            JsfUtil.addErrorMessage("Select PaymentMethod");
+            return;
+        }
+        if (selectedCCpaymentBills == null || selectedCCpaymentBills.isEmpty()) {
+            ccPaymentSettlingStarted = false;
+            JsfUtil.addErrorMessage("No Selected Bills");
+            return;
+        }
+        
         System.out.println("Settle Payment Bill");
-        Bill newlyBill = saveBill();
-        createPayment(newlyBill, paymentMethod);
+        currentPaymentBill = saveBill();
+        createPayment(currentPaymentBill, paymentMethod);
 
         for (BillLight b : selectedCCpaymentBills) {
             Bill bill = billFacade.find(b.getId());
-            saveBillItemForPaymentBill(bill, newlyBill);
+            saveBillItemForPaymentBill(bill, currentPaymentBill);
         }
 
         // Update CC Balance
-//        agentAndCcApplicationController.updateCcBalance(
-//                currentCollectingCentre,
-//                totalHosFee,
-//                totalCCFee,
-//                totalStaffFee,
-//                ccBill.getNetTotal(),
-//                HistoryType.CollectingCentreBilling,
-//                newlyBill);
-        
+        agentAndCcApplicationController.updateCcBalance(
+                currentCollectingCentre,
+                0.0,
+                currentPaymentBill.getNetTotal(),
+                0.0,
+                currentPaymentBill.getNetTotal(),
+                HistoryType.RepaymentToCollectingCentre,
+                currentPaymentBill);
         
         // Update Drower
+        ccPaymentSettlingStarted = false;
         printPriview = true;
 
     }
@@ -324,9 +344,9 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setBillTime(new Date());
 
         ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
-        ccAgentPaymentBill.setNetTotal(0.0);
-        ccAgentPaymentBill.setTotal(0.0);
-        ccAgentPaymentBill.setPaidAmount(0.0);
+        ccAgentPaymentBill.setNetTotal(payingTotalCCAmount);
+        ccAgentPaymentBill.setTotal(payingTotalCCAmount);
+        ccAgentPaymentBill.setPaidAmount(payingTotalCCAmount);
 
         ccAgentPaymentBill.setPaymentMethod(paymentMethod);
         String billNumber = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_AGENT_PAYMENT);
@@ -372,19 +392,16 @@ public class CollectingCentrePaymentController implements Serializable {
         paymentBillItem.setCreatedAt(new Date());
         paymentBillItem.setCreater(sessionController.getLoggedUser());
         paymentBillItem.setDiscount(0.0);
-        paymentBillItem.setGrossValue(0.0);
-        paymentBillItem.setNetValue(0.0);
+        paymentBillItem.setGrossValue(ccBill.getTotalCenterFee());
+        paymentBillItem.setNetValue(ccBill.getTotalCenterFee());
         billItemFacade.create(paymentBillItem);
 
         ccBill.setPaid(true);
-        ccBill.setPaidAmount(0.0);
+        ccBill.setPaidAmount(ccBill.getTotalCenterFee());
         ccBill.setPaidAt(new Date());
         ccBill.setPaidBill(originalBill);
         billFacade.edit(ccBill);
 
-//      BillFee newlyCreatedBillFee = saveBillFee(paymentBillItem, p);
-//      originalBillFee.setReferenceBillFee(newlyCreatedBillFee);
-//      getBillFeeFacade().edit(originalBillFee);
         originalBill.getBillItems().add(paymentBillItem);
     }
 
@@ -518,5 +535,13 @@ public class CollectingCentrePaymentController implements Serializable {
     }
     
 // </editor-fold>
+
+    public Bill getCurrentPaymentBill() {
+        return currentPaymentBill;
+    }
+
+    public void setCurrentPaymentBill(Bill currentPaymentBill) {
+        this.currentPaymentBill = currentPaymentBill;
+    }
 
 }
