@@ -652,10 +652,6 @@ public class BillNumberGenerator {
             billNumber.setLastBillNumber(countOfBills + 1);
 
             billNumberFacade.createAndFlush(billNumber);
-        } else {
-            Long newBillNumberLong = billNumber.getLastBillNumber() + 1;
-            billNumber.setLastBillNumber(newBillNumberLong);
-            billNumberFacade.editAndFlush(billNumber);
         }
         return billNumber;
     }
