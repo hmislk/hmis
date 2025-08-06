@@ -6,6 +6,7 @@ import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.google.gson.Gson;
@@ -34,6 +35,8 @@ public class AgentAndCcApplicationController {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     InstitutionFacade institutionFacade;
+    @EJB
+    BillFacade billFacade;
 
     @Inject
     AuditEventApplicationController auditEventApplicationController;
@@ -566,6 +569,9 @@ public class AgentAndCcApplicationController {
             );
 
             agentHistoryFacade.createAndFlush(agentHistory);
+            
+            bill.setAgentHistory(agentHistory);
+            billFacade.edit(bill);
 
             collectingCentre.setBallance(balanceAfterTx);
             institutionFacade.editAndCommit(collectingCentre);
