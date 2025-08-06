@@ -116,6 +116,10 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
+                            <p:column headerText="Consignment" width="5em">
+                                <h:outputText value="#{p.consignment ? 'Yes' : 'No'}" />
+                            </p:column>
+
                             <p:column 
                                 headerText="Actions"
                                 width="6em">

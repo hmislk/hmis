@@ -214,6 +214,9 @@
                                     <p:ajax process="@this" update="po" event="change"/>
                                     <p:ajax process="@this" update="duration" event="itemSelect" />
                                 </p:selectOneMenu>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                    <p:selectBooleanCheckbox value="#{purchaseOrderRequestController.currentBill.consignment}" itemLabel="Consignment"/>
+                                </h:panelGroup>
 
                                 <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
                                     <div class="d-flex" >
@@ -439,6 +442,9 @@
                                         <h:outputLabel value="Payment Method" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.paymentMethod}" />
+                                        <h:outputLabel value="Consignment" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.consignment ? 'Yes' : 'No'}" />
                                     </h:panelGrid>
                                 </div>
 
