@@ -124,7 +124,6 @@
                 <div class="billDetailsFiveFive" >
                     <h:dataTable 
                         value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
-                        
                         var="bip" 
                         style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
 
@@ -132,38 +131,44 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="&emsp;"
-                                           style="font-size:10px!important;" />
+                            <h:outputLabel 
+                                value="&emsp;"
+                                style="font-size:10px!important;" />
                         </p:column>
                         <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Bill No"  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referenceBill.deptId}"
-                                           style="font-size:10pt!important;" />
+                            <h:outputLabel 
+                                value="#{bip.referenceBill.deptId}"
+                                style="font-size:10pt!important;" />
                         </p:column>
                         <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Reference Number"  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referenceBill.referenceNumber}"
-                                           style="font-size:10pt!important;" />
+                            <h:outputLabel 
+                                value="#{bip.referenceBill.referenceNumber}"
+                                style="font-size:10pt!important;" />
                         </p:column>
 
                         <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Patient"  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referenceBill.patient.person.nameWithTitle}"
-                                           style="font-size:10pt!important;" />
+                            <h:outputLabel 
+                                value="#{bip.referenceBill.patient.person.nameWithTitle}"
+                                style="font-size:10pt!important;" />
                         </p:column>
 
-                        <h:column>
+                        <h:column >
                             <f:facet name="header" >
                                 <h:outputLabel value="Value"></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.netValue}" class="d-flex"
-                                           style="font-size:  10pt!important; text-align: right!important;" >
+                            <h:outputLabel 
+                                value="#{bip.netValue}" 
+                                class="d-flex"
+                                style="font-size: 10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </h:column>
