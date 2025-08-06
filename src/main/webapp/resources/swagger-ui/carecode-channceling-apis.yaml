@@ -8,8 +8,6 @@ info:
 servers:
 - url: https://qa.carecode.org/qa1/api/channel/
   description: QA1
-- url: http://localhost:8080/rh/api/channel/
-  description: QA1
 - url: https://qa.carecode.org/qa2/api/channel/
   description: QA2
 - url: https://qa.carecode.org/qa3/api/channel/
