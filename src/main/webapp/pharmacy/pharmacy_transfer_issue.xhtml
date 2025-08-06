@@ -37,6 +37,7 @@
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
 
                                 <p:column headerText="Item Name" style="min-width: 10em;">
+                                    <div style="min-width: 10em; display: flex; align-items: center;">
                                     <h:outputText id="item" value="#{bItm.item.name}" />
                                     <p:commandButton
                                         icon="pi pi-search"
@@ -55,6 +56,7 @@
                                         oncomplete="PF('batchDetailsDialog').show();"
                                         process="@this"
                                         class="ui-button-info ui-button-icon-only mx-1"/>
+                                    </div>
                                 </p:column>
 
                                 <p:column
