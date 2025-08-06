@@ -4,6 +4,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -80,10 +81,32 @@ public class CollectingCentrePaymentController implements Serializable {
 
     private double payingBalanceAcodingToCCBalabce = 0.0;
     private Bill currentPaymentBill;
+    
+    private List<Bill> paymnetBills;
+    
+    private String billNumber;
+    
 
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+    public String navigateToSearchCCPaymentBills(){
+        makeNull();
+        return "/collecting_centre/collecting_centre_repayment_bill_search?faces-redirect=true";
+    }
+    
+    public String navigateToViewCCPaymentBill(Bill bill){
+        setCurrentPaymentBill(bill);
+        return "/collecting_centre/cc_repayment_bill_reprint?faces-redirect=true";
+    }
+    
+    public String navigateToCCPayment(){
+        makeNull();
+        return "/collecting_centre/sent_payment_to_collecting_centre?faces-redirect=true";
+    }
+    
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
@@ -105,6 +128,8 @@ public class CollectingCentrePaymentController implements Serializable {
         finalEndingBalanseInCC = 0.0;
         payingBalanceAcodingToCCBalabce = 0.0;
         currentPaymentBill = null;
+        billNumber = null;
+        paymnetBills = null;
     }
 
     public void processCollectingCentrePayment() {
@@ -409,8 +434,40 @@ public class CollectingCentrePaymentController implements Serializable {
 
         originalBill.getBillItems().add(paymentBillItem);
     }
+    
+    public void findCollectingCentrePaymentBills(){
+        paymnetBills = new ArrayList<>();
+        
+        String jpql;
+        Map temMap = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.billTypeAtomic =:atomic "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (getBillNumber() != null && ! getBillNumber().trim().equals("")) {
+            jpql += " and b.deptId like :billNo ";
+            temMap.put("billNo", "%" + getBillNumber().trim().toUpperCase() + "%");
+        }
+
+        if (getCurrentCollectingCentre() != null) {
+            jpql += " and  ((b.toInstitution) =:toIns )";
+            temMap.put("toIns", getCurrentCollectingCentre());
+        }
+
+        jpql += " order by b.createdAt desc  ";
+
+        temMap.put("atomic", BillTypeAtomic.CC_AGENT_PAYMENT);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        paymnetBills = billFacade.findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        
+    }
 
 // </editor-fold>
+    
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Date getFromDate() {
         if (fromDate == null) {
@@ -537,8 +594,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setPayingBalanceAcodingToCCBalabce(double payingBalanceAcodingToCCBalabce) {
         this.payingBalanceAcodingToCCBalabce = payingBalanceAcodingToCCBalabce;
     }
-
-// </editor-fold>
+    
     public Bill getCurrentPaymentBill() {
         return currentPaymentBill;
     }
@@ -546,5 +602,23 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setCurrentPaymentBill(Bill currentPaymentBill) {
         this.currentPaymentBill = currentPaymentBill;
     }
+
+    public List<Bill> getPaymnetBills() {
+        return paymnetBills;
+    }
+
+    public void setPaymnetBills(List<Bill> paymnetBills) {
+        this.paymnetBills = paymnetBills;
+    }
+
+    public String getBillNumber() {
+        return billNumber;
+    }
+
+    public void setBillNumber(String billNumber) {
+        this.billNumber = billNumber;
+    }
+    
+// </editor-fold>
 
 }
