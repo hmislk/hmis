@@ -92,6 +92,8 @@ public class TransferIssueController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private CommonFunctionsProxy commonFunctionsProxy;
+    @Inject
+    private VmpController vmpController;
 
     private Bill requestedBill;
     private Bill issuedBill;
@@ -106,6 +108,9 @@ public class TransferIssueController implements Serializable {
     private Double qty;
     private Stock tmpStock;
     UserStockContainer userStockContainer;
+    private List<Amp> substituteAmps;
+    private Amp selectedSubstituteAmp;
+    private BillItem itemForSubstitution;
 
     public String navigateToPharmacyIssueForRequests() {
         if (requestedBill == null) {
@@ -1129,6 +1134,45 @@ public class TransferIssueController implements Serializable {
         selectedBillItem = bi;
     }
 
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteAmp = null;
+        substituteAmps = new ArrayList<>();
+        if (bi != null && bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+            if (amp.getVmp() != null) {
+                substituteAmps = vmpController.ampsOfVmp(amp.getVmp());
+            }
+        }
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteAmp == null) {
+            return;
+        }
+        itemForSubstitution.setItem(selectedSubstituteAmp);
+        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            phItem = new PharmaceuticalBillItem();
+            phItem.setBillItem(itemForSubstitution);
+            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        }
+        List<Stock> stocks = pharmacyBean.getStockByQty(selectedSubstituteAmp, sessionController.getDepartment());
+        if (stocks != null && !stocks.isEmpty()) {
+            Stock stock = stocks.get(0);
+            phItem.setStock(stock);
+            phItem.setItemBatch(stock.getItemBatch());
+            phItem.setDoe(stock.getItemBatch().getDateOfExpire());
+            phItem.setPurchaseRate(stock.getItemBatch().getPurcahseRate());
+            phItem.setRetailRateInUnit(stock.getItemBatch().getRetailsaleRate());
+        } else {
+            phItem.setStock(null);
+            phItem.setItemBatch(null);
+        }
+        updateFinancialsForTransferIssue(itemForSubstitution.getBillItemFinanceDetails());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+    }
+
     public void removeAll() {
         if (billItems == null) {
             return;
@@ -1281,6 +1325,30 @@ public class TransferIssueController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    public List<Amp> getSubstituteAmps() {
+        return substituteAmps;
+    }
+
+    public void setSubstituteAmps(List<Amp> substituteAmps) {
+        this.substituteAmps = substituteAmps;
+    }
+
+    public Amp getSelectedSubstituteAmp() {
+        return selectedSubstituteAmp;
+    }
+
+    public void setSelectedSubstituteAmp(Amp selectedSubstituteAmp) {
+        this.selectedSubstituteAmp = selectedSubstituteAmp;
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
     }
 
     public String getStockColourClass(Stock stock) {
