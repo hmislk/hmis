@@ -456,6 +456,7 @@ public class ConfigOptionApplicationController implements Serializable {
                 "        <td>{{bill_status}}</td>\n" +
                 "    </tr>\n" +
                 "</table>\n");
+        getBooleanValueByKey("Pharmacy Transfer Request - Show Rate and Value", false);
 
     }
 
