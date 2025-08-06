@@ -130,7 +130,11 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Rate" width="8em" class="text-end">
+                                <p:column 
+                                    headerText="Rate" 
+                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
+                                    width="8em" 
+                                    class="text-end">
                                     <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax event="keyup" process="@this"
@@ -139,7 +143,11 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Value" width="8em" class="text-end">                   
+                                <p:column 
+                                    headerText="Value"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
+                                    width="8em" 
+                                    class="text-end">                   
                                     <p:inputText autocomplete="off" id="netValue" 
                                                  value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
