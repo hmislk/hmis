@@ -4,7 +4,6 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -82,7 +81,7 @@ public class CollectingCentrePaymentController implements Serializable {
     private double payingBalanceAcodingToCCBalabce = 0.0;
     private Bill currentPaymentBill;
     
-    private List<Bill> paymnetBills;
+    private List<Bill> paymentBills;
     
     private String billNumber;
     
@@ -129,7 +128,7 @@ public class CollectingCentrePaymentController implements Serializable {
         payingBalanceAcodingToCCBalabce = 0.0;
         currentPaymentBill = null;
         billNumber = null;
-        paymnetBills = null;
+        paymentBills = null;
     }
 
     public void processCollectingCentrePayment() {
@@ -436,7 +435,7 @@ public class CollectingCentrePaymentController implements Serializable {
     }
     
     public void findCollectingCentrePaymentBills(){
-        paymnetBills = new ArrayList<>();
+        paymentBills = new ArrayList<>();
         
         String jpql;
         Map temMap = new HashMap();
@@ -462,7 +461,7 @@ public class CollectingCentrePaymentController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        paymnetBills = billFacade.findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        paymentBills = billFacade.findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         
     }
 
@@ -603,12 +602,12 @@ public class CollectingCentrePaymentController implements Serializable {
         this.currentPaymentBill = currentPaymentBill;
     }
 
-    public List<Bill> getPaymnetBills() {
-        return paymnetBills;
+    public List<Bill> getPaymentBills() {
+        return paymentBills;
     }
 
-    public void setPaymnetBills(List<Bill> paymnetBills) {
-        this.paymnetBills = paymnetBills;
+    public void setPaymentBills(List<Bill> paymentBills) {
+        this.paymentBills = paymentBills;
     }
 
     public String getBillNumber() {
