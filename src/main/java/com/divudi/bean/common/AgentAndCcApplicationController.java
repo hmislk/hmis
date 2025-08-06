@@ -96,6 +96,9 @@ public class AgentAndCcApplicationController {
             case CollectingCentreDebitNoteCancel:
                 handleCcDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
                 break;
+            case RepaymentToCollectingCentre:
+                handleCcRePayment(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                break;
             default:
                 Map<String, Object> errorInfo = new LinkedHashMap<>();
                 errorInfo.put("fileName", "AgentAndCcApplicationController.java");
@@ -486,7 +489,7 @@ public class AgentAndCcApplicationController {
             lock.unlock();
         }
     }
-
+    
     private void handleCcDeposit(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
@@ -511,6 +514,49 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
 
             double balanceAfterTx = balanceBeforeTx + collectingCentreFee;
+
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
+
+            agentHistoryFacade.createAndFlush(agentHistory);
+
+            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.editAndCommit(collectingCentre);
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    private void handleCcRePayment(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
+        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
+        lock.lock();
+        try {
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(bill.getCreater());
+            agentHistory.setBill(bill);
+            agentHistory.setInstitution(bill.getInstitution());
+            agentHistory.setDepartment(bill.getDepartment());
+            agentHistory.setAgency(collectingCentre);
+            agentHistory.setReferenceNumber(bill.getAgentRefNo());
+            agentHistory.setHistoryType(HistoryType.RepaymentToCollectingCentre);
+            agentHistory.setCompanyTransactionValue(0);
+            agentHistory.setAgentTransactionValue(transactionValue);
+            agentHistory.setStaffTrasnactionValue(0);
+            agentHistory.setTransactionValue(-transactionValue);
+            agentHistory.setPaidAmountToAgency(transactionValue);
+
+            double balanceBeforeTx = collectingCentre.getBallance();
+
+            double balanceAfterTx = balanceBeforeTx - collectingCentreFee;
 
             agentHistory.setBalanceBeforeTransaction(
                     CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
