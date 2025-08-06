@@ -57,6 +57,9 @@
                                                     <p:ajax process="@this" update="po" event="change"/>
                                                     <p:ajax process="@this" update="duration" event="itemSelect" />
                                                 </p:selectOneMenu>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                                    <p:selectBooleanCheckbox value="#{purchaseOrderController.aprovedBill.consignment}" itemLabel="Consignment"/>
+                                                </h:panelGroup>
                                             </div>
 
                                             <div class="col-4">

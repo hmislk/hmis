@@ -642,6 +642,9 @@
                                         <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
                                         <p:ajax event="change" process="cmbPs" ></p:ajax>
                                     </p:selectOneMenu>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                        <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.bill.consignment}" itemLabel="Consignment"/>
+                                    </h:panelGroup>
 
                                 </h:panelGrid>
                             </p:panel>

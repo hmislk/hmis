@@ -649,6 +649,8 @@ public class PurchaseOrderRequestController implements Serializable {
             PaymentMethod pm = enumController.getEnumValue(PaymentMethod.class, strEnumValue);
 
             currentBill.setPaymentMethod(pm);
+            boolean consignmentEnabled = configOptionApplicationController.getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+            currentBill.setConsignment(consignmentEnabled);
         }
         return currentBill;
     }

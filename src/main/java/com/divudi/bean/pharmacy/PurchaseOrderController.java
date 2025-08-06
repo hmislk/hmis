@@ -350,6 +350,7 @@ public class PurchaseOrderController implements Serializable {
             aprovedBill = new BilledBill();
             aprovedBill.setBillType(BillType.PharmacyOrderApprove);
             aprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+            aprovedBill.setConsignment(getRequestedBill() != null && getRequestedBill().isConsignment());
         }
         return aprovedBill;
     }
