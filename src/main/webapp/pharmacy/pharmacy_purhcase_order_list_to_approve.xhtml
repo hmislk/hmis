@@ -93,7 +93,8 @@
                             <p:column headerText="Supplier" >
                                 <h:outputText value="#{b.paymentMethod}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Consignment" >
+                            <p:column headerText="Consignment"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
                                 <h:outputText value="#{b.consignment ? 'Yes' : 'No'}" />
                             </p:column>
 
