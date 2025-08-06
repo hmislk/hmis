@@ -629,6 +629,7 @@ public class AgentAndCcPaymentController implements Serializable {
         billItems = null;
         comment = null;
         amount = 0.0;
+        collectingCentre = null;
     }
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
