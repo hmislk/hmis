@@ -90,7 +90,13 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="CC Payment"
-                                                action="/collecting_centre/sent_payment_to_collecting_centre?faces-redirect=true"
+                                                action="#{collectingCentrePaymentController.navigateToCCPayment()}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Search CC Payments"
+                                                action="#{collectingCentrePaymentController.navigateToSearchCCPaymentBills()}"
                                                 class="w-100 m-1">
                                             </p:commandButton>
                                         </h:panelGrid>
