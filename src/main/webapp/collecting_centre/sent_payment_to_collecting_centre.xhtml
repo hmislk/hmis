@@ -24,13 +24,24 @@
                                         <h:outputText styleClass="fas fa-search" />
                                         <h:outputLabel value="Pay to Collecting Center" class="mx-2"/>
                                     </div>
-                                    <p:commandButton 
-                                        value="New Bill" 
-                                        class="ui-button-info" 
-                                        icon="fas fa-plus"
-                                        ajax="false" 
-                                        action="#{collectingCentrePaymentController.makeNull()}">
-                                    </p:commandButton>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            value="Print" 
+                                            class="ui-button-info" 
+                                            icon="fas fa-print"
+                                            rendered="#{collectingCentrePaymentController.printPriview}"
+                                            ajax="false">
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            value="New Bill" 
+                                            class="ui-button-warning" 
+                                            icon="fas fa-plus"
+                                            ajax="false" 
+                                            action="#{collectingCentrePaymentController.makeNull()}">
+                                        </p:commandButton>
+
+                                    </div>
                                 </div>
                             </f:facet>
 
@@ -99,7 +110,7 @@
                                 layout="block"
                                 rendered="#{collectingCentrePaymentController.currentCollectingCentre ne null}" >
                                 <h:panelGroup rendered="#{collectingCentrePaymentController.printPriview eq false}">
-                                    
+
                                     <div>
                                         <div>#{collectingCentrePaymentController.currentCollectingCentre.code} - #{collectingCentrePaymentController.currentCollectingCentre.name}</div>
                                         <div>#{collectingCentrePaymentController.fromDate} to #{collectingCentrePaymentController.toDate} </div>
@@ -190,9 +201,9 @@
 
                                         <div class="row" >
                                             <div class="col" >
-                                                
+
                                                 <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
-                                                    
+
                                                     <h:outputLabel value="Before Transaction Balance in Collcting Centre" ></h:outputLabel>
                                                     <h:outputLabel value="#{collectingCentrePaymentController.startingBalanseInCC}" >
                                                         <f:convertNumber pattern="#,##0.00" />
@@ -205,11 +216,11 @@
                                                     <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel> 
-                                                    
+
                                                 </p:panelGrid>
-                                                
+
                                                 <hr/>
-                                                
+
                                             </div>
                                             <div class="col " >
                                                 <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
@@ -235,11 +246,11 @@
                                         </div>
                                     </p:panel>
                                 </h:panelGroup>
-                                
+
                                 <h:panelGroup rendered="#{collectingCentrePaymentController.printPriview eq true}">
-                                    Bill = #{collectingCentrePaymentController.currentPaymentBill}
-                                    
-                                    <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                                    <h:panelGroup id="gpBillPreview" class=" mt-3">
+                                        <bi:A4PaperCCRepament controller="#{collectingCentrePaymentController}" bill="#{collectingCentrePaymentController.currentPaymentBill}" dup="false"/>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </h:panelGroup>
 
