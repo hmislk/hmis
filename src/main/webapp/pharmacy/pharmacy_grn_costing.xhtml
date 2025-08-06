@@ -388,7 +388,7 @@
                                             action="#{grnCostingController.removeExpense(be)}"
                                             process="@this"
                                             update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
-                                        
+
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -432,17 +432,22 @@
                                         <p:ajax process="@this" update="grn" event="change"/>
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
                                     </p:selectOneMenu>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
-                                        <p:selectBooleanCheckbox value="#{grnCostingController.grnBill.consignment}" itemLabel="Consignment"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
-                                        <p:inputText  
-                                            value="#{grnCostingController.grnBill.creditDuration}"
-                                            style="width: 5em;"
-                                            class="ms-1">
-                                        </p:inputText>
-                                        <p:outputLabel class="ms-2" value="Days"></p:outputLabel>
-                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                                <p:spacer  rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" ></p:spacer>
+                                <h:panelGroup rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
+                                    <p:inputText  
+                                        value="#{grnCostingController.grnBill.creditDuration}"
+                                        style="width: 5em;"
+                                        class="ms-1">
+                                    </p:inputText>
+                                    <p:outputLabel class="ms-2" value="Days"></p:outputLabel>
+                                </h:panelGroup>
+
+                                <p:spacer  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"></p:spacer>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                    <p:selectBooleanCheckbox value="#{grnCostingController.grnBill.consignment}" itemLabel="Consignment"/>
                                 </h:panelGroup>
 
                                 <h:outputLabel value="Comment"/>

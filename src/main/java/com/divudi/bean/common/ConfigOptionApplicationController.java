@@ -153,6 +153,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
         getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+        getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+        
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {

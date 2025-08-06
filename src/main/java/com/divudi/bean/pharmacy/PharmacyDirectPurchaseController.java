@@ -929,7 +929,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             bill.setBillType(BillType.PharmacyPurchaseBill);
             bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             bill.setReferenceInstitution(getSessionController().getInstitution());
-            boolean consignmentEnabled = configOptionApplicationController.getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+            boolean consignmentEnabled = configOptionApplicationController.getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", true);
             bill.setConsignment(consignmentEnabled);
         }
         return bill;

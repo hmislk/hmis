@@ -579,7 +579,7 @@
                                             action="#{pharmacyDirectPurchaseController.removeExpense(be)}"
                                             process="@this"
                                             update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
-                                        
+
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -642,7 +642,9 @@
                                         <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
                                         <p:ajax event="change" process="cmbPs" ></p:ajax>
                                     </p:selectOneMenu>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+
+                                    <p:spacer class="my-1"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"></p:spacer>
+                                    <h:panelGroup class="my-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
                                         <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.bill.consignment}" itemLabel="Consignment"/>
                                     </h:panelGroup>
 
