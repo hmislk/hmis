@@ -15,7 +15,7 @@
         <p:panel>
             <f:facet name="header">
                 <div class="d-flex justify-content-between">
-                    <h:outputText value="Pharmacy Purchase Bill Search" class="mt-2"/>
+                    <h:outputText value="Pharmacy Direct Purchase Bill Search" class="mt-2"/>
                     <p:commandButton 
                         class="ui-button-success"
                         ajax="false" 
@@ -51,9 +51,8 @@
                 </p:column>
 
                 <p:column headerText="Bill No" style="padding: 8px;">
-                    <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.deptId}">
-                        <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                    </h:commandLink>
+                    <h:outputText value="#{bill.deptId}">
+                    </h:outputText>
                 </p:column> 
 
                 <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains"  style="padding: 8px; width:8em;">
@@ -70,12 +69,12 @@
                     <h:outputText value="#{bill.createdAt}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                    
+
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;" value=" | Cancelled At " />
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;" value="#{bill.cancelledBill.createdAt}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                    
+
                     <h:outputText rendered="#{bill.refunded}" style="color: orange;" value=" | Refunded At " />
                     <h:outputText rendered="#{bill.refunded}" style="color: orange;" value="#{bill.refundedBill.createdAt}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
@@ -84,7 +83,7 @@
 
                 <p:column headerText="Billed By" style="padding: 8px;">
                     <h:outputText value="#{bill.creater.webUserPerson.name}" ></h:outputText>
-                    
+
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;"  value=" | Cancelled By " />
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;"  value="#{bill.cancelledBill.creater.webUserPerson.name}"></h:outputText>
 
@@ -116,6 +115,18 @@
                     <h:outputText rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" ></h:outputText>
                     <h:outputText  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" ></h:outputText>
                 </p:column>
+
+                <p:column headerText="Actions" exportable="false" style="padding: 8px; text-align:center;">
+                    <p:commandButton 
+                        icon="fa fa-eye" 
+                        title="View" 
+                        action="/pharmacy/pharmacy_reprint_purchase?faces-redirect=true" 
+                        ajax="false"
+                        styleClass="ui-button-info">
+                        <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}" />
+                    </p:commandButton>
+                </p:column>
+
             </p:dataTable>
 
         </p:panel>
