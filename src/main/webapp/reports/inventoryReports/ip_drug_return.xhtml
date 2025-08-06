@@ -254,6 +254,19 @@
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column headerText="Cost Rate" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cost Value" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
 
                             <p:column headerText="Rate">
                                 <h:outputText value="#{0.0 - row.rate}">
