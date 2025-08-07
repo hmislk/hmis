@@ -982,9 +982,13 @@
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_issue?faces-redirect=true"
-                            value="Issue" icon="fas fa-trash"
+                            value="Issue"
                             actionListener="#{pharmacyIssueController.resetAll()}"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}">
+                            <f:facet name="icon">
+                                <p:graphicImage library="images" name="icons/trash.svg" />
+                            </f:facet>
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true"
