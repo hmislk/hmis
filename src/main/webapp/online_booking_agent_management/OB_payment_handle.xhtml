@@ -78,6 +78,7 @@
 
                             <p:commandButton  
                                 value="Settle Payment" 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
                                 update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay txtNetTotal" 
                                 process="@this onlineBookings cmbPs"
                                 oncomplete="PF('payementSettle').show()"
@@ -86,6 +87,7 @@
                             </p:commandButton>
                             
                             <p:commandButton  
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
                                 value="Mark Complete" 
                                 ajax="false"
                                 action="#{onlineBookingAgentController.markCompletePaidToHospitalOnlineBookings}"

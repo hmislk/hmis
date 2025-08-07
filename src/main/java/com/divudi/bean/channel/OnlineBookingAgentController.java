@@ -763,6 +763,16 @@ public class OnlineBookingAgentController implements Serializable {
         return bill;
     }
     
+    public void markUncompletePaidToHospitalOnlineBooking(OnlineBooking ob){
+        if(ob != null && ob.isPaidToHospital()){
+            ob.setPaidToHospital(false);
+            ob.setComment(ob.getComment() != null ? ob.getComment()+" Mark uncompleted by "+getSessionController().getLoggedUser()+ " at "+new Date()+"." :
+                    " Mark uncompleted by "+getSessionController().getLoggedUser()+ " at "+new Date()+".");
+            
+            getOnlineBookingFacade().edit(ob);
+        }
+    }
+    
     public void markCompletePaidToHospitalOnlineBookings(){
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             JsfUtil.addErrorMessage("No Bookings are selected to proceed");
@@ -779,8 +789,8 @@ public class OnlineBookingAgentController implements Serializable {
                     ob.setPaidToHospital(true);
                     ob.setPaidToHospitalDate(new Date());
                     ob.setPaidToHospitalProcessedBy(getSessionController().getLoggedUser());
-                    ob.setComment(ob.getComment() != null ? ob.getComment()+"Direct Marked completion by "+getSessionController().getLoggedUser() :
-                            "Direct Marked completion by "+getSessionController().getLoggedUser());
+                    ob.setComment(ob.getComment() != null ? ob.getComment()+"Direct Marked completion by "+getSessionController().getLoggedUser() + " at "+new Date()+"." :
+                            "Direct Marked completion by "+getSessionController().getLoggedUser() + " at "+new Date()+".");
                     getOnlineBookingFacade().edit(ob);
                 }
             }

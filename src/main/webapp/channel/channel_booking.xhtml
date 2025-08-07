@@ -393,7 +393,7 @@
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
-
+                            
                             <f:selectItems 
                                 value="#{bookingController.sessionInstances}" 
                                 var="ses" 
@@ -493,7 +493,6 @@
                                     <h:outputText value="Booked Patient Count " />
                                     <h:outputText value=":" />
                                     <h:outputText value="#{bookingController.selectedSessionInstance.bookedPatientCount != null ? bookingController.selectedSessionInstance.bookedPatientCount : ' '}" />
-
 
                                     <h:outputText value="Note " rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" />
                                     <h:outputText value=":" rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}"/>
