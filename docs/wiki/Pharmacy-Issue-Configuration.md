@@ -4,36 +4,48 @@ This guide explains how administrators can configure the Pharmacy Issue module t
 
 ## Overview
 
-The Pharmacy Issue module uses configuration options to control:
-- Which rates are displayed during dispensing
-- Which financial values appear in bill summaries
-- How rates are calculated and applied
-- User interface customization options
+The Pharmacy Issue (Disposal) module uses configuration options to control:
+- Which rates are displayed during disposal issue operations
+- Which financial values appear in bill summaries and receipts
+- How issue rates are determined for disposal transactions
+- User interface customization for different organizational requirements
 
 ## Configuration Categories
 
 ### 1. Display Configuration Options
 
-These configuration keys control what financial information is visible to users during dispensing:
+These configuration keys control what financial information is visible to users during disposal issue operations:
 
 | Configuration Key | Default Value | Description |
 |------------------|---------------|-------------|
-| `Pharmacy Dispotals - Display Purchase Rate` | `true` | Shows/hides purchase rate in item selection and bill items |
-| `Pharmacy Dispotals - Display Cost Rate` | `true` | Shows/hides cost rate in item selection and bill items |
-| `Pharmacy Dispotals - Display Purchase Value` | `true` | Shows/hides purchase value calculations |
-| `Pharmacy Dispotals - Display Retail Value` | `true` | Shows/hides retail value calculations |
-| `Pharmacy Dispotals - Display Cost Value` | `true` | Shows/hides cost value calculations |
-| `Pharmacy Dispotals - Display Transfer Value` | `true` | Shows/hides transfer value (net dispensing amount) |
+| `Pharmacy Dispotals - Display Purchase Rate` | `true` | Shows/hides purchase rate in item selection autocomplete and bill items table |
+| `Pharmacy Dispotals - Display Cost Rate` | `true` | Shows/hides cost rate in item selection autocomplete and bill items table |
+| `Pharmacy Dispotals - Display Purchase Value` | `true` | Shows/hides purchase value calculations (item-level and bill totals) |
+| `Pharmacy Dispotals - Display Retail Value` | `true` | Shows/hides retail value calculations (item-level and bill totals) |
+| `Pharmacy Dispotals - Display Cost Value` | `true` | Shows/hides cost value calculations (item-level and bill totals) |
+| `Pharmacy Dispotals - Display Issue Value` | `true` | Shows/hides issue value (actual disposal transfer amount) |
 
 ### 2. Rate Calculation Configuration
 
-These options control how dispensing rates are determined:
+These options control how disposal issue rates are determined (only one should be true):
 
 | Configuration Key | Default Value | Description |
 |------------------|---------------|-------------|
-| `Pharmacy Issue is by Purchase Rate` | `true` | Use purchase rate as the basis for issue pricing |
-| `Pharmacy Issue is by Cost Rate` | `false` | Use cost rate as the basis for issue pricing |
-| `Pharmacy Issue is by Retail Rate` | `false` | Use retail rate as the basis for issue pricing |
+| `Pharmacy Disposal is by Purchase Rate` | `true` | Use purchase rate as the basis for disposal issue pricing |
+| `Pharmacy Disposal is by Cost Rate` | `false` | Use cost rate as the basis for disposal issue pricing |
+| `Pharmacy Disposal is by Retail Rate` | `false` | Use retail rate as the basis for disposal issue pricing |
+
+### 3. Bill Number Generation Configuration
+
+These options control how disposal issue bill numbers are generated:
+
+| Configuration Key | Default Value | Description |
+|------------------|---------------|-------------|
+| `Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department` | `false` | Generate separate bill number series for each issuing department |
+| `Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department` | `false` | Generate separate bill number series for each receiving department |
+| `Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination` | `false` | Generate separate bill number series for each from-to department combination |
+| `Add the Institution Code to the Bill Number Generator` | `true` | Include institution code in generated bill numbers |
+| `Disposal Issue can be done for the same department` | `false` | Allow disposal issues within the same department |
 
 ## How to Access Configuration Settings
 
@@ -87,9 +99,9 @@ Pharmacy Dispotals - Display Purchase Value = false
 
 **Configuration:**
 ```
-Pharmacy Issue is by Purchase Rate = false
-Pharmacy Issue is by Cost Rate = true
-Pharmacy Issue is by Retail Rate = false
+Pharmacy Disposal is by Purchase Rate = false
+Pharmacy Disposal is by Cost Rate = true
+Pharmacy Disposal is by Retail Rate = false
 ```
 
 **Result**: Dispensing will be charged at cost rate
@@ -194,9 +206,9 @@ ORDER BY config_key;
 SELECT config_key, config_value 
 FROM config_option_application 
 WHERE config_key IN (
-    'Pharmacy Issue is by Purchase Rate',
-    'Pharmacy Issue is by Cost Rate', 
-    'Pharmacy Issue is by Retail Rate'
+    'Pharmacy Disposal is by Purchase Rate',
+    'Pharmacy Disposal is by Cost Rate', 
+    'Pharmacy Disposal is by Retail Rate'
 );
 ```
 
