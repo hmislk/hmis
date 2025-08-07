@@ -35,12 +35,19 @@ jobs:
     - name: Get changed files
       id: changed-files
       run: |
-        if [ "${{ github.event.inputs.force_sync }}" == "true" ]; then
+        if [ "${{ github.event.inputs.force_sync || 'false' }}" == "true" ]; then
           echo "Force sync requested, processing all files"
           echo "changed_files=all" >> $GITHUB_OUTPUT
         else
           # Get list of changed files in docs/wiki directory
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep "^docs/wiki/" | head -20 || echo "")
+          BEFORE_SHA="${{ github.event.before || '' }}"
+          if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            CHANGED_FILES=$(git diff --name-only $BEFORE_SHA ${{ github.sha }} | grep "^docs/wiki/" | head -20 || echo "")
+          else
+            # For new branches or when before SHA is not available, get all files in docs/wiki
+            echo "No valid before SHA available, checking all docs/wiki files"
+            CHANGED_FILES=$(find docs/wiki -name "*.md" -type f 2>/dev/null | head -20 || echo "")
+          fi
           echo "Changed files: $CHANGED_FILES"
           echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
         fi
