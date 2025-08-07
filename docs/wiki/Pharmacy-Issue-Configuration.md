@@ -31,9 +31,9 @@ These options control how disposal issue rates are determined (only one should b
 
 | Configuration Key | Default Value | Description |
 |------------------|---------------|-------------|
-| `Pharmacy Issue is by Purchase Rate` | `true` | Use purchase rate as the basis for disposal issue pricing |
-| `Pharmacy Issue is by Cost Rate` | `false` | Use cost rate as the basis for disposal issue pricing |
-| `Pharmacy Issue is by Retail Rate` | `false` | Use retail rate as the basis for disposal issue pricing |
+| `Pharmacy Disposal is by Purchase Rate` | `true` | Use purchase rate as the basis for disposal issue pricing |
+| `Pharmacy Disposal is by Cost Rate` | `false` | Use cost rate as the basis for disposal issue pricing |
+| `Pharmacy Disposal is by Retail Rate` | `false` | Use retail rate as the basis for disposal issue pricing |
 
 ### 3. Bill Number Generation Configuration
 
@@ -99,9 +99,9 @@ Pharmacy Dispotals - Display Purchase Value = false
 
 **Configuration:**
 ```
-Pharmacy Issue is by Purchase Rate = false
-Pharmacy Issue is by Cost Rate = true
-Pharmacy Issue is by Retail Rate = false
+Pharmacy Disposal is by Purchase Rate = false
+Pharmacy Disposal is by Cost Rate = true
+Pharmacy Disposal is by Retail Rate = false
 ```
 
 **Result**: Dispensing will be charged at cost rate
@@ -206,9 +206,9 @@ ORDER BY config_key;
 SELECT config_key, config_value 
 FROM config_option_application 
 WHERE config_key IN (
-    'Pharmacy Issue is by Purchase Rate',
-    'Pharmacy Issue is by Cost Rate', 
-    'Pharmacy Issue is by Retail Rate'
+    'Pharmacy Disposal is by Purchase Rate',
+    'Pharmacy Disposal is by Cost Rate', 
+    'Pharmacy Disposal is by Retail Rate'
 );
 ```
 
