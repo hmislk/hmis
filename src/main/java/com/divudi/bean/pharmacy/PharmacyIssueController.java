@@ -111,6 +111,8 @@ public class PharmacyIssueController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
+    @Inject
+    private PharmacyController pharmacyController;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -435,7 +437,6 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private void savePreBillFinally() {
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyIssue, BillNumberSuffix.DI));
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -445,7 +446,29 @@ public class PharmacyIssueController implements Serializable {
 
         getPreBill().setToDepartment(toDepartment);
 
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyIssue, BillNumberSuffix.DI));
+        String deptId = "";
+        String insId = "";
+
+        boolean billNumberGeberationStrategyForFromDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
+        boolean billNumberGeberationStrategyForToDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
+        boolean billNumberGeberationStrategyForFromAndToDepts = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+
+        if (billNumberGeberationStrategyForFromDept) {
+            deptId = generateBillNumberForFromDepartment();
+            insId = deptId;
+        } else if (billNumberGeberationStrategyForToDept) {
+            deptId = generateBillNumberForToDepartment();
+            insId = deptId;
+        } else if (billNumberGeberationStrategyForFromAndToDepts) {
+            deptId = generateBillNumberForFromAndToDepartmentsCorrected();
+            insId = deptId;
+        } else {
+            deptId = generateInstitutionBillNumber();
+            insId = generateInstitutionBillNumberForInstitution();
+        }
+
+        getPreBill().setDeptId(deptId);
+        getPreBill().setInsId(insId);
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -554,23 +577,23 @@ public class PharmacyIssueController implements Serializable {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
-    public void settleBill() {
+    public void settleDisposalIssueBill() {
         editingQty = null;
-        //   ////System.out.println("editingQty = " + editingQty);
         errorMessage = null;
-        //   ////System.out.println("errorMessage = " + errorMessage);
+        if (toDepartment != null
+                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+            return;
+        }
         if (checkAllBillItem()) {
-            //   ////System.out.println("Check all bill Ietems");
             return;
         }
 
         if (errorCheckForSaleBill()) {
-            //   ////System.out.println("Error for sale bill");
             return;
         }
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
         getPreBill().setComments(getPreBill().getComments());
@@ -588,31 +611,14 @@ public class PharmacyIssueController implements Serializable {
 
     }
 
-public String checkTheDepartment() {
-    // Check if department is the same as logged-in user's department
-    if (toDepartment != null &&
-            Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-        JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
-        return null;
-    }
-
-
-    settleBill();
-
-
-    return "pharmacy/pharmacy_issue";
-}
-
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
             if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
                 return true;
             }
         }
-
         return false;
     }
-
 
     public void addBillItem() {
         errorMessage = null;
@@ -694,7 +700,7 @@ public String checkTheDepartment() {
     }
 
     public void calTotal() {
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getPreBill(), getPreBill().getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForDisposalIssue(getPreBill(), getPreBill().getBillItems());
         BillFinanceDetails bfd = getPreBill().getBillFinanceDetails();
         if (bfd != null) {
             double pv = Optional.ofNullable(bfd.getTotalPurchaseValue()).orElse(BigDecimal.ZERO).doubleValue();
@@ -782,7 +788,7 @@ public String checkTheDepartment() {
         BigDecimal costRateBase = BigDecimal.valueOf(ph.getItemBatch().getCostRate());
         BigDecimal retailRateBase = BigDecimal.valueOf(ph.getItemBatch().getRetailsaleRate());
         BigDecimal purchaseRateBase = BigDecimal.valueOf(ph.getItemBatch().getPurcahseRate());
-        
+
         // These are per-pack rates for calculations
         BigDecimal costRate = costRateBase.multiply(unitsPerPack);
         BigDecimal retailRate = retailRateBase.multiply(unitsPerPack);
@@ -793,7 +799,7 @@ public String checkTheDepartment() {
         fd.setTotalCost(costRate.multiply(qty));
         fd.setTotalCostRate(costRateBase);
         fd.setRetailSaleRate(retailRateBase);
-        
+
         // Values should be: base rate * quantity (not considering units per pack for display values)
         fd.setValueAtCostRate(costRateBase.multiply(qty));
         fd.setValueAtRetailRate(retailRateBase.multiply(qty));
@@ -1034,8 +1040,8 @@ public String checkTheDepartment() {
     public PreBill getPreBill() {
         if (preBill == null) {
             preBill = new PreBill();
-            preBill.setBillType(BillType.PharmacyIssue);
-            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
+            preBill.setBillType(BillType.PharmacyDisposalIssue);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
@@ -1199,5 +1205,61 @@ public String checkTheDepartment() {
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    public void displayItemDetails(BillItem tmp) {
+        getPharmacyController().fillItemDetails(tmp.getItem());
+    }
+
+    public PharmacyController getPharmacyController() {
+        return pharmacyController;
+    }
+
+    public String generateBillNumberForFromDepartment() {
+        return getBillNumberBean().departmentBillNumberGeneratorYearly(
+            getPreBill().getFromDepartment(), 
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
+        );
+    }
+
+    public String generateBillNumberForToDepartment() {
+        return getBillNumberBean().departmentBillNumberGeneratorYearly(
+            getPreBill().getToDepartment(), 
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
+        );
+    }
+
+    public String generateBillNumberForFromAndToDepartmentsCorrected() {
+        return getBillNumberBean().departmentBillNumberGeneratorYearly(
+            getPreBill().getFromDepartment(), 
+            getPreBill().getToDepartment(), 
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
+        );
+    }
+
+    public String generateBillNumberByFromDepartmentAndToDepartment() {
+        return getBillNumberBean().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
+            getPreBill().getFromDepartment(), 
+            getPreBill().getToDepartment(), 
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
+        );
+    }
+
+    public String generateInstitutionBillNumber() {
+        return getBillNumberBean().institutionBillNumberGeneratorByPayment(
+            getSessionController().getDepartment(), 
+            getPreBill(), 
+            BillType.PharmacyDisposalIssue, 
+            BillNumberSuffix.DI
+        );
+    }
+
+    public String generateInstitutionBillNumberForInstitution() {
+        return getBillNumberBean().institutionBillNumberGeneratorByPayment(
+            getSessionController().getInstitution(), 
+            getPreBill(), 
+            BillType.PharmacyDisposalIssue, 
+            BillNumberSuffix.DI
+        );
     }
 }
