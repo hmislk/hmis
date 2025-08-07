@@ -26,4 +26,18 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Step 4: Sync wiki if documentation changes detected
+echo "🔄 Checking for documentation changes..."
+if [ -d "docs/wiki" ]; then
+    echo "📚 Documentation changes detected, syncing wiki..."
+    ./scripts/sync-wiki.sh
+    if [ $? -ne 0 ]; then
+        echo "⚠️  Wiki sync failed, but main push was successful"
+    else
+        echo "✅ Wiki synced successfully!"
+    fi
+else
+    echo "ℹ️  No wiki documentation to sync"
+fi
+
 echo "✅ Push complete and local config restored!"

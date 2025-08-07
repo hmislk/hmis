@@ -949,7 +949,35 @@ public class ServiceSummery implements Serializable {
         m.put("btas", btas);
 
         payments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        fixDiscountsAndMarginsInRows(payments);
         calculateTotalsForPayments(payments);
+    }
+
+    public void fixDiscountsAndMarginsInRows(List<Payment> payments) {
+        for (Payment ir : payments) {
+            if (ir == null) {
+                continue;
+            }
+
+            Bill bill = ir.getBill();
+            if (bill != null && bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().getBillCategory() != null) {
+                switch (bill.getBillTypeAtomic().getBillCategory()) {
+                    case BILL:
+                        bill.setDiscount(-Math.abs(bill.getDiscount()));
+                        bill.setMargin(Math.abs(bill.getMargin()));
+                        break;
+                    case REFUND:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                    case CANCELLATION:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                }
+            }
+        }
     }
 
     public void calTotal(List<Bill> bills) {

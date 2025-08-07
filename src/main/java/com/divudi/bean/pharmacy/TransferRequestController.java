@@ -137,7 +137,7 @@ public class TransferRequestController implements Serializable {
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
-        if (configOptionApplicationController.getBooleanValueByKey("Transfer Request Receipt Fill Header Data", false)) {
+        if (b != null) {
             String filledHeader;
 
             String fromDepartment = b.getFromDepartment().getName();
