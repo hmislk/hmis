@@ -833,27 +833,15 @@ public String checkTheDepartment() {
     }
 
     public void calculateBillItemAtQtyChange(AjaxBehaviorEvent event) {
-        if (stock == null || getPreBill() == null || billItem == null || billItem.getPharmaceuticalBillItem() == null) {
-            return;
-        }
-        if (billItem.getPharmaceuticalBillItem().getStock() == null) {
-            billItem.getPharmaceuticalBillItem().setStock(stock);
-        }
-        if (getQty() == null) {
-            qty = 0.0;
-        }
-        billItem.setItem(getStock().getItemBatch().getItem());
-        billItem.setQty(qty);
-        billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
-        billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
-        billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        updateFinancialsForIssue(billItem);
+        performBillItemCalculation();
         calTotal();
     }
 
     public void calculateBillItem() {
+        performBillItemCalculation();
+    }
+
+    private void performBillItemCalculation() {
         if (stock == null || getPreBill() == null || billItem == null || billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
