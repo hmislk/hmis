@@ -152,6 +152,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
+        getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+        getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+        
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -456,6 +459,7 @@ public class ConfigOptionApplicationController implements Serializable {
                 "        <td>{{bill_status}}</td>\n" +
                 "    </tr>\n" +
                 "</table>\n");
+        getBooleanValueByKey("Pharmacy Transfer Request - Show Rate and Value", false);
 
     }
 

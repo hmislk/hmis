@@ -93,6 +93,11 @@
                             <p:column headerText="Supplier" >
                                 <h:outputText value="#{b.paymentMethod}" ></h:outputText>
                             </p:column>
+                            <p:column headerText="Consignment"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                <h:outputText value="#{b.consignment ? 'Yes' : 'No'}" />
+                            </p:column>
+
 
                             <p:column headerText="Requested Deprtment" >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
