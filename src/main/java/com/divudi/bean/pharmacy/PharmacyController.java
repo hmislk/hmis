@@ -913,7 +913,6 @@ public class PharmacyController implements Serializable {
                 bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
                 bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
                 bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-
             }
 
             bills = new ArrayList<>();
@@ -1038,15 +1037,15 @@ public class PharmacyController implements Serializable {
                 if (b.getBillTypeAtomic().toString().contains("RETURN") || b.getBillTypeAtomic().toString().contains("CANCELLED") || b.getBillTypeAtomic().toString().contains("REFUND")) {
                     if (b.getReferenceBill() != null) {
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Cash) {
-                            purchaseCash = -Math.abs(b.getReferenceBill().getNetTotal());
-                            saleCash = -Math.abs(b.getReferenceBill().getSaleValue());
+                            purchaseCash = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
+                            saleCash = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
                         } else {
                             purchaseCash = 0;
                             saleCash = 0;
                         }
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
-                            purchaseCredit = -Math.abs(b.getReferenceBill().getNetTotal());
-                            saleCredit = -Math.abs(b.getReferenceBill().getSaleValue());
+                            purchaseCredit = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
+                            saleCredit = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
                         } else {
                             purchaseCredit = 0;
                             saleCredit = 0;
@@ -1163,15 +1162,15 @@ public class PharmacyController implements Serializable {
                 if (b.getBillTypeAtomic().toString().contains("RETURN") || b.getBillTypeAtomic().toString().contains("CANCELLED") || b.getBillTypeAtomic().toString().contains("REFUND")) {
                     if (b.getReferenceBill() != null) {
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Cash) {
-                            purchaseCash = -Math.abs(b.getReferenceBill().getNetTotal());
-                            saleCash = -Math.abs(b.getReferenceBill().getSaleValue());
+                            purchaseCash = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
+                            saleCash = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
                         } else {
                             purchaseCash = 0;
                             saleCash = 0;
                         }
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
-                            purchaseCredit = -Math.abs(b.getReferenceBill().getNetTotal());
-                            saleCredit = -Math.abs(b.getReferenceBill().getSaleValue());
+                            purchaseCredit = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
+                            saleCredit = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
                         } else {
                             purchaseCredit = 0;
                             saleCredit = 0;
@@ -1273,8 +1272,8 @@ public class PharmacyController implements Serializable {
                 mainTable.addCell(new Phrase(r.getReferenceBill() != null && r.getReferenceBill().getCreatedAt() != null ? sdf.format(r.getReferenceBill().getCreatedAt()) : "", normalFont));
                 mainTable.addCell(new Phrase(r.getToInstitution() != null ? r.getToInstitution().getName() : "", normalFont));
 
-                double purchase = r.getReferenceBill() != null ? r.getReferenceBill().getNetTotal() : 0;
-                double sale = r.getReferenceBill() != null ? r.getReferenceBill().getSaleValue() : 0;
+                double purchase = r.getBillFinanceDetails().getLineNetTotal() != null ? r.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0;
+                double sale = r.getBillFinanceDetails().getTotalRetailSaleValue() != null ? r.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
 
                 double adjustedPurchase = purchase > 0 ? -purchase : purchase;
                 double adjustedSale = sale > 0 ? -sale : sale;
@@ -1374,8 +1373,8 @@ public class PharmacyController implements Serializable {
                 row.createCell(col++).setCellValue(r.getReferenceBill() != null && r.getReferenceBill().getCreatedAt() != null ? sdf.format(r.getReferenceBill().getCreatedAt()) : "");
                 row.createCell(col++).setCellValue(r.getToInstitution() != null ? r.getToInstitution().getName() : "");
 
-                double purchase = r.getReferenceBill() != null ? r.getReferenceBill().getNetTotal() : 0;
-                double sale = r.getReferenceBill() != null ? r.getReferenceBill().getSaleValue() : 0;
+                double purchase = r.getBillFinanceDetails().getLineNetTotal() != null ? r.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0;
+                double sale = r.getBillFinanceDetails().getTotalRetailSaleValue() != null ? r.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
 
                 double adjustedPurchase = purchase > 0 ? -purchase : purchase;
                 double adjustedSale = sale > 0 ? -sale : sale;
@@ -2554,10 +2553,23 @@ public class PharmacyController implements Serializable {
                     || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
                     || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
-            double netTotal = isCancelled ? (bill.getReferenceBill().getNetTotal() > 0.0 ? -bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal())
-                    : bill.getNetTotal();
-            double saleValue = isCancelled ? (bill.getReferenceBill().getSaleValue() > 0.0 ? -bill.getReferenceBill().getSaleValue() : bill.getReferenceBill().getSaleValue())
-                    : bill.getSaleValue();
+            double netTotal = 0.0;
+            double saleValue = 0.0;
+
+            if (isCancelled) {
+                if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getLineNetTotal() != null) {
+                    double lineNetTotalValue = bill.getBillFinanceDetails().getLineNetTotal().doubleValue();
+                    netTotal = lineNetTotalValue > 0.0 ? -lineNetTotalValue : lineNetTotalValue;
+                }
+
+                if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalRetailSaleValue() != null) {
+                    double retailSaleValue = bill.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+                    saleValue = retailSaleValue > 0.0 ? -retailSaleValue : retailSaleValue;
+                }
+            } else {
+                netTotal = bill.getNetTotal();
+                saleValue = bill.getSaleValue();
+            }
 
             if (bill.getPaymentMethod() == null || (bill.getReferenceBill() != null && bill.getReferenceBill().getPaymentMethod() == null)) {
                 Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING, "Bill {0} has no payment method", bill.getId());

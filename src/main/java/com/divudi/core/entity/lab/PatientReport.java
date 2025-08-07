@@ -171,6 +171,10 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
+    
+    private String patientName;
+    private String patientAge;
+    private String patientGender;
 
     public PatientReport() {
         if (status == null) {
@@ -836,6 +840,30 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     public void setPatientReportGroups(List<PatientReportGroup> patientReportGroups) {
         this.patientReportGroups = patientReportGroups;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getPatientAge() {
+        return patientAge;
+    }
+
+    public void setPatientAge(String patientAge) {
+        this.patientAge = patientAge;
+    }
+
+    public String getPatientGender() {
+        return patientGender;
+    }
+
+    public void setPatientGender(String patientGender) {
+        this.patientGender = patientGender;
     }
     
     

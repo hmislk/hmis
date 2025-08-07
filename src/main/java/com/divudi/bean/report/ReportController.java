@@ -3045,9 +3045,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         switch (reportTemplateFileIndexName) {
             case "Stock Correction":
                 return "/reports/inventoryReports/stock_correction?faces-redirect=true";
-            case "GRN Cash Total":
+            case "GRN Cash":
                 return "/reports/inventoryReports/grn_cash?faces-redirect=true";
-            case "GRN Credit Total":
+            case "GRN Credit":
                 return "/reports/inventoryReports/grn_credit?faces-redirect=true";
             case "Drug Return IP":
                 return "/reports/inventoryReports/ip_drug_return?faces-redirect=true";
@@ -3057,18 +3057,22 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
-            case "Transfer Issue Value":
+            case "Stock Adjustment Receive":
+                return "/reports/inventoryReports/stock_adjustment_receive?faces-redirect=true";
+            case "Stock Adjustment Issue":
+                return "/reports/inventoryReports/stock_adjustment_issue?faces-redirect=true";
+            case "Transfer Issue":
                 return "/reports/inventoryReports/transfer_issue?faces-redirect=true";
-            case "Transfer Receive Value":
+            case "Transfer Receive":
                 return "/reports/inventoryReports/transfer_receive?faces-redirect=true";
-            case "Sale Credit Value":
+            case "Sale Credit":
                 return "/reports/inventoryReports/opd_credit?faces-redirect=true";
-            case "BHT Issue Value":
+            case "BHT Issue":
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
             case "Sale Credit Card":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
-            case "Closing Stock Value":
-            case "Opening Stock Value":
+            case "Closing Stock":
+            case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
             case "Sale Cash":
                 return "/reports/inventoryReports/opd_sale_cash?faces-redirect=true";

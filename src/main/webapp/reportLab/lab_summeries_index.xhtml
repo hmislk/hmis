@@ -22,7 +22,7 @@
                                             <p:commandButton ajax="false" value="Bill List" action="/reportLab/bill_list?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" value="Client List" action="/reportLab/client_list?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true"/> 
-
+                                            <p:commandButton ajax="false" class="w-100 ui-button-success mt-1" value="Sample List (DTO)" action="/lab/dto_patient_sample_list?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" value="Average Turn Around Time" action="turn_over_time?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills?faces-redirect=true"/> 
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution?faces-redirect=true"/>

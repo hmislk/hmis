@@ -92,6 +92,8 @@ public class PurchaseOrderRequestController implements Serializable {
 
     @Inject
     NotificationController notificationController;
+    
+    private String emailRecipient;
 
     public void removeSelected() {
         if (selectedBillItems == null) {
@@ -467,19 +469,34 @@ public class PurchaseOrderRequestController implements Serializable {
         printPreview = true;
     }
 
+    public void prepareEmailDialog() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        
+        // Set default email if available
+        if (currentBill.getToInstitution() != null && currentBill.getToInstitution().getEmail() != null) {
+            emailRecipient = currentBill.getToInstitution().getEmail();
+        } else {
+            emailRecipient = "";
+        }
+    }
+
     public void sendPurchaseOrderEmail() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        if (currentBill.getToInstitution() == null || currentBill.getToInstitution().getEmail() == null) {
-            JsfUtil.addErrorMessage("Supplier Email not available");
+        
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter recipient email");
             return;
         }
 
-        String recipient = currentBill.getToInstitution().getEmail();
+        String recipient = emailRecipient.trim();
         if (!CommonFunctions.isValidEmail(recipient)) {
-            JsfUtil.addErrorMessage("Supplier Email is invalid");
+            JsfUtil.addErrorMessage("Please enter a valid email address");
             return;
         }
 
@@ -632,6 +649,8 @@ public class PurchaseOrderRequestController implements Serializable {
             PaymentMethod pm = enumController.getEnumValue(PaymentMethod.class, strEnumValue);
 
             currentBill.setPaymentMethod(pm);
+            boolean consignmentEnabled = configOptionApplicationController.getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+            currentBill.setConsignment(consignmentEnabled);
         }
         return currentBill;
     }
@@ -759,6 +778,14 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setEmailManagerEjb(EmailManagerEjb emailManagerEjb) {
         this.emailManagerEjb = emailManagerEjb;
+    }
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
     }
 
 }

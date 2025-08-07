@@ -260,8 +260,10 @@ public class AgentReferenceBookController implements Serializable {
         hm.put("rfe", bookEnum);
         hm.put("sbNumber", agentReferenceBook.getStrbookNumber().trim());
 
-        if (!getAgentReferenceBookFacade().findByJpql(sql, hm).isEmpty()) {
-            JsfUtil.addErrorMessage("Book Number Is Already Given.");
+        AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
+        
+        if (arb != null) {
+            JsfUtil.addErrorMessage("Book Number Is Already use in " + arb.getInstitution().getName());
             return;
         }
 
@@ -285,7 +287,7 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
-
+    
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");

@@ -199,7 +199,6 @@ public enum BillTypeAtomic {
     CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL("OB Agent Paid To Hospital direct fund", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.CASH_IN, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND, BillType.ChannelOnlineBookingAgentPaidToHospital),
     CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION("OB Agent Paid To Hospital direct fund bill cancel", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND, BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation),
 
-    
     // OPD_IN
     OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT, BillType.OpdBathcBillPre),
     OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.NONE, PaymentCategory.NON_CREDIT_SPEND, BillType.OpdBathcBill),
@@ -235,6 +234,8 @@ public enum BillTypeAtomic {
     CC_DEBIT_NOTE("Collecting Centre Debit Note", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.CREDIT_SPEND, BillType.CollectingCentreDebitNoteBill),
     CC_CREDIT_NOTE_CANCELLATION("Collecting Centre Credit Note Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.CREDIT_SPEND, BillType.CollectingCentreCreditNoteBill),
     CC_DEBIT_NOTE_CANCELLATION("Collecting Centre Debit Note Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.CREDIT_SPEND, BillType.CollectingCentreDebitNoteBill),
+    CC_AGENT_PAYMENT("Collecting Centre Agent Payment", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.NON_CREDIT_SPEND, BillType.CollectingCentreAgentPayment),
+    CC_AGENT_PAYMENT_CANCELLATION("Collecting Centre Agent Payment Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_IN, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.NON_CREDIT_SPEND, BillType.CollectingCentreAgentPayment),
     @Deprecated
     CC_PAYMENT_MADE_BILL("Collecting Centre Payment Made Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.NON_CREDIT_SPEND, BillType.CollectingCentrePaymentMadeBill),
     @Deprecated
@@ -341,13 +342,23 @@ public enum BillTypeAtomic {
     SUPPLIER_PAYMENT_CANCELLED("GRN Payment Cancelled", BillCategory.CANCELLATION, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),
     SUPPLIER_PAYMENT_RETURNED("Supplier Payment Returned", BillCategory.REFUND, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),;
 
-    public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationBillTypes() {
+    public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationIndividualBillTypes() {
         List<BillTypeAtomic> btas = new ArrayList<>();
+        // OPD Bill Types
         btas.add(OPD_BILL_WITH_PAYMENT);
+        // Inpatient Service Bill Types
+        btas.add(INWARD_SERVICE_BILL);
+        return btas;
+    }
+
+    public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationBatchBillTypes() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        // OPD Bill Types
         btas.add(OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        btas.add(INWARD_SERVICE_BILL);
+        btas.add(INWARD_SERVICE_BATCH_BILL);
         return btas;
     }
 

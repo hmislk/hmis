@@ -113,6 +113,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyCommonBillConfigurationDefaults();
         loadPharmacyAdjustmentReceiptConfigurationDefaults();
         loadPatientNameConfigurationDefaults();
+        loadSecurityConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -150,6 +151,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
         getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
+        getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
+        getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+        getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+        
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -415,6 +420,47 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "  }\n"
                 + "}"
         );
+        getLongTextValueByKey("Pharmacy Transfer Request Receipt Header",
+                "<table class=\"receipt-details-table\">\n" +
+                "    <tr>\n" +
+                "        <td>Request From</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>\n" +
+                "            {{from_dept}} ({{from_ins}})\n" +
+                "        </td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Request To</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>\n" +
+                "            {{to_dept}} ({{to_ins}})\n" +
+                "        </td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Req No</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>{{bill_id}}</td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Req By</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>{{user}}</td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Req Date/Time</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>\n" +
+                "           {{bill_date}}\n" +
+                "        </td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Document Status</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>{{bill_status}}</td>\n" +
+                "    </tr>\n" +
+                "</table>\n");
+        getBooleanValueByKey("Pharmacy Transfer Request - Show Rate and Value", false);
+
     }
 
     private void loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults() {
@@ -579,22 +625,22 @@ public class ConfigOptionApplicationController implements Serializable {
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Footer", "");
-        
+
         // Cost Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Cost Rate Footer", "");
-        
+
         // Retail Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Retail Rate Footer", "");
-        
+
         // Stock Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Stock CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Stock Header", "");
         getLongTextValueByKey("Pharmacy Adjustment Stock Footer", "");
-        
+
         // Wholesale Rate Adjustment specific configurations
         getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate CSS", "");
         getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Header", "");
@@ -604,6 +650,10 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadPatientNameConfigurationDefaults() {
         getBooleanValueByKey("Capitalize Entire Patient Name", false);
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+    }
+
+    private void loadSecurityConfigurationDefaults() {
+        getBooleanValueByKey("prevent_password_reuse", false);
     }
 
     private void loadPharmacyAnalyticsConfigurationDefaults() {
@@ -800,7 +850,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -909,6 +958,14 @@ public class ConfigOptionApplicationController implements Serializable {
             return specificHeader;
         }
         return getLongTextValueByKey("Pharmacy Common Bill Header");
+    }
+
+    public String getPharmacyTransferBillHeaderWithFallback(String specificKey) {
+        String specificHeader = getLongTextValueByKey(specificKey);
+        if (specificHeader != null && !specificHeader.trim().isEmpty()) {
+            return specificHeader;
+        }
+        return getLongTextValueByKey("Pharmacy Transfer Request Receipt Header");
     }
 
     public String getPharmacyBillFooterWithFallback(String specificKey) {
@@ -1038,6 +1095,40 @@ public class ConfigOptionApplicationController implements Serializable {
         option.setOptionValue(Boolean.toString(value));
         optionFacade.edit(option);
         loadApplicationOptions();
+    }
+
+    public boolean isPreventPasswordReuse() {
+        return getBooleanValueByKey("prevent_password_reuse", false);
+    }
+
+    public void setPreventPasswordReuse(boolean value) {
+        setBooleanValueByKey("prevent_password_reuse", value);
+    }
+
+    public ConfigOption getPreventPasswordReuseOption() {
+        return getApplicationOption("prevent_password_reuse");
+    }
+
+    public int getPasswordHistoryLimit() {
+        return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public void setIntegerValueByKey(String key, int value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.INTEGER, Integer.toString(value));
+        }
+        option.setOptionValue(Integer.toString(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
+    public void setPasswordHistoryLimit(int value) {
+        setIntegerValueByKey("password_history_limit", value);
+    }
+
+    public ConfigOption getPasswordHistoryLimitOption() {
+        return getApplicationOption("password_history_limit");
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {

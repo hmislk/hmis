@@ -1,6 +1,7 @@
 package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.ClinicalEntityController;
+import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.core.entity.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -107,11 +108,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -120,11 +117,6 @@ import javax.inject.Inject;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 @Named
 @ViewScoped
@@ -2940,20 +2932,23 @@ public class DataUploadController implements Serializable {
             String address = row.getCell(7).getStringCellValue();
             String membershipName = row.getCell(8).getStringCellValue();
             String relationName = row.getCell(9).getStringCellValue();
-            Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
+//            Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
+            Date dateOfBirth = getDateFromCell(row.getCell(10));
+
+            String phoneNumberString = phoneNumberLong != null ? phoneNumberLong.toString() : null;
 
             MembershipScheme ms = membershipSchemeController.fetchMembershipByName(membershipName);
-            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms, phoneNumberLong.toString());
+            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms, phoneNumberString);
             Relation relation = relationController.fetchRelationByName(relationName);
             Title title = Title.getTitleEnum(titleString);
             Sex sex = Sex.getByLabelOrShortLabel(sexString);
-            Date dateOfBirth = CommonFunctions.fetchDateOfBirthFromAge(ageInt);
+//            Date dateOfBirth = CommonFunctions.fetchDateOfBirthFromAge(ageInt);
 
             Patient pt = new Patient();
             pt.getPerson().setName(name);
             pt.getPerson().setAddress(address);
-            pt.getPerson().setPhone(phoneNumberLong.toString());
-            pt.getPerson().setMobile(phoneNumberLong.toString());
+            pt.getPerson().setPhone(phoneNumberString);
+            pt.getPerson().setMobile(phoneNumberString);
             pt.getPerson().setTitle(title);
             pt.getPerson().setSex(sex);
             pt.getPerson().setDob(dateOfBirth);
@@ -2979,6 +2974,83 @@ public class DataUploadController implements Serializable {
 
         workbook.close();
         return patients;
+    }
+
+    private Date getDateFromCell(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+
+        try {
+            if (cell.getCellType() == CellType.STRING) {
+                String dateString = cell.getStringCellValue().trim();
+                return parseDateString(dateString);
+            }
+
+            if (cell.getCellType() == CellType.NUMERIC) {
+                DataFormatter formatter = new DataFormatter();
+                String formattedValue = formatter.formatCellValue(cell);
+
+                if (formattedValue.matches("\\d{1,2}/\\d{1,2}/\\d{2,4}")) {
+                    return parseDateString(formattedValue);
+                }
+
+                return null;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(DataUploadController.class.getName()).log(
+                    Level.SEVERE, null, "Error parsing date from cell: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    private Date parseDateString(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return null;
+        }
+
+        dateString = dateString.trim();
+
+        String[] dateFormats = {
+                "dd/MM/yyyy",  // Handles 02/05/2000 as May 2nd, 2000
+                "d/M/yyyy",    // Handles 2/5/2000 as May 2nd, 2000
+                "dd/MM/yy",    // Handles 02/05/00 as May 2nd, 2000
+                "d/M/yy"       // Handles 2/5/00 as May 2nd, 2000
+        };
+
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.setLenient(false); //  stricter parsing to avoid ambiguity
+
+        for (String format : dateFormats) {
+            try {
+                sdf.applyPattern(format);
+                Date date = sdf.parse(dateString);
+
+                // Handle 2-digit year conversion for yy formats
+                if (format.endsWith("/yy")) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(date);
+                    int year = cal.get(Calendar.YEAR);
+
+                    // Adjust 2-digit year logic:
+                    // Years 00-30 -> 2000-2030
+                    // Years 31-99 -> 1931-1999
+                    if (year <= 30) {
+                        cal.set(Calendar.YEAR, 2000 + year);
+                    } else if (year >= 31 && year <= 99) {
+                        cal.set(Calendar.YEAR, 1900 + year);
+                    }
+                    date = cal.getTime();
+                }
+
+                return date;
+            } catch (ParseException e) {
+                continue;
+            }
+        }
+
+        return null;
     }
 
     private static Long getNumericCellAsLong(Cell cell) {
@@ -5470,8 +5542,9 @@ public class DataUploadController implements Serializable {
             }
 
             Cell activeCell = row.getCell(3);
-            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
-                active = activeCell.getBooleanCellValue();
+            if (activeCell != null && activeCell.getCellType() == CellType.STRING) {
+                String cellValue = activeCell.getStringCellValue();
+                active = cellValue.equalsIgnoreCase("Active");
             }
             if (active == null) {
                 active = false;
@@ -5564,7 +5637,7 @@ public class DataUploadController implements Serializable {
             supplier.setCode(code);
             supplier.setInstitutionCode(code);
             supplier.setName(supplierName);
-            supplier.setInactive(active);
+            supplier.setInactive(!active);
             supplier.setMobile(mobilenumber);
             supplier.setFax(fax);
             supplier.setPhone(phone);

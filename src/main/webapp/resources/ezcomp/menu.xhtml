@@ -760,7 +760,7 @@
                             actionListener="#{pharmacyFastRetailSaleController.resetAll()}"
                             value="Sale by Item"
                             icon="fas fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Item Search', true)}" >
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleQuick') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Item Search', true)}" >
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
@@ -774,7 +774,7 @@
                             actionListener="#{pharmacyFastRetailSaleForCashierController.resetAll()}"
                             value="Sale for Cashier - By Item"
                             icon="fas fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashierQuick')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}"
@@ -1079,15 +1079,16 @@
                     <p:menuitem  
                         ajax="false" 
                         action="/pharmacy/pharmacy_search?faces-redirect=true"  
-                        value="Bill Search" 
+                        value="Pharmacy Bill Search" 
                         icon="fas fa-search" 
                         actionListener="#{billSearch.recreateModel}" 
                         rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" >
                     </p:menuitem> 
+                    <!-- TODO: Remove "(New)" suffix when legacy search is retired -->
                     <p:menuitem  
                         ajax="false" 
-                        action="#{searchController.navigateToPharmcyBillSearch}"  
-                        value="Bill Search (New)" 
+                        action="#{searchController.navigateToPharmacyBillSearch}"  
+                        value="Pharmacy Bill Search (New)" 
                         icon="fas fa-search" 
                         actionListener="#{billSearch.recreateModel}" 
                         rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" >
@@ -1753,6 +1754,11 @@
                         rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
                         action="#{apiKeyController.toManageMyApiKeys()}" 
                         value="Manage My API Keys" icon="pi pi-key"  ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
+                        url="#{request.contextPath}/resources/swagger-ui/index.html"
+                        value="API Swagger Document" icon="fa fa-book"  ></p:menuitem>
                     <p:menuitem
                         ajax="false"
                         action="#{versionController.navigateToAboutSoftware()}"
