@@ -72,6 +72,8 @@ import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
+import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
+import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -240,6 +242,8 @@ public class SearchController implements Serializable {
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
+    // DTO list for pharmacy transfer requests
+    private List<PharmacyTransferRequestListDTO> transferRequestDtos;
     private List<Payment> payments;
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
@@ -256,6 +260,9 @@ public class SearchController implements Serializable {
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
     private ReportTemplateRow selectedChannelBookingBillRow;
+    // Selected request id used when working with DTO-based tables
+    private Long selectedRequestId;
+    private Bill selectedRequest;
     String settledBillType;
 
     public String getSettledBillType() {
@@ -4244,6 +4251,12 @@ public class SearchController implements Serializable {
 
     }
 
+    /**
+     * Legacy method that loads full Bill entities for pharmacy transfer
+     * requests. Replaced by {@link #createRequestTableDto()} which uses DTOs
+     * for better performance. Left for backward compatibility.
+     */
+    @Deprecated
     public void createRequestTable() {
         Date startTime = new Date();
         BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
@@ -4283,6 +4296,70 @@ public class SearchController implements Serializable {
             b.setListOfBill(getIssudBills(b));
         }
 
+    }
+
+    /**
+     * Populates {@link #transferRequestDtos} using DTO projections. Each
+     * request DTO additionally loads its issued bill DTOs for display.
+     */
+    public void createRequestTableDto() {
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
+
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO(" +
+                " b.id, b.deptId, b.createdAt, b.department.name, b.creater.webUserPerson.name," +
+                " b.cancelled, cb.createdAt, cb.creater.webUserPerson.name)" +
+                " from Bill b left join b.cancelledBill cb" +
+                " where b.retired=false and  b.toDepartment=:toDep" +
+                " and b.billClassType not in :bct" +
+                " and b.billTypeAtomic = :billTypeAtomic" +
+                " and b.billType= :bTp and b.createdAt between :fromDate and :toDate";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("toDep", getSessionController().getDepartment());
+        params.put("bct", bct);
+        params.put("bTp", BillType.PharmacyTransferRequest);
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and ((b.deptId) like :billNo)";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            jpql += " and ((b.department.name) like :dep)";
+            params.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        if (transferRequestDtos != null) {
+            for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
+                dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
+            }
+        }
+    }
+
+    /**
+     * Fetches issued bills for a given transfer request using DTO projections.
+     *
+     * @param requestId id of the transfer request bill
+     * @return list of issue DTOs
+     */
+    public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(" +
+                " b.id, b.deptId, b.createdAt, b.creater.webUserPerson.name, b.cancelled," +
+                " cb.createdAt, cb.creater.webUserPerson.name, ts.person.nameWithTitle, b.netTotal)" +
+                " from Bill b left join b.cancelledBill cb left join b.toStaff ts" +
+                " where b.retired=false and b.billType=:btp" +
+                " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.PharmacyTransferIssue);
+        params.put("rid", requestId);
+        return (List<PharmacyTransferRequestIssueDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void createInwardBHTRequestTable() {
@@ -18543,6 +18620,40 @@ public class SearchController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public List<PharmacyTransferRequestListDTO> getTransferRequestDtos() {
+        return transferRequestDtos;
+    }
+
+    public void setTransferRequestDtos(List<PharmacyTransferRequestListDTO> transferRequestDtos) {
+        this.transferRequestDtos = transferRequestDtos;
+    }
+
+    public Long getSelectedRequestId() {
+        return selectedRequestId;
+    }
+
+    /**
+     * Setter used by views to pass only the bill id. The full Bill entity is
+     * fetched here to keep compatibility with existing methods expecting the
+     * entity instance.
+     */
+    public void setSelectedRequestId(Long selectedRequestId) {
+        this.selectedRequestId = selectedRequestId;
+        if (selectedRequestId != null) {
+            this.selectedRequest = billFacade.find(selectedRequestId);
+        } else {
+            this.selectedRequest = null;
+        }
+    }
+
+    public Bill getSelectedRequest() {
+        return selectedRequest;
+    }
+
+    public void setSelectedRequest(Bill selectedRequest) {
+        this.selectedRequest = selectedRequest;
     }
 
     public BillFacade getBillFacade() {

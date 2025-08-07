@@ -152,6 +152,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
+        getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+        getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+        
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -417,6 +420,47 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "  }\n"
                 + "}"
         );
+        getLongTextValueByKey("Pharmacy Transfer Request Receipt Header",
+                "<table class=\"receipt-details-table\">\n" +
+                "    <tr>\n" +
+                "        <td>Request From</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>\n" +
+                "            {{from_dept}} ({{from_ins}})\n" +
+                "        </td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Request To</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>\n" +
+                "            {{to_dept}} ({{to_ins}})\n" +
+                "        </td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Req No</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>{{bill_id}}</td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Req By</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>{{user}}</td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Req Date/Time</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>\n" +
+                "           {{bill_date}}\n" +
+                "        </td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "        <td>Document Status</td>\n" +
+                "        <td>:</td>\n" +
+                "        <td>{{bill_status}}</td>\n" +
+                "    </tr>\n" +
+                "</table>\n");
+        getBooleanValueByKey("Pharmacy Transfer Request - Show Rate and Value", false);
+
     }
 
     private void loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults() {
@@ -914,6 +958,14 @@ public class ConfigOptionApplicationController implements Serializable {
             return specificHeader;
         }
         return getLongTextValueByKey("Pharmacy Common Bill Header");
+    }
+
+    public String getPharmacyTransferBillHeaderWithFallback(String specificKey) {
+        String specificHeader = getLongTextValueByKey(specificKey);
+        if (specificHeader != null && !specificHeader.trim().isEmpty()) {
+            return specificHeader;
+        }
+        return getLongTextValueByKey("Pharmacy Transfer Request Receipt Header");
     }
 
     public String getPharmacyBillFooterWithFallback(String specificKey) {

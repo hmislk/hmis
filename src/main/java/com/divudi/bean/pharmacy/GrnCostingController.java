@@ -1931,6 +1931,7 @@ public class GrnCostingController implements Serializable {
             grnBill = new BilledBill();
             grnBill.setBillType(BillType.PharmacyGrnBill);
             grnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+            grnBill.setConsignment(getApproveBill().isConsignment());
             grnBill.setBillFinanceDetails(new BillFinanceDetails(grnBill));
         }
         return grnBill;
@@ -2125,6 +2126,7 @@ public class GrnCostingController implements Serializable {
             currentGrnBillPre = new BilledBill();
             currentGrnBillPre.setBillType(BillType.PharmacyGrnBill);
             currentGrnBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_PRE);
+            currentGrnBillPre.setConsignment(getApproveBill().isConsignment());
         }
         return currentGrnBillPre;
     }
