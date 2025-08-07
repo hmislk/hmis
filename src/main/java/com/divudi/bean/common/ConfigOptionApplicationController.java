@@ -145,6 +145,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
         getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
         getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
+        getBooleanValueByKey("Pharmacy Issue is by Purchase Rate", true);
+        getBooleanValueByKey("Pharmacy Issue is by Cost Rate", false);
+        getBooleanValueByKey("Pharmacy Issue is by Retail Rate", false);
         getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", true);
         getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false);
         getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false);

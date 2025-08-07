@@ -108,11 +108,11 @@
                                             </p:inputText>
                                         </div>
                                         <div class="col-1 d-grid">
-                                            <p:outputLabel value="Purchase Rate" ></p:outputLabel>
+                                            <p:outputLabel value="Issue Rate" ></p:outputLabel>
                                             <p:outputLabel
                                                 class="my-2"
                                                 id="txtPRate"
-                                                value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.purchaseRate}" >
+                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineGrossRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </div>
@@ -121,19 +121,19 @@
                                             <p:outputLabel
                                                 class="my-2"
                                                 id="txtRate"
-                                                value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.retailRate}" >
+                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.retailSaleRate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </div>
                                         <div class="col-1 d-grid">
                                             <p:outputLabel value="Purchase Value" ></p:outputLabel>
-                                            <p:outputLabel class="my-2" id="txtPVal" value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.purchaseValue}" >
+                                            <p:outputLabel class="my-2" id="txtPVal" value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtPurchaseRate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </div>
                                         <div class="col-1 d-grid">
                                             <p:outputLabel value="Retail Value" ></p:outputLabel>
-                                            <p:outputLabel class="my-2" id="txtRVal" value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.retailValue}" >
+                                            <p:outputLabel class="my-2" id="txtRVal" value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtRetailRate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </div>
@@ -188,24 +188,24 @@
                                                 <p:ajax event="keyup" listener="#{pharmacyIssueController.onEdit(bi)}" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"/>
                                             </p:inputText> -->
                                         </p:column>
-                                        <p:column headerText="Purchase Rate" style="padding: 6px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" style="text-align: right;">
+                                        <p:column headerText="Issue Rate" style="padding: 6px;">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Retail Rate" style="padding: 6px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}" style="text-align: right;">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.retailSaleRate}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
 
                                         <p:column headerText="Purchase Value" style="padding: 6px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseValue}" style="text-align: right;">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtPurchaseRate}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Retail Value" style="padding: 6px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailValue}" style="text-align: right;">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtRetailRate}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
@@ -281,12 +281,12 @@
                                     </f:facet>
                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol" id="total" >
                                         <h:outputLabel class="m-2" value="Total Value at Purchase Rate" ></h:outputLabel>
-                                        <h:outputLabel class="mx-4"  value="#{pharmacyIssueController.preBill.stockBill.stockValueAtPurchaseRates}" >
+                                        <h:outputLabel class="mx-4"  value="#{pharmacyIssueController.preBill.billFinanceDetails.totalPurchaseValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
                                         <h:outputLabel class="m-2" value="Total Value at Retail Rate" ></h:outputLabel>
-                                        <h:outputLabel class="mx-4"  value="#{pharmacyIssueController.preBill.stockBill.stockValueAsSaleRate}" >
+                                        <h:outputLabel class="mx-4"  value="#{pharmacyIssueController.preBill.billFinanceDetails.totalRetailSaleValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
