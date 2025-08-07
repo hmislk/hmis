@@ -25,4 +25,18 @@ if errorlevel 1 (
     exit /b 1
 )
 
+:: Step 4: Sync wiki if documentation changes detected
+echo 🔄 Checking for documentation changes...
+if exist "docs\wiki" (
+    echo 📚 Documentation changes detected, syncing wiki...
+    call scripts\sync-wiki.bat
+    if errorlevel 1 (
+        echo ⚠️  Wiki sync failed, but main push was successful
+    ) else (
+        echo ✅ Wiki synced successfully!
+    )
+) else (
+    echo ℹ️  No wiki documentation to sync
+)
+
 echo ✅ Push complete and local config restored!
