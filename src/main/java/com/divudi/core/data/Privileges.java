@@ -620,6 +620,7 @@ public enum Privileges {
     ChangeMyTheme("Change My Theme"),
     ChangePreferece("Change My Preference"),
     ChangeMyApiKeys("Change My Api Keys"),
+    ChangeReceiptPrintingPaperTypes("Change Receipt Printing Paper Types"),
     MyFinanacialTransactionManager("My Finanacial Transaction Manager"),
     //</editor-fold>
 
