@@ -92,8 +92,12 @@ public class TransferIssueController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private CommonFunctionsProxy commonFunctionsProxy;
+    @Inject
+    private VmpController vmpController;
 
     private Bill requestedBill;
+    // Bill id used when navigating from DTO tables
+    private Long requestedBillId;
     private Bill issuedBill;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
@@ -106,7 +110,15 @@ public class TransferIssueController implements Serializable {
     private Double qty;
     private Stock tmpStock;
     UserStockContainer userStockContainer;
+    private List<Stock> substituteStocks;
+    private Stock selectedSubstituteStock;
+    private BillItem itemForSubstitution;
 
+    /**
+     * @deprecated Use {@link #navigateToPharmacyIssueForRequestsById()} which
+     * loads the requested bill using its id from DTO tables.
+     */
+    @Deprecated
     public String navigateToPharmacyIssueForRequests() {
         if (requestedBill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -118,6 +130,18 @@ public class TransferIssueController implements Serializable {
             return "";
         }
         return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
+    }
+
+    /**
+     * Navigation helper when only the request bill id is available.
+     */
+    public String navigateToPharmacyIssueForRequestsById() {
+        if (requestedBillId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        requestedBill = billFacade.find(requestedBillId);
+        return navigateToPharmacyIssueForRequests();
     }
 
 //    public boolean isFullyIssued() {
@@ -240,6 +264,23 @@ public class TransferIssueController implements Serializable {
 
         }
         return requestedBill;
+    }
+
+    public Long getRequestedBillId() {
+        return requestedBillId;
+    }
+
+    /**
+     * Setter used by DTO based tables to pass only the bill id. The full
+     * {@link Bill} entity is fetched here when required.
+     */
+    public void setRequestedBillId(Long requestedBillId) {
+        this.requestedBillId = requestedBillId;
+        if (requestedBillId != null) {
+            this.requestedBill = billFacade.find(requestedBillId);
+        } else {
+            this.requestedBill = null;
+        }
     }
 
     public void createRequestIssueBillItems(Bill requestedBill) {
@@ -1012,6 +1053,10 @@ public class TransferIssueController implements Serializable {
     }
 
     private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        if (itemBatch == null) {
+            return BigDecimal.ZERO;
+        }
+        
         boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
         boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
@@ -1127,6 +1172,84 @@ public class TransferIssueController implements Serializable {
 
     public void prepareBatchDetails(BillItem bi) {
         selectedBillItem = bi;
+    }
+
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi != null && bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+            if (amp.getVmp() != null) {
+                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
+                for (Amp substituteAmp : amps) {
+                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
+                    if (stocks != null) {
+                        for (Stock stock : stocks) {
+                            if (stock.getStock() > 0 && stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null) {
+                                Date currentDate = new Date();
+                                if (stock.getItemBatch().getDateOfExpire().after(currentDate)) {
+                                    substituteStocks.add(stock);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+        
+        // Update the bill item with selected stock details
+        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
+        
+        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            phItem = new PharmaceuticalBillItem();
+            phItem.setBillItem(itemForSubstitution);
+            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        }
+        
+        // Set stock and batch details
+        phItem.setStock(selectedSubstituteStock);
+        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
+        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
+        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        
+        // Update rates in pharmaceutical bill item
+        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
+        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
+        
+        // Update financials
+        BillItemFinanceDetails financeDetails = itemForSubstitution.getBillItemFinanceDetails();
+        if (financeDetails != null) {
+            BigDecimal transferRate = determineTransferRate(selectedSubstituteStock.getItemBatch());
+            financeDetails.setLineGrossRate(transferRate);
+            financeDetails.setLineNetRate(transferRate);
+            
+            // Update cost and retail rates
+            financeDetails.setLineCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()));
+            financeDetails.setRetailSaleRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()));
+            
+            // Update values at different rates
+            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
+            financeDetails.setValueAtCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty));
+            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty));
+            financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
+        }
+        
+        updateFinancialsForTransferIssue(itemForSubstitution.getBillItemFinanceDetails());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
 
     public void removeAll() {
@@ -1281,6 +1404,30 @@ public class TransferIssueController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
     }
 
     public String getStockColourClass(Stock stock) {

@@ -23,6 +23,13 @@ case "$HOSTNAME" in
         "/c/Program Files/NetBeans-20/netbeans/java/maven/bin/mvn.cmd" "$@"
         exit $?
         ;;
+    "BuddhikaDesktop"|"buddhikadesktop")
+        echo "Using NetBeans bundled Maven for BuddhikaDesktop machine"
+        export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-11.0.23.9-hotspot"
+        export PATH="$JAVA_HOME/bin:$PATH"
+        "/d/Program Files/NetBeans-18/netbeans/java/maven/bin/mvn.cmd" "$@"
+        exit $?
+        ;;
     # Add other machines here as they are documented
     # "OTHER-MACHINE"|"other-machine")
     #     echo "Using Maven for other machine"

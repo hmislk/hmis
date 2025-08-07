@@ -1,0 +1,145 @@
+name: EngageWellnessCenter-PROD Build & Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - engagewellness-prod
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Cache Maven Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Update JDBC Data Sources in persistence.xml
+        run: |
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ewc</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ewcAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+
+      - name: Verify JDBC Data Sources in persistence.xml
+        run: |
+          grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Archive Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: target/*.war
+          overwrite: true
+
+      # - name: Run Tests
+      #   run: mvn test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./
+
+      - name: Deploy to Payara
+        env:
+          SERVER_IP: ${{ secrets.EWC_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.EWC_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.EWC_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.EWC_PROD_PAYARA_ADMIN_PASS }}
+        run: |
+          # Add SSH private key to the SSH agent
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          # Variables
+          WAR_NAME="ewc.war"
+          WAR_DIR="/home/appuser/app/latest"
+          APP_NAME="ewc"
+          SUBDOMAIN="ewc"
+
+          # Ensure deployment directory exists
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo mkdir -p $WAR_DIR
+            sudo chown -R appuser:appuser /home/appuser/app/latest
+            sudo su - appuser
+            cd $WAR_DIR
+
+            # Remove old backup if it exists
+            if [ -f $WAR_NAME.old ]; then
+              sudo rm $WAR_NAME.old
+            fi
+
+            # If the current WAR file exists, back it up
+            if [ -f $WAR_NAME ]; then
+              sudo mv $WAR_NAME $WAR_NAME.old
+            fi
+          "
+
+          # Copy new WAR file to the server
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
+
+          # Move the file to /home/appuser/app/latest/ and set permissions
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo mv /tmp/$WAR_NAME $WAR_DIR/
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+          "
+
+          # Deploy the WAR using asadmin
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.EWC_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            rm /tmp/payara-admin-pass.txt
+          "
+
+          # Validate if the application is running
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.EWC_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+              echo 'Application is running.'
+            else
+              echo 'Application failed to start.'
+            fi
+            rm /tmp/payara-admin-pass.txt
+          "
+
+          # Check if the application is reachable
+          for i in {1..5}; do
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
+            if [ "$RESPONSE_CODE" == "200" ]; then
+              echo "Application is reachable and healthy."
+              break
+            elif [ "$i" == "5" ]; then
+              echo "Application is not reachable or unhealthy at https://$SUBDOMAIN.carecode.org/$APP_NAME (HTTP $RESPONSE_CODE)"
+              break
+            fi
+            sleep 10
+          done
+
+          # Cleanup
+          rm -f private_key.pem
