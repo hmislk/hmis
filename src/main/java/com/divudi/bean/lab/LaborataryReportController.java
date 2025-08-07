@@ -34,11 +34,15 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.dto.PatientInvestigationDTO;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -86,6 +90,7 @@ public class LaborataryReportController implements Serializable {
     PaymentService paymentService;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -180,8 +185,11 @@ public class LaborataryReportController implements Serializable {
     private double totalCount;
 
     private List<Payment> payments;
+    
+    private Investigation investigation;
 
 // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -291,6 +299,7 @@ public class LaborataryReportController implements Serializable {
         totalProFee = 0.0;
         totalHosFee = 0.0;
         totalCount = 0.0;
+        investigation = null;
 
     }
 
@@ -738,6 +747,98 @@ public class LaborataryReportController implements Serializable {
 
         return reportList;
     }
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    private List<PatientInvestigationDTO> itemList;
+    
+    public void processLaborataryBillItemReportDto() {
+        if(investigation == null){
+            JsfUtil.addErrorMessage("Investigation Missing.");
+            return ;
+        }
+        
+        Map<String, Object> params = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.dto.PatientInvestigationDTO("
+                + " pi.id,"
+                + " pi.billItem.item.name, "
+                + " pi.billItem.bill.createdAt, "
+                + " pi.billItem.bill.deptId, "
+                + " pi.billItem.bill.patient.person.title, "
+                + " pi.billItem.bill.patient.person.name, "
+                + " pi.billItem.bill.patient.id,"
+                + " pi.billItem.bill.patient.person.sex) "
+                + " from PatientInvestigation pi "
+                + " where pi.billItem.retired = :ret "
+                + " and pi.billItem.bill.createdAt between :fd and :td "
+                + " and pi.billItem.bill.billTypeAtomic IN :bType "
+                + " and type(pi.billItem.item) = :invType ";
+        
+        if (investigation != null) {
+            jpql += " and pi.investigation =:investigation ";
+            params.put("investigation", investigation);
+        }
+        
+        if (institution != null) {
+            jpql += " and pi.billItem.bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and pi.billItem.bill.department=:dep ";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and pi.billItem.bill.department.site=:site ";
+            params.put("site", site);
+        }
+
+        jpql += " order by pi.billItem.bill.createdAt asc ";
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("invType", Investigation.class);
+
+        List<BillTypeAtomic> bTypes = Arrays.asList(
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL);
+        params.put("bType", bTypes);
+
+        itemList = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (PatientInvestigationDTO pi : itemList) {
+            Patient pt = patientFacade.find(pi.getPatientid());
+            String age = pt.getAgeOnBilledDate(pi.getBillDate());
+            pi.setPatientAge(age);
+        }
+    }
+    
+    public List<Investigation> completeInvestigations(String qry) {
+
+        // Construct the JPQL query with named parameters
+        String jpql = "SELECT c FROM Item c WHERE (TYPE(c) = Investigation OR TYPE(c) = Packege) AND c.retired = :ret "
+                + "AND (UPPER(c.name) LIKE :nameQuery OR c.code LIKE :codeQuery) "
+                + "ORDER BY c.name";
+
+        // Create a map to hold query parameters
+        Map parameters = new HashMap<>();
+        parameters.put("nameQuery", "%" + qry.toUpperCase() + "%");
+        parameters.put("codeQuery", "%" + qry + "%");
+        parameters.put("ret", false);
+
+        List<Investigation> completeItems = investigationFacade.findByJpql(jpql, parameters,15);
+
+//        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
+        return completeItems;
+    }
+    
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    InvestigationFacade investigationFacade;
 
     private void processPayment(Bill b, IncomeRow incomeRow) {
         switch (b.getPaymentMethod()) {
@@ -1520,4 +1621,20 @@ public class LaborataryReportController implements Serializable {
         this.strActiveIndex = strActiveIndex;
     }
   // </editor-fold>
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
+    }
+
+    public List<PatientInvestigationDTO> getItemList() {
+        return itemList;
+    }
+
+    public void setItemList(List<PatientInvestigationDTO> itemList) {
+        this.itemList = itemList;
+    }
 }
