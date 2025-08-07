@@ -593,8 +593,9 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Department");
             return;
         }
-        boolean canIssueToSameDept = configOptionApplicationController.getBooleanValueByKey("Disposal Issue can be done for the same department", false);
-        if (canIssueToSameDept) {
+        boolean canIssueToSameDept = configOptionApplicationController
+            .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
+        if (!canIssueToSameDept) {
             if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
                 JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
                 return;
