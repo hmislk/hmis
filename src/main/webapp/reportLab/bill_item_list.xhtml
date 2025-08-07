@@ -11,7 +11,7 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Laboratary BillItem Report" styleClass="w-100">
+                    <p:panel header="Laboratary Investigation Report" styleClass="w-100">
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -346,6 +346,9 @@
                             </p:column> 
                             <p:column headerText="Bill Number" width="15em" styleClass="wide-column" style="padding: 5px!important;">
                                 <h:outputText value="#{i.billNumber}" />
+                            </p:column> 
+                            <p:column headerText="BHT No" width="15em" styleClass="wide-column" style="padding: 5px!important;">
+                                <h:outputText value="#{i.bhtNo}" />
                             </p:column> 
                             <p:column headerText="Patient Name" style="padding: 5px!important;">
                                 <div class="d-flex">

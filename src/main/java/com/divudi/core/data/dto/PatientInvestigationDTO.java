@@ -1,4 +1,3 @@
-
 package com.divudi.core.data.dto;
 
 import com.divudi.core.data.Sex;
@@ -13,12 +12,13 @@ public class PatientInvestigationDTO implements Serializable {
     private String itemName;
     private Date billDate;
     private String billNumber;
+    private String bhtNo;
     private Title patientTitle;
     private String patientName;
     private String patientAge;
     private Long patientid;
     private Sex gender;
-    
+
     public PatientInvestigationDTO() {
     }
 
@@ -113,5 +113,12 @@ public class PatientInvestigationDTO implements Serializable {
         this.patientAge = patientAge;
     }
 
-    
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
 }

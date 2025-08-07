@@ -11,10 +11,10 @@
             <ui:define name="content">
 
                 <h:form >
-                    <p:panel header="Test Wise Count Report Print" styleClass="w-100">
+                    <p:panel header="Laboratary Investigation Report" styleClass="w-100">
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
-                                <h:outputText value="Test Wise Count Report Print" class="mt-2"/>
+                                <h:outputText value="Laboratary Investigation Report Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
@@ -163,19 +163,19 @@
                                                     <h:outputText value="No" style="margin-left: 2mm;"/>
                                                 </th>
                                                 <th style="font-weight: 700;">
-                                                    <h:outputText value="Bill Date" style="margin-left: 3mm;"/>
+                                                    <h:outputText value="Bill Date" style="margin-left: 2mm;"/>
                                                 </th>
                                                 <th style="width: 15mm; font-weight: 700;">
-                                                    <h:outputText value="Bill Number" style="margin-left: 3mm;"/>
+                                                    <h:outputText value="Bill No" style="margin-left: 2mm;"/>
                                                 </th>
                                                 <th style="width: 30mm; font-weight: 700;">
-                                                    <h:outputText value="Patient Name" style="margin-left: 3mm;"/>
+                                                    <h:outputText value="Patient Name" style="margin-left: 2mm;"/>
                                                 </th>
                                                 <th style="width: 20mm; font-weight: 700;">
-                                                    <h:outputText value="Age" style="margin-left: 3mm;"/>
+                                                    <h:outputText value="Age" style="margin-left: 2mm;"/>
                                                 </th>
                                                 <th style="width: 20mm; font-weight: 700; ">
-                                                    <h:outputText value="Gender" style="margin-left: 3mm;"/>
+                                                    <h:outputText value="Gender" style="margin-left: 2mm;"/>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -186,24 +186,24 @@
                                                         <h:outputText value="#{i.index +1}" style="margin-left: 2mm;"/>
                                                     </td>
                                                     <td style="width: 30mm;">
-                                                        <h:outputText value="#{pi.billDate}" style="margin-left: 3mm;">
+                                                        <h:outputText value="#{pi.billDate}" style="margin-left: 2mm;">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 20mm;">
-                                                        <h:outputText value="#{pi.billNumber}" style="margin-left: 3mm;"></h:outputText>
+                                                        <h:outputText value="#{pi.billNumber}" style="margin-left: 2mm;"></h:outputText>
                                                     </td>
                                                     <td >
-                                                        <div class="d-flex" style="margin-left: 3mm;">
+                                                        <div class="d-flex" style="margin-left: 2mm;">
                                                             <h:outputText value="#{pi.patientTitle}"></h:outputText>
                                                             <h:outputText value="#{pi.patientName}" class="mx-1"></h:outputText>
                                                         </div>
                                                     </td>
                                                     <td style="width: 20mm;">
-                                                        <h:outputText value="#{pi.patientAge}" style="margin-left: 3mm;"></h:outputText>
+                                                        <h:outputText value="#{pi.patientAge}" style="margin-left: 2mm;"></h:outputText>
                                                     </td>
                                                     <td style="width: 20mm;">
-                                                        <h:outputText value="#{pi.gender}" style="margin-left: 3mm;"></h:outputText>
+                                                        <h:outputText value="#{pi.gender}" style="margin-left: 2mm;"></h:outputText>
                                                     </td>
                                                 </tr>
                                             </ui:repeat>
