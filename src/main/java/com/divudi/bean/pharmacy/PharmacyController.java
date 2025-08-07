@@ -1621,7 +1621,7 @@ public class PharmacyController implements Serializable {
 
                 Double purchaseObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineNetTotal().doubleValue() : null;
                 Double saleObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : null;
-                Double costObj = hasCosting ? (cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineCostValue().doubleValue() : null) : null;
+                Double costObj = hasCosting ? (cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getTotalCostValue().doubleValue() : null) : null;
 
                 double purchase = purchaseObj != null ? purchaseObj : 0;
                 double sale = saleObj != null ? saleObj : 0;
@@ -1750,7 +1750,7 @@ public class PharmacyController implements Serializable {
 
                 Double purchaseObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineNetTotal().doubleValue() : null;
                 Double saleObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : null;
-                Double costObj = hasCosting ? (cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineCostValue().doubleValue() : null) : null;
+                Double costObj = hasCosting ? (cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getTotalCostValue().doubleValue() : null) : null;
 
                 double purchase = purchaseObj != null ? purchaseObj : 0;
                 double sale = saleObj != null ? saleObj : 0;
