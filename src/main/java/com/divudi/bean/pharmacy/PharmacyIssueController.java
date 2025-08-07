@@ -34,14 +34,17 @@ import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BillFinanceDetails;
+import com.divudi.core.entity.BillNumber;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillNumberFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Institution;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,6 +55,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.persistence.TemporalType;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -76,6 +82,7 @@ import com.divudi.service.pharmacy.PharmacyCostingService;
 public class PharmacyIssueController implements Serializable {
 
     String errorMessage = null;
+    private static final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -107,12 +114,17 @@ public class PharmacyIssueController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private BillNumberFacade billNumberFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
     @Inject
     private PharmacyController pharmacyController;
+
+    @EJB
+    private CashTransactionBean cashTransactionBean;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -548,42 +560,45 @@ public class PharmacyIssueController implements Serializable {
 
     }
 
-    public void settlePreBill() {
-        editingQty = null;
-
-        if (checkAllBillItem()) {// Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
-            return;
-        }
-
-        if (errorCheckForPreBill()) {
-            return;
-        }
-
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
-
-        savePreBillFinally();
-
-        savePreBillItemsFinally(tmpBillItems);
-
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
-
-        clearBill();
-        clearBillItem();
-
-        billPreview = true;
-    }
-
-    @EJB
-    private CashTransactionBean cashTransactionBean;
+//    public void settlePreBill() {
+//        editingQty = null;
+//
+//        if (checkAllBillItem()) {// Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
+//            return;
+//        }
+//
+//        if (errorCheckForPreBill()) {
+//            return;
+//        }
+//
+//        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+//        getPreBill().setBillItems(null);
+//
+//        savePreBillFinally();
+//
+//        savePreBillItemsFinally(tmpBillItems);
+//
+//        setPrintBill(getBillFacade().find(getPreBill().getId()));
+//
+//        clearBill();
+//        clearBillItem();
+//
+//        billPreview = true;
+//    }
 
     public void settleDisposalIssueBill() {
         editingQty = null;
         errorMessage = null;
-        if (toDepartment != null
-                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a Department");
             return;
+        }
+        boolean canIssueToSameDept = configOptionApplicationController.getBooleanValueByKey("Disposal Issue can be done for the same department", false);
+        if (canIssueToSameDept) {
+            if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+                JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+                return;
+            }
         }
         if (checkAllBillItem()) {
             return;
@@ -1215,51 +1230,330 @@ public class PharmacyIssueController implements Serializable {
         return pharmacyController;
     }
 
+    private String getLockKey(String strategy, Department fromDept, Department toDept, BillTypeAtomic billType) {
+        StringBuilder key = new StringBuilder(strategy);
+        if (fromDept != null) {
+            key.append("-from-").append(fromDept.getId());
+        }
+        if (toDept != null) {
+            key.append("-to-").append(toDept.getId());
+        }
+        key.append("-").append(billType.name());
+        return key.toString();
+    }
+
     public String generateBillNumberForFromDepartment() {
-        return getBillNumberBean().departmentBillNumberGeneratorYearly(
-            getPreBill().getFromDepartment(), 
-            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
-        );
+        Department fromDept = getPreBill().getFromDepartment();
+        if (fromDept == null) {
+            return "";
+        }
+
+        String lockKey = getLockKey("FROM_DEPT", fromDept, null, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return generateDirectBillNumber(fromDept, null, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE, "FROM_DEPT");
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String generateBillNumberForToDepartment() {
-        return getBillNumberBean().departmentBillNumberGeneratorYearly(
-            getPreBill().getToDepartment(), 
-            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
-        );
+        Department toDept = getPreBill().getToDepartment();
+        if (toDept == null) {
+            return "";
+        }
+
+        String lockKey = getLockKey("TO_DEPT", null, toDept, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return generateDirectBillNumber(toDept, null, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE, "TO_DEPT");
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String generateBillNumberForFromAndToDepartmentsCorrected() {
-        return getBillNumberBean().departmentBillNumberGeneratorYearly(
-            getPreBill().getFromDepartment(), 
-            getPreBill().getToDepartment(), 
-            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
-        );
+        Department fromDept = getPreBill().getFromDepartment();
+        Department toDept = getPreBill().getToDepartment();
+        if (fromDept == null || toDept == null) {
+            return "";
+        }
+
+        String lockKey = getLockKey("FROM_TO_DEPT", fromDept, toDept, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return generateDirectBillNumber(fromDept, toDept, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE, "FROM_TO_DEPT");
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String generateBillNumberByFromDepartmentAndToDepartment() {
-        return getBillNumberBean().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-            getPreBill().getFromDepartment(), 
-            getPreBill().getToDepartment(), 
-            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
-        );
+        return generateBillNumberForFromAndToDepartmentsCorrected();
     }
 
     public String generateInstitutionBillNumber() {
-        return getBillNumberBean().institutionBillNumberGeneratorByPayment(
-            getSessionController().getDepartment(), 
-            getPreBill(), 
-            BillType.PharmacyDisposalIssue, 
-            BillNumberSuffix.DI
-        );
+        Department dept = getSessionController().getDepartment();
+        if (dept == null) {
+            return "";
+        }
+
+        String lockKey = getLockKey("INST_DEPT", dept, null, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return generateInstitutionBillNumberByCount(dept, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE, false);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String generateInstitutionBillNumberForInstitution() {
-        return getBillNumberBean().institutionBillNumberGeneratorByPayment(
-            getSessionController().getInstitution(), 
-            getPreBill(), 
-            BillType.PharmacyDisposalIssue, 
-            BillNumberSuffix.DI
-        );
+        Institution inst = getSessionController().getInstitution();
+        if (inst == null) {
+            return "";
+        }
+
+        String lockKey = getLockKey("INST_ONLY", null, null, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return generateInstitutionBillNumberByCount(inst, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private String generateDirectBillNumber(Department primaryDept, Department secondaryDept, BillTypeAtomic billType, String strategy) {
+        BillNumber billNumber = findOrCreateBillNumber(primaryDept, secondaryDept, billType, strategy);
+        Long nextNumber = getNextBillNumberByCount(primaryDept, secondaryDept, billType, strategy);
+
+        billNumber.setLastBillNumber(nextNumber);
+        billNumberFacade.edit(billNumber);
+
+        return formatBillNumber(primaryDept, secondaryDept, nextNumber, strategy);
+    }
+
+    private String generateInstitutionBillNumberByCount(Department dept, BillTypeAtomic billType, boolean isDepartmentLevel) {
+        Long count = getInstitutionBillCount(dept, billType, isDepartmentLevel);
+        count = count + 1;
+
+        String institutionCode = "";
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
+            institutionCode = dept.getInstitution().getInstitutionCode();
+        }
+
+        String deptCode = isDepartmentLevel ? dept.getDepartmentCode() : "";
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+
+        StringBuilder result = new StringBuilder();
+        if (!institutionCode.isEmpty()) {
+            result.append(institutionCode);
+        }
+        if (!deptCode.isEmpty()) {
+            result.append(deptCode).append("/");
+        }
+        result.append("DI/").append(String.format("%02d", year))
+                .append("/").append(String.format("%06d", count));
+
+        return result.toString();
+    }
+
+    private String generateInstitutionBillNumberByCount(Institution inst, BillTypeAtomic billType) {
+        Long count = getInstitutionOnlyBillCount(inst, billType);
+        count = count + 1;
+
+        String institutionCode = "";
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
+            institutionCode = inst.getInstitutionCode();
+        }
+
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+
+        StringBuilder result = new StringBuilder();
+        if (!institutionCode.isEmpty()) {
+            result.append(institutionCode);
+        }
+        result.append("DI/").append(String.format("%02d", year))
+                .append("/").append(String.format("%06d", count));
+
+        return result.toString();
+    }
+
+    private BillNumber findOrCreateBillNumber(Department primaryDept, Department secondaryDept, BillTypeAtomic billType, String strategy) {
+        String jpql = "SELECT bn FROM BillNumber bn WHERE bn.retired = false AND bn.billTypeAtomic = :billType";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", billType);
+
+        if ("FROM_DEPT".equals(strategy)) {
+            jpql += " AND bn.department = :dept AND bn.toDepartment IS NULL";
+            params.put("dept", primaryDept);
+        } else if ("TO_DEPT".equals(strategy)) {
+            jpql += " AND bn.toDepartment = :toDept AND bn.department IS NULL";
+            params.put("toDept", primaryDept);
+        } else if ("FROM_TO_DEPT".equals(strategy)) {
+            jpql += " AND bn.department = :dept AND bn.toDepartment = :toDept";
+            params.put("dept", primaryDept);
+            params.put("toDept", secondaryDept);
+        }
+
+        jpql += " AND bn.billYear = :year";
+        params.put("year", Calendar.getInstance().get(Calendar.YEAR));
+
+        List<BillNumber> results = billNumberFacade.findByJpql(jpql, params);
+
+        if (!results.isEmpty()) {
+            return results.get(0);
+        }
+
+        BillNumber newBillNumber = new BillNumber();
+        newBillNumber.setBillTypeAtomic(billType);
+        newBillNumber.setBillYear(Calendar.getInstance().get(Calendar.YEAR));
+        newBillNumber.setLastBillNumber(0L);
+        newBillNumber.setRetired(false);
+
+        if ("FROM_DEPT".equals(strategy)) {
+            newBillNumber.setDepartment(primaryDept);
+            newBillNumber.setInstitution(primaryDept.getInstitution());
+        } else if ("TO_DEPT".equals(strategy)) {
+            newBillNumber.setToDepartment(primaryDept);
+            newBillNumber.setInstitution(primaryDept.getInstitution());
+        } else if ("FROM_TO_DEPT".equals(strategy)) {
+            newBillNumber.setDepartment(primaryDept);
+            newBillNumber.setToDepartment(secondaryDept);
+            newBillNumber.setInstitution(primaryDept.getInstitution());
+        }
+
+        billNumberFacade.create(newBillNumber);
+        return newBillNumber;
+    }
+
+    private Long getNextBillNumberByCount(Department primaryDept, Department secondaryDept, BillTypeAtomic billType, String strategy) {
+        Calendar startOfYear = Calendar.getInstance();
+        startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+        startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+        startOfYear.set(Calendar.MINUTE, 0);
+        startOfYear.set(Calendar.SECOND, 0);
+        startOfYear.set(Calendar.MILLISECOND, 0);
+
+        Calendar endOfYear = Calendar.getInstance();
+        endOfYear.set(Calendar.MONTH, 11);
+        endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+        endOfYear.set(Calendar.HOUR_OF_DAY, 23);
+        endOfYear.set(Calendar.MINUTE, 59);
+        endOfYear.set(Calendar.SECOND, 59);
+        endOfYear.set(Calendar.MILLISECOND, 999);
+
+        String sql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :billType AND b.billDate BETWEEN :startDate AND :endDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", billType);
+        params.put("startDate", startOfYear.getTime());
+        params.put("endDate", endOfYear.getTime());
+
+        if ("FROM_DEPT".equals(strategy)) {
+            sql += " AND b.fromDepartment = :fromDept";
+            params.put("fromDept", primaryDept);
+        } else if ("TO_DEPT".equals(strategy)) {
+            sql += " AND b.toDepartment = :toDept";
+            params.put("toDept", primaryDept);
+        } else if ("FROM_TO_DEPT".equals(strategy)) {
+            sql += " AND b.fromDepartment = :fromDept AND b.toDepartment = :toDept";
+            params.put("fromDept", primaryDept);
+            params.put("toDept", secondaryDept);
+        }
+
+        return billFacade.findAggregateLong(sql, params, TemporalType.DATE) + 1;
+    }
+
+    private Long getInstitutionBillCount(Department dept, BillTypeAtomic billType, boolean isDepartmentLevel) {
+        Calendar startOfYear = Calendar.getInstance();
+        startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+        startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+        startOfYear.set(Calendar.MINUTE, 0);
+        startOfYear.set(Calendar.SECOND, 0);
+        startOfYear.set(Calendar.MILLISECOND, 0);
+
+        Calendar endOfYear = Calendar.getInstance();
+        endOfYear.set(Calendar.MONTH, 11);
+        endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+        endOfYear.set(Calendar.HOUR_OF_DAY, 23);
+        endOfYear.set(Calendar.MINUTE, 59);
+        endOfYear.set(Calendar.SECOND, 59);
+        endOfYear.set(Calendar.MILLISECOND, 999);
+
+        String sql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :billType AND b.billDate BETWEEN :startDate AND :endDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", billType);
+        params.put("startDate", startOfYear.getTime());
+        params.put("endDate", endOfYear.getTime());
+
+        if (isDepartmentLevel) {
+            sql += " AND b.department = :dept";
+            params.put("dept", dept);
+        } else {
+            sql += " AND b.institution = :inst";
+            params.put("inst", dept.getInstitution());
+        }
+
+        return billFacade.findAggregateLong(sql, params, TemporalType.DATE);
+    }
+
+    private Long getInstitutionOnlyBillCount(Institution inst, BillTypeAtomic billType) {
+        Calendar startOfYear = Calendar.getInstance();
+        startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+        startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+        startOfYear.set(Calendar.MINUTE, 0);
+        startOfYear.set(Calendar.SECOND, 0);
+        startOfYear.set(Calendar.MILLISECOND, 0);
+
+        Calendar endOfYear = Calendar.getInstance();
+        endOfYear.set(Calendar.MONTH, 11);
+        endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+        endOfYear.set(Calendar.HOUR_OF_DAY, 23);
+        endOfYear.set(Calendar.MINUTE, 59);
+        endOfYear.set(Calendar.SECOND, 59);
+        endOfYear.set(Calendar.MILLISECOND, 999);
+
+        String sql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :billType AND b.institution = :inst AND b.billDate BETWEEN :startDate AND :endDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", billType);
+        params.put("inst", inst);
+        params.put("startDate", startOfYear.getTime());
+        params.put("endDate", endOfYear.getTime());
+
+        return billFacade.findAggregateLong(sql, params, TemporalType.DATE);
+    }
+
+    private String formatBillNumber(Department primaryDept, Department secondaryDept, Long billNumber, String strategy) {
+        StringBuilder result = new StringBuilder();
+
+        String institutionCode = "";
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
+            institutionCode = primaryDept.getInstitution().getInstitutionCode();
+        }
+
+        if (!institutionCode.isEmpty()) {
+            result.append(institutionCode);
+        }
+
+        if ("FROM_DEPT".equals(strategy) || "TO_DEPT".equals(strategy)) {
+            result.append(primaryDept.getDepartmentCode());
+        } else if ("FROM_TO_DEPT".equals(strategy)) {
+            result.append(primaryDept.getDepartmentCode()).append("-").append(secondaryDept.getDepartmentCode());
+        }
+
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append("/DI/").append(String.format("%02d", year))
+                .append("/").append(String.format("%06d", billNumber));
+
+        return result.toString();
     }
 }

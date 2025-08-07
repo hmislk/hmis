@@ -1,68 +1,78 @@
 # Pharmacy Issue (Disposal)
 
-The Pharmacy Issue module allows pharmacists to dispense medications and items to patients with configurable rate displays and comprehensive financial tracking.
+The Pharmacy Issue module allows pharmacists to dispense medications and items for disposal or transfer between departments with configurable rate displays and comprehensive financial tracking.
 
 ## Overview
 
-Pharmacy Issue is a core dispensing functionality that enables:
-- Item dispensing with configurable rate visibility
-- Real-time financial calculations
-- Bill-level value summaries
-- Configuration-based display options
+Pharmacy Issue is a core disposal functionality that enables:
+- Item disposal issue to other departments
+- Configurable rate visibility and value calculations
+- Real-time financial tracking across multiple rate types
+- Bill-level value summaries with configurable display options
+- Inter-department transfer tracking with detailed audit trail
 
 ## Key Features
 
 ### 1. **Configurable Rate Display**
-Administrators can control which rates are displayed during dispensing:
+Administrators can control which rates are displayed during disposal issue operations:
 
-- **Purchase Rate**: Shows item purchase cost
-- **Cost Rate**: Shows calculated cost rate including expenses
-- **Retail Rate**: Shows standard retail selling price
-- **Issue Rate**: Shows actual dispensing rate (always visible)
+- **Purchase Rate**: Shows original item purchase cost for reference
+- **Cost Rate**: Shows calculated cost rate including expenses and overheads
+- **Retail Rate**: Shows standard retail selling price for value comparison
+- **Issue Rate**: Shows actual disposal issue rate used for transfer value calculation (always visible)
 
 ### 2. **Value Calculations**
-The system displays both item-level and bill-level values:
+The system calculates and displays multiple value types at both item and bill levels:
 
 **Item-Level Values:**
-- Purchase Value: Quantity × Purchase Rate  
-- Cost Value: Quantity × Cost Rate
-- Retail Value: Quantity × Retail Rate
-- Transfer Value: Quantity × Issue Rate (net dispensing value)
+- **Purchase Value**: Quantity × Purchase Rate (original procurement cost)
+- **Cost Value**: Quantity × Cost Rate (cost including overheads)  
+- **Retail Value**: Quantity × Retail Rate (market value reference)
+- **Issue Value**: Quantity × Issue Rate (actual transfer value used in disposal)
 
 **Bill-Level Totals:**
-- Total Purchase Value: Sum of all item purchase values
-- Total Cost Value: Sum of all item cost values  
-- Total Retail Value: Sum of all item retail values
-- Total Transfer Value: Net dispensing amount
+- **Total Purchase Value**: Sum of all item purchase values for cost accounting
+- **Total Cost Value**: Sum of all item cost values for internal costing
+- **Total Retail Value**: Sum of all item retail values for value assessment
+- **Total Issue Value**: Net disposal value transferred to receiving department
 
 ### 3. **Real-Time Updates**
 All financial values automatically update when:
-- Items are added to the bill
-- Quantities are changed
-- Items are selected from stock
+- Items are added to the disposal issue bill
+- Quantities are modified
+- Items are selected from stock with different batch rates
 
-## How to Use Pharmacy Issue
+### 4. **Department Transfer Management**
+The system tracks transfers between departments with:
+- **From Department**: Automatically set to logged user's department
+- **To Department**: Selectable destination department for disposal items
+- **Request Number**: Reference tracking for internal requests
+- **Comments**: Detailed notes about the disposal/transfer reason
 
-### Basic Dispensing Process
+## How to Use Pharmacy Disposal Issue
 
-1. **Select Department/Location**
-   - Choose the dispensing department from the dropdown
+### Basic Disposal Issue Process
 
-2. **Add Items to Bill**
+1. **Select Receiving Department**
+   - Choose the destination department for disposal items
+   - Enter request number if applicable
+   - Add comments explaining the disposal reason
+
+2. **Add Items to Disposal Bill**
    - Search and select items using the autocomplete field
-   - Enter the dispensing quantity
-   - Review displayed rates and values (based on configuration)
-   - Click "Add" to add the item to the bill
+   - Enter the disposal quantity
+   - Review displayed rates and values (based on configuration settings)
+   - Click "Add" to add the item to the disposal bill
 
-3. **Review Bill Details**
+3. **Review Disposal Bill Details**
    - View item-wise breakdown in the bill items table
-   - Check bill-level totals in the Bill Details panel
-   - Verify all calculations are correct
+   - Check bill-level totals across all configured value types
+   - Verify all calculations and transfer values are correct
 
-4. **Complete Transaction**
-   - Process payment if required
-   - Print dispensing documents
-   - Complete the transaction
+4. **Complete Disposal Transaction**
+   - Review all details for accuracy
+   - Click "Settle Issue" to complete the disposal
+   - Print disposal receipt for record-keeping
 
 ### Item Selection Features
 
@@ -77,17 +87,87 @@ All financial values automatically update when:
 
 The display of rates and values can be controlled through configuration settings. See [Pharmacy Issue Configuration](https://github.com/hmislk/hmis/wiki/Pharmacy-Issue-Configuration) for detailed setup instructions.
 
+## Technical Implementation
+
+### Controller: PharmacyIssueController
+
+The disposal issue functionality is implemented in `PharmacyIssueController.java` with key methods:
+
+**Core Methods:**
+- `settleDisposalIssueBill()`: Main method to complete disposal transactions
+- `addBillItem()`: Adds items to disposal bill with validation
+- `calTotal()`: Recalculates all financial values using PharmacyCostingService
+- `updateFinancialsForIssue()`: Updates item-level financial calculations
+
+**Rate Determination Logic:**
+```java
+private BigDecimal determineIssueRate(ItemBatch itemBatch) {
+    boolean issueByPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Issue is by Purchase Rate", true);
+    boolean issueByCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Issue is by Cost Rate", false);
+    boolean issueByRetail = configOptionApplicationController.getBooleanValueByKey("Pharmacy Issue is by Retail Rate", false);
+    
+    if (issueByPurchase) return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+    else if (issueByCost) return BigDecimal.valueOf(itemBatch.getCostRate());
+    else if (issueByRetail) return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+    else return BigDecimal.valueOf(itemBatch.getPurcahseRate()); // fallback
+}
+```
+
+### JSF Page: pharmacy_issue.xhtml
+
+Located at `src/main/webapp/pharmacy/pharmacy_issue.xhtml`, this page implements:
+
+**Key UI Components:**
+- Item selection autocomplete with multi-column rate display
+- Real-time rate and value calculation inputs
+- Bill items table with configurable column visibility
+- Bill details panel with multiple total types
+- Receipt component for printing disposal documentation
+
+**Conditional Display Logic:**
+All rate and value displays are controlled by configuration keys:
+```xhtml
+rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Rate',true)}"
+```
+
+### Receipt Component: pharmacy_issue_receipt.xhtml
+
+Located at `src/main/webapp/resources/pharmacy/pharmacy_issue_receipt.xhtml`, this composite component provides:
+
+**Features:**
+- Professional disposal issue receipt formatting
+- Configurable rate and value column visibility
+- Department transfer information display
+- Audit trail with created by/at information
+- CSS customization through configuration options
+
+**Key Display Elements:**
+- Bill metadata (date, receipt number, request number)
+- Department transfer details (from/to departments)
+- Item details with configurable rate columns
+- Multiple total types based on configuration
+- Staff signatures section for approval workflow
+
+### PharmacyCostingService Integration
+
+The `calculateBillTotalsFromItemsForDisposalIssue()` method handles:
+- Multiple rate type calculations (purchase, cost, retail, issue)
+- Bill-level total aggregation across all value types
+- Financial detail population for reporting and audit
+- Proper negative quantity handling for disposal transactions
+
 ## Access Requirements
 
 **User Privileges Required:**
-- Pharmacy Issue privileges
+- Pharmacy Disposal Issue privileges
 - Access to specific pharmacy departments
-- Item dispensing permissions
+- Item disposal/transfer permissions
 
 **Typical User Roles:**
 - Pharmacists
-- Pharmacy Technicians
-- Authorized dispensing staff
+- Pharmacy Technicians  
+- Department Store Managers
+- Authorized disposal staff
 
 ## Integration Points
 

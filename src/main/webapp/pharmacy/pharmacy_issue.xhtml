@@ -17,7 +17,7 @@
                     <p:panel rendered="#{!pharmacyIssueController.billPreview}">
                         <f:facet name="header" >
                             <i Class="fas fa-building mt-2" />
-                            <h:outputLabel class="mx-2 mt-2" value="Department Consumption - Issue" />
+                            <h:outputLabel class="mx-2 mt-2" value="Department Disposal - Issue" />
 
                             <div class="float-end" >
                                 <p:commandButton
@@ -270,9 +270,6 @@
                                         </p:column>
                                         <p:column headerText="Qty" style="padding: 6px;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" ></h:outputLabel>
-<!--                                            <p:inputText value="#{bi.qty}" style="text-align: right; width: 55px;" >
-                                                <p:ajax event="keyup" listener="#{pharmacyIssueController.onEdit(bi)}" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"/>
-                                            </p:inputText> -->
                                         </p:column>
                                         <p:column headerText="Issue Rate" style="padding: 6px;" styleClass="text-end">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
