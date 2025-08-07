@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
@@ -94,6 +95,8 @@ public class PharmacyController implements Serializable {
     DiscardCategoryController discardCategoryController;
     @Inject
     VmpController vmpController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -736,6 +739,8 @@ public class PharmacyController implements Serializable {
     private String reportType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
+    private double totalCashCostValue;
+    private double totalCreditCostValue;
     private double totalPurchase;
     private List<String1Value1> data;
     private double totalSaleValue;
@@ -982,6 +987,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnDetailReportToPdf() {
+        boolean hasCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1001,12 +1008,21 @@ public class PharmacyController implements Serializable {
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
 
-            PdfPTable mainTable = new PdfPTable(15);
+            PdfPTable mainTable = new PdfPTable(hasCosting ? 17 : 15);
             mainTable.setWidthPercentage(100);
-            mainTable.setWidths(new float[]{1.5f, 1.8f, 2f, 2f, 2.2f, 2.2f, 2f, 2f, 1.8f, 1.8f, 1.8f, 1.8f, 1.8f, 2f, 8f});
+            if (hasCosting) {
+                mainTable.setWidths(new float[]{1.5f, 1.8f, 2f, 2f, 2.2f, 2.2f, 2f, 2f, 1.8f, 1.8f, 1.8f, 1.8f, 1.8f, 1.8f, 1.8f, 2f, 8f});
+            } else {
+                mainTable.setWidths(new float[]{1.5f, 1.8f, 2f, 2f, 2.2f, 2.2f, 2f, 2f, 1.8f, 1.8f, 1.8f, 1.8f, 1.8f, 2f, 8f});
+            }
 
             String[] headers = {"GRN No", "Invoice No", "Created Date", "Approved Date", "Supplier Name", "Institution",
                     "Site", "Department", "Po No", "Purchase Cash", "Purchase Credit", "Sale Cash", "Sale Credit", "Remark", "Purchase Details"};
+
+            if (hasCosting) {
+                headers = new String[]{"GRN No", "Invoice No", "Created Date", "Approved Date", "Supplier Name", "Institution",
+                        "Site", "Department", "Po No", "Purchase Cash", "Purchase Credit", "Cost Cash", "Cost Credit", "Sale Cash", "Sale Credit", "Remark", "Purchase Details"};
+            }
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
@@ -1033,35 +1049,52 @@ public class PharmacyController implements Serializable {
                 double purchaseCredit = (b.getPaymentMethod() == PaymentMethod.Credit ? b.getNetTotal() : 0);
                 double saleCash = (b.getPaymentMethod() == PaymentMethod.Cash ? b.getSaleValue() : 0);
                 double saleCredit = (b.getPaymentMethod() == PaymentMethod.Credit ? b.getSaleValue() : 0);
+                double costCash = hasCosting ? (b.getPaymentMethod() == PaymentMethod.Cash ? b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0 : 0.0) : 0.0;
+                double costCredit = hasCosting ? (b.getPaymentMethod() == PaymentMethod.Credit ? b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0 : 0.0) : 0.0;
 
                 if (b.getBillTypeAtomic().toString().contains("RETURN") || b.getBillTypeAtomic().toString().contains("CANCELLED") || b.getBillTypeAtomic().toString().contains("REFUND")) {
                     if (b.getReferenceBill() != null) {
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Cash) {
                             purchaseCash = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
                             saleCash = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
+                            if (hasCosting) {
+                                costCash = -Math.abs(b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0);
+                            }
                         } else {
                             purchaseCash = 0;
                             saleCash = 0;
+                            costCash = 0;
                         }
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
                             purchaseCredit = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
                             saleCredit = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
+                            if (hasCosting) {
+                                costCredit = -Math.abs(b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0);
+                            }
                         } else {
                             purchaseCredit = 0;
                             saleCredit = 0;
+                            costCredit = 0;
                         }
                     }
                 }
 
                 mainTable.addCell(new Phrase(String.format("%,.2f", purchaseCash), normalFont));
                 mainTable.addCell(new Phrase(String.format("%,.2f", purchaseCredit), normalFont));
+                if (hasCosting) {
+                    mainTable.addCell(new Phrase(String.format("%,.2f", costCash), normalFont));
+                    mainTable.addCell(new Phrase(String.format("%,.2f", costCredit), normalFont));
+                }
                 mainTable.addCell(new Phrase(String.format("%,.2f", saleCash), normalFont));
                 mainTable.addCell(new Phrase(String.format("%,.2f", saleCredit), normalFont));
                 mainTable.addCell(new Phrase(b.getComments() != null ? b.getComments() : "", normalFont));
 
-                PdfPTable nested = new PdfPTable(6);
+                PdfPTable nested = new PdfPTable(hasCosting ? 7 : 6);
                 nested.setWidthPercentage(100);
                 String[] nestedHeaders = {"Item", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch"};
+                if (hasCosting) {
+                    nestedHeaders = new String[]{"Item", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch"};
+                }
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
                     nh.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1073,6 +1106,9 @@ public class PharmacyController implements Serializable {
                     nested.addCell(new Phrase(String.valueOf(bi.getPharmaceuticalBillItem().getQty()), normalFont));
                     nested.addCell(new Phrase(String.valueOf(bi.getPharmaceuticalBillItem().getFreeQty()), normalFont));
                     nested.addCell(new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getPurchaseRate()), normalFont));
+                    if (hasCosting) {
+                        nested.addCell(new Phrase(String.format("%,.2f", bi.getBillItemFinanceDetails().getLineCostRate()), normalFont));
+                    }
                     nested.addCell(new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()), normalFont));
                     nested.addCell(new Phrase(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo(), normalFont));
                 }
@@ -1088,6 +1124,10 @@ public class PharmacyController implements Serializable {
 
             mainTable.addCell(new Phrase(String.format("%,.2f", totalCashPurchaseValue), boldFont));
             mainTable.addCell(new Phrase(String.format("%,.2f", totalCreditPurchaseValue), boldFont));
+            if (hasCosting) {
+                mainTable.addCell(new Phrase(String.format("%,.2f", totalCashCostValue), boldFont));
+                mainTable.addCell(new Phrase(String.format("%,.2f", totalCreditCostValue), boldFont));
+            }
             mainTable.addCell(new Phrase(String.format("%,.2f", totalCashSaleValue), boldFont));
             mainTable.addCell(new Phrase(String.format("%,.2f", totalCreditSaleValue), boldFont));
             mainTable.addCell(new Phrase("", boldFont));
@@ -1102,6 +1142,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnDetailReportToExcel() {
+        boolean hasCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1123,10 +1165,16 @@ public class PharmacyController implements Serializable {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("GRN Report");
             titleCell.setCellStyle(boldStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 14));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, hasCosting?16:14));
 
             String[] headers = {"GRN No", "Invoice No", "Created Date", "Approved Date", "Supplier Name", "Institution",
                     "Site", "Department", "Po No", "Purchase Cash", "Purchase Credit", "Sale Cash", "Sale Credit", "Remark", "Purchase Details"};
+
+            if (hasCosting) {
+                headers = new String[]{"GRN No", "Invoice No", "Created Date", "Approved Date", "Supplier Name", "Institution",
+                        "Site", "Department", "Po No", "Purchase Cash", "Purchase Credit", "Cost Cash", "Cost Credit",
+                        "Sale Cash", "Sale Credit", "Remark", "Purchase Details"};
+            }
 
             Row headerRow = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {
@@ -1139,6 +1187,8 @@ public class PharmacyController implements Serializable {
             double totalCreditPurchase = 0;
             double totalCashSale = 0;
             double totalCreditSale = 0;
+            double totalCashCost = 0;
+            double totalCreditCost = 0;
 
             for (Bill b : getBills()) {
                 Row row = sheet.createRow(rowIndex++);
@@ -1158,22 +1208,36 @@ public class PharmacyController implements Serializable {
                 double purchaseCredit = (b.getPaymentMethod() == PaymentMethod.Credit ? b.getNetTotal() : 0);
                 double saleCash = (b.getPaymentMethod() == PaymentMethod.Cash ? b.getSaleValue() : 0);
                 double saleCredit = (b.getPaymentMethod() == PaymentMethod.Credit ? b.getSaleValue() : 0);
+                double costCash = hasCosting ? (b.getPaymentMethod() == PaymentMethod.Cash ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0) : 0;
+                double costCredit = hasCosting ? (b.getPaymentMethod() == PaymentMethod.Credit ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0) : 0;
 
                 if (b.getBillTypeAtomic().toString().contains("RETURN") || b.getBillTypeAtomic().toString().contains("CANCELLED") || b.getBillTypeAtomic().toString().contains("REFUND")) {
                     if (b.getReferenceBill() != null) {
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Cash) {
                             purchaseCash = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
                             saleCash = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
+                            if (hasCosting) {
+                                costCash = -Math.abs(b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0);
+                            }
                         } else {
                             purchaseCash = 0;
                             saleCash = 0;
+                            if (hasCosting) {
+                                costCash = 0;
+                            }
                         }
                         if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
                             purchaseCredit = -Math.abs(b.getBillFinanceDetails().getLineNetTotal() != null ? b.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0);
                             saleCredit = -Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0);
+                            if (hasCosting) {
+                                costCredit = -Math.abs(b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0);
+                            }
                         } else {
                             purchaseCredit = 0;
                             saleCredit = 0;
+                            if (hasCosting) {
+                                costCredit = 0;
+                            }
                         }
                     }
                 }
@@ -1182,30 +1246,44 @@ public class PharmacyController implements Serializable {
                 totalCreditPurchase += purchaseCredit;
                 totalCashSale += saleCash;
                 totalCreditSale += saleCredit;
+                if (hasCosting) {
+                    totalCashCost += costCash;
+                    totalCreditCost += costCredit;
+                }
 
                 row.createCell(col++).setCellValue(purchaseCash);
                 row.createCell(col++).setCellValue(purchaseCredit);
+                if (hasCosting) {
+                    row.createCell(col++).setCellValue(costCash);
+                    row.createCell(col++).setCellValue(costCredit);
+                }
                 row.createCell(col++).setCellValue(saleCash);
                 row.createCell(col++).setCellValue(saleCredit);
                 row.createCell(col++).setCellValue(b.getComments() != null ? b.getComments() : "");
 
                 Row nestedHeader = sheet.createRow(rowIndex++);
                 String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                if (hasCosting) {
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                }
                 for (int i = 0; i < nestedHeaders.length; i++) {
-                    Cell cell = nestedHeader.createCell(i + 14);
+                    Cell cell = hasCosting? nestedHeader.createCell(i + 16) : nestedHeader.createCell(i + 14);
                     cell.setCellValue(nestedHeaders[i]);
                     cell.setCellStyle(boldStyle);
                 }
 
                 for (BillItem bi : b.getBillItems()) {
                     Row itemRow = sheet.createRow(rowIndex++);
-                    itemRow.createCell(14).setCellValue(bi.getItem().getName());
-                    itemRow.createCell(15).setCellValue(bi.getPharmaceuticalBillItem().getQty());
-                    itemRow.createCell(16).setCellValue(bi.getPharmaceuticalBillItem().getFreeQty());
-                    itemRow.createCell(17).setCellValue(bi.getPharmaceuticalBillItem().getPurchaseRate());
-                    itemRow.createCell(18).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
-                    itemRow.createCell(19).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                    itemRow.createCell(20).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
+                    itemRow.createCell(hasCosting? 16 : 14).setCellValue(bi.getItem().getName());
+                    itemRow.createCell(hasCosting? 17 :15).setCellValue(bi.getPharmaceuticalBillItem().getQty());
+                    itemRow.createCell(hasCosting? 18 :16).setCellValue(bi.getPharmaceuticalBillItem().getFreeQty());
+                    itemRow.createCell(hasCosting? 19 :17).setCellValue(bi.getPharmaceuticalBillItem().getPurchaseRate());
+                    if (hasCosting) {
+                        itemRow.createCell(20).setCellValue(bi.getBillItemFinanceDetails().getLineCostRate().doubleValue());
+                    }
+                    itemRow.createCell(hasCosting? 21 :18).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
+                    itemRow.createCell(hasCosting? 22 :19).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
+                    itemRow.createCell(hasCosting? 23 :20).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
                 }
             }
 
@@ -1217,8 +1295,12 @@ public class PharmacyController implements Serializable {
 
             footer.createCell(9).setCellValue(totalCashPurchase);
             footer.createCell(10).setCellValue(totalCreditPurchase);
-            footer.createCell(11).setCellValue(totalCashSale);
-            footer.createCell(12).setCellValue(totalCreditSale);
+            if (hasCosting) {
+                footer.createCell(11).setCellValue(totalCashCost);
+                footer.createCell(12).setCellValue(totalCreditCost);
+            }
+            footer.createCell(hasCosting?13:11).setCellValue(totalCashSale);
+            footer.createCell(hasCosting?14:12).setCellValue(totalCreditSale);
 
             workbook.write(out);
             context.responseComplete();
@@ -1228,6 +1310,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnReturnReportToPdf() {
+        boolean hasCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1246,11 +1330,20 @@ public class PharmacyController implements Serializable {
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
 
-            PdfPTable mainTable = new PdfPTable(11);
+            PdfPTable mainTable = new PdfPTable(hasCosting ? 12 : 11);
             mainTable.setWidthPercentage(100);
-            mainTable.setWidths(new float[]{2f, 2f, 2f, 2f, 2.5f, 2f, 2f, 2f, 2f, 2f, 12f});
+
+            if (hasCosting) {
+                mainTable.setWidths(new float[]{2f, 2f, 2f, 2f, 2.5f, 2f, 2f, 2f, 2f, 2f, 2f, 12f});
+            } else {
+                mainTable.setWidths(new float[]{2f, 2f, 2f, 2f, 2.5f, 2f, 2f, 2f, 2f, 2f, 12f});
+            }
 
             String[] headers = {"Return No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Sale Value", "Purchase Details"};
+            if (hasCosting) {
+                headers = new String[]{"Return No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Cost Value", "Sale Value", "Purchase Details"};
+            }
+
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1259,6 +1352,7 @@ public class PharmacyController implements Serializable {
 
             double totalPurchase = 0;
             double totalSale = 0;
+            double totalCost = 0;
 
             for (Bill r : getBills()) {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
@@ -1274,19 +1368,28 @@ public class PharmacyController implements Serializable {
 
                 double purchase = r.getBillFinanceDetails().getLineNetTotal() != null ? r.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0;
                 double sale = r.getBillFinanceDetails().getTotalRetailSaleValue() != null ? r.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
+                double cost = hasCosting ? (r.getBillFinanceDetails().getTotalCostValue() != null ? r.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0) : 0.0;
 
                 double adjustedPurchase = purchase > 0 ? -purchase : purchase;
                 double adjustedSale = sale > 0 ? -sale : sale;
+                double adjustedCost = hasCosting ? (cost > 0 ? -cost : cost) : 0.0;
 
                 totalPurchase += adjustedPurchase;
                 totalSale += adjustedSale;
+                totalCost += adjustedCost;
 
                 mainTable.addCell(new Phrase(String.format("%,.2f", adjustedPurchase), normalFont));
+                if (hasCosting) {
+                    mainTable.addCell(new Phrase(String.format("%,.2f", adjustedCost), normalFont));
+                }
                 mainTable.addCell(new Phrase(String.format("%,.2f", adjustedSale), normalFont));
 
-                PdfPTable nested = new PdfPTable(7);
+                PdfPTable nested = new PdfPTable(hasCosting ? 8 : 7);
                 nested.setWidthPercentage(100);
                 String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                if (hasCosting) {
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                }
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
                     nh.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1298,6 +1401,9 @@ public class PharmacyController implements Serializable {
                     nested.addCell(new Phrase(String.valueOf(bi.getPharmaceuticalBillItem().getQty()), normalFont));
                     nested.addCell(new Phrase(String.valueOf(bi.getPharmaceuticalBillItem().getFreeQty()), normalFont));
                     nested.addCell(new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getPurchaseRate()), normalFont));
+                    if (hasCosting) {
+                        nested.addCell(new Phrase(String.format("%,.2f", bi.getBillItemFinanceDetails().getLineCostRate()), normalFont));
+                    }
                     nested.addCell(new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()), normalFont));
                     nested.addCell(new Phrase(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo(), normalFont));
                     nested.addCell(new Phrase(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "", normalFont));
@@ -1313,6 +1419,9 @@ public class PharmacyController implements Serializable {
             mainTable.addCell(footerLabel);
 
             mainTable.addCell(new Phrase(String.format("%,.2f", totalPurchase), boldFont));
+            if (hasCosting) {
+                mainTable.addCell(new Phrase(String.format("%,.2f", totalCost), boldFont));
+            }
             mainTable.addCell(new Phrase(String.format("%,.2f", totalSale), boldFont));
             mainTable.addCell(new Phrase("", boldFont));
 
@@ -1325,6 +1434,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnReturnReportToExcel() {
+        boolean hasCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1347,9 +1458,14 @@ public class PharmacyController implements Serializable {
             Cell titleCell = mainHeader.createCell(0);
             titleCell.setCellValue("GRN Return Report");
             titleCell.setCellStyle(boldStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 10));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, hasCosting?11:10));
 
             String[] headers = {"Return No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Sale Value", "Purchase Details"};
+
+            if (hasCosting) {
+                headers = new String[]{"Return No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Cost Value", "Sale Value", "Purchase Details"};
+            }
+
             Row columnHeader = sheet.createRow(rowIndex++);
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = columnHeader.createCell(i);
@@ -1359,6 +1475,7 @@ public class PharmacyController implements Serializable {
 
             double totalPurchase = 0;
             double totalSale = 0;
+            double totalCost = 0;
 
             for (Bill r : getBills()) {
                 Row row = sheet.createRow(rowIndex++);
@@ -1375,33 +1492,48 @@ public class PharmacyController implements Serializable {
 
                 double purchase = r.getBillFinanceDetails().getLineNetTotal() != null ? r.getBillFinanceDetails().getLineNetTotal().doubleValue(): 0.0;
                 double sale = r.getBillFinanceDetails().getTotalRetailSaleValue() != null ? r.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
+                double cost = hasCosting ? (r.getBillFinanceDetails().getTotalCostValue() != null ? r.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0) : 0.0;
 
                 double adjustedPurchase = purchase > 0 ? -purchase : purchase;
                 double adjustedSale = sale > 0 ? -sale : sale;
+                double adjustedCost = hasCosting ? (cost > 0 ? -cost : cost) : 0.0;
 
                 totalPurchase += adjustedPurchase;
                 totalSale += adjustedSale;
+                if (hasCosting) {
+                    totalCost += adjustedCost;
+                }
 
                 row.createCell(col++).setCellValue(adjustedPurchase);
+                if (hasCosting) {
+                    row.createCell(col++).setCellValue(adjustedCost);
+                }
                 row.createCell(col++).setCellValue(adjustedSale);
 
                 Row subHeader = sheet.createRow(rowIndex++);
                 String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                if (hasCosting) {
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                }
+
                 for (int i = 0; i < nestedHeaders.length; i++) {
-                    Cell cell = subHeader.createCell(i + 10);
+                    Cell cell = hasCosting ? subHeader.createCell(i + 11) : subHeader.createCell(i + 10);
                     cell.setCellValue(nestedHeaders[i]);
                     cell.setCellStyle(boldStyle);
                 }
 
                 for (BillItem bi : r.getBillItems()) {
                     Row itemRow = sheet.createRow(rowIndex++);
-                    itemRow.createCell(10).setCellValue(bi.getItem().getName());
-                    itemRow.createCell(11).setCellValue(bi.getPharmaceuticalBillItem().getQty());
-                    itemRow.createCell(12).setCellValue(bi.getPharmaceuticalBillItem().getFreeQty());
-                    itemRow.createCell(13).setCellValue(bi.getPharmaceuticalBillItem().getPurchaseRate());
-                    itemRow.createCell(14).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
-                    itemRow.createCell(15).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                    itemRow.createCell(16).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
+                    itemRow.createCell(hasCosting ? 11 :10).setCellValue(bi.getItem().getName());
+                    itemRow.createCell(hasCosting ? 12 :11).setCellValue(bi.getPharmaceuticalBillItem().getQty());
+                    itemRow.createCell(hasCosting ? 13 :12).setCellValue(bi.getPharmaceuticalBillItem().getFreeQty());
+                    itemRow.createCell(hasCosting ? 14 :13).setCellValue(bi.getPharmaceuticalBillItem().getPurchaseRate());
+                    if (hasCosting) {
+                        itemRow.createCell(15).setCellValue(bi.getBillItemFinanceDetails().getLineCostRate().doubleValue());
+                    }
+                    itemRow.createCell(hasCosting ? 16 :14).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
+                    itemRow.createCell(hasCosting ? 17 : 15).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
+                    itemRow.createCell(hasCosting ? 18 : 16).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
                 }
             }
 
@@ -1415,7 +1547,13 @@ public class PharmacyController implements Serializable {
             purchaseTotalCell.setCellValue(totalPurchase);
             purchaseTotalCell.setCellStyle(boldStyle);
 
-            Cell saleTotalCell = footer.createCell(9);
+            if (hasCosting) {
+                Cell costTotalCell = footer.createCell(9);
+                costTotalCell.setCellValue(totalCost);
+                costTotalCell.setCellStyle(boldStyle);
+            }
+
+            Cell saleTotalCell = footer.createCell(hasCosting ? 10 : 9);
             saleTotalCell.setCellValue(totalSale);
             saleTotalCell.setCellStyle(boldStyle);
 
@@ -1427,6 +1565,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnCancellationReportToPdf() {
+        boolean hasCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1445,11 +1585,18 @@ public class PharmacyController implements Serializable {
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
 
-            PdfPTable mainTable = new PdfPTable(11);
+            PdfPTable mainTable = new PdfPTable(hasCosting? 12 : 11);
             mainTable.setWidthPercentage(100);
-            mainTable.setWidths(new float[]{2f, 2f, 2f, 2f, 2.5f, 2f, 2f, 2f, 2f, 2f, 6f});
+            if (hasCosting) {
+                mainTable.setWidths(new float[]{2f, 2f, 2f, 2f, 2.5f, 2f, 2f, 2f, 2f, 2f, 2f, 6f});
+            } else {
+                mainTable.setWidths(new float[]{2f, 2f, 2f, 2f, 2.5f, 2f, 2f, 2f, 2f, 2f, 6f});
+            }
 
             String[] headers = {"Cancelled No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Sale Value", "Purchase Details"};
+            if (hasCosting) {
+                headers = new String[]{"Cancelled No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Cost Value", "Sale Value", "Purchase Details"};
+            }
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1458,6 +1605,7 @@ public class PharmacyController implements Serializable {
 
             double totalPurchase = 0;
             double totalSale = 0;
+            double totalCost = 0;
 
             for (Bill cb : getBills()) {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
@@ -1471,24 +1619,36 @@ public class PharmacyController implements Serializable {
                 mainTable.addCell(new Phrase(cb.getReferenceBill() != null && cb.getReferenceBill().getCreatedAt() != null ? sdf.format(cb.getReferenceBill().getCreatedAt()) : "", normalFont));
                 mainTable.addCell(new Phrase(cb.getFromInstitution() != null && cb.getFromInstitution().getName() != null ? cb.getFromInstitution().getName() : "", normalFont));
 
-                Double purchaseObj = cb.getReferenceBill() != null ? cb.getReferenceBill().getNetTotal() : null;
-                Double saleObj = cb.getReferenceBill() != null ? cb.getReferenceBill().getSaleValue() : null;
+                Double purchaseObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineNetTotal().doubleValue() : null;
+                Double saleObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : null;
+                Double costObj = hasCosting ? (cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineCostValue().doubleValue() : null) : null;
 
                 double purchase = purchaseObj != null ? purchaseObj : 0;
                 double sale = saleObj != null ? saleObj : 0;
+                double cost = hasCosting ? (costObj != null ? costObj : 0) : 0;
 
                 double adjustedPurchase = purchase > 0 ? -purchase : purchase;
                 double adjustedSale = sale > 0 ? -sale : sale;
+                double adjustedCost = hasCosting ? (cost > 0 ? -cost : cost) : 0.0;
 
                 totalPurchase += adjustedPurchase;
                 totalSale += adjustedSale;
+                if (hasCosting) {
+                    totalCost += adjustedCost;
+                }
 
                 mainTable.addCell(new Phrase(String.format("%,.2f", adjustedPurchase), normalFont));
+                if (hasCosting) {
+                    mainTable.addCell(new Phrase(String.format("%,.2f", adjustedCost), normalFont));
+                }
                 mainTable.addCell(new Phrase(String.format("%,.2f", adjustedSale), normalFont));
 
-                PdfPTable nested = new PdfPTable(7);
+                PdfPTable nested = new PdfPTable(hasCosting? 8:7);
                 nested.setWidthPercentage(100);
                 String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                if (hasCosting) {
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                }
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
                     nh.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1501,6 +1661,9 @@ public class PharmacyController implements Serializable {
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null ? String.valueOf(bi.getPharmaceuticalBillItem().getQty()) : "", normalFont));
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null ? String.valueOf(bi.getPharmaceuticalBillItem().getFreeQty()) : "", normalFont));
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null ? String.format("%,.2f", bi.getPharmaceuticalBillItem().getPurchaseRate()) : "", normalFont));
+                        if (hasCosting) {
+                            nested.addCell(new Phrase(bi.getBillItemFinanceDetails() != null ? String.format("%,.2f", bi.getBillItemFinanceDetails().getLineCostRate()) : "", normalFont));
+                        }
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null ? String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()) : "", normalFont));
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null && bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "", normalFont));
                         nested.addCell(new Phrase(bi.getItem() != null && bi.getItem().getMeasurementUnit() != null && bi.getItem().getMeasurementUnit().getName() != null ? bi.getItem().getMeasurementUnit().getName() : "", normalFont));
@@ -1517,6 +1680,9 @@ public class PharmacyController implements Serializable {
             mainTable.addCell(footerLabel);
 
             mainTable.addCell(new Phrase(String.format("%,.2f", totalPurchase), boldFont));
+            if (hasCosting) {
+                mainTable.addCell(new Phrase(String.format("%,.2f", totalCost), boldFont));
+            }
             mainTable.addCell(new Phrase(String.format("%,.2f", totalSale), boldFont));
             mainTable.addCell(new Phrase("", boldFont));
 
@@ -1529,6 +1695,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnCancellationReportToExcel() {
+        boolean hasCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1551,10 +1719,13 @@ public class PharmacyController implements Serializable {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("GRN Cancellation Report");
             titleCell.setCellStyle(boldStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 10));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, hasCosting?11:10));
 
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {"Cancelled No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Sale Value", "Purchase Details"};
+            if (hasCosting) {
+                headers = new String[]{"Cancelled No", "GRN No", "GRN Invoice No", "GRN Date", "Reference Institution", "Created At", "Approved At", "Supplier", "Purchase Value", "Cost Value", "Sale Value", "Purchase Details"};
+            }
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -1563,6 +1734,7 @@ public class PharmacyController implements Serializable {
 
             double totalPurchase = 0;
             double totalSale = 0;
+            double totalCost = 0;
 
             for (Bill cb : getBills()) {
                 Row row = sheet.createRow(rowIndex++);
@@ -1576,25 +1748,37 @@ public class PharmacyController implements Serializable {
                 row.createCell(6).setCellValue(cb.getReferenceBill() != null && cb.getReferenceBill().getCreatedAt() != null ? sdf.format(cb.getReferenceBill().getCreatedAt()) : "");
                 row.createCell(7).setCellValue(cb.getFromInstitution() != null && cb.getFromInstitution().getName() != null ? cb.getFromInstitution().getName() : "");
 
-                Double purchaseObj = cb.getReferenceBill() != null ? cb.getReferenceBill().getNetTotal() : null;
-                Double saleObj = cb.getReferenceBill() != null ? cb.getReferenceBill().getSaleValue() : null;
+                Double purchaseObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineNetTotal().doubleValue() : null;
+                Double saleObj = cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : null;
+                Double costObj = hasCosting ? (cb.getBillFinanceDetails() != null ? cb.getBillFinanceDetails().getLineCostValue().doubleValue() : null) : null;
 
                 double purchase = purchaseObj != null ? purchaseObj : 0;
                 double sale = saleObj != null ? saleObj : 0;
+                double cost = hasCosting ? (costObj != null ? costObj : 0) : 0;
 
                 double adjustedPurchase = purchase > 0 ? -purchase : purchase;
                 double adjustedSale = sale > 0 ? -sale : sale;
+                double adjustedCost = hasCosting ? (cost > 0 ? -cost : cost) : 0.0;
 
                 totalPurchase += adjustedPurchase;
                 totalSale += adjustedSale;
+                if (hasCosting) {
+                    totalCost += adjustedCost;
+                }
 
                 row.createCell(8).setCellValue(adjustedPurchase);
-                row.createCell(9).setCellValue(adjustedSale);
+                if (hasCosting) {
+                    row.createCell(9).setCellValue(adjustedCost);
+                }
+                row.createCell(hasCosting?10:9).setCellValue(adjustedSale);
 
                 Row nestedHeader = sheet.createRow(rowIndex++);
                 String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                if (hasCosting) {
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                }
                 for (int i = 0; i < nestedHeaders.length; i++) {
-                    Cell cell = nestedHeader.createCell(i + 10);
+                    Cell cell = hasCosting ? nestedHeader.createCell(i + 11) : nestedHeader.createCell(i + 10);
                     cell.setCellValue(nestedHeaders[i]);
                     cell.setCellStyle(boldStyle);
                 }
@@ -1602,13 +1786,16 @@ public class PharmacyController implements Serializable {
                 if (cb.getBillItems() != null) {
                     for (BillItem bi : cb.getBillItems()) {
                         Row itemRow = sheet.createRow(rowIndex++);
-                        itemRow.createCell(10).setCellValue(bi.getItem() != null && bi.getItem().getName() != null ? bi.getItem().getName() : "");
-                        itemRow.createCell(11).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getQty() : 0);
-                        itemRow.createCell(12).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getFreeQty() : 0);
-                        itemRow.createCell(13).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getPurchaseRate() : 0);
-                        itemRow.createCell(14).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getRetailRate() : 0);
-                        itemRow.createCell(15).setCellValue(bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null && bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "");
-                        itemRow.createCell(16).setCellValue(bi.getItem() != null && bi.getItem().getMeasurementUnit() != null && bi.getItem().getMeasurementUnit().getName() != null ? bi.getItem().getMeasurementUnit().getName() : "");
+                        itemRow.createCell(hasCosting ? 11 : 10).setCellValue(bi.getItem() != null && bi.getItem().getName() != null ? bi.getItem().getName() : "");
+                        itemRow.createCell(hasCosting ? 12 : 11).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getQty() : 0);
+                        itemRow.createCell(hasCosting ? 13 : 12).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getFreeQty() : 0);
+                        itemRow.createCell(hasCosting ? 14 : 13).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getPurchaseRate() : 0);
+                        if (hasCosting) {
+                            itemRow.createCell(15).setCellValue(bi.getBillItemFinanceDetails() != null ? bi.getBillItemFinanceDetails().getLineCostRate().doubleValue() : 0);
+                        }
+                        itemRow.createCell(hasCosting ? 16 : 14).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getRetailRate() : 0);
+                        itemRow.createCell(hasCosting ? 17 : 15).setCellValue(bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null && bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "");
+                        itemRow.createCell(hasCosting ? 18 : 16).setCellValue(bi.getItem() != null && bi.getItem().getMeasurementUnit() != null && bi.getItem().getMeasurementUnit().getName() != null ? bi.getItem().getMeasurementUnit().getName() : "");
                     }
                 }
             }
@@ -1623,7 +1810,13 @@ public class PharmacyController implements Serializable {
             purchaseTotalCell.setCellValue(totalPurchase);
             purchaseTotalCell.setCellStyle(boldStyle);
 
-            Cell saleTotalCell = footerRow.createCell(9);
+            if (hasCosting) {
+                Cell costTotalCell = footerRow.createCell(9);
+                costTotalCell.setCellValue(totalCost);
+                costTotalCell.setCellStyle(boldStyle);
+            }
+
+            Cell saleTotalCell = footerRow.createCell(hasCosting ? 10 : 9);
             saleTotalCell.setCellValue(totalSale);
             saleTotalCell.setCellStyle(boldStyle);
 
@@ -2535,17 +2728,20 @@ public class PharmacyController implements Serializable {
         data = new ArrayList<>();
         totalPurchase = 0.0;
         totalSaleValue = 0.0;
+        totalCostValue = 0.0;
         totalCreditPurchaseValue = 0.0;
         totalCreditSaleValue = 0.0;
         totalCashPurchaseValue = 0.0;
         totalCashSaleValue = 0.0;
+        totalCashCostValue = 0.0;
+        totalCreditCostValue = 0.0;
 
-        double totalCardPurchaseValue = 0.0, totalCardSaleValue = 0.0;
-        double totalChequePurchaseValue = 0.0, totalChequeSaleValue = 0.0;
-        double totalSlipPurchaseValue = 0.0, totalSlipSaleValue = 0.0;
-        double totalEwalletPurchaseValue = 0.0, totalEwalletSaleValue = 0.0;
-        double totalNonePurchaseValue = 0.0, totalNoneSaleValue = 0.0;
-        double totalOtherPurchaseValue = 0.0, totalOtherSaleValue = 0.0;
+        double totalCardPurchaseValue = 0.0, totalCardSaleValue = 0.0, totalCardCostValue = 0.0;
+        double totalChequePurchaseValue = 0.0, totalChequeSaleValue = 0.0, totalChequeCostValue = 0.0;
+        double totalSlipPurchaseValue = 0.0, totalSlipSaleValue = 0.0, totalSlipCostValue = 0.0;
+        double totalEwalletPurchaseValue = 0.0, totalEwalletSaleValue = 0.0, totalEwalletCostValue = 0.0;
+        double totalNonePurchaseValue = 0.0, totalNoneSaleValue = 0.0, totalNoneCostValue = 0.0;
+        double totalOtherPurchaseValue = 0.0, totalOtherSaleValue = 0.0, totalOtherCostValue = 0.0;
 
         for (Bill bill : billList) {
             boolean isCancelled = bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
@@ -2555,6 +2751,7 @@ public class PharmacyController implements Serializable {
 
             double netTotal = 0.0;
             double saleValue = 0.0;
+            double costValue = 0.0;
 
             if (isCancelled) {
                 if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getLineNetTotal() != null) {
@@ -2566,9 +2763,16 @@ public class PharmacyController implements Serializable {
                     double retailSaleValue = bill.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
                     saleValue = retailSaleValue > 0.0 ? -retailSaleValue : retailSaleValue;
                 }
+
+                if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalCostValue() != null) {
+                    double totalCostValue = bill.getBillFinanceDetails().getTotalCostValue().doubleValue();
+                    costValue = totalCostValue > 0.0 ? -totalCostValue : totalCostValue;
+                }
             } else {
                 netTotal = bill.getNetTotal();
                 saleValue = bill.getSaleValue();
+                costValue = bill.getBillFinanceDetails() != null ? (bill.getBillFinanceDetails().getTotalCostValue() != null ?
+                        bill.getBillFinanceDetails().getTotalCostValue().doubleValue():0.0) : 0.0;
             }
 
             if (bill.getPaymentMethod() == null || (bill.getReferenceBill() != null && bill.getReferenceBill().getPaymentMethod() == null)) {
@@ -2580,60 +2784,70 @@ public class PharmacyController implements Serializable {
                 case Credit:
                     totalCreditPurchaseValue += netTotal;
                     totalCreditSaleValue += saleValue;
+                    totalCreditCostValue += costValue;
                     break;
                 case Cash:
                     totalCashPurchaseValue += netTotal;
                     totalCashSaleValue += saleValue;
+                    totalCashCostValue += costValue;
                     break;
                 case Card:
                     totalCardPurchaseValue += netTotal;
                     totalCardSaleValue += saleValue;
+                    totalCardCostValue += costValue;
                     break;
                 case Cheque:
                     totalChequePurchaseValue += netTotal;
                     totalChequeSaleValue += saleValue;
+                    totalChequeCostValue += costValue;
                     break;
                 case Slip:
                     totalSlipPurchaseValue += netTotal;
                     totalSlipSaleValue += saleValue;
+                    totalSlipCostValue += costValue;
                     break;
                 case ewallet:
                     totalEwalletPurchaseValue += netTotal;
                     totalEwalletSaleValue += saleValue;
+                    totalEwalletCostValue += costValue;
                     break;
                 case None:
                     totalNonePurchaseValue += netTotal;
                     totalNoneSaleValue += saleValue;
+                    totalNoneCostValue += costValue;
                     break;
                 default:
                     totalOtherPurchaseValue += netTotal;
                     totalOtherSaleValue += saleValue;
+                    totalOtherCostValue += costValue;
                     break;
             }
 
             totalPurchase += netTotal;
             totalSaleValue += saleValue;
+            totalCostValue += costValue;
         }
 
-        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue);
-        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue);
-        addIfNotZero(data, "Final Card Total", totalCardPurchaseValue, totalCardSaleValue);
-        addIfNotZero(data, "Final Cheque Total", totalChequePurchaseValue, totalChequeSaleValue);
-        addIfNotZero(data, "Final Slip Total", totalSlipPurchaseValue, totalSlipSaleValue);
-        addIfNotZero(data, "Final eWallet Total", totalEwalletPurchaseValue, totalEwalletSaleValue);
-        addIfNotZero(data, "Final None Total", totalNonePurchaseValue, totalNoneSaleValue);
-        addIfNotZero(data, "Final Other Total", totalOtherPurchaseValue, totalOtherSaleValue);
-        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue);
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue);
+        addIfNotZero(data, "Final Card Total", totalCardPurchaseValue, totalCardSaleValue, totalCardCostValue);
+        addIfNotZero(data, "Final Cheque Total", totalChequePurchaseValue, totalChequeSaleValue, totalChequeCostValue);
+        addIfNotZero(data, "Final Slip Total", totalSlipPurchaseValue, totalSlipSaleValue, totalSlipCostValue);
+        addIfNotZero(data, "Final eWallet Total", totalEwalletPurchaseValue, totalEwalletSaleValue, totalEwalletCostValue);
+        addIfNotZero(data, "Final None Total", totalNonePurchaseValue, totalNoneSaleValue, totalNoneCostValue);
+        addIfNotZero(data, "Final Other Total", totalOtherPurchaseValue, totalOtherSaleValue, totalOtherCostValue);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
 
         return data;
     }
 
-    private void addIfNotZero(List<String1Value1> data, String label, double value, double value2) {
-        if (value != 0 || value2 != 0) {
+    private void addIfNotZero(List<String1Value1> data, String label, double value, double value2, double value3) {
+        if (value != 0 || value2 != 0 || value3 != 0) {
             String1Value1 entry = new String1Value1();
             entry.setString(label);
             entry.setValue(value);
             entry.setValue2(value2);
+            entry.setValue3(value3);
             data.add(entry);
         }
     }
@@ -5840,6 +6054,22 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCashPurchaseValue(double totalCashPurchaseValue) {
         this.totalCashPurchaseValue = totalCashPurchaseValue;
+    }
+
+    public double getTotalCreditCostValue() {
+        return totalCreditCostValue;
+    }
+
+    public void setTotalCreditCostValue(double totalCreditCostValue) {
+        this.totalCreditCostValue = totalCreditCostValue;
+    }
+
+    public double getTotalCashCostValue() {
+        return totalCashCostValue;
+    }
+
+    public void setTotalCashCostValue(double totalCashCostValue) {
+        this.totalCashCostValue = totalCashCostValue;
     }
 
     public double getTotalPurchase() {
