@@ -457,6 +457,8 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setToDepartment(toDepartment);
+        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         String deptId = "";
         String insId = "";
@@ -484,8 +486,6 @@ public class PharmacyIssueController implements Serializable {
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
-        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -742,9 +742,9 @@ public class PharmacyIssueController implements Serializable {
         if (itemBatch == null) {
             return BigDecimal.ZERO;
         }
-        boolean issueByPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Issue is by Purchase Rate", true);
-        boolean issueByCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Issue is by Cost Rate", false);
-        boolean issueByRetail = configOptionApplicationController.getBooleanValueByKey("Pharmacy Issue is by Retail Rate", false);
+        boolean issueByPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disposal is by Purchase Rate", true);
+        boolean issueByCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disposal is by Cost Rate", false);
+        boolean issueByRetail = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disposal is by Retail Rate", false);
 
         if (issueByPurchase) {
             return BigDecimal.valueOf(itemBatch.getPurcahseRate());

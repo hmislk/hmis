@@ -142,7 +142,7 @@
                             <th class="item-code">Code</th>
                             <th class="item-qty">Qty</th>
                             <th class="item-rate">Issue Rate</th>
-                            <th class="item-rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">Retail Rate</th>
+                            <th class="item-rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Rate',true)}">Retail Rate</th>
                             <th class="item-rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Rate',true)}">Purchase Rate</th>
                             <th class="item-rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">Cost Rate</th>
                             <th class="item-value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Issue Value',true)}">Issue Value</th>
@@ -170,7 +170,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                                <td class="item-rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">
+                                <td class="item-rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Rate',true)}">
                                     <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
