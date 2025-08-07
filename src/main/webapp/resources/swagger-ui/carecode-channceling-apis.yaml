@@ -105,9 +105,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/inline_response_202_2"
   /searchData:
-    security:
-        - ApiKeyAuth: []
+
     get:
+      security:
+        - ApiKeyAuth: []
       tags:
       - Search for Channeling
       summary: Search session avail doctors by given parameters
@@ -757,12 +758,12 @@ components:
           type: string
           description: Required (Format 'dd-mm-yyyy')
           format: date
-          example: 0006-07-17
+          example: 06-07-2025
         toDate:
           type: string
           description: Required (Format 'dd-mm-yyyy')
           format: date
-          example: 0036-07-16
+          example: 06-07-2025
         paymentMode:
           type: string
           description: Third Party company name registered in the Carecode System.
@@ -833,10 +834,7 @@ components:
           example: W
     v2_cancellation_body:
       required:
-      - channelFrom
       - payment
-      - paymentChannel
-      - paymentMode
       - refNo
       type: object
       properties:
