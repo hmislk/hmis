@@ -63,6 +63,7 @@
                                                 </p:column>
                                                 <p:column
                                                     headerText="Purchase Rate"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Rate',true)}"
                                                     styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -73,6 +74,14 @@
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}"
                                                     styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column
+                                                    headerText="Cost Rate"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}"
+                                                    styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.itemBatch.costRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
@@ -89,7 +98,7 @@
                                                 <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
                                                 <p:ajax event="itemSelect"
                                                         listener="#{pharmacyIssueController.handleSelect}"
-                                                        update="txtQty txtRate focusQty" ></p:ajax>
+                                                        update="txtQty txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtTransferVal focusQty" ></p:ajax>
                                             </p:autoComplete>
                                         </div>
                                         <div class="col-1">
@@ -104,9 +113,19 @@
                                                     event="keyup"
                                                     listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
                                                     process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                    update="txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtTransferVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{pharmacyIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtTransferVal" ></p:ajax>
+                                                    update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtTransferVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{pharmacyIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtTransferVal" ></p:ajax>
                                             </p:inputText>
+                                        </div>
+                                        <div class="col-1 d-grid">
+                                            <p:outputLabel value="Qty Display" for="txtQtyDisplay" />
+                                            <p:outputLabel
+                                                id="txtQtyDisplay"
+                                                class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all px-2 py-1"
+                                                style="display: inline-block;"
+                                                value="#{pharmacyIssueController.qty}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
                                         </div>
                                         <div class="col-1 d-grid">
                                             <p:outputLabel value="Issue Rate" for="txtPRate" />
@@ -186,7 +205,7 @@
                                                 id="txtTransferVal"
                                                 class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all px-2 py-1"
                                                 style="display: inline-block;"
-                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineNetRate}">
+                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineNetTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </div>                                        
@@ -200,7 +219,7 @@
                                                 value="Add"
                                                 action="#{pharmacyIssueController.addBillItem}"
                                                 process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtTransferVal acStock focusItem" >
+                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtQtyDisplay txtPVal txtRVal txtCostVal txtTransferVal acStock focusItem" >
                                             </p:commandButton>
 
                                             <p:defaultCommand  target="btnAdd" />
@@ -329,13 +348,23 @@
                                         <h:outputText class="mx-4" value="Bill Details" />
                                     </f:facet>
                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol" id="total" >
-                                        <h:outputLabel class="m-2" value="Total Value at Purchase Rate" ></h:outputLabel>
-                                        <h:outputLabel class="mx-4"  value="#{pharmacyIssueController.preBill.billFinanceDetails.totalPurchaseValue}" >
+                                        <h:outputLabel class="m-2" value="Total Transfer Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Transfer Value',true)}"></h:outputLabel>
+                                        <h:outputLabel class="mx-4" value="#{pharmacyIssueController.preBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Transfer Value',true)}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
-                                        <h:outputLabel class="m-2" value="Total Value at Retail Rate" ></h:outputLabel>
-                                        <h:outputLabel class="mx-4"  value="#{pharmacyIssueController.preBill.billFinanceDetails.totalRetailSaleValue}" >
+                                        <h:outputLabel class="m-2" value="Total Value at Purchase Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Value',true)}"></h:outputLabel>
+                                        <h:outputLabel class="mx-4" value="#{pharmacyIssueController.preBill.billFinanceDetails.totalPurchaseValue}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Value',true)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel class="m-2" value="Total Value at Retail Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Value',true)}"></h:outputLabel>
+                                        <h:outputLabel class="mx-4" value="#{pharmacyIssueController.preBill.billFinanceDetails.totalRetailSaleValue}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Value',true)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel class="m-2" value="Total Value at Cost Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Value',true)}"></h:outputLabel>
+                                        <h:outputLabel class="mx-4" value="#{pharmacyIssueController.preBill.billFinanceDetails.totalCostValue}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Value',true)}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 

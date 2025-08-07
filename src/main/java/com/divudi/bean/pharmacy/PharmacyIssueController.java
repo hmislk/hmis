@@ -761,32 +761,43 @@ public String checkTheDepartment() {
         fd.setQuantity(qty);
         fd.setTotalQuantity(qty);
 
-        BigDecimal grossRate = determineIssueRate(ph.getItemBatch()).multiply(unitsPerPack);
-        fd.setLineGrossRate(grossRate);
+        BigDecimal baseIssueRate = determineIssueRate(ph.getItemBatch());
+        BigDecimal grossRate = baseIssueRate.multiply(unitsPerPack);
+        // For display purposes, the issue rate should be the base rate per unit, not multiplied by units per pack
+        fd.setLineGrossRate(baseIssueRate);
 
         BigDecimal lineGrossTotal = grossRate.multiply(qty);
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
-        fd.setLineNetRate(grossRate);
-        fd.setLineNetTotal(lineGrossTotal);
-        fd.setNetTotal(lineGrossTotal);
+        // Transfer value should be the issue rate * quantity
+        BigDecimal transferValue = baseIssueRate.multiply(qty);
+        fd.setLineNetRate(baseIssueRate);
+        fd.setLineNetTotal(transferValue);
+        fd.setNetTotal(transferValue);
 
         BigDecimal qtyByUnits = qty.multiply(unitsPerPack);
         fd.setQuantityByUnits(qtyByUnits);
         fd.setTotalQuantityByUnits(qtyByUnits);
 
-        BigDecimal costRate = BigDecimal.valueOf(ph.getItemBatch().getCostRate());
-        BigDecimal retailRate = BigDecimal.valueOf(ph.getItemBatch().getRetailsaleRate()).multiply(unitsPerPack);
-        BigDecimal purchaseRate = BigDecimal.valueOf(ph.getItemBatch().getPurcahseRate()).multiply(unitsPerPack);
+        BigDecimal costRateBase = BigDecimal.valueOf(ph.getItemBatch().getCostRate());
+        BigDecimal retailRateBase = BigDecimal.valueOf(ph.getItemBatch().getRetailsaleRate());
+        BigDecimal purchaseRateBase = BigDecimal.valueOf(ph.getItemBatch().getPurcahseRate());
+        
+        // These are per-pack rates for calculations
+        BigDecimal costRate = costRateBase.multiply(unitsPerPack);
+        BigDecimal retailRate = retailRateBase.multiply(unitsPerPack);
+        BigDecimal purchaseRate = purchaseRateBase.multiply(unitsPerPack);
 
-        fd.setLineCostRate(costRate);
+        fd.setLineCostRate(costRateBase);
         fd.setLineCost(costRate.multiply(qty));
         fd.setTotalCost(costRate.multiply(qty));
-        fd.setTotalCostRate(costRate);
-        fd.setRetailSaleRate(BigDecimal.valueOf(ph.getItemBatch().getRetailsaleRate()));
-        fd.setValueAtCostRate(costRate.multiply(qty));
-        fd.setValueAtRetailRate(retailRate.multiply(qty));
-        fd.setValueAtPurchaseRate(purchaseRate.multiply(qty));
+        fd.setTotalCostRate(costRateBase);
+        fd.setRetailSaleRate(retailRateBase);
+        
+        // Values should be: base rate * quantity (not considering units per pack for display values)
+        fd.setValueAtCostRate(costRateBase.multiply(qty));
+        fd.setValueAtRetailRate(retailRateBase.multiply(qty));
+        fd.setValueAtPurchaseRate(purchaseRateBase.multiply(qty));
 
         fd.setLineDiscount(BigDecimal.ZERO);
         fd.setLineExpense(BigDecimal.ZERO);
@@ -801,20 +812,20 @@ public String checkTheDepartment() {
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
 
         BigDecimal qtyNeg = qty.negate();
-        ph.setPurchaseRate(purchaseRate.doubleValue());
+        ph.setPurchaseRate(purchaseRateBase.doubleValue());
         ph.setPurchaseRatePack(purchaseRate.doubleValue());
-        ph.setRetailRate(retailRate.doubleValue());
+        ph.setRetailRate(retailRateBase.doubleValue());
         ph.setRetailRatePack(retailRate.doubleValue());
-        ph.setCostRate(costRate.doubleValue());
+        ph.setCostRate(costRateBase.doubleValue());
         ph.setCostRatePack(costRate.doubleValue());
-        ph.setPurchaseValue(purchaseRate.multiply(qtyNeg).doubleValue());
-        ph.setRetailValue(retailRate.multiply(qtyNeg).doubleValue());
-        ph.setCostValue(costRate.multiply(qtyNeg).doubleValue());
+        ph.setPurchaseValue(purchaseRateBase.multiply(qtyNeg).doubleValue());
+        ph.setRetailValue(retailRateBase.multiply(qtyNeg).doubleValue());
+        ph.setCostValue(costRateBase.multiply(qtyNeg).doubleValue());
 
-        bi.setRate(grossRate.doubleValue());
-        bi.setNetRate(grossRate.doubleValue());
-        bi.setGrossValue(lineGrossTotal.doubleValue());
-        bi.setNetValue(lineGrossTotal.doubleValue());
+        bi.setRate(baseIssueRate.doubleValue());
+        bi.setNetRate(baseIssueRate.doubleValue());
+        bi.setGrossValue(transferValue.doubleValue());
+        bi.setNetValue(transferValue.doubleValue());
     }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
@@ -874,6 +885,13 @@ public String checkTheDepartment() {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(stock.getItemBatch());
         getBillItem().setItem(stock.getItemBatch().getItem());
+        // Initialize with quantity 1 if no quantity is set
+        if (qty == null || qty == 0.0) {
+            qty = 1.0;
+        }
+        getBillItem().setQty(qty);
+        getBillItem().getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
+        getBillItem().getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
         updateFinancialsForIssue(billItem);
     }
 
