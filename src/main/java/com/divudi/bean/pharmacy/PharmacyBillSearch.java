@@ -220,9 +220,31 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
+    /**
+     * @deprecated Use {@link #navigateToViewPharmacyTransferRequestById()} which
+     * works with DTO driven tables by accepting only the bill id.
+     */
+    @Deprecated
     public String navigateToViewPharmacyTransferReqest() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
+    /**
+     * Navigation helper when only the bill id is available (e.g. from DTO
+     * tables).
+     */
+    public String navigateToViewPharmacyTransferRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
@@ -3825,6 +3847,11 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setBillId(Long billId) {
         this.billId = billId;
+        if (billId != null) {
+            this.bill = billFacade.find(billId);
+        } else {
+            this.bill = null;
+        }
     }
 
 }

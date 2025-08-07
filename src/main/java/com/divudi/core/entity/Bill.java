@@ -120,6 +120,7 @@ public class Bill implements Serializable, RetirableEntity {
     private String creditCardRefNo;
     private String chequeRefNo;
     private boolean creditBill;
+    private boolean consignment;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -464,6 +465,7 @@ public class Bill implements Serializable, RetirableEntity {
         reactivated = false;
         refunded = false;
         cancelled = false;
+        consignment = false;
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
@@ -995,6 +997,7 @@ public class Bill implements Serializable, RetirableEntity {
         this.tax = bill.getTax();
         this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
+        this.consignment = bill.isConsignment();
         this.settledAmountByPatient = bill.getSettledAmountByPatient();
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
@@ -1045,6 +1048,7 @@ public class Bill implements Serializable, RetirableEntity {
         sessionId = bill.getSessionId();
         ipOpOrCc = bill.getIpOpOrCc();
         chequeRefNo = bill.getChequeRefNo();
+        consignment = bill.isConsignment();
         settledAmountByPatient = bill.getSettledAmountByPatient();
         settledAmountBySponsor = bill.getSettledAmountBySponsor();
         qty = bill.getQty();
@@ -2649,6 +2653,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setCreditBill(boolean creditBill) {
         this.creditBill = creditBill;
+    }
+
+    public boolean isConsignment() {
+        return consignment;
+    }
+
+    public void setConsignment(boolean consignment) {
+        this.consignment = consignment;
     }
 
     public boolean isCompleted() {
