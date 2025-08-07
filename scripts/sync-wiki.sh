@@ -19,6 +19,10 @@ fi
 # Clone wiki repository
 echo "📥 Cloning wiki repository..."
 git clone https://github.com/hmislk/hmis.wiki.git "$WIKI_DIR"
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Failed to clone wiki repository"
+    exit 1
+fi
 
 # Copy documentation files if docs/wiki directory exists
 if [ -d "$DOCS_DIR" ]; then
@@ -44,6 +48,11 @@ if [ -n "$(git status --porcelain)" ]; then
     # Return to wiki directory and commit
     cd "$WIKI_DIR"
     git add .
+    if [ $? -ne 0 ]; then
+        echo "❌ Error: Failed to stage files for commit"
+        exit 1
+    fi
+    
     git commit -m "Auto-sync from main repository
 
 Original commit: $CURRENT_COMMIT
@@ -51,9 +60,18 @@ Branch: $CURRENT_BRANCH
 Message: $COMMIT_MESSAGE
 
 🤖 Auto-synced by sync-wiki.sh script"
+    if [ $? -ne 0 ]; then
+        echo "❌ Error: Failed to commit changes"
+        exit 1
+    fi
 
     echo "🚀 Pushing changes to wiki..."
     git push origin master
+    if [ $? -ne 0 ]; then
+        echo "❌ Error: Failed to push changes to wiki repository"
+        echo "   This could be due to authentication issues or network problems"
+        exit 1
+    fi
     
     echo "✅ Wiki sync completed successfully!"
 else

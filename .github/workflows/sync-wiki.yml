@@ -65,7 +65,7 @@ jobs:
           echo "📋 Copying documentation files..."
           
           # Copy all markdown files
-          find docs/wiki -name "*.md" -type f | while read file; do
+          find docs/wiki -name "*.md" -type f | while read -r file; do
             # Convert file path to wiki format
             relative_path=${file#docs/wiki/}
             target_path="wiki/$relative_path"
@@ -94,7 +94,7 @@ jobs:
           mkdir -p wiki/Developer
           
           # Copy developer docs with proper naming
-          find developer_docs -name "*.md" -type f | while read file; do
+          find developer_docs -name "*.md" -type f | while read -r file; do
             # Convert to wiki-friendly name
             wiki_name=$(echo "$file" | sed 's|developer_docs/||' | sed 's|/|-|g')
             cp "$file" "wiki/Developer-$wiki_name"
@@ -121,7 +121,7 @@ jobs:
         echo "🔍 Validating wiki content..."
         
         # Check for broken internal links
-        find . -name "*.md" -type f | while read file; do
+        find . -name "*.md" -type f | while read -r file; do
           # Check for relative links that might be broken
           if grep -q "\](\." "$file"; then
             echo "⚠️  Found relative links in $file - please verify they work correctly"
