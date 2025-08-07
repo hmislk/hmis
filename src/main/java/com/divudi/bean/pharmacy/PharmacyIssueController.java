@@ -744,6 +744,10 @@ public String checkTheDepartment() {
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         Item item = bi.getItem();
 
+        if (ph.getItemBatch() == null) {
+            return;
+        }
+
         BigDecimal qty = BigDecimal.valueOf(Math.abs(bi.getQty()));
         BigDecimal unitsPerPack = BigDecimal.ONE;
         if (item instanceof Amp || item instanceof com.divudi.core.entity.pharmacy.Ampp || item instanceof com.divudi.core.entity.pharmacy.Vmpp) {
@@ -868,6 +872,8 @@ public String checkTheDepartment() {
 
     public void handleSelect(SelectEvent event) {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(stock.getItemBatch());
+        getBillItem().setItem(stock.getItemBatch().getItem());
         updateFinancialsForIssue(billItem);
     }
 
