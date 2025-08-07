@@ -949,7 +949,7 @@ public class PharmacyCostingService {
             totalTaxLines = totalTaxLines.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
             totalLineCosts = totalLineCosts.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
             totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
-            totalPurchase = totalPurchase.add(Optional.ofNullable(f.getGrossTotal()).orElse(BigDecimal.ZERO));
+            totalPurchase = totalPurchase.add(Optional.ofNullable(f.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
             totalRetail = totalRetail.add(retailValue);
             totalCost = totalCost.add(costValue);
             totalWholesale = totalWholesale.add(wholesaleValue);
