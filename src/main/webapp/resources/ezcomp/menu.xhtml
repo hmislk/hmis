@@ -1754,6 +1754,11 @@
                         rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
                         action="#{apiKeyController.toManageMyApiKeys()}" 
                         value="Manage My API Keys" icon="pi pi-key"  ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
+                        url="#{request.contextPath}/resources/swagger-ui/index.html"
+                        value="API Swagger Document" icon="fa fa-book"  ></p:menuitem>
                     <p:menuitem
                         ajax="false"
                         action="#{versionController.navigateToAboutSoftware()}"
