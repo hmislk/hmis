@@ -88,6 +88,12 @@ public class LaborataryReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     PaymentService paymentService;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    InvestigationFacade investigationFacade;
 
     // </editor-fold>
     
@@ -187,49 +193,38 @@ public class LaborataryReportController implements Serializable {
     private List<Payment> payments;
     
     private Investigation investigation;
+    private List<PatientInvestigationDTO> itemList;
 
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/lab_inward_order_report?faces-redirect=true";
     }
 
     public String navigateToLaborataryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_income_report?faces-redirect=true";
     }
 
     public String navigateToLaborataryIncomeReportFromLabAnalyticsDto() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_income_report_dto?faces-redirect=true";
     }
 
     public String navigateToLaborataryCardIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_card_income_report?faces-redirect=true";
     }
 
     public String navigateToLaboratarySummaryFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        opdReportController.setToInstitution(sessionController.getInstitution());
-        opdReportController.setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_summary?faces-redirect=true";
     }
 
     public String navigateToLaborataryTestWiseCountReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count?faces-redirect=true";
     }
 
@@ -747,9 +742,6 @@ public class LaborataryReportController implements Serializable {
 
         return reportList;
     }
-    @EJB
-    PatientInvestigationFacade patientInvestigationFacade;
-    private List<PatientInvestigationDTO> itemList;
     
     public void processLaborataryBillItemReportDto() {
         if(investigation == null){
@@ -835,11 +827,6 @@ public class LaborataryReportController implements Serializable {
         return completeItems;
     }
     
-    @EJB
-    PatientFacade patientFacade;
-    @EJB
-    InvestigationFacade investigationFacade;
-
     private void processPayment(Bill b, IncomeRow incomeRow) {
         switch (b.getPaymentMethod()) {
             case Cash:
