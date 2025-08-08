@@ -116,7 +116,9 @@ public class PharmacySaleBhtController implements Serializable {
     BillService billService;
 
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;            
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private VmpController vmpController;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -149,6 +151,9 @@ public class PharmacySaleBhtController implements Serializable {
     private BillBeanController billBean;
     private Stock tmpStock;
     private Double billItemTotal;
+    private List<Stock> substituteStocks;
+    private Stock selectedSubstituteStock;
+    private BillItem itemForSubstitution;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -468,6 +473,70 @@ public class PharmacySaleBhtController implements Serializable {
                 + "and amp<>:a "
                 + "order by i.itemBatch.item.name";
         replaceableStocks = getStockFacade().findByJpql(sql, m);
+    }
+
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi != null && bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+            if (amp.getVmp() != null) {
+                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
+                for (Amp substituteAmp : amps) {
+                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
+                    if (stocks != null) {
+                        for (Stock s : stocks) {
+                            if (s.getStock() > 0 && s.getItemBatch() != null && s.getItemBatch().getDateOfExpire() != null) {
+                                Date now = new Date();
+                                if (s.getItemBatch().getDateOfExpire().after(now)) {
+                                    substituteStocks.add(s);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+
+        if (selectedSubstituteStock.getItemBatch() != null && selectedSubstituteStock.getItemBatch().getDateOfExpire() != null) {
+            Date now = new Date();
+            if (!selectedSubstituteStock.getItemBatch().getDateOfExpire().after(now)) {
+                JsfUtil.addErrorMessage("Cannot use expired stock.");
+                return;
+            }
+        }
+
+        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
+
+        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            phItem = new PharmaceuticalBillItem();
+            phItem.setBillItem(itemForSubstitution);
+            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        }
+
+        phItem.setStock(selectedSubstituteStock);
+        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
+        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
+        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
+        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
+
+        calculateRates(itemForSubstitution);
+        calCurrentBillItemTotal(getBillItems());
+        calTotal();
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -2033,6 +2102,30 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItemTotal(Double billItemTotal) {
         this.billItemTotal = billItemTotal;
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
     }
 
 }
