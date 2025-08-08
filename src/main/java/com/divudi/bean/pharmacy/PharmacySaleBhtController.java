@@ -524,6 +524,12 @@ public class PharmacySaleBhtController implements Serializable {
             }
         }
 
+        // Guard clause: Check if quantity is null or non-positive
+        if (itemForSubstitution.getQty() == null || itemForSubstitution.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Invalid quantity for substitution. Quantity must be a positive number.");
+            return;
+        }
+
         // CodeRabbit Fix: Check if substitute stock has sufficient quantity
         double requiredQty = Math.abs(itemForSubstitution.getQty());
         if (selectedSubstituteStock.getStock() < requiredQty) {
