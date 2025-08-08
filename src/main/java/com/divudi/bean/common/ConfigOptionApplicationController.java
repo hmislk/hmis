@@ -148,11 +148,11 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Issue is by Purchase Rate", true);
         getBooleanValueByKey("Pharmacy Issue is by Cost Rate", false);
         getBooleanValueByKey("Pharmacy Issue is by Retail Rate", false);
-        getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", true);
-        getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false);
-        getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false);
-        getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
-        getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        getBooleanValueByKey("Purchase Return Based On Purchase Rate", true);
+        getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false);
+        getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false);
+        getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", true);
+        getBooleanValueByKey("Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
         getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
