@@ -4303,49 +4303,61 @@ public class SearchController implements Serializable {
      * request DTO additionally loads its issued bill DTOs for display.
      */
     public void createRequestTableDto() {
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
-        List<BillClassType> bct = Arrays.asList(billClassTypes);
-
+        System.out.println("createRequestTableDto() - Starting method");
+        
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + " b.id, "
                 + " b.deptId, "
                 + " b.createdAt, "
                 + " b.department.name, "
-                + " b.creater.webUserPerson.name,"
-                + " cb.createdAt, "
-                + " cb.creater.webUserPerson.name)"
-                + " from Bill b left join b.cancelledBill cb"
-                + " where b.retired=false and  b.toDepartment=:toDep"
-                + " and b.billClassType not in :bct"
+                + " b.creater.webUserPerson.name)"
+                + " from Bill b"
+                + " where b.retired=false"
+                + " and  b.toDepartment=:toDep"
                 + " and b.billTypeAtomic = :billTypeAtomic"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate";
-
+                + " and b.cancelled=false "
+                + " and b.createdAt between :fromDate and :toDate";
+        
         HashMap<String, Object> params = new HashMap<>();
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
         params.put("toDep", getSessionController().getDepartment());
-        params.put("bct", bct);
-        params.put("bTp", BillType.PharmacyTransferRequest);
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+
+        System.out.println("createRequestTableDto() - fromDate: " + getFromDate());
+        System.out.println("createRequestTableDto() - toDate: " + getToDate());
+        System.out.println("createRequestTableDto() - toDep: " + getSessionController().getDepartment());
+        System.out.println("createRequestTableDto() - billTypeAtomic: " + BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql += " and ((b.deptId) like :billNo)";
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            System.out.println("createRequestTableDto() - billNo filter: " + getSearchKeyword().getBillNo());
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             jpql += " and ((b.department.name) like :dep)";
             params.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            System.out.println("createRequestTableDto() - department filter: " + getSearchKeyword().getDepartment());
         }
 
         jpql += " order by b.createdAt desc";
+        
+        System.out.println("createRequestTableDto() - Final JPQL: " + jpql);
+        System.out.println("createRequestTableDto() - Parameters: " + params);
 
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        
+        System.out.println("createRequestTableDto() - Query result count: " + (transferRequestDtos != null ? transferRequestDtos.size() : "null"));
+        
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
+                System.out.println("createRequestTableDto() - Processing DTO: " + dto.getBillId() + " - " + dto.getDeptId());
                 dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
             }
         }
+        
+        System.out.println("createRequestTableDto() - Method completed");
     }
 
     /**
@@ -4355,16 +4367,33 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
+        System.out.println("fetchIssuedBillDtos() - Starting for requestId: " + requestId);
+        
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
-                + " b.id, b.deptId, b.createdAt, b.creater.webUserPerson.name, b.cancelled,"
-                + " cb.createdAt, cb.creater.webUserPerson.name, ts.person.nameWithTitle, b.netTotal)"
-                + " from Bill b left join b.cancelledBill cb left join b.toStaff ts"
-                + " where b.retired=false and b.billType=:btp"
+                + " b.id, "
+                + " b.deptId, "
+                + " b.createdAt, "
+                + " b.creater.webUserPerson.name, "
+                + " ts.person.name, "
+                + " b.netTotal)"
+                + " from Bill b "
+                + " left join b.toStaff ts"
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic=:bta"
                 + " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
         HashMap<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.PharmacyTransferIssue);
+        params.put("bta", BillTypeAtomic.PHARMACY_RECEIVE);
         params.put("rid", requestId);
-        return (List<PharmacyTransferRequestIssueDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        System.out.println("fetchIssuedBillDtos() - JPQL: " + jpql);
+        System.out.println("fetchIssuedBillDtos() - Parameters: " + params);
+        
+        List<PharmacyTransferRequestIssueDTO> result = (List<PharmacyTransferRequestIssueDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        System.out.println("fetchIssuedBillDtos() - Result count: " + (result != null ? result.size() : "null"));
+        
+        return result;
     }
 
     public void createInwardBHTRequestTable() {
