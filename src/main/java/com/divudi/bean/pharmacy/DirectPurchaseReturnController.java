@@ -265,6 +265,11 @@ public class DirectPurchaseReturnController implements Serializable {
             }
         }
 
+        // Check for zero quantity returns
+        if (hasZeroQuantityForBillItem(tmp)) {
+            JsfUtil.addErrorMessage("Cannot return items with zero quantity. Item: " + tmp.getItem().getName());
+        }
+
         calculateBillItemDetails(tmp);
         callculateBillDetails();
         calTotal();
@@ -500,6 +505,11 @@ public class DirectPurchaseReturnController implements Serializable {
         if (getPharmacyBean().isReturingMoreThanPurchased(getBillItems())) {
             revertPendingReturnTotals();
             JsfUtil.addErrorMessage("Returning more than purchased.");
+            return;
+        }
+        if (hasZeroQuantityReturns()) {
+            revertPendingReturnTotals();
+            JsfUtil.addErrorMessage("Cannot return items with zero quantity. Please check the returning quantities.");
             return;
         }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
@@ -943,6 +953,60 @@ public class DirectPurchaseReturnController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    /**
+     * Checks if any bill item has zero quantity returns
+     * @return true if any item has zero quantity, false otherwise
+     */
+    private boolean hasZeroQuantityReturns() {
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            return false;
+        }
+        
+        for (BillItem billItem : getBillItems()) {
+            if (hasZeroQuantityForBillItem(billItem)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Checks if a specific bill item has zero quantity return
+     * @param billItem the bill item to check
+     * @return true if the item has zero quantity, false otherwise
+     */
+    private boolean hasZeroQuantityForBillItem(BillItem billItem) {
+        if (billItem == null) {
+            return false;
+        }
+        
+        BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+        if (fd == null) {
+            return false;
+        }
+        
+        boolean totalQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
+        boolean quantityAndFreeQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", false);
+        
+        if (totalQuantityMode) {
+            // In total quantity mode, check if the total quantity is zero or negative
+            BigDecimal totalQty = BigDecimalUtil.add(
+                BigDecimalUtil.valueOrZero(fd.getQuantity()),
+                BigDecimalUtil.valueOrZero(fd.getFreeQuantity())
+            );
+            return BigDecimalUtil.isZeroOrNegative(totalQty);
+        } else if (quantityAndFreeQuantityMode) {
+            // In quantity and free quantity mode, check if both quantity and free quantity are zero
+            BigDecimal qty = BigDecimalUtil.valueOrZero(fd.getQuantity());
+            BigDecimal freeQty = BigDecimalUtil.valueOrZero(fd.getFreeQuantity());
+            return BigDecimalUtil.isZeroOrNegative(qty) && BigDecimalUtil.isZeroOrNegative(freeQty);
+        } else {
+            // Default mode: check if quantity is zero or negative
+            BigDecimal qty = BigDecimalUtil.valueOrZero(fd.getQuantity());
+            return BigDecimalUtil.isZeroOrNegative(qty);
+        }
     }
 
 }

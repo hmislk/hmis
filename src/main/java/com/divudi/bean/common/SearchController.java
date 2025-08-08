@@ -242,6 +242,7 @@ public class SearchController implements Serializable {
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
+    private List<Bill> filteredBills;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
     private List<Payment> payments;
@@ -18540,6 +18541,14 @@ public class SearchController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public List<Bill> getFilteredBills() {
+        return filteredBills;
+    }
+
+    public void setFilteredBills(List<Bill> filteredBills) {
+        this.filteredBills = filteredBills;
     }
 
     public List<PharmacyTransferRequestListDTO> getTransferRequestDtos() {
