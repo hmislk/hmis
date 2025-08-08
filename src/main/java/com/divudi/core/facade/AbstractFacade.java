@@ -73,9 +73,10 @@ public abstract class AbstractFacade<T> {
     public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {
         return getEntityManager().createQuery(jpqlQuery, entityType).getResultList();
     }
-    
+
     /**
-     * Execute JPQL query that returns Object[] results (for aggregations, projections)
+     * Execute JPQL query that returns Object[] results (for aggregations,
+     * projections)
      */
     public List<Object[]> findObjectArrayByJpql(String jpql, Map<String, Object> parameters, TemporalType temporalType) {
         Query query = getEntityManager().createQuery(jpql);
@@ -1595,4 +1596,24 @@ public abstract class AbstractFacade<T> {
             return 0L;
         }
     }
+
+    // ChatGPT Contribution - 2025-08-09
+    public Object findSingleScalar(String jpql, Map<String, Object> parameters) {
+        Query query = getEntityManager().createQuery(jpql);
+
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+
+        try {
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }
