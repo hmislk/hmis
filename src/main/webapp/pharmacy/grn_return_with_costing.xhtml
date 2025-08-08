@@ -66,13 +66,13 @@
                                     headerText="Already Returned Qty" >
                                     <h:outputLabel
                                         id="lblAlreadyReturnedQty"
-                                        value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                        value="#{grnReturnWithCostingController.getAlreadyReturnedQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column 
                                     width="5em" 
                                     headerText="Already Returned Free Qty" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
-                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
+                                    <h:outputLabel  value="#{grnReturnWithCostingController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column
                                     width="5em" 
