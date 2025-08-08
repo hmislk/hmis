@@ -6,7 +6,8 @@ public enum LaboratoryReport implements IReportType {
     EXTERNAL_LABORATORY_WORKLOAD_REPORT("External laboratory workload report"),
     LABORATORY_WORKLOAD_REPORT("Laboratory workload report"),
     COLLECTION_CENTER_STATEMENT_REPORT("Collection Center Statement Report"),
-    PATIENT_SAMPLE_REPORT("Patient Sample Report");
+    PATIENT_SAMPLE_REPORT("Patient Sample Report"),
+    INVESTIGATION_BILL_LIST_REPORT("Investigation Bill List Report");
 
     private final String displayName;
 

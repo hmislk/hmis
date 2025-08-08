@@ -2,7 +2,6 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.opd.OpdReportController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -34,11 +33,17 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.core.data.dto.PatientInvestigationDTO;
+import com.divudi.core.data.reports.LaboratoryReport;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -70,13 +75,13 @@ public class LaborataryReportController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    OpdReportController opdReportController;
-    @Inject
     private BillSearch billSearch;
     @Inject
     ConfigOptionApplicationController configController;
-    // </editor-fold>
+    @Inject
+    ReportTimerController reportTimerController;
 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
@@ -84,6 +89,12 @@ public class LaborataryReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     PaymentService paymentService;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    InvestigationFacade investigationFacade;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -181,47 +192,38 @@ public class LaborataryReportController implements Serializable {
 
     private List<Payment> payments;
 
+    private Investigation investigation;
+    private List<PatientInvestigationDTO> itemList;
+
 // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/lab_inward_order_report?faces-redirect=true";
     }
 
     public String navigateToLaborataryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_income_report?faces-redirect=true";
     }
 
     public String navigateToLaborataryIncomeReportFromLabAnalyticsDto() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_income_report_dto?faces-redirect=true";
     }
 
     public String navigateToLaborataryCardIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_card_income_report?faces-redirect=true";
     }
 
     public String navigateToLaboratarySummaryFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        opdReportController.setToInstitution(sessionController.getInstitution());
-        opdReportController.setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_summary?faces-redirect=true";
     }
 
     public String navigateToLaborataryTestWiseCountReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count?faces-redirect=true";
     }
 
@@ -239,7 +241,7 @@ public class LaborataryReportController implements Serializable {
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count_dto?faces-redirect=true";
     }
-  
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
     // Simple tab persistence - no complex event handling needed
@@ -291,6 +293,7 @@ public class LaborataryReportController implements Serializable {
         totalProFee = 0.0;
         totalHosFee = 0.0;
         totalCount = 0.0;
+        investigation = null;
 
     }
 
@@ -406,7 +409,7 @@ public class LaborataryReportController implements Serializable {
         labIncomeReportDtos = billService.fetchBillsAsLabIncomeReportDTOs(fromDate,
                 toDate, institution, site, department, webUser, billTypeAtomics,
                 admissionType, paymentScheme, toInstitution, toDepartment, visitType);
-        
+
         // Create IncomeBundle from DTOs to calculate payment breakdowns
         bundle = new IncomeBundle(labIncomeReportDtos);
         for (IncomeRow r : bundle.getRows()) {
@@ -739,6 +742,91 @@ public class LaborataryReportController implements Serializable {
         return reportList;
     }
 
+    public void processLaborataryBillItemReportDto() {
+        reportTimerController.trackReportExecution(() -> {
+            if (investigation == null) {
+                JsfUtil.addErrorMessage("Investigation Missing.");
+                return;
+            }
+
+            Map<String, Object> params = new HashMap<>();
+
+            String jpql = "select new com.divudi.core.data.dto.PatientInvestigationDTO("
+                    + " pi.id,"
+                    + " pi.billItem.item.name, "
+                    + " pi.billItem.bill.createdAt, "
+                    + " pi.billItem.bill.deptId, "
+                    + " pi.billItem.bill.patient.person.title, "
+                    + " pi.billItem.bill.patient.person.name, "
+                    + " pi.billItem.bill.patient.id,"
+                    + " pi.billItem.bill.patient.person.sex) "
+                    + " from PatientInvestigation pi "
+                    + " where pi.billItem.retired = :ret "
+                    + " and pi.billItem.bill.createdAt between :fd and :td "
+                    + " and pi.billItem.bill.billTypeAtomic IN :bType "
+                    + " and type(pi.billItem.item) = :invType ";
+
+            if (investigation != null) {
+                jpql += " and pi.investigation =:investigation ";
+                params.put("investigation", investigation);
+            }
+
+            if (institution != null) {
+                jpql += " and pi.billItem.bill.institution=:ins ";
+                params.put("ins", institution);
+            }
+            if (department != null) {
+                jpql += " and pi.billItem.bill.department=:dep ";
+                params.put("dep", department);
+            }
+            if (site != null) {
+                jpql += " and pi.billItem.bill.department.site=:site ";
+                params.put("site", site);
+            }
+
+            jpql += " order by pi.billItem.bill.createdAt asc ";
+
+            params.put("ret", false);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("invType", Investigation.class);
+
+            List<BillTypeAtomic> bTypes = Arrays.asList(
+                    BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                    BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                    BillTypeAtomic.CC_BILL,
+                    BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                    BillTypeAtomic.INWARD_SERVICE_BILL);
+            params.put("bType", bTypes);
+
+            itemList = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            for (PatientInvestigationDTO pi : itemList) {
+                Patient pt = patientFacade.find(pi.getPatientid());
+                String age = pt.getAgeOnBilledDate(pi.getBillDate());
+                pi.setPatientAge(age);
+            }
+        }, LaboratoryReport.INVESTIGATION_BILL_LIST_REPORT, sessionController.getLoggedUser());
+    }
+
+    public List<Investigation> completeInvestigations(String qry) {
+
+        String jpql = "SELECT c "
+                + " FROM Item c "
+                + " WHERE TYPE(c) = Investigation "
+                + " AND c.retired = :ret "
+                + " AND (UPPER(c.name) LIKE :nameQuery  OR c.code LIKE :codeQuery) "
+                + " ORDER BY c.name";
+
+        Map parameters = new HashMap<>();
+        parameters.put("nameQuery", "%" + qry.toUpperCase() + "%");
+        parameters.put("codeQuery", "%" + qry + "%");
+        parameters.put("ret", false);
+
+        List<Investigation> completeItems = investigationFacade.findByJpql(jpql, parameters, 15);
+        return completeItems;
+    }
+
     private void processPayment(Bill b, IncomeRow incomeRow) {
         switch (b.getPaymentMethod()) {
             case Cash:
@@ -904,7 +992,6 @@ public class LaborataryReportController implements Serializable {
 
         bundle.getRows().add(totalRow);
     }
-
 
 // Small helper methods for specific operations
     private void addToAgentValue(IncomeRow row, double amount) {
@@ -1519,5 +1606,21 @@ public class LaborataryReportController implements Serializable {
     public void setStrActiveIndex(String strActiveIndex) {
         this.strActiveIndex = strActiveIndex;
     }
-  // </editor-fold>
+    // </editor-fold>
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
+    }
+
+    public List<PatientInvestigationDTO> getItemList() {
+        return itemList;
+    }
+
+    public void setItemList(List<PatientInvestigationDTO> itemList) {
+        this.itemList = itemList;
+    }
 }
