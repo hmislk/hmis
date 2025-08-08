@@ -134,7 +134,7 @@ public class DirectPurchaseReturnController implements Serializable {
     private PharmacyCalculation pharmacyRecieveBean;
 
     private double getRemainingQty(BillItem bilItem) {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
             double originalQty = bilItem.getQty();
             double originalFreeQty = 0.0;
             if (bilItem.getPharmaceuticalBillItem() != null) {
@@ -208,7 +208,7 @@ public class DirectPurchaseReturnController implements Serializable {
         bifdOriginal.setReturnQuantity(alreadyReturnQuentity);
         bifdOriginal.setReturnFreeQuantity(alreadyReturnedFreeQuentity);
 
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
             // Returning free quantity is not tracked separately.
             // The total return covers both original quantity and free quantity.
             // Here, free quantity being returned is considered zero.
@@ -257,7 +257,7 @@ public class DirectPurchaseReturnController implements Serializable {
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
             double remainFree = getRemainingFreeQty(tmp.getReferanceBillItem());
             if (tmp.getPharmaceuticalBillItem().getFreeQty() > remainFree) {
                 tmp.getPharmaceuticalBillItem().setFreeQty(remainFree);
@@ -308,10 +308,10 @@ public class DirectPurchaseReturnController implements Serializable {
         }
 
         BigDecimal rate = fd.getGrossRate();
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
                 && fd.getLineCostRate() != null) {
             rate = fd.getLineCostRate();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
                 && fd.getTotalCostRate() != null) {
             rate = fd.getTotalCostRate();
         }
@@ -327,10 +327,10 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public String getReturnRateLabel() {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)) {
             return "Line Cost Rate";
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)) {
             return "Total Cost Rate";
         }
         return "Purchase Rate";
@@ -612,7 +612,7 @@ public class DirectPurchaseReturnController implements Serializable {
             double originalQty = pbiOfBilledBill.getQty();
             double originalFreeQty = pbiOfBilledBill.getFreeQty();
 
-            if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
                 double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(pbiOfBilledBill.getBillItem(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
                 newPharmaceuticalBillItemInReturnBill.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
