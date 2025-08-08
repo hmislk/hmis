@@ -502,10 +502,10 @@ public class PharmacySaleBhtController implements Serializable {
         // Warning when no substitute stocks are available
         if (substituteStocks == null || substituteStocks.isEmpty()) {
             if (bi != null && bi.getItem() != null) {
-                JsfUtil.addWarningMessage("No substitute stocks available for " + bi.getItem().getName() + 
+                JsfUtil.addErrorMessage("No substitute stocks available for " + bi.getItem().getName() + 
                                          ". Please check stock availability or contact the pharmacy department.");
             } else {
-                JsfUtil.addWarningMessage("No substitute stocks available for the selected item.");
+                JsfUtil.addErrorMessage("No substitute stocks available for the selected item.");
             }
         }
     }
