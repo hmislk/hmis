@@ -271,11 +271,9 @@ public class GrnReturnWithCostingController implements Serializable {
     }
 
     public void onEdit(BillItem editingBillItem) {
-        editingBillItem.getBillItemFinanceDetails().setLineGrossTotal(editingBillItem.getBillItemFinanceDetails().getTotalQuantity().multiply(editingBillItem.getBillItemFinanceDetails().getLineGrossRate()));
-    }
-
-    public void onEditOld(BillItem editingBillItem) { //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-        //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
+        if (editingBillItem == null || editingBillItem.getBillItemFinanceDetails() == null) {
+            return;
+        }
 
         double remainngTotalQty = getRemainingTotalQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
         double remainngQty = getRemainingQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
@@ -284,21 +282,25 @@ public class GrnReturnWithCostingController implements Serializable {
         pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(editingBillItem.getPharmaceuticalBillItem(), editingBillItem.getBillItemFinanceDetails());
         editingBillItem.setQty(editingBillItem.getBillItemFinanceDetails().getQuantity().doubleValue());
 
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        boolean returnByTotalQty = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        if (returnByTotalQty) {
             if (editingBillItem.getQty() > remainngTotalQty) {
                 editingBillItem.setQty(remainngTotalQty);
+                editingBillItem.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(remainngTotalQty));
+                editingBillItem.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
             }
-        } else if (!configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-            if (editingBillItem.getPharmaceuticalBillItem().getFreeQty() > remainngFreeQty && editingBillItem.getPharmaceuticalBillItem().getQty() > remainngQty) {
-                editingBillItem.getPharmaceuticalBillItem().setFreeQty(remainngFreeQty);
-                editingBillItem.getPharmaceuticalBillItem().setQty(remainngQty);
+        } else {
+            PharmaceuticalBillItem pbi = editingBillItem.getPharmaceuticalBillItem();
+            if (pbi.getFreeQty() > remainngFreeQty && pbi.getQty() > remainngQty) {
+                pbi.setFreeQty(remainngFreeQty);
+                pbi.setQty(remainngQty);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
-            } else if (editingBillItem.getPharmaceuticalBillItem().getQty() > remainngQty) {
-                editingBillItem.getPharmaceuticalBillItem().setQty(remainngQty);
+            } else if (pbi.getQty() > remainngQty) {
+                pbi.setQty(remainngQty);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
-            } else if (editingBillItem.getPharmaceuticalBillItem().getFreeQty() > remainngFreeQty) {
-                editingBillItem.getPharmaceuticalBillItem().setFreeQty(remainngFreeQty);
+            } else if (pbi.getFreeQty() > remainngFreeQty) {
+                pbi.setFreeQty(remainngFreeQty);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
             }
         }
@@ -309,6 +311,7 @@ public class GrnReturnWithCostingController implements Serializable {
         calculateBillItemDetails(editingBillItem);
         callculateBillDetails();
         calTotal();
+        calculateTotalReturnByLineNetTotals();
         getPharmacyController().setPharmacyItem(editingBillItem.getPharmaceuticalBillItem().getBillItem().getItem());
     }
 
@@ -750,6 +753,24 @@ public class GrnReturnWithCostingController implements Serializable {
         }
     }
 
+    private void applyPendingReturnTotals() {
+        for (BillItem i : getBillItems()) {
+            BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
+            BillItem ref = i.getReferanceBillItem();
+            BillItemFinanceDetails refFd = ref != null ? ref.getBillItemFinanceDetails() : null;
+
+            if (fd == null || refFd == null) {
+                continue;
+            }
+
+            BigDecimal qty = fd.getQuantity() == null ? BigDecimal.ZERO : fd.getQuantity().abs();
+            BigDecimal freeQty = fd.getFreeQuantity() == null ? BigDecimal.ZERO : fd.getFreeQuantity().abs();
+
+            refFd.setReturnQuantity(refFd.getReturnQuantity().add(qty));
+            refFd.setReturnFreeQuantity(refFd.getReturnFreeQuantity().add(freeQty));
+        }
+    }
+
     private void revertPendingReturnTotals() {
         for (BillItem i : getBillItems()) {
             BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
@@ -760,8 +781,11 @@ public class GrnReturnWithCostingController implements Serializable {
                 continue;
             }
 
-            refFd.setReturnQuantity(refFd.getReturnQuantity().subtract(fd.getQuantity()));
-            refFd.setReturnFreeQuantity(refFd.getReturnFreeQuantity().subtract(fd.getFreeQuantity()));
+            BigDecimal qty = fd.getQuantity() == null ? BigDecimal.ZERO : fd.getQuantity().abs();
+            BigDecimal freeQty = fd.getFreeQuantity() == null ? BigDecimal.ZERO : fd.getFreeQuantity().abs();
+
+            refFd.setReturnQuantity(refFd.getReturnQuantity().subtract(qty));
+            refFd.setReturnFreeQuantity(refFd.getReturnFreeQuantity().subtract(freeQty));
         }
     }
 
@@ -816,6 +840,7 @@ public class GrnReturnWithCostingController implements Serializable {
         }
 
         fillData();
+        applyPendingReturnTotals();
 
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
             revertPendingReturnTotals();
@@ -827,6 +852,8 @@ public class GrnReturnWithCostingController implements Serializable {
             JsfUtil.addErrorMessage("Returning more than purchased.");
             return;
         }
+
+        revertPendingReturnTotals();
 
         saveReturnBill();
         saveBillItems();
@@ -1050,8 +1077,7 @@ public class GrnReturnWithCostingController implements Serializable {
     }
 
     public void onReturningTotalQtyChange(BillItem editingBillItem) {
-        calculateLineTotalByLineGrossRate(editingBillItem);
-        calculateTotalReturnByLineNetTotals();
+        onEdit(editingBillItem);
     }
 
     private void calculateLineTotalByLineGrossRate(BillItem inputBillItem) {
