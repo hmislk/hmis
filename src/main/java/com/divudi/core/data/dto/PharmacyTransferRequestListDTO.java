@@ -46,25 +46,37 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancellerName = cancellerName;
     }
 
-    // Constructor accepting generic Objects to allow flexibility with JPQL
-    // projections that use COALESCE or future field additions.
-    public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
-            Object fromDepartmentName, Object creatorName, Object cancelled,
-            Date cancelledAt, Object cancellerName) {
+    /**
+     * Constructor matching JPQL query without cancelled field.
+     * Used when cancelled status is determined by filter conditions.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName,
+            Date cancelledAt, String cancellerName) {
         this.billId = billId;
-        this.deptId = deptId != null ? deptId.toString() : "";
+        this.deptId = deptId;
         this.createdAt = createdAt;
-        this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
-        this.creatorName = creatorName != null ? creatorName.toString() : "";
-        if (cancelled instanceof Boolean) {
-            this.cancelled = (Boolean) cancelled;
-        } else if (cancelled instanceof Number) {
-            this.cancelled = ((Number) cancelled).intValue() != 0;
-        } else {
-            this.cancelled = false;
-        }
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Set to false since query filters out cancelled bills
         this.cancelledAt = cancelledAt;
-        this.cancellerName = cancellerName != null ? cancellerName.toString() : "";
+        this.cancellerName = cancellerName;
+    }
+
+    /**
+     * Simplified constructor for non-cancelled bills only.
+     * Used when query filters out all cancelled bills.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
     }
 
     // ------------------------------------------------------------------

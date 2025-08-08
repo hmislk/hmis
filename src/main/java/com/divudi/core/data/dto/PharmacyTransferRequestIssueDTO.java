@@ -43,6 +43,42 @@ public class PharmacyTransferRequestIssueDTO implements Serializable {
         this.netTotal = netTotal;
     }
 
+    /**
+     * Constructor matching JPQL query without cancelled field.
+     * Used when cancelled status is not directly queried.
+     */
+    public PharmacyTransferRequestIssueDTO(Long billId, String deptId, Date createdAt,
+            String creatorName, Date cancelledAt, String cancellerName,
+            String toStaffName, BigDecimal netTotal) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.creatorName = creatorName;
+        this.cancelled = (cancelledAt != null); // Derive cancelled status from cancelledAt
+        this.cancelledAt = cancelledAt;
+        this.cancellerName = cancellerName;
+        this.toStaffName = toStaffName;
+        this.netTotal = netTotal;
+    }
+
+    /**
+     * Simplified constructor for non-cancelled bills only.
+     * Used when query filters out all cancelled bills.
+     * JPA provides double for BigDecimal fields in constructor expressions.
+     */
+    public PharmacyTransferRequestIssueDTO(Long billId, String deptId, Date createdAt,
+            String creatorName, String toStaffName, double netTotal) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.toStaffName = toStaffName;
+        this.netTotal = BigDecimal.valueOf(netTotal);
+    }
+
     // Flexible constructor accepting Objects
     public PharmacyTransferRequestIssueDTO(Long billId, Object deptId, Date createdAt,
             Object creatorName, Object cancelled, Date cancelledAt,
