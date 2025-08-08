@@ -260,7 +260,7 @@ public class GrnReturnWithCostingController implements Serializable {
         BigDecimal returnValue = BigDecimal.ZERO;
 
         if (result != null) {
-            returnValue = safeToBigDecimal(result);
+            returnValue = safeToBigDecimal(result).abs(); // Use absolute value since returns are negative
         }
 
         return returnValue;
@@ -286,7 +286,7 @@ public class GrnReturnWithCostingController implements Serializable {
         BigDecimal returnValue = BigDecimal.ZERO;
 
         if (result != null && result.length > 0 && result[0] != null) {
-            returnValue = safeToBigDecimal(result[0]);
+            returnValue = safeToBigDecimal(result[0]).abs(); // Use absolute value since returns are negative
         }
 
         return returnValue;
