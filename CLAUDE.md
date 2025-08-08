@@ -46,7 +46,7 @@
 9. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
 10. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
 
-## Wiki Writing Guidelines
+## Wiki Writing Guidelines {#wiki-writing-guidelines}
 
 ### Purpose and Audience
 - **Wiki is for end users**, not developers
