@@ -29,7 +29,7 @@
                 <h:panelGroup class="row">
 
 
-                    <h:panelGroup class="row">
+                    <h:panelGroup class="row" rendered="#{configOptionApplicationController.getBooleanValueByKey('Adding new items for inpatient requests are allowed.',true)}">
 
                         <p:panel header="Add Items" class="col-md-6">
 
@@ -115,7 +115,7 @@
 
                             </h:panelGrid>
                         </p:panel>
-                        <p:panel header="Bill Details" style="height: 100%" class="col-md-6">
+                        <p:panel header="Bill Details" style="height: 100%" class="col-md-6" id="billDetailsPanel">
 
                             <h:panelGrid columns="3" class="w-100">
                                 <p:outputLabel value="Bill No" ></p:outputLabel>
@@ -367,7 +367,7 @@
                                 id="btnReplace"
                                 value="Replace"
                                 action="#{pharmacySaleBhtController.replaceSelectedSubstitute}"
-                                update=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                update="@form"
                                 oncomplete="PF('substituteDialog').hide();"
                                 process="@this">
                                 <f:setPropertyActionListener value="#{sStock}" target="#{pharmacySaleBhtController.selectedSubstituteStock}" />

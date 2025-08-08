@@ -498,6 +498,16 @@ public class PharmacySaleBhtController implements Serializable {
                 }
             }
         }
+        
+        // Warning when no substitute stocks are available
+        if (substituteStocks == null || substituteStocks.isEmpty()) {
+            if (bi != null && bi.getItem() != null) {
+                JsfUtil.addWarningMessage("No substitute stocks available for " + bi.getItem().getName() + 
+                                         ". Please check stock availability or contact the pharmacy department.");
+            } else {
+                JsfUtil.addWarningMessage("No substitute stocks available for the selected item.");
+            }
+        }
     }
 
     public void replaceSelectedSubstitute() {
@@ -514,6 +524,25 @@ public class PharmacySaleBhtController implements Serializable {
             }
         }
 
+        // CodeRabbit Fix: Check if substitute stock has sufficient quantity
+        double requiredQty = Math.abs(itemForSubstitution.getQty());
+        if (selectedSubstituteStock.getStock() < requiredQty) {
+            JsfUtil.addErrorMessage("Insufficient stock available. Required: " + requiredQty + 
+                                   ", Available: " + selectedSubstituteStock.getStock());
+            return;
+        }
+
+        // CodeRabbit Fix: Check if substitute stock is available for this user (concurrency check)
+        if (!userStockController.isStockAvailable(selectedSubstituteStock, requiredQty, getSessionController().getLoggedUser())) {
+            JsfUtil.addErrorMessage("Sorry, another user is currently billing this substitute stock. Please select a different substitute.");
+            return;
+        }
+        
+        // CodeRabbit Fix: Update transUserStock to handle the new substitute stock
+        if (itemForSubstitution.getTransUserStock() != null) {
+            userStockController.removeUserStock(itemForSubstitution.getTransUserStock(), getSessionController().getLoggedUser());
+        }
+
         itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
 
         PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
@@ -522,7 +551,7 @@ public class PharmacySaleBhtController implements Serializable {
             phItem.setBillItem(itemForSubstitution);
             itemForSubstitution.setPharmaceuticalBillItem(phItem);
         }
-
+        
         phItem.setStock(selectedSubstituteStock);
         phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
         phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
@@ -532,6 +561,11 @@ public class PharmacySaleBhtController implements Serializable {
         phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
         phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
         phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
+
+        // CodeRabbit Fix: Create new user stock reservation for substitute stock
+        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock newUserStock = userStockController.saveUserStock(itemForSubstitution, getSessionController().getLoggedUser(), usc);
+        itemForSubstitution.setTransUserStock(newUserStock);
 
         calculateRates(itemForSubstitution);
         calCurrentBillItemTotal(getBillItems());
