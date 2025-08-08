@@ -57,7 +57,7 @@ If scripts don't work, follow these steps:
    cd wiki-temp
    git add .
    git commit -m "Update wiki documentation"
-   git push origin master
+   git push origin HEAD
    ```
 
 4. **Cleanup**
