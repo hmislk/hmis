@@ -4306,14 +4306,19 @@ public class SearchController implements Serializable {
         BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
         List<BillClassType> bct = Arrays.asList(billClassTypes);
 
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO(" +
-                " b.id, b.deptId, b.createdAt, b.department.name, b.creater.webUserPerson.name," +
-                " b.cancelled, cb.createdAt, cb.creater.webUserPerson.name)" +
-                " from Bill b left join b.cancelledBill cb" +
-                " where b.retired=false and  b.toDepartment=:toDep" +
-                " and b.billClassType not in :bct" +
-                " and b.billTypeAtomic = :billTypeAtomic" +
-                " and b.billType= :bTp and b.createdAt between :fromDate and :toDate";
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + " b.id, "
+                + " b.deptId, "
+                + " b.createdAt, "
+                + " b.department.name, "
+                + " b.creater.webUserPerson.name,"
+                + " cb.createdAt, "
+                + " cb.creater.webUserPerson.name)"
+                + " from Bill b left join b.cancelledBill cb"
+                + " where b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
+                + " and b.billTypeAtomic = :billTypeAtomic"
+                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("fromDate", getFromDate());
@@ -4350,12 +4355,12 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(" +
-                " b.id, b.deptId, b.createdAt, b.creater.webUserPerson.name, b.cancelled," +
-                " cb.createdAt, cb.creater.webUserPerson.name, ts.person.nameWithTitle, b.netTotal)" +
-                " from Bill b left join b.cancelledBill cb left join b.toStaff ts" +
-                " where b.retired=false and b.billType=:btp" +
-                " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
+                + " b.id, b.deptId, b.createdAt, b.creater.webUserPerson.name, b.cancelled,"
+                + " cb.createdAt, cb.creater.webUserPerson.name, ts.person.nameWithTitle, b.netTotal)"
+                + " from Bill b left join b.cancelledBill cb left join b.toStaff ts"
+                + " where b.retired=false and b.billType=:btp"
+                + " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("btp", BillType.PharmacyTransferIssue);
         params.put("rid", requestId);
@@ -9795,8 +9800,8 @@ public class SearchController implements Serializable {
             sql += " and  b.deptId like :billNo";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
+
+        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
             sql += " and  (b.patient.code like :code OR b.patient.phn like :phn ) ";
             temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
             temMap.put("phn", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
