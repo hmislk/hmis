@@ -45,5 +45,45 @@
 9. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
 10. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
 
+## Wiki Writing Guidelines
+
+### Purpose and Audience
+- **Wiki is for end users**, not developers
+- Focus on **how to use features**, not how they were implemented
+- Write for pharmacy staff, nurses, doctors, administrators - not programmers
+
+### Writing Style
+- **User-centric language**: "How to substitute items" not "Implementation of substitute functionality"
+- **Step-by-step instructions**: Clear, numbered procedures
+- **Practical examples**: Real scenarios users encounter
+- **Actionable guidance**: What to do when problems occur
+
+### Content Structure
+1. **Overview**: What the feature does and why users need it
+2. **When to Use**: Specific scenarios and use cases
+3. **How to Use**: Step-by-step procedures with screenshots if possible
+4. **Understanding Messages**: What system messages mean and how to respond
+5. **Best Practices**: Tips for effective use
+6. **Troubleshooting**: Common problems and solutions
+7. **Configuration**: Admin settings that affect the feature (user impact only)
+8. **FAQ**: Common user questions
+
+### What NOT to Include
+- ❌ Code snippets, file paths, line numbers
+- ❌ Technical implementation details
+- ❌ Database schema information
+- ❌ Developer debugging information
+- ❌ Backend process descriptions
+
+### What TO Include
+- ✅ User interface elements and navigation
+- ✅ Error messages and their meanings
+- ✅ Business process workflows
+- ✅ Configuration options (from user perspective)
+- ✅ Integration with other modules
+
+### Exception
+Only include technical details when specifically requested for developer documentation or when writing for the developer_docs/ directory.
+
 ---
 This behavior should persist across all Claude Code sessions for this project.
