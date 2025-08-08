@@ -17,6 +17,12 @@
                     class="w-100 m-1">
 
                     <div class="row" >
+                        <div class="col-12" >
+                            <p:messages id="messages" showDetail="true" closable="true" />
+                        </div>
+                    </div>
+
+                    <div class="row" >
                         <div class="col-7" >
                             <p:dataTable 
                                 var="ph" 
@@ -108,11 +114,16 @@
                                         onfocus="this.select()"
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                        <f:validator validatorId="positiveNumberValidator" />
                                         <p:ajax 
                                             event="keyup" 
                                             process="@this"
                                             update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
+                                        <p:ajax 
+                                            event="blur" 
+                                            process="@this"
+                                            update="@this" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
@@ -127,12 +138,17 @@
                                         onfocus="this.select()"
                                         class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:validator validatorId="nonNegativeNumberValidator" />
                                         <p:ajax 
                                             process="@this"
                                             event="keyup" 
                                             update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{directPurchaseReturnController.onReturningQtyChange(ph)}" 
                                             />
+                                        <p:ajax 
+                                            event="blur" 
+                                            process="@this"
+                                            update="@this" />
                                     </p:inputText>
                                 </p:column>
 
@@ -144,9 +160,11 @@
                                         class="w-100 text-end"
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                        <f:validator validatorId="nonNegativeNumberValidator" />
                                         <p:ajax
                                             event="blur" 
                                             process="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{directPurchaseReturnController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
