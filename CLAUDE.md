@@ -16,6 +16,7 @@
 ### Git & GitHub Integration
 - **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
 - **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
+- **Wiki Publishing**: [Guide](developer_docs/github/wiki-publishing.md)
 - **QA Deployment**: [Bot-Friendly QA Deployment Guide](developer_docs/deployment/qa-deployment-guide.md)
 - **VM Management**: [VM Restart Guide](developer_docs/deployment/vm-restart-guide.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
