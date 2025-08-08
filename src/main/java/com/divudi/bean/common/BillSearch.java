@@ -4404,7 +4404,7 @@ public class BillSearch implements Serializable {
             directPurchaseReturnController.setPrintPreview(false);
             return "/pharmacy/direct_purchase_return?faces-redirect=true";
         } else {
-            purchaseReturnController.resetValuesForReturn();   // keep controller state clean
+            purchaseReturnController.makeNull();
             purchaseReturnController.setBill(bill);
             purchaseReturnController.setPrintPreview(false);
             return "/pharmacy/pharmacy_return_purchase?faces-redirect=true";
