@@ -175,9 +175,19 @@
                         Available Items
                     </f:facet>
 
-                    <p:column headerText="Requested Item" style="width: 50px!important;"  >
-                        <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" >
-                        </h:outputText>
+                    <p:column headerText="Requested Item" style="width: 50px!important;">
+                        <div style="display:flex;align-items:center;">
+                            <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" />
+                            <p:commandButton
+                                icon="pi pi-refresh"
+                                id="btnSelectSubstitute"
+                                title="Select a Substitute"
+                                action="#{pharmacySaleBhtController.prepareSubstitute(bItm)}"
+                                update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                oncomplete="PF('substituteDialog').show();"
+                                process="@this"
+                                class="ui-button-warning ui-button-icon-only mx-1" />
+                        </div>
                     </p:column>
                     
                     <p:column headerText="Issuing Bill Item" style="width: 50px!important;"  rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -290,6 +300,81 @@
                     </p:column>
 
                 </p:dataTable>
+
+                <p:dialog
+                    id="substituteDlg"
+                    widgetVar="substituteDialog"
+                    position="top"
+                    fitViewport="true"
+                    modal="true"
+                    appendTo="@(body)"
+                    header="Select a Substitute Stock"
+                    width="60%"
+                    height="500px">
+
+                    <div class="mb-3 p-3 bg-light border rounded">
+                        <h:outputLabel value="Requested Item: " styleClass="fw-bold text-primary"/>
+                        <h:outputText value="#{pharmacySaleBhtController.itemForSubstitution.referanceBillItem.item.name}"
+                                      styleClass="fw-bold text-dark"/>
+                    </div>
+
+                    <p:dataTable
+                        id="substituteTable"
+                        value="#{pharmacySaleBhtController.substituteStocks}"
+                        var="sStock"
+                        rowKey="#{sStock.id}"
+                        paginator="true"
+                        rows="10"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                        emptyMessage="No substitute stocks found"
+                        styleClass="table-striped">
+
+                        <p:column headerText="Item Name">
+                            <h:outputText value="#{sStock.itemBatch.item.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Batch No">
+                            <h:outputText value="#{sStock.itemBatch.batchNo}"/>
+                        </p:column>
+
+                        <p:column headerText="Expiry Date">
+                            <h:outputText value="#{sStock.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="MM/yyyy"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Available Qty">
+                            <h:outputText value="#{sStock.stock}">
+                                <f:convertNumber pattern="#,###.#"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Purchase Rate">
+                            <h:outputText value="#{sStock.itemBatch.purcahseRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Retail Rate">
+                            <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Action">
+                            <p:commandButton
+                                id="btnReplace"
+                                value="Replace"
+                                action="#{pharmacySaleBhtController.replaceSelectedSubstitute}"
+                                update=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                oncomplete="PF('substituteDialog').hide();"
+                                process="@this">
+                                <f:setPropertyActionListener value="#{sStock}" target="#{pharmacySaleBhtController.selectedSubstituteStock}" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:dialog>
             </p:panel>
 
 
