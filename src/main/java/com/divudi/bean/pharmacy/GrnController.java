@@ -679,12 +679,12 @@ public class GrnController implements Serializable {
 
         //  getPharmacyBillBean().editBill(, , getSessionController());
         
-        // Check if Purchase Order is fully received and update completed status
-        if (getApproveBill() != null && !getApproveBill().isCompleted()) {
+        // Check if Purchase Order is fully received and update fullyIssued status
+        if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {
             if (isPurchaseOrderFullyReceived(getApproveBill())) {
-                getApproveBill().setCompleted(true);
-                getApproveBill().setCompletedAt(new Date());
-                getApproveBill().setCompletedBy(getSessionController().getLoggedUser());
+                getApproveBill().setFullyIssued(true);
+                getApproveBill().setFullyIssuedAt(new Date());
+                getApproveBill().setFullyIssuedBy(getSessionController().getLoggedUser());
                 getBillFacade().edit(getApproveBill());
             }
         }
@@ -805,12 +805,12 @@ public class GrnController implements Serializable {
         getBillFacade().edit(getGrnBill());
         //  getPharmacyBillBean().editBill(, , getSessionController());
         
-        // Check if Purchase Order is fully received and update completed status
-        if (getApproveBill() != null && !getApproveBill().isCompleted()) {
+        // Check if Purchase Order is fully received and update fullyIssued status
+        if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {
             if (isPurchaseOrderFullyReceived(getApproveBill())) {
-                getApproveBill().setCompleted(true);
-                getApproveBill().setCompletedAt(new Date());
-                getApproveBill().setCompletedBy(getSessionController().getLoggedUser());
+                getApproveBill().setFullyIssued(true);
+                getApproveBill().setFullyIssuedAt(new Date());
+                getApproveBill().setFullyIssuedBy(getSessionController().getLoggedUser());
                 getBillFacade().edit(getApproveBill());
             }
         }

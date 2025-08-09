@@ -25,6 +25,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     private Date cancelledAt;
     private String cancellerName;
     private Boolean completed;
+    private Boolean fullyIssued;
     private List<PharmacyTransferRequestIssueDTO> issuedBills = new ArrayList<>();
 
     // ------------------------------------------------------------------
@@ -98,6 +99,25 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelledAt = null;
         this.cancellerName = null;
         this.completed = completed;
+        this.fullyIssued = false; // Default to not fully issued
+    }
+
+    /**
+     * Constructor including both completed and fullyIssued status for non-cancelled bills.
+     * Used for performance optimization to include both flags.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName, Boolean completed, Boolean fullyIssued) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.completed = completed;
+        this.fullyIssued = fullyIssued;
     }
 
     // ------------------------------------------------------------------
@@ -158,6 +178,14 @@ public class PharmacyTransferRequestListDTO implements Serializable {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public Boolean getFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(Boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
     }
 
     public Date getCancelledAt() {
