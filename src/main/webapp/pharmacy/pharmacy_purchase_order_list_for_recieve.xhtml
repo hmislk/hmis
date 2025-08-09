@@ -131,7 +131,7 @@
                                             class="w-100 ui-button-warning"
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnController.navigateToResive()}"
-                                            disabled="#{p.cancelled or p.billClosed}">
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                         <p:commandButton
@@ -140,7 +140,7 @@
                                             class="w-100 ui-button-warning"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnCostingController.navigateToResiveCosting()}"
-                                            disabled="#{p.cancelled or p.billClosed}">
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
@@ -151,7 +151,7 @@
                                             value="Receive Wholesale" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Pharmacy Wholesales', true)}"
                                             action="#{grnController.navigateToReceiveWholesale()}" 
-                                            disabled="#{p.cancelled or p.billClosed}">
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>

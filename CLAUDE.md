@@ -34,6 +34,13 @@
 - **CRITICAL**: Never modify existing constructors - only add new ones
 - **Use direct DTO queries** - avoid entity-to-DTO conversion loops
 
+### Database Development
+- **MySQL Guide**: [Complete Reference](developer_docs/database/mysql-developer-guide.md)
+- **🚨 CREDENTIALS SECURITY**: MySQL credentials MUST be stored in separate folder (NOT in git)
+- **Location**: `C:\Credentials\credentials.txt` (Windows) or `~/.config/hmis/credentials.txt` (Linux/Mac)
+- **Never commit database credentials** to version control
+- **Database debugging techniques** and performance optimization guidelines in MySQL guide
+
 ## Essential Rules
 1. **MANUAL PERSISTENCE.XML VERIFICATION**: Before any GitHub push, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` - NEVER commit hardcoded JNDI datasources
 2. **Include issue closing keywords** in commit messages
@@ -45,6 +52,7 @@
 8. **🚨 DDL GENERATION RULE**: Never commit persistence.xml with hardcoded DDL generation paths (`eclipselink.application-location`)
 9. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
 10. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
+11. **🚨 DATABASE CREDENTIALS RULE**: NEVER commit database credentials to git - store them in environment-specific folders outside the project directory (see MySQL guide)
 
 ## Wiki Writing Guidelines {#wiki-writing-guidelines}
 

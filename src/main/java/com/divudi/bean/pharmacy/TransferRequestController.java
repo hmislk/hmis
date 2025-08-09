@@ -331,6 +331,8 @@ public class TransferRequestController implements Serializable {
 
         for (BillItem newBillItem : transferRequestPreBillItems) {
             newBillItem.setBill(newApprovedBill);
+            // Initialize remainingQty for new Transfer Requests
+            newBillItem.setRemainingQty(newBillItem.getQty());
             if (newBillItem.getId() == null) {
                 billItemFacade.create(newBillItem);
             } else {
@@ -562,6 +564,8 @@ public class TransferRequestController implements Serializable {
             BillItem newBillItemInApprovedRequest = new BillItem();
             newBillItemInApprovedRequest.copy(requestItemInPreBill);
             newBillItemInApprovedRequest.setBill(bill);
+            // Initialize remainingQty for new Transfer Requests
+            newBillItemInApprovedRequest.setRemainingQty(newBillItemInApprovedRequest.getQty());
             billItems.add(newBillItemInApprovedRequest);
         }
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(bill, billItems);
