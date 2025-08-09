@@ -163,8 +163,13 @@ public class TransferIssueController implements Serializable {
         }
 
         for (BillItem requestItem : requestBill.getBillItems()) {
+            // Handle null remainingQty (legacy data) by using original quantity
+            Double remainingQty = requestItem.getRemainingQty();
+            if (remainingQty == null) {
+                remainingQty = requestItem.getQty();
+            }
             // Use remainingQty field from database - if > 0, still has items to issue
-            if (requestItem.getRemainingQty() > 0) {
+            if (remainingQty > 0) {
                 return false; // Still has remaining quantity to issue
             }
         }
@@ -733,6 +738,10 @@ public class TransferIssueController implements Serializable {
 
                 originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
                 originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
+                // Update remaining quantity to track what's left to issue
+                Double remainingQty = originalOrderItem.getRemainingQty();
+                double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
+                originalOrderItem.setRemainingQty(currentRemaining - billItemsInIssue.getQty());
                 billItemFacade.editAndCommit(originalOrderItem);
 
                 getBillItemFacade().edit(billItemsInIssue);
