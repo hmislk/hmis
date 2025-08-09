@@ -738,7 +738,7 @@ public class LaborataryReportController implements Serializable {
         }
     }
     
-    public void processLabTestWiseRegentCostReportDto() {
+    public void processLabTestWiseReagentCostReportDto() {
         Map<String, Object> params = new HashMap<>();
 
         String jpql = "select new com.divudi.core.data.dto.TestCountDTO("
@@ -811,22 +811,23 @@ public class LaborataryReportController implements Serializable {
                 BillTypeAtomic.INWARD_SERVICE_BILL);
         params.put("bType", bTypes);
 
-        List<TestCountDTO> testWiseRegentCout = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<TestCountDTO> testWiseReagentCount = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         totalCount = 0.0;
         totalNetTotal = 0.0;
 
-        if (testWiseRegentCout != null) {
-            for (TestCountDTO dto : testWiseRegentCout) {
-                double total = 0.0;
-                total = dto.getCount()*dto.getReagentFee();
-                dto.setTotal(total);
+        if (testWiseReagentCount != null) {
+            for (TestCountDTO dto : testWiseReagentCount) {
+                double netTotal = 0.0;
+                double reagentFee = dto.getReagentFee() == null ? 0.0 : dto.getReagentFee();
+                netTotal = dto.getCount() * reagentFee;
+                dto.setTotal(netTotal);
                 totalCount += dto.getCount();
-                totalNetTotal += total;
+                totalNetTotal += netTotal;
             }
         }
-        
-        testWiseCountDtos = (List<TestCountDTO>) setAlphabetList(testWiseRegentCout);
+        List<TestCountDTO> safeList = testWiseReagentCount == null ? java.util.Collections.emptyList() : testWiseReagentCount;
+        testWiseCountDtos = setAlphabetList(safeList);
     }
 
     public List<TestWiseCountReport> alphabetList(List<TestWiseCountReport> testWiseCounts) {

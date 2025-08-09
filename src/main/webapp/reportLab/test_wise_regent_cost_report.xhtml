@@ -11,7 +11,7 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Laboratary Test Wise Regent Cost Report" styleClass="w-100">
+                    <p:panel header="Laboratary Test Wise Reagent Cost Report" styleClass="w-100">
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -252,7 +252,7 @@
                                     style="width: 150px"
                                     icon="fas fa-cogs"
                                     class="mx-2 ui-button-warning m-1"
-                                    action="#{laborataryReportController.processLabTestWiseRegentCostReportDto()}" >
+                                    action="#{laborataryReportController.processLabTestWiseReagentCostReportDto()}" >
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -270,7 +270,7 @@
                                     style="width: 150px"
                                     class="ui-button-success m-1"
                                     icon="pi pi-download">
-                                    <p:dataExporter fileName="laboratary_income_report.xlsx" target="tblExport" type="xlsx" />
+                                    <p:dataExporter fileName="laboratary_reagent_cost_report.xlsx" target="tblExport" type="xlsx" />
                                 </p:commandButton>
 
 
@@ -297,7 +297,7 @@
                                         <h:outputText value="#{sessionController.institution.name}"/>
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                        <h:outputText value="Laboratary Test Wise Regent Cost Report"/>
+                                        <h:outputText value="Laboratary Test Wise Reagent Cost Report"/>
                                         <h:panelGroup  rendered="#{laborataryReportController.department ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
