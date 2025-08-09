@@ -24,6 +24,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     private Boolean cancelled;
     private Date cancelledAt;
     private String cancellerName;
+    private Boolean completed;
     private List<PharmacyTransferRequestIssueDTO> issuedBills = new ArrayList<>();
 
     // ------------------------------------------------------------------
@@ -44,6 +45,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = cancelled;
         this.cancelledAt = cancelledAt;
         this.cancellerName = cancellerName;
+        this.completed = false; // Default to not completed
     }
 
     /**
@@ -61,6 +63,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = false; // Set to false since query filters out cancelled bills
         this.cancelledAt = cancelledAt;
         this.cancellerName = cancellerName;
+        this.completed = false; // Default to not completed
     }
 
     /**
@@ -77,6 +80,24 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = false; // Query filters out cancelled bills
         this.cancelledAt = null;
         this.cancellerName = null;
+        this.completed = false; // Default to not completed
+    }
+
+    /**
+     * Constructor including completed status for non-cancelled bills.
+     * Used for performance optimization to include completed flag.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName, Boolean completed) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.completed = completed;
     }
 
     // ------------------------------------------------------------------
@@ -129,6 +150,14 @@ public class PharmacyTransferRequestListDTO implements Serializable {
 
     public void setCancelled(Boolean cancelled) {
         this.cancelled = cancelled;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
     }
 
     public Date getCancelledAt() {

@@ -89,7 +89,8 @@
                                     ajax="false"
                                     value="Receive"
                                     class="ui-button-warning mx-2"
-                                    action="#{transferReceiveController.navigateToRecieveRequest()}">
+                                    action="#{transferReceiveController.navigateToRecieveRequest()}"
+                                    disabled="#{p.cancelled or p.completed}">
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
                                 </p:commandButton>
 

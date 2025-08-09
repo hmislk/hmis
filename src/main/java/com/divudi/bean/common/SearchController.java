@@ -4290,7 +4290,8 @@ public class SearchController implements Serializable {
                 + " b.deptId, "
                 + " b.createdAt, "
                 + " b.department.name, "
-                + " b.creater.webUserPerson.name)"
+                + " b.creater.webUserPerson.name, "
+                + " b.completed)"
                 + " from Bill b"
                 + " where b.retired=false"
                 + " and  b.toDepartment=:toDep"
@@ -4351,7 +4352,7 @@ public class SearchController implements Serializable {
                 + " and b.billTypeAtomic=:bta"
                 + " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
         HashMap<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.PHARMACY_RECEIVE);
+        params.put("bta", BillTypeAtomic.PHARMACY_ISSUE);
         params.put("rid", requestId);
         
         
@@ -5894,6 +5895,7 @@ public class SearchController implements Serializable {
 
         return result;
     }
+
 
     private List<Bill> getIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"

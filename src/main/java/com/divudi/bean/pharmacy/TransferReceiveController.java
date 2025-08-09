@@ -363,6 +363,17 @@ public class TransferReceiveController implements Serializable {
         fillData(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
         getBillFacade().edit(getReceivedBill());
+        
+        // Check if Transfer Issue is fully received and update completed status
+        if (getIssuedBill() != null && !getIssuedBill().isCompleted()) {
+            if (isAlreadyReceived(getIssuedBill())) {
+                getIssuedBill().setCompleted(true);
+                getIssuedBill().setCompletedAt(new Date());
+                getIssuedBill().setCompletedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getIssuedBill());
+            }
+        }
+        
         printPreview = true;
     }
 

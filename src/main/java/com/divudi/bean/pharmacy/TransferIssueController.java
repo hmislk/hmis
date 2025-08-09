@@ -157,21 +157,19 @@ public class TransferIssueController implements Serializable {
 //
 //        return false;
 //    }
-    public boolean isFullyIssued(Bill bill) {
-        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+    public boolean isFullyIssued(Bill requestBill) {
+        if (requestBill == null || requestBill.getBillItems() == null || requestBill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
         }
 
-//        TODO: Create a Logic. Old one is NOT working
-//        for (BillItem originalItem : billItems) {
-//
-//            if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
-//                return false;
-//            } else if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
-//                return false;
-//            }
-//        }
-        return false; // All items are fully issued
+        for (BillItem requestItem : requestBill.getBillItems()) {
+            // Use remainingQty field from database - if > 0, still has items to issue
+            if (requestItem.getRemainingQty() > 0) {
+                return false; // Still has remaining quantity to issue
+            }
+        }
+        
+        return true; // All items are fully issued
     }
 
     public String navigateToPharmacyDirectIssueForRequests() {
@@ -788,6 +786,16 @@ public class TransferIssueController implements Serializable {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         issuedBill = b;
+
+        // Check if Transfer Request is fully issued and update completed status
+        if (getRequestedBill() != null && !getRequestedBill().isCompleted()) {
+            if (isFullyIssued(getRequestedBill())) {
+                getRequestedBill().setCompleted(true);
+                getRequestedBill().setCompletedAt(new Date());
+                getRequestedBill().setCompletedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getRequestedBill());
+            }
+        }
 
         printPreview = true;
 

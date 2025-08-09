@@ -796,7 +796,42 @@ public class GrnCostingController implements Serializable {
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
         getBillFacade().edit(getGrnBill());
+        
+        // Check if Purchase Order is fully received and update completed status
+        if (getApproveBill() != null && !getApproveBill().isCompleted()) {
+            if (isPurchaseOrderFullyReceived(getApproveBill())) {
+                getApproveBill().setCompleted(true);
+                getApproveBill().setCompletedAt(new Date());
+                getApproveBill().setCompletedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getApproveBill());
+            }
+        }
+        
         printPreview = true;
+    }
+
+    private boolean isPurchaseOrderFullyReceived(Bill purchaseOrderBill) {
+        if (purchaseOrderBill == null) {
+            return false;
+        }
+        
+        List<PharmaceuticalBillItem> orderItems = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(purchaseOrderBill);
+        
+        if (orderItems == null || orderItems.isEmpty()) {
+            return true;
+        }
+        
+        for (PharmaceuticalBillItem orderItem : orderItems) {
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(orderItem);
+            double remainingQty = Math.abs(orderItem.getQtyInUnit()) - Math.abs(calculatedReturns);
+            double remainingFreeQty = orderItem.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(orderItem);
+            
+            if (remainingQty > 0 || remainingFreeQty > 0) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     public void settleWholesale() {
@@ -894,6 +929,17 @@ public class GrnCostingController implements Serializable {
 
         getBillFacade().edit(getGrnBill());
         //  getPharmacyBillBean().editBill(, , getSessionController());
+        
+        // Check if Purchase Order is fully received and update completed status
+        if (getApproveBill() != null && !getApproveBill().isCompleted()) {
+            if (isPurchaseOrderFullyReceived(getApproveBill())) {
+                getApproveBill().setCompleted(true);
+                getApproveBill().setCompletedAt(new Date());
+                getApproveBill().setCompletedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getApproveBill());
+            }
+        }
+        
         printPreview = true;
 
     }
