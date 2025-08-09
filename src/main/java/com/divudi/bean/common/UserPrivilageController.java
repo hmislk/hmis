@@ -571,6 +571,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyTheme, "Change User Theme"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangePreferece, "Change User Preferances"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyApiKeys, "Change API Keys"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeReceiptPrintingPaperTypes, "Change Receipt Printing Paper Types"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MyFinanacialTransactionManager, "User Financial Transaction Manager"), userNode);
 
         // Search Privileges
