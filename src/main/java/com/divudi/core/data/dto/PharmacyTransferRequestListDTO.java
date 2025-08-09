@@ -45,7 +45,6 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = cancelled;
         this.cancelledAt = cancelledAt;
         this.cancellerName = cancellerName;
-        this.completed = false; // Default to not completed
     }
 
     /**
