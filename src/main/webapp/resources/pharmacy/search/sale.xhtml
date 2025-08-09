@@ -27,7 +27,7 @@
             <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
         </p:commandButton>
         
-        <p:dataTable rowIndexVar="i" id="tbl"  value="#{searchController.bills}" var="bill"  
+        <p:dataTable rowIndexVar="i" id="tbl" widgetVar="tbl" value="#{searchController.bills}" var="bill"  
                      paginator="true"
                      rows="10"
                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

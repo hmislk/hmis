@@ -40,6 +40,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -52,6 +54,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class PurchaseOrderRequestController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PurchaseOrderRequestController.class.getName());
 
     @EJB
     private ItemFacade itemFacade;
@@ -544,8 +548,9 @@ public class PurchaseOrderRequestController implements Serializable {
     private String generatePurchaseOrderHtml() {
         try {
             javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
-            javax.faces.component.UIComponent comp = fc.getViewRoot().findComponent("printPaper");
+            javax.faces.component.UIComponent comp = fc.getViewRoot().findComponent(":form:printPaper");
             if (comp == null) {
+                LOGGER.log(Level.SEVERE, "Component :form:printPaper not found when generating purchase order HTML");
                 return null;
             }
             java.io.StringWriter sw = new java.io.StringWriter();
@@ -556,6 +561,7 @@ public class PurchaseOrderRequestController implements Serializable {
             fc.setResponseWriter(original);
             return sw.toString();
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error generating purchase order HTML", e);
             return null;
         }
     }
