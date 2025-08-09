@@ -68,7 +68,9 @@ This guide covers MySQL database development, debugging, and maintenance practic
 mysql -u [username] -p[password] -h [host] [database]
 
 # Example with HMIS database
-mysql -u root -pBud7NilB -h localhost coop
+mysql -u root -p -h localhost coop
+# You will be prompted for the password. Alternatively:
+# mysql --user=root --password --host=localhost coop
 ```
 
 ### Essential Commands for HMIS
