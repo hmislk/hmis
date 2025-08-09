@@ -40,6 +40,7 @@ import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.core.data.PaymentMethod.OnlineSettlement;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -58,7 +59,11 @@ import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.reports.CommonReports;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -660,6 +665,237 @@ public class OpdReportController implements Serializable {
             }
         }
         bundle.generatePaymentDetailsForBillsAndBatchBillsByDate();
+    }
+
+    public void processOpdIncomeSummaryByDateDTO() {
+        System.out.println("processOpdIncomeSummaryByDateDTO");
+
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        //Add All OPD BillTypes
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+
+        //Add All Inward BillTypes
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+
+        //Add All CC BillTypes
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL);
+
+        String jpql = "select new com.divudi.core.data.dto.BillItemDTO( "
+                + " bi.bill.id, "
+                + " bi.bill.billDate, "
+                + " bi.bill.discount, "
+                + " bi.bill.netTotal,"
+                + " bi.bill.paymentMethod "
+                + " ) "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:ret "
+                + " and bi.bill.cancelled =:can "
+                + " and bi.refunded =:ref "
+                + " and type(bi.item) =:type"
+                + " and bi.bill.billTypeAtomic in :billTypesAtomics "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("ret", false);
+        params.put("can", false);
+        params.put("ref", false);
+        params.put("type", Investigation.class);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and bi.bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        if (toSite != null) {
+            jpql += " and bi.bill.toDepartment.site=:toSite ";
+            params.put("toSite", toSite);
+        }
+
+        if (webUser != null) {
+            jpql += " and bi.bill.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (admissionType != null) {
+            jpql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and bi.bill.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        if (paymentMethod != null) {
+            jpql += " and bi.bill.paymentMethod=:paymentMethod ";
+            params.put("paymentMethod", paymentMethod);
+        }
+
+        jpql += " order by bi.bill.createdAt desc";
+
+        List<BillItemDTO> tempBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        List<BillItemDTO> uniqueBills = tempBillItems.stream()
+                .collect(Collectors.toMap(
+                        BillItemDTO::getId,
+                        dto -> dto,
+                        (existing, replacement) -> existing // keep the first occurrence
+                ))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+
+        bundle = generateDailyIncomeSummary(uniqueBills);
+
+        populateSummaryRow();
+
+    }
+
+    public IncomeBundle generateDailyIncomeSummary(List<BillItemDTO> uniqueBills) {
+        IncomeBundle bundle = new IncomeBundle();
+
+        // Group bills by day
+        Map<Date, List<BillItemDTO>> billsByDay = uniqueBills.stream()
+                .collect(Collectors.groupingBy(
+                        bi -> bi.getBillCreatedAt()
+                ));
+
+        // Process each day's bills
+        for (Map.Entry<Date, List<BillItemDTO>> entry : billsByDay.entrySet()) {
+            Date day = entry.getKey();
+            List<BillItemDTO> dailyBills = entry.getValue();
+
+            IncomeRow dayRow = new IncomeRow();
+            dayRow.setDate(day);  // Set the date for the row
+
+            // Initialize daily totals
+            double dailyCash = 0;
+            double dailyCard = 0;
+            double dailyCredit = 0;
+            double dailyDiscount = 0;
+            double dailyNetTotal = 0;
+
+            // Calculate totals for each payment method
+            for (BillItemDTO bi : dailyBills) {
+                if (bi.getPaymentMethod() == null) {
+                    dailyCredit += bi.getBillNetTotal();
+                } else {
+                    switch (bi.getPaymentMethod()) {
+                        case Card:
+                            dailyCard += bi.getBillNetTotal();
+                            break;
+                        case Cash:
+                            dailyCash += bi.getBillNetTotal();
+                            break;
+                        case Credit:
+                            dailyCredit += bi.getBillNetTotal();
+                            break;
+                        case MultiplePaymentMethods:
+                            Bill bill = billFacade.find(bi.getId());
+                            Bill batchBill = bill.getBackwardReferenceBill();
+                            analyzeMultiplePayments(dayRow, batchBill, dailyCard, dailyCash, dailyCredit);
+                            break;
+                    }
+                }
+
+                // Sum discounts and net totals
+                dailyDiscount += bi.getDiscount() != null ? bi.getDiscount() : 0;
+                dailyNetTotal += bi.getBillNetTotal() != null ? bi.getBillNetTotal() : 0;
+            }
+
+            // Set the calculated values
+            dayRow.setCashValue(dailyCash);
+            dayRow.setCardValue(dailyCard);
+            dayRow.setCreditValue(dailyCredit);
+            dayRow.setDiscount(dailyDiscount);
+            dayRow.setNetTotal(dailyNetTotal);
+
+            bundle.getRows().add(dayRow);
+        }
+        // Sort rows by date
+        bundle.getRows().sort(Comparator.comparing(IncomeRow::getDate));
+
+        return bundle;
+    }
+
+    public void populateSummaryRow() {
+        // Initialize all sums to zero
+        double sumOfCashValues = 0.0;
+        double sumOfCardValues = 0.0;
+        double sumOfCreditValues = 0.0;
+
+        double sumOfDiscount = 0.0;
+        double sumOfNetTotal = 0.0;
+
+        // Aggregate all rows
+        for (IncomeRow r : bundle.getRows()) {
+            sumOfCashValues += r.getCashValue();
+            sumOfCardValues += r.getCardValue();
+            sumOfCreditValues += r.getCreditValue();
+            sumOfDiscount += r.getDiscount();
+            sumOfNetTotal += r.getNetTotal();
+        }
+
+        IncomeRow summaryRow = new IncomeRow();
+        // Set summary row values
+        summaryRow.setCashValue(sumOfCashValues);
+        summaryRow.setCardValue(sumOfCardValues);
+        summaryRow.setCreditValue(sumOfCreditValues);
+
+        summaryRow.setDiscount(sumOfDiscount);
+        summaryRow.setNetTotal(sumOfNetTotal);
+
+        bundle.setSummaryRow(summaryRow);
+    }
+
+    public void analyzeMultiplePayments(IncomeRow row, Bill batchBill, double dailyCard, double dailyCash, double dailyCredit) {
+        List<Payment> billPaymnets = billSearch.fetchBillPayments(batchBill);
+
+        for (Payment p : billPaymnets) {
+            if (p.getPaymentMethod() == null) {
+
+            } else {
+                switch (p.getPaymentMethod()) {
+                    case Card:
+                        dailyCard += p.getPaidValue();
+                        break;
+                    case Cash:
+                        dailyCash += p.getPaidValue();
+                        break;
+                    case Credit:
+                        dailyCredit += p.getPaidValue();
+                        break;
+                }
+            }
+        }
+
     }
 
     public List<BillTypeAtomic> getOpdAndPackageBillTypeAtomics() {
