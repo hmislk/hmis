@@ -787,15 +787,6 @@ public class TransferIssueController implements Serializable {
 
         issuedBill = b;
 
-        // Check if Transfer Request is fully issued and update completed status
-        if (getRequestedBill() != null && !getRequestedBill().isCompleted()) {
-            if (isFullyIssued(getRequestedBill())) {
-                getRequestedBill().setCompleted(true);
-                getRequestedBill().setCompletedAt(new Date());
-                getRequestedBill().setCompletedBy(getSessionController().getLoggedUser());
-                getBillFacade().edit(getRequestedBill());
-            }
-        }
 
         printPreview = true;
 

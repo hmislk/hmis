@@ -4290,8 +4290,7 @@ public class SearchController implements Serializable {
                 + " b.deptId, "
                 + " b.createdAt, "
                 + " b.department.name, "
-                + " b.creater.webUserPerson.name, "
-                + " b.completed)"
+                + " b.creater.webUserPerson.name)"
                 + " from Bill b"
                 + " where b.retired=false"
                 + " and  b.toDepartment=:toDep"
@@ -4325,6 +4324,8 @@ public class SearchController implements Serializable {
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
                 dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
+                // Set completed status based on whether the request is fully issued
+                dto.setCompleted(isTransferRequestFullyIssued(dto.getBillId()));
             }
         }
         
@@ -4360,6 +4361,45 @@ public class SearchController implements Serializable {
         
         
         return result;
+    }
+    
+    /**
+     * Checks if a Transfer Request is fully issued by examining the remaining quantities 
+     * of all its items. A request is considered fully issued when all items have 
+     * remainingQty = 0.
+     *
+     * @param requestId ID of the transfer request bill
+     * @return true if all items are fully issued, false otherwise
+     */
+    public boolean isTransferRequestFullyIssued(Long requestId) {
+        if (requestId == null) {
+            return false;
+        }
+        
+        String jpql = "SELECT bi.remainingQty FROM BillItem bi "
+                + "WHERE bi.bill.id = :requestId "
+                + "AND bi.retired = false";
+        
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("requestId", requestId);
+        
+        List<Object> remainingQuantities = billItemFacade.findObjectByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        if (remainingQuantities == null || remainingQuantities.isEmpty()) {
+            return false; // No items found
+        }
+        
+        // Check if any item still has remaining quantity > 0
+        for (Object remainingQtyObj : remainingQuantities) {
+            if (remainingQtyObj != null) {
+                Double remainingQty = Double.valueOf(remainingQtyObj.toString());
+                if (remainingQty > 0) {
+                    return false; // Still has items to issue
+                }
+            }
+        }
+        
+        return true; // All items are fully issued
     }
 
     public void createInwardBHTRequestTable() {
