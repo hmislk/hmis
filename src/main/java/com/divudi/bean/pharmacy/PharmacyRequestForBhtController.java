@@ -131,6 +131,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     @Inject
     NotificationController notificationController;
     private String comment;
+    private String itemDescreption;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -1049,6 +1050,8 @@ public class PharmacyRequestForBhtController implements Serializable {
         billItem.setItem(getItem());
         billItem.setQty(getQty());
         billItem.setBill(getPreBill());
+        billItem.setDescreption(itemDescreption);
+        itemDescreption = null;
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
@@ -1345,7 +1348,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         item = null;
-
+        itemDescreption=null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
@@ -1665,4 +1668,14 @@ public class PharmacyRequestForBhtController implements Serializable {
         this.comment = comment;
     }
 
+    public String getItemDescreption() {
+        return itemDescreption;
+    }
+
+    public void setItemDescreption(String itemDescreption) {
+        this.itemDescreption = itemDescreption;
+    }
+
+    
+    
 }
