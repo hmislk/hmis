@@ -211,12 +211,14 @@ public class ConfigOptionController implements Serializable {
             return null;
         }
         
-        try {
-            importOptionsFromFile(uploadedFile.getInputStream());
+        try (InputStream in = uploadedFile.getInputStream()) {
+            importOptionsFromFile(in);
             return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error reading uploaded file: " + e.getMessage());
             return null;
+        } finally {
+            uploadedFile = null;
         }
     }
 
