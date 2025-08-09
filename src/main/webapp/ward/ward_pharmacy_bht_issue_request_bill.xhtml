@@ -248,8 +248,8 @@
                                                     icon="fa fa-plus"
                                                     class="ui-button-success w-100"
                                                     action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                    process="@this acStock txtQty"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty"   >
+                                                    process="@this acStock txtQty txtComments"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtComments"   >
                                                 </p:commandButton>
                                             </div>
 
@@ -259,8 +259,8 @@
                                         
                                          <div class="row mt-1">
                                              <div class="col-md-12">
-                                                 <p:outputLabel value="Comments" ></p:outputLabel>
-                                                 <p:inputTextarea value="#{pharmacyRequestForBhtController.itemDescreption}"  class="w-100"  ></p:inputTextarea>
+                                                 <p:outputLabel value="Directions/Comments" ></p:outputLabel>
+                                                 <p:inputTextarea id="txtComments" value="#{pharmacyRequestForBhtController.itemDescreption}"  class="w-100"  ></p:inputTextarea>
                                              </div>
                                          </div>
 
