@@ -24,6 +24,8 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     private Boolean cancelled;
     private Date cancelledAt;
     private String cancellerName;
+    private Boolean completed;
+    private Boolean fullyIssued;
     private List<PharmacyTransferRequestIssueDTO> issuedBills = new ArrayList<>();
 
     // ------------------------------------------------------------------
@@ -44,27 +46,78 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = cancelled;
         this.cancelledAt = cancelledAt;
         this.cancellerName = cancellerName;
+        this.completed = false; // Default to not completed
     }
 
-    // Constructor accepting generic Objects to allow flexibility with JPQL
-    // projections that use COALESCE or future field additions.
-    public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
-            Object fromDepartmentName, Object creatorName, Object cancelled,
-            Date cancelledAt, Object cancellerName) {
+    /**
+     * Constructor matching JPQL query without cancelled field.
+     * Used when cancelled status is determined by filter conditions.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName,
+            Date cancelledAt, String cancellerName) {
         this.billId = billId;
-        this.deptId = deptId != null ? deptId.toString() : "";
+        this.deptId = deptId;
         this.createdAt = createdAt;
-        this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
-        this.creatorName = creatorName != null ? creatorName.toString() : "";
-        if (cancelled instanceof Boolean) {
-            this.cancelled = (Boolean) cancelled;
-        } else if (cancelled instanceof Number) {
-            this.cancelled = ((Number) cancelled).intValue() != 0;
-        } else {
-            this.cancelled = false;
-        }
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Set to false since query filters out cancelled bills
         this.cancelledAt = cancelledAt;
-        this.cancellerName = cancellerName != null ? cancellerName.toString() : "";
+        this.cancellerName = cancellerName;
+        this.completed = false; // Default to not completed
+    }
+
+    /**
+     * Simplified constructor for non-cancelled bills only.
+     * Used when query filters out all cancelled bills.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.completed = false; // Default to not completed
+    }
+
+    /**
+     * Constructor including completed status for non-cancelled bills.
+     * Used for performance optimization to include completed flag.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName, Boolean completed) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.completed = completed;
+        this.fullyIssued = false; // Default to not fully issued
+    }
+
+    /**
+     * Constructor including both completed and fullyIssued status for non-cancelled bills.
+     * Used for performance optimization to include both flags.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName, Boolean completed, Boolean fullyIssued) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = false; // Query filters out cancelled bills
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.completed = completed;
+        this.fullyIssued = fullyIssued;
     }
 
     // ------------------------------------------------------------------
@@ -117,6 +170,22 @@ public class PharmacyTransferRequestListDTO implements Serializable {
 
     public void setCancelled(Boolean cancelled) {
         this.cancelled = cancelled;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    public Boolean getFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(Boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
     }
 
     public Date getCancelledAt() {
