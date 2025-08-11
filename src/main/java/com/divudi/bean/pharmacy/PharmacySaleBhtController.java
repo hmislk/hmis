@@ -116,7 +116,9 @@ public class PharmacySaleBhtController implements Serializable {
     BillService billService;
 
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;            
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private VmpController vmpController;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -149,6 +151,9 @@ public class PharmacySaleBhtController implements Serializable {
     private BillBeanController billBean;
     private Stock tmpStock;
     private Double billItemTotal;
+    private List<Stock> substituteStocks;
+    private Stock selectedSubstituteStock;
+    private BillItem itemForSubstitution;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -468,6 +473,110 @@ public class PharmacySaleBhtController implements Serializable {
                 + "and amp<>:a "
                 + "order by i.itemBatch.item.name";
         replaceableStocks = getStockFacade().findByJpql(sql, m);
+    }
+
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi != null && bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+            if (amp.getVmp() != null) {
+                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
+                for (Amp substituteAmp : amps) {
+                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
+                    if (stocks != null) {
+                        for (Stock s : stocks) {
+                            if (s.getStock() > 0 && s.getItemBatch() != null && s.getItemBatch().getDateOfExpire() != null) {
+                                Date now = new Date();
+                                if (s.getItemBatch().getDateOfExpire().after(now)) {
+                                    substituteStocks.add(s);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Warning when no substitute stocks are available
+        if (substituteStocks == null || substituteStocks.isEmpty()) {
+            if (bi != null && bi.getItem() != null) {
+                JsfUtil.addErrorMessage("No substitute stocks available for " + bi.getItem().getName() + 
+                                         ". Please check stock availability or contact the pharmacy department.");
+            } else {
+                JsfUtil.addErrorMessage("No substitute stocks available for the selected item.");
+            }
+        }
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+
+        if (selectedSubstituteStock.getItemBatch() != null && selectedSubstituteStock.getItemBatch().getDateOfExpire() != null) {
+            Date now = new Date();
+            if (!selectedSubstituteStock.getItemBatch().getDateOfExpire().after(now)) {
+                JsfUtil.addErrorMessage("Cannot use expired stock.");
+                return;
+            }
+        }
+
+        // Guard clause: Check if quantity is null or non-positive
+        if (itemForSubstitution.getQty() == null || itemForSubstitution.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Invalid quantity for substitution. Quantity must be a positive number.");
+            return;
+        }
+
+        // CodeRabbit Fix: Check if substitute stock has sufficient quantity
+        double requiredQty = Math.abs(itemForSubstitution.getQty());
+        if (selectedSubstituteStock.getStock() < requiredQty) {
+            JsfUtil.addErrorMessage("Insufficient stock available. Required: " + requiredQty + 
+                                   ", Available: " + selectedSubstituteStock.getStock());
+            return;
+        }
+
+        // CodeRabbit Fix: Check if substitute stock is available for this user (concurrency check)
+        if (!userStockController.isStockAvailable(selectedSubstituteStock, requiredQty, getSessionController().getLoggedUser())) {
+            JsfUtil.addErrorMessage("Sorry, another user is currently billing this substitute stock. Please select a different substitute.");
+            return;
+        }
+        
+        // CodeRabbit Fix: Update transUserStock to handle the new substitute stock
+        if (itemForSubstitution.getTransUserStock() != null) {
+            userStockController.removeUserStock(itemForSubstitution.getTransUserStock(), getSessionController().getLoggedUser());
+        }
+
+        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
+
+        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            phItem = new PharmaceuticalBillItem();
+            phItem.setBillItem(itemForSubstitution);
+            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        }
+        
+        phItem.setStock(selectedSubstituteStock);
+        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
+        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
+        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
+        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
+
+        // CodeRabbit Fix: Create new user stock reservation for substitute stock
+        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock newUserStock = userStockController.saveUserStock(itemForSubstitution, getSessionController().getLoggedUser(), usc);
+        itemForSubstitution.setTransUserStock(newUserStock);
+
+        calculateRates(itemForSubstitution);
+        calCurrentBillItemTotal(getBillItems());
+        calTotal();
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -2033,6 +2142,30 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItemTotal(Double billItemTotal) {
         this.billItemTotal = billItemTotal;
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
     }
 
 }

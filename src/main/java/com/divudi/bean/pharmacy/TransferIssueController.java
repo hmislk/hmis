@@ -157,21 +157,24 @@ public class TransferIssueController implements Serializable {
 //
 //        return false;
 //    }
-    public boolean isFullyIssued(Bill bill) {
-        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+    public boolean isFullyIssued(Bill requestBill) {
+        if (requestBill == null || requestBill.getBillItems() == null || requestBill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
         }
 
-//        TODO: Create a Logic. Old one is NOT working
-//        for (BillItem originalItem : billItems) {
-//
-//            if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
-//                return false;
-//            } else if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
-//                return false;
-//            }
-//        }
-        return false; // All items are fully issued
+        for (BillItem requestItem : requestBill.getBillItems()) {
+            // Handle null remainingQty (legacy data) by using original quantity
+            Double remainingQty = requestItem.getRemainingQty();
+            if (remainingQty == null) {
+                remainingQty = requestItem.getQty();
+            }
+            // Use remainingQty field from database - if > 0, still has items to issue
+            if (remainingQty > 0) {
+                return false; // Still has remaining quantity to issue
+            }
+        }
+        
+        return true; // All items are fully issued
     }
 
     public String navigateToPharmacyDirectIssueForRequests() {
@@ -735,6 +738,10 @@ public class TransferIssueController implements Serializable {
 
                 originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
                 originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
+                // Update remaining quantity to track what's left to issue
+                Double remainingQty = originalOrderItem.getRemainingQty();
+                double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
+                originalOrderItem.setRemainingQty(currentRemaining - billItemsInIssue.getQty());
                 billItemFacade.editAndCommit(originalOrderItem);
 
                 getBillItemFacade().edit(billItemsInIssue);
@@ -788,6 +795,16 @@ public class TransferIssueController implements Serializable {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         issuedBill = b;
+
+        // Check if Transfer Request is fully issued and update fullyIssued status
+        if (getRequestedBill() != null && !getRequestedBill().isFullyIssued()) {
+            if (isFullyIssued(getRequestedBill())) {
+                getRequestedBill().setFullyIssued(true);
+                getRequestedBill().setFullyIssuedAt(new Date());
+                getRequestedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getRequestedBill());
+            }
+        }
 
         printPreview = true;
 

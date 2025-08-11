@@ -223,12 +223,12 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 20mm; text-align: right;">
-                                                        <h:outputText value="#{row.inpatientCreditValue + row.opdCreditValue + row.staffValue + row.agentValue}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{row.creditValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 20mm; text-align: right;">
-                                                        <h:outputText value="#{row.grossTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -260,12 +260,12 @@
                                                     </h:outputText>
                                                 </th>
                                                 <th style="width: 20mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="#{opdReportController.bundle.summaryRow.inpatientCreditValue + opdReportController.bundle.summaryRow.opdCreditValue + opdReportController.bundle.summaryRow.staffValue + opdReportController.bundle.summaryRow.agentValue}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{opdReportController.bundle.summaryRow.creditValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </th>
                                                 <th style="width: 20mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="#{opdReportController.bundle.summaryRow.grossTotal}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </th>

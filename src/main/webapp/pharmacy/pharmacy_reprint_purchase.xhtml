@@ -33,7 +33,7 @@
                                         ajax="false"
                                         icon="fa fa-rotate-left"
                                         class="ui-button-warning mx-2"
-                                        action="#{billSearch.navigateToDirectPurchaseReturnBillView()}" 
+                                        action="#{billSearch.navigateToDirectPurchaseReturn()}" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}" >
                                         <f:setPropertyActionListener target="#{billSearch.bill}"  value="#{pharmacyBillSearch.bill}"/>
                                     </p:commandButton>
