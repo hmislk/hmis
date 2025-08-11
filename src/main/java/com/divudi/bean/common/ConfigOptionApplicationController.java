@@ -72,20 +72,7 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
-        ConfigOption option = findActiveOptionWithLock(key, OptionScope.APPLICATION, null, null, null);
-        if (option != null) {
-            return option;
-        }
-        option = new ConfigOption();
-        option.setCreatedAt(new Date());
-        option.setOptionKey(key);
-        option.setScope(OptionScope.APPLICATION);
-        option.setInstitution(null);
-        option.setDepartment(null);
-        option.setWebUser(null);
-        option.setValueType(type);
-        option.setOptionValue(value);
-        optionFacade.create(option);
+        ConfigOption option = optionFacade.createOptionIfNotExists(key, OptionScope.APPLICATION, null, null, null, type, value);
         loadApplicationOptions();
         return option;
     }

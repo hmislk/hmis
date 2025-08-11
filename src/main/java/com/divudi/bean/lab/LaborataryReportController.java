@@ -226,6 +226,11 @@ public class LaborataryReportController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/reportLab/test_wise_count?faces-redirect=true";
     }
+    
+    public String navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics() {
+        resetAllFiltersExceptDateRange();
+        return "/reportLab/test_wise_regent_cost_report?faces-redirect=true";
+    }
 
     public boolean isOptimizedMethodEnabled() {
         return configController.getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
@@ -732,6 +737,98 @@ public class LaborataryReportController implements Serializable {
             }
         }
     }
+    
+    public void processLabTestWiseReagentCostReportDto() {
+        Map<String, Object> params = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.dto.TestCountDTO("
+                + "bi.item.id, "
+                + "bi.item.name, "
+                + "count(bi), "
+                + " bi.reagentFee) "
+                + " from BillItem bi "
+                + " where bi.retired =:ret "
+                + " and bi.bill.cancelled =:can "
+                + " and bi.refunded =:ref "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic IN :bType "
+                + " and type(bi.item) = :invType ";
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and bi.bill.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and bi.bill.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and bi.bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " AND bi.bill.ipOpOrCc = :type ";
+            params.put("type", visitType.trim());
+        }
+
+        jpql += " group by bi.item.id, bi.item.name, bi.reagentFee ";
+
+        params.put("ret", false);
+        params.put("ref", false);
+        params.put("can", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("invType", Investigation.class);
+
+        List<BillTypeAtomic> bTypes = Arrays.asList(
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL);
+        params.put("bType", bTypes);
+
+        List<TestCountDTO> testWiseReagentCount = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        totalCount = 0.0;
+        totalNetTotal = 0.0;
+
+        if (testWiseReagentCount != null) {
+            for (TestCountDTO dto : testWiseReagentCount) {
+                double netTotal = 0.0;
+                double reagentFee = dto.getReagentFee() == null ? 0.0 : dto.getReagentFee();
+                netTotal = dto.getCount() * reagentFee;
+                dto.setTotal(netTotal);
+                totalCount += dto.getCount();
+                totalNetTotal += netTotal;
+            }
+        }
+        List<TestCountDTO> safeList = testWiseReagentCount == null ? java.util.Collections.emptyList() : testWiseReagentCount;
+        testWiseCountDtos = setAlphabetList(safeList);
+    }
 
     public List<TestWiseCountReport> alphabetList(List<TestWiseCountReport> testWiseCounts) {
 
@@ -742,6 +839,16 @@ public class LaborataryReportController implements Serializable {
         return reportList;
     }
 
+    public List<TestCountDTO> setAlphabetList(List<TestCountDTO> testCountDTO) {
+
+        List<TestCountDTO> reportList = testCountDTO.stream()
+                .sorted(Comparator.comparing(TestCountDTO::getTestName))
+                .collect(Collectors.toList());
+
+        return reportList;
+    }
+
+    
     public void processLaborataryBillItemReportDto() {
         reportTimerController.trackReportExecution(() -> {
             if (investigation == null) {

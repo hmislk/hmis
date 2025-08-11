@@ -130,7 +130,11 @@
                                                 value="Test Wise Count Report - DTO"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true)}"
                                                 action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
-
+                                            <p:commandButton
+                                                class="w-100  ui-button-success"
+                                                ajax="false"
+                                                value="Test Wise Reagent Cost Report"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics()}" />
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="Laboratary Income Report" 
@@ -145,6 +149,7 @@
 
                                             <p:commandButton 
                                                 ajax="false" 
+                                                class="w-100 ui-button-success mt-1"
                                                 value="Laboratory Summary" 
                                                 action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
                                             </p:commandButton>

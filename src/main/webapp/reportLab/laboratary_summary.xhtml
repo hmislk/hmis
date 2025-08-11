@@ -287,7 +287,7 @@
                         <p:commandButton 
                             value="Process" 
                             ajax="false"
-                            action="#{opdReportController.processOpdIncomeSummaryByDate()}" 
+                            action="#{opdReportController.processOpdIncomeSummaryByDateDTO()}" 
                             styleClass="ui-button-success m-1" 
                             icon="pi pi-cog">
                         </p:commandButton>
@@ -301,15 +301,15 @@
                         </p:commandButton>
 
                         <p:commandButton 
-                                    icon="fa-solid fa-print"
-                                    class="mx-2 ui-button-info m-1"
-                                    style="width: 150px"
-                                    ajax="false"
-                                    action="laboratary_summary_print?faces-redirect=true"
-                                    value="To Print">
-                                </p:commandButton>
-                        
-                       
+                            icon="fa-solid fa-print"
+                            class="mx-2 ui-button-info m-1"
+                            style="width: 150px"
+                            ajax="false"
+                            action="laboratary_summary_print?faces-redirect=true"
+                            value="To Print">
+                        </p:commandButton>
+
+
                         <style>
                             @media print{
                                 .table{
@@ -320,12 +320,12 @@
                             @media screen{
                                 .table{
                                     font-size: 16px!important;
-                                    
+
                                 }
                             }
                         </style>
-                        
-                        
+
+
                         <p:dataTable
                             id="tbl"
                             value="#{opdReportController.bundle.rows}"
@@ -336,65 +336,66 @@
                             rowsPerPageTemplate="20,50,100,500,1000,2000,5000,10000"
                             paginatorPosition="bottom"
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable table">
-                            
-                            <f:facet name="header"  >
-                                    <div style="padding: 8px!important; margin: 6px!important; line-height: 0.8">
-                                        <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
-                                            <h:outputText value="#{sessionController.institution.name}"/>
-                                        </div>
-                                        <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                            <h:outputText value="Laboratory Summary"/>
-                                            <h:panelGroup  rendered="#{opdReportController.department ne null}">
-                                                <div class="d-flex gap-2">
-                                                    <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
-                                                    <h:outputText value="#{opdReportController.department.name}"/>
-                                                </div>
-                                            </h:panelGroup>
-                                        </div>
-                                        <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
-                                            <div class="d-flex gap-3">
-                                                <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
-                                                <h:outputText value="#{opdReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
-                                            </div>
-                                            <p:spacer width="50" ></p:spacer>
-                                            <div class="d-flex gap-3">
-                                                <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
-                                                <h:outputText value="#{opdReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
-                                            </div>
-                                            <div></div>
-                                        </div>
 
-                                        <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;">
+                            <f:facet name="header"  >
+                                <div style="padding: 8px!important; margin: 6px!important; line-height: 0.8">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="Laboratory Summary"/>
+                                        <h:panelGroup  rendered="#{opdReportController.department ne null}">
                                             <div class="d-flex gap-2">
-                                                <h:outputText 
-                                                    rendered="#{opdReportController.toInstitution ne null}"
-                                                    value="#{opdReportController.toInstitution.name}" 
-                                                    style="font-weight: 600;">
-                                                </h:outputText>
-                                                <h:outputText 
-                                                    value="-" 
-                                                    rendered="#{opdReportController.toInstitution ne null and opdReportController.toDepartment ne null}"
-                                                    style="width: 2em!important; font-weight: 600; text-align: center;"/>
-                                                <h:outputText 
-                                                    rendered="#{opdReportController.toInstitution ne null or opdReportController.toDepartment ne null}"
-                                                    value="#{opdReportController.toDepartment.name}" 
-                                                    style="font-weight: 600;">
-                                                </h:outputText>
+                                                <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
+                                                <h:outputText value="#{opdReportController.department.name}"/>
                                             </div>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
+                                        <div class="d-flex gap-3">
+                                            <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
+                                            <h:outputText value="#{opdReportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <p:spacer width="50" ></p:spacer>
+                                        <div class="d-flex gap-3">
+                                            <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
+                                            <h:outputText value="#{opdReportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <div></div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;">
+                                        <div class="d-flex gap-2">
+                                            <h:outputText 
+                                                rendered="#{opdReportController.toInstitution ne null}"
+                                                value="#{opdReportController.toInstitution.name}" 
+                                                style="font-weight: 600;">
+                                            </h:outputText>
+                                            <h:outputText 
+                                                value="-" 
+                                                rendered="#{opdReportController.toInstitution ne null and opdReportController.toDepartment ne null}"
+                                                style="width: 2em!important; font-weight: 600; text-align: center;"/>
+                                            <h:outputText 
+                                                rendered="#{opdReportController.toInstitution ne null or opdReportController.toDepartment ne null}"
+                                                value="#{opdReportController.toDepartment.name}" 
+                                                style="font-weight: 600;">
+                                            </h:outputText>
                                         </div>
                                     </div>
-                                </f:facet>
+                                </div>
+                            </f:facet>
 
                             <p:column headerText="Date" style="padding: 8px!important; margin: 6px!important;">
                                 <h:outputText value="#{row.date}" style="margin: 6px!important;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="Total Amounts" 
+                                    <h:outputText 
+                                        value="Total Amounts" 
                                                   style="padding: 8px!important; margin: 6px!important; font-weight: bold"/>
                                 </f:facet>
                             </p:column>
@@ -428,11 +429,11 @@
                             <p:column headerText="Credit" width="7em"
                                       class="text-end"
                                       style="padding: 8px!important; margin: 6px!important;">
-                                <h:outputText value="#{row.inpatientCreditValue + row.opdCreditValue + row.staffValue + row.agentValue}">
+                                <h:outputText value="#{row.creditValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{opdReportController.bundle.summaryRow.inpatientCreditValue + opdReportController.bundle.summaryRow.opdCreditValue + opdReportController.bundle.summaryRow.staffValue + opdReportController.bundle.summaryRow.agentValue}"
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.creditValue}"
                                                   style="padding: 8px!important; margin: 6px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -441,11 +442,11 @@
 
                             <p:column headerText="Total" width="7em" class="text-end"
                                       style="padding: 8px!important; margin: 6px!important;">
-                                <h:outputText value="#{row.grossTotal}">
+                                <h:outputText value="#{row.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{opdReportController.bundle.summaryRow.grossTotal}"
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}"
                                                   style="padding: 8px!important; margin: 6px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
