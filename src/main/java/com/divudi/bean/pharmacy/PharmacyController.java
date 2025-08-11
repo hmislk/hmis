@@ -2841,7 +2841,7 @@ public class PharmacyController implements Serializable {
                 continue;
             }
 
-            switch (isCancelled ? bill.getReferenceBill().getPaymentMethod() : bill.getPaymentMethod()) {
+            switch (bill.getPaymentMethod()) {
                 case Credit:
                     totalCreditPurchaseValue += netTotal;
                     totalCreditSaleValue += saleValue;
