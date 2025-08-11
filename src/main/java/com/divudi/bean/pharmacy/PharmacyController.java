@@ -1089,11 +1089,11 @@ public class PharmacyController implements Serializable {
                 mainTable.addCell(new Phrase(String.format("%,.2f", saleCredit), normalFont));
                 mainTable.addCell(new Phrase(b.getComments() != null ? b.getComments() : "", normalFont));
 
-                PdfPTable nested = new PdfPTable(hasCosting ? 7 : 6);
+                PdfPTable nested = new PdfPTable(hasCosting ? 8 : 7);
                 nested.setWidthPercentage(100);
-                String[] nestedHeaders = {"Item", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch"};
+                String[] nestedHeaders = {"Item", "Qty", "Free Qty", "Purchase Rate", "Discount Rate", "MRP", "Batch"};
                 if (hasCosting) {
-                    nestedHeaders = new String[]{"Item", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch"};
+                    nestedHeaders = new String[]{"Item", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "Discount Rate", "MRP", "Batch"};
                 }
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
@@ -1109,6 +1109,16 @@ public class PharmacyController implements Serializable {
                     if (hasCosting) {
                         nested.addCell(new Phrase(String.format("%,.2f", bi.getBillItemFinanceDetails().getLineCostRate()), normalFont));
                     }
+
+                    Double discountRate = bi.getBillItemFinanceDetails().getLineDiscountRate() != null ? bi.getBillItemFinanceDetails().getLineDiscountRate().doubleValue() : null;
+                    if (discountRate == null) {
+                        if (bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate() != null) {
+                            discountRate = bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate().doubleValue();
+                        } else {
+                            discountRate = 0.0;
+                        }
+                    }
+                    nested.addCell(new Phrase(String.format("%,.2f", discountRate), normalFont));
                     nested.addCell(new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()), normalFont));
                     nested.addCell(new Phrase(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo(), normalFont));
                 }
@@ -1262,9 +1272,9 @@ public class PharmacyController implements Serializable {
                 row.createCell(col++).setCellValue(b.getComments() != null ? b.getComments() : "");
 
                 Row nestedHeader = sheet.createRow(rowIndex++);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 if (hasCosting) {
-                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 }
                 for (int i = 0; i < nestedHeaders.length; i++) {
                     Cell cell = hasCosting? nestedHeader.createCell(i + 16) : nestedHeader.createCell(i + 14);
@@ -1281,9 +1291,20 @@ public class PharmacyController implements Serializable {
                     if (hasCosting) {
                         itemRow.createCell(20).setCellValue(bi.getBillItemFinanceDetails().getLineCostRate().doubleValue());
                     }
-                    itemRow.createCell(hasCosting? 21 :18).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
-                    itemRow.createCell(hasCosting? 22 :19).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                    itemRow.createCell(hasCosting? 23 :20).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
+
+                    Double discountRate = bi.getBillItemFinanceDetails().getLineDiscountRate() != null ? bi.getBillItemFinanceDetails().getLineDiscountRate().doubleValue() : null;
+                    if (discountRate == null) {
+                        if (bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate() != null) {
+                            discountRate = bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate().doubleValue();
+                        } else {
+                            discountRate = 0.0;
+                        }
+                    }
+
+                    itemRow.createCell(hasCosting? 21 :18).setCellValue(discountRate);
+                    itemRow.createCell(hasCosting? 22 :19).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
+                    itemRow.createCell(hasCosting? 23 :20).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
+                    itemRow.createCell(hasCosting? 24 :21).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
                 }
             }
 
@@ -1384,11 +1405,11 @@ public class PharmacyController implements Serializable {
                 }
                 mainTable.addCell(new Phrase(String.format("%,.2f", adjustedSale), normalFont));
 
-                PdfPTable nested = new PdfPTable(hasCosting ? 8 : 7);
+                PdfPTable nested = new PdfPTable(hasCosting ? 9 : 8);
                 nested.setWidthPercentage(100);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 if (hasCosting) {
-                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 }
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
@@ -1404,6 +1425,15 @@ public class PharmacyController implements Serializable {
                     if (hasCosting) {
                         nested.addCell(new Phrase(String.format("%,.2f", bi.getBillItemFinanceDetails().getLineCostRate()), normalFont));
                     }
+                    Double discountRate = bi.getBillItemFinanceDetails().getLineDiscountRate() != null ? bi.getBillItemFinanceDetails().getLineDiscountRate().doubleValue() : null;
+                    if (discountRate == null) {
+                        if (bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate() != null) {
+                            discountRate = bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate().doubleValue();
+                        } else {
+                            discountRate = 0.0;
+                        }
+                    }
+                    nested.addCell(new Phrase(String.format("%,.2f", discountRate), normalFont));
                     nested.addCell(new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()), normalFont));
                     nested.addCell(new Phrase(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo(), normalFont));
                     nested.addCell(new Phrase(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "", normalFont));
@@ -1511,9 +1541,9 @@ public class PharmacyController implements Serializable {
                 row.createCell(col++).setCellValue(adjustedSale);
 
                 Row subHeader = sheet.createRow(rowIndex++);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 if (hasCosting) {
-                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 }
 
                 for (int i = 0; i < nestedHeaders.length; i++) {
@@ -1531,9 +1561,20 @@ public class PharmacyController implements Serializable {
                     if (hasCosting) {
                         itemRow.createCell(15).setCellValue(bi.getBillItemFinanceDetails().getLineCostRate().doubleValue());
                     }
-                    itemRow.createCell(hasCosting ? 16 :14).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
-                    itemRow.createCell(hasCosting ? 17 : 15).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                    itemRow.createCell(hasCosting ? 18 : 16).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
+
+                    Double discountRate = bi.getBillItemFinanceDetails().getLineDiscountRate() != null ? bi.getBillItemFinanceDetails().getLineDiscountRate().doubleValue() : null;
+                    if (discountRate == null) {
+                        if (bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate() != null) {
+                            discountRate = bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate().doubleValue();
+                        } else {
+                            discountRate = 0.0;
+                        }
+                    }
+
+                    itemRow.createCell(hasCosting ? 16 :14).setCellValue(discountRate);
+                    itemRow.createCell(hasCosting ? 17 :15).setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
+                    itemRow.createCell(hasCosting ? 18 : 16).setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
+                    itemRow.createCell(hasCosting ? 19 : 17).setCellValue(bi.getItem().getMeasurementUnit() != null ? bi.getItem().getMeasurementUnit().getName() : "");
                 }
             }
 
@@ -1643,11 +1684,11 @@ public class PharmacyController implements Serializable {
                 }
                 mainTable.addCell(new Phrase(String.format("%,.2f", adjustedSale), normalFont));
 
-                PdfPTable nested = new PdfPTable(hasCosting? 8:7);
+                PdfPTable nested = new PdfPTable(hasCosting? 9:8);
                 nested.setWidthPercentage(100);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 if (hasCosting) {
-                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 }
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
@@ -1664,6 +1705,15 @@ public class PharmacyController implements Serializable {
                         if (hasCosting) {
                             nested.addCell(new Phrase(bi.getBillItemFinanceDetails() != null ? String.format("%,.2f", bi.getBillItemFinanceDetails().getLineCostRate()) : "", normalFont));
                         }
+                        Double discountRate = bi.getBillItemFinanceDetails().getLineDiscountRate() != null ? bi.getBillItemFinanceDetails().getLineDiscountRate().doubleValue() : null;
+                        if (discountRate == null) {
+                            if (bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate() != null) {
+                                discountRate = bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate().doubleValue();
+                            } else {
+                                discountRate = 0.0;
+                            }
+                        }
+                        nested.addCell(new Phrase(String.format("%,.2f", discountRate), normalFont));
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null ? String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()) : "", normalFont));
                         nested.addCell(new Phrase(bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null && bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "", normalFont));
                         nested.addCell(new Phrase(bi.getItem() != null && bi.getItem().getMeasurementUnit() != null && bi.getItem().getMeasurementUnit().getName() != null ? bi.getItem().getMeasurementUnit().getName() : "", normalFont));
@@ -1773,9 +1823,9 @@ public class PharmacyController implements Serializable {
                 row.createCell(hasCosting?10:9).setCellValue(adjustedSale);
 
                 Row nestedHeader = sheet.createRow(rowIndex++);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 if (hasCosting) {
-                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "MRP", "Batch", "UOM"};
+                    nestedHeaders = new String[]{"Item Name", "Qty", "Free Qty", "Purchase Rate", "Cost Rate", "Discount Rate", "MRP", "Batch", "UOM"};
                 }
                 for (int i = 0; i < nestedHeaders.length; i++) {
                     Cell cell = hasCosting ? nestedHeader.createCell(i + 11) : nestedHeader.createCell(i + 10);
@@ -1793,9 +1843,20 @@ public class PharmacyController implements Serializable {
                         if (hasCosting) {
                             itemRow.createCell(15).setCellValue(bi.getBillItemFinanceDetails() != null ? bi.getBillItemFinanceDetails().getLineCostRate().doubleValue() : 0);
                         }
-                        itemRow.createCell(hasCosting ? 16 : 14).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getRetailRate() : 0);
-                        itemRow.createCell(hasCosting ? 17 : 15).setCellValue(bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null && bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "");
-                        itemRow.createCell(hasCosting ? 18 : 16).setCellValue(bi.getItem() != null && bi.getItem().getMeasurementUnit() != null && bi.getItem().getMeasurementUnit().getName() != null ? bi.getItem().getMeasurementUnit().getName() : "");
+
+                        Double discountRate = bi.getBillItemFinanceDetails().getLineDiscountRate() != null ? bi.getBillItemFinanceDetails().getLineDiscountRate().doubleValue() : null;
+                        if (discountRate == null) {
+                            if (bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate() != null) {
+                                discountRate = bi.getReferanceBillItem().getBillItemFinanceDetails().getLineDiscountRate().doubleValue();
+                            } else {
+                                discountRate = 0.0;
+                            }
+                        }
+
+                        itemRow.createCell(hasCosting ? 16 :14).setCellValue(discountRate);
+                        itemRow.createCell(hasCosting ? 17 : 15).setCellValue(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getRetailRate() : 0);
+                        itemRow.createCell(hasCosting ? 18 : 16).setCellValue(bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null && bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "");
+                        itemRow.createCell(hasCosting ? 19 : 17).setCellValue(bi.getItem() != null && bi.getItem().getMeasurementUnit() != null && bi.getItem().getMeasurementUnit().getName() != null ? bi.getItem().getMeasurementUnit().getName() : "");
                     }
                 }
             }
