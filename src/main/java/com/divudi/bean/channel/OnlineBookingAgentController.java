@@ -296,6 +296,84 @@ public class OnlineBookingAgentController implements Serializable {
 
         }
     }
+    
+    public static class ChannelAnalyticDto{
+        
+        private Institution institution;
+        private double totalBookings;
+        private double hospitalCancelBookings;
+        private double agentCancelBookings;
+        private double activeBookings;
+        private double completedBookings;
+        private double totalEarningForOnlineBooking;
+        private double totalAgencyDeposits;
+
+        public Institution getInstitution() {
+            return institution;
+        }
+
+        public void setInstitution(Institution institution) {
+            this.institution = institution;
+        }
+
+        public double getTotalBookings() {
+            return totalBookings;
+        }
+
+        public void setTotalBookings(double totalBookings) {
+            this.totalBookings = totalBookings;
+        }
+
+        public double getHospitalCancelBookings() {
+            return hospitalCancelBookings;
+        }
+
+        public void setHospitalCancelBookings(double hospitalCancelBookings) {
+            this.hospitalCancelBookings = hospitalCancelBookings;
+        }
+
+        public double getAgentCancelBookings() {
+            return agentCancelBookings;
+        }
+
+        public void setAgentCancelBookings(double agentCancelBookings) {
+            this.agentCancelBookings = agentCancelBookings;
+        }
+
+        public double getActiveBookings() {
+            return activeBookings;
+        }
+
+        public void setActiveBookings(double activeBookings) {
+            this.activeBookings = activeBookings;
+        }
+
+        public double getCompletedBookings() {
+            return completedBookings;
+        }
+
+        public void setCompletedBookings(double completedBookings) {
+            this.completedBookings = completedBookings;
+        }
+
+        public double getTotalEarningForOnlineBooking() {
+            return totalEarningForOnlineBooking;
+        }
+
+        public void setTotalEarningForOnlineBooking(double totalEarningForOnlineBooking) {
+            this.totalEarningForOnlineBooking = totalEarningForOnlineBooking;
+        }
+
+        public double getTotalAgencyDeposits() {
+            return totalAgencyDeposits;
+        }
+
+        public void setTotalAgencyDeposits(double totalAgencyDeposits) {
+            this.totalAgencyDeposits = totalAgencyDeposits;
+        }
+        
+        
+    }
 
     
     @EJB
