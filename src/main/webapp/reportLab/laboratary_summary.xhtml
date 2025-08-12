@@ -287,7 +287,7 @@
                         <p:commandButton 
                             value="Process" 
                             ajax="false"
-                            action="#{opdReportController.processOpdIncomeSummaryByDate()}" 
+                            action="#{opdReportController.processOpdIncomeSummaryByDateDTO()}" 
                             styleClass="ui-button-success m-1" 
                             icon="pi pi-cog">
                         </p:commandButton>
@@ -394,7 +394,8 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="Total Amounts" 
+                                    <h:outputText 
+                                        value="Total Amounts" 
                                                   style="padding: 8px!important; margin: 6px!important; font-weight: bold"/>
                                 </f:facet>
                             </p:column>
@@ -428,11 +429,11 @@
                             <p:column headerText="Credit" width="7em"
                                       class="text-end"
                                       style="padding: 8px!important; margin: 6px!important;">
-                                <h:outputText value="#{row.inpatientCreditValue + row.opdCreditValue + row.staffValue + row.agentValue}">
+                                <h:outputText value="#{row.creditValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{opdReportController.bundle.summaryRow.inpatientCreditValue + opdReportController.bundle.summaryRow.opdCreditValue + opdReportController.bundle.summaryRow.staffValue + opdReportController.bundle.summaryRow.agentValue}"
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.creditValue}"
                                                   style="padding: 8px!important; margin: 6px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -441,11 +442,11 @@
 
                             <p:column headerText="Total" width="7em" class="text-end"
                                       style="padding: 8px!important; margin: 6px!important;">
-                                <h:outputText value="#{row.grossTotal}">
+                                <h:outputText value="#{row.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{opdReportController.bundle.summaryRow.grossTotal}"
+                                    <h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}"
                                                   style="padding: 8px!important; margin: 6px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>

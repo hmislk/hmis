@@ -1027,6 +1027,7 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
+    @Deprecated
     public void generatePaymentDetailsForBillsAndBatchBillsByDate() {
         if (getRows() == null || getRows().isEmpty()) {
             return;
