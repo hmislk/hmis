@@ -248,21 +248,58 @@
                                                     icon="fa fa-plus"
                                                     class="ui-button-success w-100"
                                                     action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                    process="@this acStock txtQty txtComments"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtComments"   >
+                                                    process="@this acStock txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration txtComments"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration txtComments"   >
                                                 </p:commandButton>
                                             </div>
 
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
                                             <p:focus id="focusItem" for="acStock" ></p:focus>
                                         </div>
-                                        
-                                         <div class="row mt-1">
-                                             <div class="col-md-12">
-                                                 <p:outputLabel value="Directions/Comments" ></p:outputLabel>
-                                                 <p:inputTextarea id="txtComments" value="#{pharmacyRequestForBhtController.itemDescreption}"  class="w-100"  ></p:inputTextarea>
-                                             </div>
-                                         </div>
+
+                                        <div class="row mt-1">
+                                            <div class="col-md-2">
+                                                <p:outputLabel value="Dose" />
+                                                <p:inputText id="txtDose" value="#{pharmacyRequestForBhtController.billItem.prescription.dose}" class="w-100"/>
+                                            </div>
+        
+                                            <div class="col-md-2">
+                                                <p:outputLabel value="Dose Unit" />
+                                                <p:selectOneMenu id="cmbDose" value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit}" class="w-100">
+                                                    <f:selectItem itemLabel="Select" />
+                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                </p:selectOneMenu>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <p:outputLabel value="Frequency" />
+                                                <p:selectOneMenu id="cmbFrequency" value="#{pharmacyRequestForBhtController.billItem.prescription.frequencyUnit}" class="w-100">
+                                                    <f:selectItem itemLabel="Select" />
+                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                </p:selectOneMenu>
+                                            </div>
+
+        
+                                            <div class="col-md-2">
+                                                <p:outputLabel value="Duration" />
+                                                <p:inputText id="txtDuration" value="#{pharmacyRequestForBhtController.billItem.prescription.duration}" class="w-100"/>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <p:outputLabel value="Duration Unit" />
+                                                <p:selectOneMenu id="cmbDuration" value="#{pharmacyRequestForBhtController.billItem.prescription.durationUnit}" class="w-100">
+                                                    <f:selectItem itemLabel="Select" />
+                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-1">
+                                            <div class="col-md-12">
+                                                <p:outputLabel value="Comment" />
+                                                <p:inputTextarea id="txtComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
+                                            </div>
+                                        </div>
 
                                         <p:panel header="Bill Items" id="pBis" class="mt-2">
                                             <p:dataTable id="tblBillItem" value="#{pharmacyRequestForBhtController.preBill.billItems}"
@@ -276,10 +313,8 @@
                                                         <p:ajax event="blur" process="@this"/>
                                                     </p:inputText>
                                                 </p:column>
-                                                <p:column headerText="Directions" style="color: red;" width="10em">
-                                                    <p:inputText placeholder="bd/tds/6 hourly" autocomplete="off" id="ipTblDis" value="#{bi.descreption}" style="width:96%">
-                                                        <p:ajax event="blur" process="@this"/>
-                                                    </p:inputText>
+                                                <p:column headerText="Directions" style="color: red;" width="20em">
+                                                    <h:outputLabel value="#{bi.descreption}" />
                                                 </p:column>
                                                 <p:column headerText="Remove" width="5em">
                                                     <p:commandButton

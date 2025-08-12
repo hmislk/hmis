@@ -39,6 +39,7 @@ import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -46,6 +47,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import java.io.Serializable;
@@ -98,6 +100,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
+    private PrescriptionFacade prescriptionFacade;
+    @EJB
     BillNumberGenerator billNumberBean;
 /////////////////////////
     Item selectedAlternative;
@@ -131,7 +135,6 @@ public class PharmacyRequestForBhtController implements Serializable {
     @Inject
     NotificationController notificationController;
     private String comment;
-    private String itemDescreption;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -509,6 +512,9 @@ public class PharmacyRequestForBhtController implements Serializable {
             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
             pbi.setBillItem(billItem);
             billItem.setPharmaceuticalBillItem(pbi);
+        }
+        if (billItem.getPrescription() == null) {
+            billItem.setPrescription(new Prescription());
         }
         return billItem;
     }
@@ -1050,8 +1056,17 @@ public class PharmacyRequestForBhtController implements Serializable {
         billItem.setItem(getItem());
         billItem.setQty(getQty());
         billItem.setBill(getPreBill());
-        billItem.setDescreption(itemDescreption);
-        itemDescreption = null;
+        billItem.getPrescription().setItem(getItem());
+        billItem.getPrescription().setPatient(getPatientEncounter().getPatient());
+        billItem.getPrescription().setEncounter(getPatientEncounter());
+        billItem.getPrescription().setIndoor(true);
+        if (billItem.getPrescription().getId() == null) {
+            prescriptionFacade.create(billItem.getPrescription());
+        } else {
+            prescriptionFacade.edit(billItem.getPrescription());
+        }
+        billItem.setDescreption(billItem.getPrescription().getFormattedPrescriptionWithoutIndoorOutdoor()
+                + (billItem.getPrescription().getComment() != null ? " " + billItem.getPrescription().getComment() : ""));
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
@@ -1348,7 +1363,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         item = null;
-        itemDescreption=null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
@@ -1666,14 +1680,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public String getItemDescreption() {
-        return itemDescreption;
-    }
-
-    public void setItemDescreption(String itemDescreption) {
-        this.itemDescreption = itemDescreption;
     }
 
     
