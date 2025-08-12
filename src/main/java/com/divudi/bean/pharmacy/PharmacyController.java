@@ -1894,16 +1894,16 @@ public class PharmacyController implements Serializable {
 
             switch (reportType) {
                 case "byBillItem":
-                    generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+                    generateConsumptionReportTableByBillItems(BillType.PharmacyDisposalIssue);
                     break;
 
                 case "byBill":
-                    generateConsumptionReportTableByBill(BillType.PharmacyIssue);
+                    generateConsumptionReportTableByBill(BillType.PharmacyDisposalIssue);
                     break;
 
                 case "summeryReport":
                 case "categoryWise":
-                    generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
+                    generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyDisposalIssue);
                     break;
 
                 default:
