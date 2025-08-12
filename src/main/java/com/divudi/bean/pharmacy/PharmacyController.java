@@ -753,6 +753,7 @@ public class PharmacyController implements Serializable {
     private List<PharmacySummery> departmentSummaries;
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
     private List<DepartmentCategoryWiseItems> resultsList;
+    private Map<String, List<PharmacyRow>> departmentWiseRows;
 
     private String transferType;
     private Institution fromSite;
@@ -3045,6 +3046,157 @@ public class PharmacyController implements Serializable {
         }, InventoryReports.STOCK_TRANSFER_REPORT, sessionController.getLoggedUser());
     }
 
+    public void exportStockTransferDetailReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Transfer_Detail_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Stock Transfer Detail Report");
+            int rowIndex = 0;
+
+            // Create header row
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Department");
+            headerRow.createCell(1).setCellValue("Bill No");
+            headerRow.createCell(2).setCellValue("Approval Date");
+            headerRow.createCell(3).setCellValue("Ref Bill No");
+            headerRow.createCell(4).setCellValue("Ref Bill Approved Date and Time");
+            headerRow.createCell(5).setCellValue("Item Description");
+            headerRow.createCell(6).setCellValue("Item Code");
+            headerRow.createCell(7).setCellValue("Quantity");
+            headerRow.createCell(8).setCellValue("Unit");
+            headerRow.createCell(9).setCellValue("Purchase Rate");
+            headerRow.createCell(10).setCellValue("Purchase Value");
+
+            boolean costingEnabled = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+            if (costingEnabled) {
+                headerRow.createCell(11).setCellValue("Cost Rate");
+                headerRow.createCell(12).setCellValue("Cost Value");
+                headerRow.createCell(13).setCellValue("Issue Approved User");
+            } else {
+                headerRow.createCell(11).setCellValue("Issue Approved User");
+            }
+
+            for (Map.Entry<String, List<PharmacyRow>> deptEntry : departmentWiseRows.entrySet()) {
+                String departmentName = deptEntry.getKey();
+                List<PharmacyRow> billItems = deptEntry.getValue();
+
+                for (PharmacyRow i : billItems) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    int colIndex = 0;
+
+                    dataRow.createCell(colIndex++).setCellValue(departmentName);
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getDeptId() != null ? i.getBillItem().getBill().getDeptId() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getCreatedAt()) : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getBackwardReferenceBill() != null ? i.getBillItem().getBill().getBackwardReferenceBill().getDeptId() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getBackwardReferenceBill() != null && i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt()) : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getName() != null ? i.getBillItem().getItem().getName() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getCode() != null ? i.getBillItem().getItem().getCode() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getQty());
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getVmp() != null && i.getBillItem().getItem().getVmp().getStrengthUnit() != null ? i.getBillItem().getItem().getVmp().getStrengthUnit().getName() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate());
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate());
+
+                    if (costingEnabled) {
+                        dataRow.createCell(colIndex++).setCellValue(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? i.getItemBatch().getCostRate() : 0);
+                        dataRow.createCell(colIndex++).setCellValue(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? (i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getItemBatch().getCostRate()) : 0);
+                    }
+
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-");
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Stock Transfer Detail Report to Excel", e);
+        }
+    }
+
+    public void exportStockTransferDetailReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Transfer_Detail_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Stock Transfer Detail Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            boolean costingEnabled = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+            int columnCount = costingEnabled ? 14 : 12;
+
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            if (costingEnabled) {
+                columnWidths = new float[]{4f, 3f, 4f, 3f, 4f, 4f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 4f};
+                headers = new String[]{"Department", "Bill No", "Approval Date", "Ref Bill No", "Ref Bill Approved Date", "Item Description", "Item Code", "Quantity", "Unit", "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Issue Approved User"};
+            } else {
+                columnWidths = new float[]{4f, 3f, 4f, 3f, 4f, 4f, 3f, 3f, 3f, 3f, 3f, 4f};
+                headers = new String[]{"Department", "Bill No", "Approval Date", "Ref Bill No", "Ref Bill Approved Date", "Item Description", "Item Code", "Quantity", "Unit", "Purchase Rate", "Purchase Value", "Issue Approved User"};
+            }
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            for (Map.Entry<String, List<PharmacyRow>> deptEntry : departmentWiseRows.entrySet()) {
+                String departmentName = deptEntry.getKey();
+                List<PharmacyRow> billItems = deptEntry.getValue();
+
+                for (PharmacyRow i : billItems) {
+                    table.addCell(new PdfPCell(new Phrase(departmentName, FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getDeptId() != null ? i.getBillItem().getBill().getDeptId() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getCreatedAt()) : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getBackwardReferenceBill() != null ? i.getBillItem().getBill().getBackwardReferenceBill().getDeptId() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getBackwardReferenceBill() != null && i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt()) : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getItem().getName() != null ? i.getBillItem().getItem().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getItem().getCode() != null ? i.getBillItem().getItem().getCode() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(i.getBillItem().getPharmaceuticalBillItem().getQty()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getItem().getVmp() != null && i.getBillItem().getItem().getVmp().getStrengthUnit() != null ? i.getBillItem().getItem().getVmp().getStrengthUnit().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", (i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+
+                    if (costingEnabled) {
+                        table.addCell(new PdfPCell(new Phrase(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? String.format("%.2f", i.getItemBatch().getCostRate()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                        table.addCell(new PdfPCell(new Phrase( i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? String.format("%.2f", (i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getItemBatch().getCostRate())) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    }
+
+                    table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Stock Transfer Detail Report to PDF", e);
+        }
+    }
+
     public void generateReportByDepartmentWiseBill(BillType billType) {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder(
@@ -3135,6 +3287,7 @@ public class PharmacyController implements Serializable {
 
     public void generateReportByBillItems(BillType billType) {
         try {
+            departmentWiseRows = new HashMap<>();
             pharmacyRows = new ArrayList<>();
             billItems = new ArrayList<>();
             Map<String, Object> parameters = new HashMap<>();
@@ -3180,6 +3333,14 @@ public class PharmacyController implements Serializable {
                         .filter(r -> r.getQuantity() != null && r.getPurchaseValue() != null)
                         .mapToDouble(r -> r.getQuantity() * r.getPurchaseValue())
                         .sum();
+            }
+
+            for (PharmacyRow row : pharmacyRows) {
+                String departmentName = row.getBillItem().getBill().getToDepartment() != null
+                        ? row.getBillItem().getBill().getToDepartment().getName()
+                        : "Other";
+
+                departmentWiseRows.computeIfAbsent(departmentName, k -> new ArrayList<>()).add(row);
             }
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
@@ -6276,6 +6437,14 @@ public class PharmacyController implements Serializable {
 
     public void setResultsList(List<DepartmentCategoryWiseItems> resultsList) {
         this.resultsList = resultsList;
+    }
+
+    public Map<String, List<PharmacyRow>> getDepartmentWiseRows() {
+        return departmentWiseRows;
+    }
+
+    public void setDepartmentWiseRows(Map<String, List<PharmacyRow>> departmentWiseRows) {
+        this.departmentWiseRows = departmentWiseRows;
     }
 
     public List<DepartmentWiseBill> getDepartmentWiseBillList() {
