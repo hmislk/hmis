@@ -3079,6 +3079,7 @@ public class PharmacyController implements Serializable {
 
             departmentWiseBillList = new ArrayList<>();
             totalPurchase = 0;
+            totalCostValue = 0;
 
             for (Object[] result : results) {
                 Department toDepartment = (Department) result[0];
@@ -3098,6 +3099,12 @@ public class PharmacyController implements Serializable {
 
                 departmentWiseBillList.add(departmentWiseBill);
                 totalPurchase += departmentWiseBill.getBill().getNetTotal();
+
+                double costValue = Math.abs(departmentWiseBill.getBill().getBillFinanceDetails() != null &&
+                        departmentWiseBill.getBill().getBillFinanceDetails().getTotalCostValue() != null ?
+                        departmentWiseBill.getBill().getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0);
+
+                totalCostValue += departmentWiseBill.getBill().getNetTotal() < 0 ? -costValue : costValue;
             }
 
             departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
@@ -3207,7 +3214,7 @@ public class PharmacyController implements Serializable {
 
     public void generateReportAsSummary(BillType billType) {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal) ");
+        sql.append("SELECT b.department.name, SUM(b.netTotal), SUM(b.billFinanceDetails.totalCostValue) ");
         if ("issue".equals(transferType)) {
             sql.append(", SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ");
         }
@@ -3229,24 +3236,34 @@ public class PharmacyController implements Serializable {
             List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             Map<String, PharmacySummery> departmentMap = new HashMap<>();
             departmentSummaries = new ArrayList<>();
+            double costTotal = 0.0;
             double grandTotal = 0.0;
             double goodInTransistTotal = 0.0;
 
             for (Object[] result : results) {
                 String departmentName = (String) result[0];
                 double netTotal = (double) result[1];
+                double costValue = 0.0;
+                if (result[2] != null) {
+                    costValue = netTotal < 0
+                            ? -Math.abs(((BigDecimal) result[2]).doubleValue())
+                            : Math.abs(((BigDecimal) result[2]).doubleValue());
+                }
                 grandTotal += netTotal;
+                costTotal += costValue;
                 if ("issue".equals(transferType)) {
-                    double goodInTransist = (double) result[2];
+                    double goodInTransist = (double) result[3];
                     goodInTransistTotal += goodInTransist;
-                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist));
+                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist, costValue));
                 } else {
                     PharmacySummery summary = new PharmacySummery(departmentName, netTotal);
+                    summary.setTotalCost(costValue);
                     departmentSummaries.add(summary);
                     departmentMap.put(departmentName, summary);
                 }
             }
-            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal));
+
+            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal, costTotal));
 
             if ("receive".equals(transferType)) {
                 generateReportAsSummaryWithGiT(BillType.PharmacyTransferIssue, departmentMap);

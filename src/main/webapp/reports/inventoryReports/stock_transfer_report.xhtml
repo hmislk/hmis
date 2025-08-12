@@ -371,6 +371,12 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Net Total (Cost)" style="text-align: right; padding-right: 100px;"
+                                      rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                <h:outputText value="#{s.totalCost}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
                             <p:column headerText="Good In Transist Amount"
                                       style="text-align: right; padding-right: 100px;">
                                 <h:outputText value="#{s.goodInTransistAmount}">
@@ -446,13 +452,15 @@
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Cost rate" width="5em"
-                                      style="text-align: right; padding-right: 10px;">
+                                      style="text-align: right; padding-right: 10px;"
+                                      rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                 <p:outputLabel value="#{i.itemBatch.costRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Cost Value" width="5em"
-                                      style="text-align: right; padding-right: 10px;">
+                                      style="text-align: right; padding-right: 10px;"
+                                      rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                 <p:outputLabel
                                         value="#{i.billItem.pharmaceuticalBillItem.qty * i.itemBatch.costRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -501,6 +509,18 @@
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Total (Cost)" style="text-align: right;">
+                                <h:outputText
+                                        value="#{(b.bill.netTotal lt 0 and b.bill.billFinanceDetails.totalCostValue gt 0)
+                                        or (b.bill.netTotal gt 0 and b.bill.billFinanceDetails.totalCostValue lt 0)
+                                        ? (0 - b.bill.billFinanceDetails.totalCostValue)
+                                        : b.bill.billFinanceDetails.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyController.totalCostValue}"/>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Net Total" style="text-align: right;">
                                 <h:outputText value="#{b.bill.netTotal}">
