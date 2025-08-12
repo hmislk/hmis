@@ -209,6 +209,9 @@
                                 <h:outputText value="#{item.testCount}"/>
                             </p:column>
                         </p:subTable>
+                        <f:facet name="footer">
+                            <h:outputText value="Grand Total: #{reportController.totalCount}"/>
+                        </f:facet>
                     </p:dataTable>
                 </p:panel>
             </h:form>

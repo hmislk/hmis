@@ -182,7 +182,7 @@ public class PharmacyBean {
     }
 
     public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
-        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
 
         for (BillItem returningBillItem : billItems) {
             if (returningBillItem == null) {

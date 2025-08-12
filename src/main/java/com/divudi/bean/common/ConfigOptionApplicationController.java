@@ -72,20 +72,7 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
-        ConfigOption option = findActiveOptionWithLock(key, OptionScope.APPLICATION, null, null, null);
-        if (option != null) {
-            return option;
-        }
-        option = new ConfigOption();
-        option.setCreatedAt(new Date());
-        option.setOptionKey(key);
-        option.setScope(OptionScope.APPLICATION);
-        option.setInstitution(null);
-        option.setDepartment(null);
-        option.setWebUser(null);
-        option.setValueType(type);
-        option.setOptionValue(value);
-        optionFacade.create(option);
+        ConfigOption option = optionFacade.createOptionIfNotExists(key, OptionScope.APPLICATION, null, null, null, type, value);
         loadApplicationOptions();
         return option;
     }
@@ -145,13 +132,19 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
         getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
         getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
-        getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", true);
-        getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false);
-        getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false);
-        getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
-        getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        getBooleanValueByKey("Pharmacy Issue is by Purchase Rate", true);
+        getBooleanValueByKey("Pharmacy Issue is by Cost Rate", false);
+        getBooleanValueByKey("Pharmacy Issue is by Retail Rate", false);
+        getBooleanValueByKey("Purchase Return Based On Purchase Rate", true);
+        getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false);
+        getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false);
+        getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", true);
+        getBooleanValueByKey("Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
+        getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
+        getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+        
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -347,7 +340,74 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "  }\n"
                 + "}"
         );
-        getLongTextValueByKey("Pharmacy Transfer Receive Receipt Header", "");
+        getLongTextValueByKey("Pharmacy Transfer Receive Receipt Header",
+                "<table class=\"receipt-header-table\">\n"
+                + "    <!-- Institution Details -->\n"
+                + "    <tr>\n"
+                + "        <td colspan=\"2\" class=\"receipt-institution-name\">\n"
+                + "            {{institution_name}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td colspan=\"2\" class=\"receipt-institution-contact\">\n"
+                + "            {{institution_address}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td colspan=\"2\" class=\"receipt-institution-contact\">\n"
+                + "            {{institution_phones}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td colspan=\"2\" class=\"receipt-institution-contact\">\n"
+                + "            {{institution_fax}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td colspan=\"2\" class=\"receipt-institution-contact\">\n"
+                + "            {{institution_email}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <!-- Bill Heading -->\n"
+                + "    <tr>\n"
+                + "        <td colspan=\"2\" class=\"receipt-title\">\n"
+                + "            Transfer Receive Note{{cancelled_status}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <!-- Bill Details -->\n"
+                + "    <tr>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Location From: {{location_from}}\n"
+                + "        </td>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Location To: {{location_to}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Received Person: {{received_person}}\n"
+                + "        </td>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Issued Person: {{issued_person}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Receive No: {{receive_no}}\n"
+                + "        </td>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Issue No: {{issue_no}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Received Time: {{received_time}}\n"
+                + "        </td>\n"
+                + "        <td class=\"receipt-details-cell\">\n"
+                + "            Issue Time: {{issue_time}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "</table>\n");
         getLongTextValueByKey("Pharmacy Transfer Receive Receipt Footer", "");
     }
 

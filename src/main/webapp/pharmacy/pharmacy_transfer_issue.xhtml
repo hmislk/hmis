@@ -36,39 +36,41 @@
                                 <p:ajax event="rowEdit" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}"  />  
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
 
-                                <p:column id="colItem" headerText="Item Name" style="min-width: 10em;">
-                                    <h:outputText id="item" value="#{bItm.item.name}" />
+                                <p:column headerText="Item Name" style="min-width: 10em;">
+                                    <div style="min-width: 10em; display: flex; align-items: center;">
 
-                                    <p:commandButton
-                                        icon="pi pi-refresh"
-                                        id="btnSelectSubstitute"
-                                        title="Select a Substitute"
-                                        action="#{transferIssueController.prepareSubstitute(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
-                                        oncomplete="PF('substituteDialog').show();"
-                                        process="@this"
-                                        class="ui-button-warning ui-button-icon-only mx-1" />
+                                        <h:outputText id="item" value="#{bItm.item.name}" />
 
-                                    <p:commandButton
-                                        icon="pi pi-eye"
-                                        id="btnViewSelectedItemDetails"
-                                        title="View Item Details"
-                                        action="#{transferIssueController.displayItemDetails(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
-                                        process="@this"
-                                        class="ui-button-secondary ui-button-icon-only mx-1" />
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            id="btnSelectSubstitute"
+                                            title="Select a Substitute"
+                                            action="#{transferIssueController.prepareSubstitute(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                            oncomplete="PF('substituteDialog').show();"
+                                            process="@this"
+                                            class="ui-button-warning ui-button-icon-only mx-1" />
 
-                                    <p:commandButton
-                                        icon="pi pi-tags"
-                                        id="btnViewBatchDetails"
-                                        title="View Batch Details"
-                                        actionListener="#{transferIssueController.prepareBatchDetails(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
-                                        oncomplete="PF('batchDetailsDialog').show();"
-                                        process="@this"
-                                        class="ui-button-info ui-button-icon-only mx-1" />
+                                        <p:commandButton
+                                            icon="pi pi-eye"
+                                            id="btnViewSelectedItemDetails"
+                                            title="View Item Details"
+                                            action="#{transferIssueController.displayItemDetails(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            process="@this"
+                                            class="ui-button-secondary ui-button-icon-only mx-1" />
+
+                                        <p:commandButton
+                                            icon="pi pi-tags"
+                                            id="btnViewBatchDetails"
+                                            title="View Batch Details"
+                                            actionListener="#{transferIssueController.prepareBatchDetails(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
+                                            oncomplete="PF('batchDetailsDialog').show();"
+                                            process="@this"
+                                            class="ui-button-info ui-button-icon-only mx-1"/>
+                                    </div>
                                 </p:column>
-
 
                                 <p:column
                                     class="text-warning"
@@ -132,7 +134,7 @@
 
                                 <p:column 
                                     headerText="Rate" 
-                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
                                     width="8em" 
                                     class="text-end">
                                     <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">

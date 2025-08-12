@@ -796,7 +796,42 @@ public class GrnCostingController implements Serializable {
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
         getBillFacade().edit(getGrnBill());
+        
+        // Check if Purchase Order is fully received and update fullyIssued status
+        if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {
+            if (isPurchaseOrderFullyReceived(getApproveBill())) {
+                getApproveBill().setFullyIssued(true);
+                getApproveBill().setFullyIssuedAt(new Date());
+                getApproveBill().setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getApproveBill());
+            }
+        }
+        
         printPreview = true;
+    }
+
+    private boolean isPurchaseOrderFullyReceived(Bill purchaseOrderBill) {
+        if (purchaseOrderBill == null) {
+            return false;
+        }
+        
+        List<PharmaceuticalBillItem> orderItems = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(purchaseOrderBill);
+        
+        if (orderItems == null || orderItems.isEmpty()) {
+            return true;
+        }
+        
+        for (PharmaceuticalBillItem orderItem : orderItems) {
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(orderItem);
+            double remainingQty = Math.abs(orderItem.getQtyInUnit()) - Math.abs(calculatedReturns);
+            double remainingFreeQty = orderItem.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(orderItem);
+            
+            if (remainingQty > 0 || remainingFreeQty > 0) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     public void settleWholesale() {
@@ -894,6 +929,17 @@ public class GrnCostingController implements Serializable {
 
         getBillFacade().edit(getGrnBill());
         //  getPharmacyBillBean().editBill(, , getSessionController());
+        
+        // Check if Purchase Order is fully received and update fullyIssued status
+        if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {
+            if (isPurchaseOrderFullyReceived(getApproveBill())) {
+                getApproveBill().setFullyIssued(true);
+                getApproveBill().setFullyIssuedAt(new Date());
+                getApproveBill().setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getApproveBill());
+            }
+        }
+        
         printPreview = true;
 
     }
@@ -1931,6 +1977,7 @@ public class GrnCostingController implements Serializable {
             grnBill = new BilledBill();
             grnBill.setBillType(BillType.PharmacyGrnBill);
             grnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+            grnBill.setConsignment(getApproveBill().isConsignment());
             grnBill.setBillFinanceDetails(new BillFinanceDetails(grnBill));
         }
         return grnBill;
@@ -2125,6 +2172,7 @@ public class GrnCostingController implements Serializable {
             currentGrnBillPre = new BilledBill();
             currentGrnBillPre.setBillType(BillType.PharmacyGrnBill);
             currentGrnBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_PRE);
+            currentGrnBillPre.setConsignment(getApproveBill().isConsignment());
         }
         return currentGrnBillPre;
     }

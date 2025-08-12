@@ -1,6 +1,6 @@
-
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.PaymentMethod;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -15,6 +15,9 @@ public class BillItemDTO implements Serializable {
     private Double costRate;
     private Double retailRate;
     private Double billNetTotal;
+    private Long id;
+    private Double discount;
+    private PaymentMethod paymentMethod;
 
     public BillItemDTO() {
     }
@@ -31,6 +34,14 @@ public class BillItemDTO implements Serializable {
         this.costRate = costRate;
         this.retailRate = retailRate;
         this.billNetTotal = billNetTotal;
+    }
+
+    public BillItemDTO(Long id, Date billCreatedAt, Double discount, Double billNetTotal, PaymentMethod paymentMethod) {
+        this.id = id;
+        this.billCreatedAt = billCreatedAt;
+        this.discount = discount;
+        this.billNetTotal = billNetTotal;
+        this.paymentMethod = paymentMethod;
     }
 
     // Calculated fields (Cost Value and Sale Value are calculated in JSF)
@@ -113,6 +124,30 @@ public class BillItemDTO implements Serializable {
 
     public void setBillNetTotal(Double billNetTotal) {
         this.billNetTotal = billNetTotal;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

@@ -93,7 +93,8 @@
                                     title="Issue"
                                     class="ui-button-success mx-2"
                                     actionListener="#{pharmacyController.clearItemHistory()}"
-                                    action="#{transferIssueController.navigateToPharmacyIssueForRequestsById}">
+                                    action="#{transferIssueController.navigateToPharmacyIssueForRequestsById}"
+                                    disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
                                     <f:setPropertyActionListener target="#{transferIssueController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
                             </p:column>
