@@ -248,49 +248,6 @@
                                     </tr>
                                     </tfoot>
                                 </table>
-                                <script>
-                                    function calculateTotals(selector, targeter) {
-                                        const values = Array.from(document.querySelectorAll(selector));
-                                        const totalValue = values
-                                            .map(value => {
-                                                const cleanValue = value.innerText.replace(/,/g, "");
-                                                return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                            })
-                                            .reduce((total, value) => total + value, 0);
-
-                                        const targetElement = document.querySelector(targeter);
-                                        if (targetElement) {
-                                            targetElement.innerText = totalValue.toLocaleString('en-US', {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2
-                                            });
-                                        }
-                                    }
-
-                                    function handleRowClick() {
-                                        onBillRowClick(); // triggers AJAX to server
-                                        setTimeout(updateTotals, 500);
-                                    }
-
-                                    function updateTotals() {
-                                        calculateTotals('.grossValue', '.totalGrossValue');
-                                        calculateTotals('.hosValue', '.totalHosValue');
-                                        calculateTotals('.staffValue', '.totalStaffValue');
-                                        calculateTotals('.netValue', '.totalNetValue');
-                                        calculateTotals('.discountValue', '.totalDiscountValue');
-                                    }
-
-                                    // Run the calculation after page loads
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        setTimeout(updateTotals, 1000);
-                                    });
-
-                                    // Also run on window load as backup
-                                    window.addEventListener('load', function() {
-                                        setTimeout(updateTotals, 500);
-                                    });
-
-                                </script>
                             </div>
                         </div>
                     </h:panelGroup>
