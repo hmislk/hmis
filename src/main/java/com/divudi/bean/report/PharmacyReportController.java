@@ -2879,7 +2879,6 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
 
@@ -2894,6 +2893,39 @@ public class PharmacyReportController implements Serializable {
             billTypes.add(BillType.PharmacyTransferReceive);
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+        } else if ("returnWithoutReceiptDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        } else {
+            billTypes.add(BillType.PharmacyBhtPre);
+
+            billTypes.add(BillType.PharmacyPre);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypes.add(BillType.PharmacyGrnBill);
+            billTypes.add(BillType.PharmacyGrnReturn);
+
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+            billTypes.add(BillType.PharmacyIssue);
+
+            billTypes.add(BillType.PharmacyTransferIssue);
+
+            billTypes.add(BillType.PharmacyTransferReceive);
+
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         }
 
         stockLedgerHistories = new ArrayList();
