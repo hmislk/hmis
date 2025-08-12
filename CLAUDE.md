@@ -30,6 +30,12 @@
 - **CRITICAL**: Never modify existing constructors - only add new ones
 - **Use direct DTO queries** - avoid entity-to-DTO conversion loops
 
+### UI Changes Policy
+- **🚨 UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
+- **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
+- **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
+- **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
+
 ## Essential Rules
 1. **Use automation scripts for GitHub pushes**: `scripts\safe-push.bat` (Windows) or `./scripts/safe-push.sh` (Linux) instead of `git push` to prevent JNDI issues
 2. **Always use environment variables** in pushed persistence.xml - NEVER commit hardcoded JNDI datasources

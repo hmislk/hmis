@@ -4303,25 +4303,25 @@ public class SearchController implements Serializable {
      * request DTO additionally loads its issued bill DTOs for display.
      */
     public void createRequestTableDto() {
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
-        List<BillClassType> bct = Arrays.asList(billClassTypes);
-
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO(" +
-                " b.id, b.deptId, b.createdAt, b.department.name, b.creater.webUserPerson.name," +
-                " b.cancelled, cb.createdAt, cb.creater.webUserPerson.name)" +
-                " from Bill b left join b.cancelledBill cb" +
-                " where b.retired=false and  b.toDepartment=:toDep" +
-                " and b.billClassType not in :bct" +
-                " and b.billTypeAtomic = :billTypeAtomic" +
-                " and b.billType= :bTp and b.createdAt between :fromDate and :toDate";
-
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + " b.id, "
+                + " b.deptId, "
+                + " b.createdAt, "
+                + " b.department.name, "
+                + " b.creater.webUserPerson.name)"
+                + " from Bill b"
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.toDepartment=:toDep"
+                + " and b.billTypeAtomic in :btas "
+                + " and b.createdAt between :fromDate and :toDate";
         HashMap<String, Object> params = new HashMap<>();
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
         params.put("toDep", getSessionController().getDepartment());
-        params.put("bct", bct);
-        params.put("bTp", BillType.PharmacyTransferRequest);
-        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        params.put("btas", btas);
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql += " and ((b.deptId) like :billNo)";
@@ -4335,12 +4335,23 @@ public class SearchController implements Serializable {
 
         jpql += " order by b.createdAt desc";
 
+        System.out.println("=== DEBUG: createRequestTableDto ===");
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Params: " + params);
+        System.out.println("From Date: " + getFromDate());
+        System.out.println("To Date: " + getToDate());
+        System.out.println("Department: " + getSessionController().getDepartment());
+        
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        
+        System.out.println("Result count: " + (transferRequestDtos != null ? transferRequestDtos.size() : "null"));
+        
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
                 dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
             }
         }
+        System.out.println("=== END DEBUG ===");
     }
 
     /**
@@ -4350,12 +4361,15 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(" +
-                " b.id, b.deptId, b.createdAt, b.creater.webUserPerson.name, b.cancelled," +
-                " cb.createdAt, cb.creater.webUserPerson.name, ts.person.nameWithTitle, b.netTotal)" +
-                " from Bill b left join b.cancelledBill cb left join b.toStaff ts" +
-                " where b.retired=false and b.billType=:btp" +
-                " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
+                + " b.id, "
+                + " b.deptId, "
+                + " b.createdAt, "
+                + " b.creater.webUserPerson.name, "
+                + " b.netTotal)"
+                + " from Bill b"
+                + " where b.retired=false and b.billType=:btp"
+                + " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("btp", BillType.PharmacyTransferIssue);
         params.put("rid", requestId);
@@ -9795,8 +9809,8 @@ public class SearchController implements Serializable {
             sql += " and  b.deptId like :billNo";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
+
+        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
             sql += " and  (b.patient.code like :code OR b.patient.phn like :phn ) ";
             temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
             temMap.put("phn", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");

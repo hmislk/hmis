@@ -51,6 +51,10 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
             Object fromDepartmentName, Object creatorName, Object cancelled,
             Date cancelledAt, Object cancellerName) {
+        System.out.println("=== DTO Constructor called with: billId=" + billId + 
+            ", deptId=" + deptId + ", cancelled=" + cancelled + 
+            " (type: " + (cancelled != null ? cancelled.getClass().getSimpleName() : "null") + ") ===");
+        
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;
@@ -65,6 +69,22 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         }
         this.cancelledAt = cancelledAt;
         this.cancellerName = cancellerName != null ? cancellerName.toString() : "";
+    }
+
+    // Basic constructor without cancellation details
+    public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
+            Object fromDepartmentName, Object creatorName) {
+        System.out.println("=== Basic DTO Constructor called with: billId=" + billId + 
+            ", deptId=" + deptId + ", creatorName=" + creatorName + " ===");
+        
+        this.billId = billId;
+        this.deptId = deptId != null ? deptId.toString() : "";
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
+        this.creatorName = creatorName != null ? creatorName.toString() : "";
+        this.cancelled = false;  // Default to not cancelled
+        this.cancelledAt = null;
+        this.cancellerName = "";
     }
 
     // ------------------------------------------------------------------
