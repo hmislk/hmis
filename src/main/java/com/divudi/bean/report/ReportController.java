@@ -1767,7 +1767,18 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             // Convert the map values to a list to be used in the JSF page
             reportList = new ArrayList<>(categoryReports.values());
+
+            calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void calculateTotalTestCount() {
+        totalCount = 0L;
+        if (reportList != null) {
+            for (CategoryCount categoryCount : reportList) {
+                totalCount += categoryCount.getTotal();
+            }
+        }
     }
 
     public void filterOpdServiceCountBySelectedService(Long selectedItemId) {
