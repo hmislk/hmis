@@ -1245,6 +1245,80 @@ public class TransferReceiveController implements Serializable {
         return list;
     }
 
+    public String fillHeaderDataOfTransferReceiveNote(String s, Bill b) {
+        if (b != null) {
+            String filledHeader;
+
+            // Institution details
+            String institutionName = b.getCreater().getDepartment().getPrintingName();
+            String institutionAddress = b.getCreater().getDepartment().getAddress() != null ?
+                    b.getCreater().getDepartment().getAddress() : "";
+
+            // Phone numbers handling
+            String phone1 = b.getCreater().getDepartment().getTelephone1() != null ?
+                    b.getCreater().getDepartment().getTelephone1() : "";
+            String phone2 = b.getCreater().getDepartment().getTelephone2() != null ?
+                    b.getCreater().getDepartment().getTelephone2() : "";
+            String institutionPhones = phone1;
+            if (!phone2.isEmpty()) {
+                institutionPhones += " / " + phone2;
+            }
+
+            // Fax and Email
+            String institutionFax = "";
+            if (b.getCreater().getDepartment().getFax() != null &&
+                    !b.getCreater().getDepartment().getFax().trim().isEmpty()) {
+                institutionFax = "Fax: " + b.getCreater().getDepartment().getFax();
+            }
+
+            String institutionEmail = "";
+            if (b.getCreater().getDepartment().getEmail() != null &&
+                    !b.getCreater().getDepartment().getEmail().trim().isEmpty()) {
+                institutionEmail = "Email: " + b.getCreater().getDepartment().getEmail();
+            }
+
+            // Cancelled status
+            String cancelledStatus = "";
+            if (b.getBilledBill() != null && b.getBilledBill().isCancelled() == Boolean.TRUE) {
+                cancelledStatus = " <span class=\"receipt-cancelled\">**Cancelled**</span>";
+            }
+
+            // Bill details
+            String locationFrom = b.getFromDepartment() != null ? b.getFromDepartment().getName() : "";
+            String locationTo = b.getDepartment() != null ? b.getDepartment().getName() : "";
+            String receivedPerson = b.getCreater().getWebUserPerson().getName();
+            String issuedPerson = b.getBackwardReferenceBill() != null &&
+                    b.getBackwardReferenceBill().getCreater() != null ?
+                    b.getBackwardReferenceBill().getCreater().getWebUserPerson().getName() : "";
+            String receiveNo = b.getDeptId() != null ? b.getDeptId() : "";
+            String issueNo = b.getBackwardReferenceBill() != null ?
+                    b.getBackwardReferenceBill().getDeptId() : "";
+
+            // Date formatting
+            String receivedTime =  (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
+            String issueTime = (b != null ? CommonFunctions.getDateFormat(b.getBackwardReferenceBill().getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
+
+            filledHeader = s.replace("{{institution_name}}", institutionName)
+                    .replace("{{institution_address}}", institutionAddress)
+                    .replace("{{institution_phones}}", institutionPhones)
+                    .replace("{{institution_fax}}", institutionFax)
+                    .replace("{{institution_email}}", institutionEmail)
+                    .replace("{{cancelled_status}}", cancelledStatus)
+                    .replace("{{location_from}}", locationFrom)
+                    .replace("{{location_to}}", locationTo)
+                    .replace("{{received_person}}", receivedPerson)
+                    .replace("{{issued_person}}", issuedPerson)
+                    .replace("{{receive_no}}", receiveNo)
+                    .replace("{{issue_no}}", issueNo)
+                    .replace("{{received_time}}", receivedTime)
+                    .replace("{{issue_time}}", issueTime);
+
+            return filledHeader;
+        } else {
+            return s;
+        }
+    }
+
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
