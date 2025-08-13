@@ -76,7 +76,7 @@
                             </p:selectOneMenu>
 
                         </h:panelGrid>
-                        
+
                         <hr></hr>
 
                         <h:panelGrid columns="6" class="my-2" >
@@ -131,7 +131,7 @@
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Online Booking Count "></h:outputLabel>
                                     </div>
-                                    
+
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
@@ -144,7 +144,7 @@
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Online Booking Earning "></h:outputLabel>
                                     </div>
-                                    
+
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
@@ -157,7 +157,7 @@
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Total Agency Deposits "></h:outputLabel>
                                     </div>
-                                    
+
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
@@ -170,56 +170,23 @@
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Remain Amount To Pay "></h:outputLabel>
                                     </div>
-                                    
+
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalEarningForOnlineBooking - onlineBookingAgentController.analyticDto.totalAgencyDeposits}" style="font-weight: bold; font-size: 30px; color: #00534b" />
+                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalEarningForOnlineBooking + onlineBookingAgentController.analyticDto.remainAmountNeedForHospitalCancelAndRepaidBills - onlineBookingAgentController.analyticDto.totalAgencyDeposits}" style="font-weight: bold; font-size: 30px; color: #00534b" />
                                 </div>
                             </p:card>
 
                         </div>
 
                         <div class="d-flex justify-content-between align-item-center">
-                            <p:panel header="Online Bookings Summary" class="w-50">
-                                <p:panelGrid columns="3" styleClass="summary-grid" columnClasses="col1,col-1,col3">
-                                    <h:outputText value="Date Range"  />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.fromDate} - #{onlineBookingAgentController.toDate}" />
-
-                                    <h:outputText value="Total Bookings" />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.totalBookings}" />                               
-
-                                    <h:outputText value="Hospital Cancelled Bookings" />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.hospitalCancelBookings}" />
-
-                                    <h:outputText value="Agency Cancelled Bookings" />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.agentCancelBookings}" />
-                                    
-                                    <h:outputText value="Active Bookings" />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.activeBookings}" />
-
-                                    <h:outputText value="Completed Bookings" />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.completedBookings}" />
-                                    
-                                    <h:outputText value="Absent Bookings" />
-                                    <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.absentPatientBookings}" />
-
-                                </p:panelGrid>
-                            </p:panel>
-
-                            <p:panel header="Agency Details Summary" class="w-50 mx-3">
-                                <p:panelGrid columns="3" styleClass="summary-grid" columnClasses="col1,col-1,col3">
+                            <p:panel header="Agency Details Summary" class="w-100">
+                                <p:panelGrid columns="6" styleClass="summary-grid" columnClasses="col1,col-1,col3">
                                     <h:outputText value="Agency Name"  />
                                     <h:outputText value=":"  />
                                     <h:outputText value="#{onlineBookingAgentController.agentForBookings.name}" />
-                                    
+
                                     <h:outputText value="Agency Code"  />
                                     <h:outputText value=":"  />
                                     <h:outputText value="#{onlineBookingAgentController.agentForBookings.code}" />
@@ -242,8 +209,82 @@
 
                                 </p:panelGrid>
                             </p:panel>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-item-center my-2">
+                            <p:panel header="Online Bookings Count Summary" class="w-50 mx-1">
+                                <p:panelGrid columns="3" styleClass="summary-grid" columnClasses="col1,col-1,col3">
+                                    <h:outputText value="Date Range"  />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.fromDate} - #{onlineBookingAgentController.toDate}" />
+
+                                    <h:outputText value="Total Bookings" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.totalBookings}" />                               
+
+                                    <h:outputText value="Hospital Cancelled Bookings Through Hospital System" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.hospitalCancelBookings}" />
+
+                                    <h:outputText value="Agency Cancelled Bookings Through API" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.agentCancelBookings}" />
+
+                                    <h:outputText value="Agency Cancelled Bookings Through Hospital System" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.bookingsCancelByagentThroughHospital}" />
+
+                                    <h:outputText value="Active Bookings" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.activeBookings}" />
+
+                                    <h:outputText value="Completed Bookings" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.completedBookings}" />
+
+                                    <h:outputText value="Absent Bookings" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.absentPatientBookings}" />
+
+                                </p:panelGrid>
+                            </p:panel>
+
+                            <p:panel header="Online Bookings Payment Summary" class="w-50 mx-1">
+                                <p:panelGrid columns="3" styleClass="summary-grid" columnClasses="col1,col-1,col3">
+                                    <h:outputText value="Date Range"  />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.fromDate} - #{onlineBookingAgentController.toDate}" />
+
+                                    <h:outputText value="Total Bookings Earning" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.totalEarningForOnlineBooking}" />                               
+
+                                    <h:outputText value="Remain Amount for Hospital Cancelled Bookings Through Hospital System" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.remainAmountNeedForHospitalCancelAndRepaidBills}" />
+                                 
+                                    <h:outputText value="Active Bookings Earning(Pending)" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.activeBookingEarning}" />
+
+                                    <h:outputText value="Completed Bookings" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.completedBookings}" />
+
+                                    <h:outputText value="Absent Bookings Available Totals" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.absentBookingPaymentTotal}" />
+
+                                </p:panelGrid>
+                            </p:panel>
+
 
                         </div>
+
+
+
+
+
 
 
 

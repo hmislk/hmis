@@ -1225,7 +1225,7 @@ public class ChannelApi {
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingDetails);
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings editing after session is started.", true)) {
-            if (temporarySavedBill.getSingleBillSession().getSessionInstance().isStarted()) {
+            if (temporarySavedBill != null && temporarySavedBill.getSingleBillSession().getSessionInstance().isStarted()) {
                 JSONObject response = commonFunctionToErrorResponse("Can't edit the appoinment due to hospital restriction. Please contact hospital.");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
@@ -1800,7 +1800,7 @@ public class ChannelApi {
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings cancellation after session is started.", true)) {
-            if (completedSaveBill.getSingleBillSession().getSessionInstance().isStarted()) {
+            if (completedSaveBill != null && completedSaveBill.getSingleBillSession().getSessionInstance().isStarted()) {
                 JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }

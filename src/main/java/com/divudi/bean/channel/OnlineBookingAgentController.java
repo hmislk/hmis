@@ -309,6 +309,34 @@ public class OnlineBookingAgentController implements Serializable {
         private double totalEarningForOnlineBooking;
         private double totalAgencyDeposits;
         private Date lastPaidToHospitalDate;
+        private double bookingsCancelByagentThroughHospital;
+        private double remainAmountNeedForHospitalCancelAndRepaidBills;
+        private double activeBookingEarning;
+        private double absentBookingPaymentTotal;
+
+        public double getAbsentBookingPaymentTotal() {
+            return absentBookingPaymentTotal;
+        }
+
+        public void setAbsentBookingPaymentTotal(double absentBookingPaymentTotal) {
+            this.absentBookingPaymentTotal = absentBookingPaymentTotal;
+        }
+
+        public double getBookingsCancelByagentThroughHospital() {
+            return bookingsCancelByagentThroughHospital;
+        }
+
+        public void setBookingsCancelByagentThroughHospital(double bookingsCancelByagentThroughHospital) {
+            this.bookingsCancelByagentThroughHospital = bookingsCancelByagentThroughHospital;
+        }
+
+        public double getRemainAmountNeedForHospitalCancelAndRepaidBills() {
+            return remainAmountNeedForHospitalCancelAndRepaidBills;
+        }
+
+        public void setRemainAmountNeedForHospitalCancelAndRepaidBills(double remainAmountNeedForHospitalCancelAndRepaidBills) {
+            this.remainAmountNeedForHospitalCancelAndRepaidBills = remainAmountNeedForHospitalCancelAndRepaidBills;
+        }
 
         public Date getLastPaidToHospitalDate() {
             return lastPaidToHospitalDate;
@@ -388,6 +416,14 @@ public class OnlineBookingAgentController implements Serializable {
 
         public void setTotalAgencyDeposits(double totalAgencyDeposits) {
             this.totalAgencyDeposits = totalAgencyDeposits;
+        }
+
+        public double getActiveBookingEarning() {
+            return activeBookingEarning;
+        }
+
+        public void setActiveBookingEarning(double activeBookingEarning) {
+            this.activeBookingEarning = activeBookingEarning;
         }
         
         
