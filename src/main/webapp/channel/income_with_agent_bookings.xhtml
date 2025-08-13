@@ -47,7 +47,7 @@
                             <p:selectOneMenu class="w-100" value="#{channelReportController.institution}" filter="true" >
                                 <f:selectItem itemLabel="Select Institution" />
                                 <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax event="itemSelect" process="@this"/>
+                                <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="50"/>
