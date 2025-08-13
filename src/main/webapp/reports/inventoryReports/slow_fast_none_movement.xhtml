@@ -249,10 +249,21 @@
                         <p:spacer width="20"/>
 
                         <!-- XHTML View -->
+                        <h:outputStylesheet>
+                            /* Add custom label text before the Select All checkbox */
+                            [id$="billTypes_panel"] .ui-selectcheckboxmenu-header:before {
+                                content: " Select All Bill Types";
+                                margin-right: .5rem;
+                                font-weight: bold; /* optional */
+                                color: #333; /* optional */
+                            }
+                        </h:outputStylesheet>
+
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-receipt ml-5"/>
                             <p:outputLabel value="Bill Type" for="billTypes" class="mx-2"/>
                         </h:panelGroup>
+
                         <p:selectCheckboxMenu
                                 id="billTypes"
                                 class="w-100 mx-2"
