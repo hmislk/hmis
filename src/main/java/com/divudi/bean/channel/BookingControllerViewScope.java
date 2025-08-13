@@ -9407,6 +9407,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             patientFacade.edit(patient);
         }
+        
     }
 
     @Override
