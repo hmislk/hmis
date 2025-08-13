@@ -23,7 +23,7 @@
                                     value="Process" 
                                     style="width: 200px"
                                     ajax="false"
-                                    action="#{onlineBookingAgentController.fetchAllOnlineBookings()}" 
+                                    action="#{onlineBookingAgentController.genarateAnalyticsDto()}" 
                                     class="ui-button-warning" icon="fas fa-cogs">
                                 </p:commandButton>
                             </div>
@@ -135,7 +135,7 @@
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                    <h:outputLabel value="30" style="font-weight: bold; font-size: 30px; color: #00534b" />
+                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalBookings}" style="font-weight: bold; font-size: 30px; color: #00534b" />
                                 </div>                           
                             </p:card>
 
@@ -148,7 +148,7 @@
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                    <h:outputLabel value="30" style="font-weight: bold; font-size: 30px; color: #00534b" />
+                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalEarningForOnlineBooking}" style="font-weight: bold; font-size: 30px; color: #00534b" />
                                 </div>
                             </p:card>
 
@@ -161,7 +161,7 @@
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                    <h:outputLabel value="30" style="font-weight: bold; font-size: 30px; color: #00534b" />
+                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalAgencyDeposits}" style="font-weight: bold; font-size: 30px; color: #00534b" />
                                 </div>
                             </p:card>
 
@@ -174,7 +174,7 @@
                                 </f:facet>
 
                                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                    <h:outputLabel value="30" style="font-weight: bold; font-size: 30px; color: #00534b" />
+                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalEarningForOnlineBooking - onlineBookingAgentController.analyticDto.totalAgencyDeposits}" style="font-weight: bold; font-size: 30px; color: #00534b" />
                                 </div>
                             </p:card>
 
@@ -185,27 +185,31 @@
                                 <p:panelGrid columns="3" styleClass="summary-grid" columnClasses="col1,col-1,col3">
                                     <h:outputText value="Date Range"  />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="For Date Range" />
+                                    <h:outputText value="#{onlineBookingAgentController.fromDate} - #{onlineBookingAgentController.toDate}" />
 
                                     <h:outputText value="Total Bookings" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.totalToday}" />                               
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.totalBookings}" />                               
 
                                     <h:outputText value="Hospital Cancelled Bookings" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.cancelledToday}" />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.hospitalCancelBookings}" />
 
                                     <h:outputText value="Agency Cancelled Bookings" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.cancelledToday}" />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.agentCancelBookings}" />
                                     
                                     <h:outputText value="Active Bookings" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.completedToday}" />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.activeBookings}" />
 
                                     <h:outputText value="Completed Bookings" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.completedToday}" />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.completedBookings}" />
+                                    
+                                    <h:outputText value="Absent Bookings" />
+                                    <h:outputText value=":"  />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.absentPatientBookings}" />
 
                                 </p:panelGrid>
                             </p:panel>
@@ -214,27 +218,27 @@
                                 <p:panelGrid columns="3" styleClass="summary-grid" columnClasses="col1,col-1,col3">
                                     <h:outputText value="Agency Name"  />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="For Date Range" />
+                                    <h:outputText value="#{onlineBookingAgentController.agentForBookings.name}" />
                                     
                                     <h:outputText value="Agency Code"  />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="For Date Range" />
+                                    <h:outputText value="#{onlineBookingAgentController.agentForBookings.code}" />
 
                                     <h:outputText value="Agency Phone" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.totalToday}" />                               
+                                    <h:outputText value="#{onlineBookingAgentController.agentForBookings.phone}" />                               
 
                                     <h:outputText value="Email" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.cancelledToday}" />
+                                    <h:outputText value="#{onlineBookingAgentController.agentForBookings.email}" />
 
                                     <h:outputText value="Active Status" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.cancelledToday}" />
+                                    <h:outputText value="#{!onlineBookingAgentController.agentForBookings.inactive}" />
 
                                     <h:outputText value="Last Deposit Date" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{bookingSummaryController.completedToday}" />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.lastPaidToHospitalDate}" />
 
                                 </p:panelGrid>
                             </p:panel>

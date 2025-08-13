@@ -7,8 +7,8 @@
         <properties>
             <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-            <property name="eclipselink.ddl-generation.output-mode" value="both"/>
-            <property name="eclipselink.application-location" value="C:\Users\CHINTHAKA\Documents\New folder"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
+<!--            <property name="eclipselink.application-location" value="C:\Users\CHINTHAKA\Documents\New folder"/>-->
            
         </properties>
     </persistence-unit>

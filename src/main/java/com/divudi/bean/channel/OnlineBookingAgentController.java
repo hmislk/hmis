@@ -302,11 +302,29 @@ public class OnlineBookingAgentController implements Serializable {
         private Institution institution;
         private double totalBookings;
         private double hospitalCancelBookings;
+        private double absentPatientBookings;
         private double agentCancelBookings;
         private double activeBookings;
         private double completedBookings;
         private double totalEarningForOnlineBooking;
         private double totalAgencyDeposits;
+        private Date lastPaidToHospitalDate;
+
+        public Date getLastPaidToHospitalDate() {
+            return lastPaidToHospitalDate;
+        }
+
+        public void setLastPaidToHospitalDate(Date lastPaidToHospitalDate) {
+            this.lastPaidToHospitalDate = lastPaidToHospitalDate;
+        }
+
+        public double getAbsentPatientBookings() {
+            return absentPatientBookings;
+        }
+
+        public void setAbsentPatientBookings(double absentPatientBookings) {
+            this.absentPatientBookings = absentPatientBookings;
+        }
 
         public Institution getInstitution() {
             return institution;
@@ -1100,6 +1118,7 @@ public class OnlineBookingAgentController implements Serializable {
         printBill = null;
         agentPaidToHospitalBills = null;
         printOriginal = false;
+        analyticDto = null;
 
     }
 
@@ -1181,6 +1200,27 @@ public class OnlineBookingAgentController implements Serializable {
     public void prepareAdd() {
         current = new Institution();
         current.setInstitutionType(InstitutionType.OnlineBookingAgent);
+    }
+    
+    private ChannelAnalyticDto analyticDto;
+
+    public ChannelAnalyticDto getAnalyticDto() {
+        return analyticDto;
+    }
+
+    public void setAnalyticDto(ChannelAnalyticDto analyticDto) {
+        this.analyticDto = analyticDto;
+    }
+    
+    public void genarateAnalyticsDto(){
+        if(agentForBookings == null){
+            JsfUtil.addErrorMessage("Please selet the agent.");
+            return;
+        }
+        
+        ChannelAnalyticDto dto = new ChannelAnalyticDto();
+            
+        analyticDto = channelService.generateChannelAnaliticsData(fromDate, toDate, institutionForBookings, agentForBookings, dto);
     }
 
     public void fetchAllOnlineBookings() {
