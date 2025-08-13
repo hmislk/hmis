@@ -49,7 +49,7 @@
                                     ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-
+                                
                                 <p:commandButton 
                                     ajax="true" 
                                     value="To Cancel"
@@ -59,7 +59,7 @@
                                     process="@this"
                                     update="payementSettleDlg onlineBookingsToPay"
                                     actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(onlineBookingAgentController.printBill)}"
-                                    disabled="#{onlineBookingAgentController.printBill.cancelled or onlineBookingAgentController.printBill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}"
+                                    disabled="#{onlineBookingAgentController.printBill.cancelled or onlineBookingAgentController.printBill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation' or onlineBookingAgentController.printBill eq null}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
                                 </p:commandButton>
                             </div>
