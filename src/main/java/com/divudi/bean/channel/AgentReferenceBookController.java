@@ -104,7 +104,12 @@ public class AgentReferenceBookController implements Serializable {
         return null;
     }
     // Replace a single backslash (\) with double backslash (\\)
-    return json.replace("\\", "\\\\");
+    return json.replace("\\", "\\\\")
+            .replace("\b", "\\b")
+            .replace("\f", "\\f")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
 }
 
     public static String findDifferences(String beforeJson, String afterJson) {
