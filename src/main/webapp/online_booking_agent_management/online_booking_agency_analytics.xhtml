@@ -129,7 +129,7 @@
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="">
                                 <f:facet name="title">
                                     <div style="display: flex; align-items: center; justify-content: center">
-                                        <h:outputLabel value="Online Booking Count "></h:outputLabel>
+                                        <h:outputLabel value="Total Online Booking Count "></h:outputLabel>
                                     </div>
 
                                 </f:facet>
@@ -138,8 +138,21 @@
                                     <h:outputLabel value="#{onlineBookingAgentController.analyticDto.totalBookings}" style="font-weight: bold; font-size: 30px; color: #00534b" />
                                 </div>                           
                             </p:card>
-
+                            
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="mx-4">
+                                <f:facet name="title">
+                                    <div style="display: flex; align-items: center; justify-content: center">
+                                        <h:outputLabel value="Completed Online Booking Count "></h:outputLabel>
+                                    </div>
+
+                                </f:facet>
+
+                                <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                    <h:outputLabel value="#{onlineBookingAgentController.analyticDto.completedBookings}" style="font-weight: bold; font-size: 30px; color: #00534b" />
+                                </div>                           
+                            </p:card>
+
+                            <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="">
                                 <f:facet name="title">
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Online Booking Earning "></h:outputLabel>
@@ -152,7 +165,7 @@
                                 </div>
                             </p:card>
 
-                            <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow">
+                            <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="mx-4">
                                 <f:facet name="title">
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Total Agency Deposits "></h:outputLabel>
@@ -165,7 +178,7 @@
                                 </div>
                             </p:card>
 
-                            <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="mx-4">
+                            <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="">
                                 <f:facet name="title">
                                     <div style="display: flex; align-items: center; justify-content: center">
                                         <h:outputLabel value="Remain Amount To Pay "></h:outputLabel>
@@ -269,7 +282,7 @@
 
                                     <h:outputText value="Completed Bookings" />
                                     <h:outputText value=":"  />
-                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.completedBookings}" />
+                                    <h:outputText value="#{onlineBookingAgentController.analyticDto.totalEarningForOnlineBooking}" />
 
                                     <h:outputText value="Absent Bookings Available Totals" />
                                     <h:outputText value=":"  />
