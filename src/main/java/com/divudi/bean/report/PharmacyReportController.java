@@ -3741,8 +3741,7 @@ public class PharmacyReportController implements Serializable {
             calculateTransferReceiveValue();
             calculateSaleCreditValue();
             calculateBhtIssueValue();
-            calculateSaleCreditCard();
-            calculateSaleCash();
+            calculateSaleWithoutCreditPaymentMethod();
 
             Map<String, Double> calculatedClosingStockByCogsRowValues = calculateClosingStockValueByCalculatedRows();
             calculateClosingStockRow();
@@ -3942,7 +3941,6 @@ public class PharmacyReportController implements Serializable {
         try {
             List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
             creditTypePaymentMethods.add(PaymentMethod.Credit);
-            creditTypePaymentMethods.add(PaymentMethod.Staff);
 
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.PHARMACY_RETAIL_SALE,
@@ -3972,35 +3970,24 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateSaleCreditCard() {
-        try {
-            List<BillTypeAtomic> billTypes = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-            );
+    private void calculateSaleWithoutCreditPaymentMethod() {
+    try {
+        List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
+                .filter(pm -> pm != PaymentMethod.Credit)
+                .collect(Collectors.toList());
 
-            Map<String, Double> saleCreditCardValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes, Collections.singletonList(PaymentMethod.Card));
-            cogsRows.put("Sale Credit Card", saleCreditCardValues);
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
 
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
-        }
+        Map<String, Double> saleWithoutCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes, nonCreditPaymentMethods);
+        cogsRows.put("Sale ", saleWithoutCreditValues);
+
+    } catch (Exception e) {
+        JsfUtil.addErrorMessage(e, "Error calculating sale without credit payment method value");
     }
-
-    private void calculateSaleCash() {
-        try {
-            List<BillTypeAtomic> billTypes = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-            );
-
-            Map<String, Double> saleCashValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes, Collections.singletonList(PaymentMethod.Cash));
-            cogsRows.put("Sale Cash", saleCashValues);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
-        }
-    }
+}
 
     double totalCalculatedClosingStockPurchaseValue = 0.0;
     double totalCalculatedClosingStockCostValue = 0.0;
