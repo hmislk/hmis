@@ -68,6 +68,7 @@ public class ConfigOptionController implements Serializable {
     private List<ConfigOption> filteredOptions;
     private List<ConfigOption> selectedOptions = new ArrayList<>();
     private List<ConfigOptionDuplicateGroup> duplicateGroups;
+    private UploadedFile uploadedFile;
 
     private String key;
     private String value;
@@ -202,6 +203,23 @@ public class ConfigOptionController implements Serializable {
             return "";
         }
         return value.replace("\"", "\"\"");
+    }
+
+    public String importOptionsFromCsv() {
+        if (uploadedFile == null || uploadedFile.getSize() == 0) {
+            JsfUtil.addErrorMessage("Please select a CSV file to import");
+            return null;
+        }
+        
+        try (InputStream in = uploadedFile.getInputStream()) {
+            importOptionsFromFile(in);
+            return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading uploaded file: " + e.getMessage());
+            return null;
+        } finally {
+            uploadedFile = null;
+        }
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -404,7 +422,7 @@ public class ConfigOptionController implements Serializable {
     }
 
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
-        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
+        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope AND COALESCE(o.retired, false) = false");
         Map<String, Object> params = new HashMap<>();
         params.put("key", key);
         params.put("scope", scope);
@@ -794,6 +812,14 @@ public class ConfigOptionController implements Serializable {
 
     public void setSelectedOptions(List<ConfigOption> selectedOptions) {
         this.selectedOptions = selectedOptions;
+    }
+
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
     }
 
     public List<ConfigOptionDuplicateGroup> getDuplicateGroups() {

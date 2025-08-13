@@ -838,6 +838,8 @@ public class ReportsTransfer implements Serializable {
 
     }
 
+    // TODO: Remove this method if QAs are fine with the DTO approach
+    @Deprecated
     public void fillDepartmentBHTIssueByBill() {
         reportTimerController.trackReportExecution(() -> {
             FacesContext context = FacesContext.getCurrentInstance();
@@ -906,6 +908,89 @@ public class ReportsTransfer implements Serializable {
                 discountsValue = discountsValue + b.getDiscount();
                 marginValue += b.getMargin();
                 netTotalValues = netTotalValues + b.getNetTotal();
+            }
+
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.BHT_ISSUE_BY_BILL, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentBHTIssueByBillByDTOs() {
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+            String url = request.getRequestURL().toString();
+
+            String ipAddress = request.getRemoteAddr();
+
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("fillDepartmentBHTIssueByBill()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            Map m = new HashMap();
+            StringBuilder sql = new StringBuilder();
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            m.put("bt", BillType.PharmacyBhtPre);
+            m.put("fdept", fromDepartment);
+
+            sql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferIssueBillDTO(")
+                    .append("b.id, ")
+                    .append("COALESCE(b.deptId, ''), ")
+                    .append("b.createdAt, ")
+                    .append("CASE WHEN b.patientEncounter IS NOT NULL THEN COALESCE(b.patientEncounter.bhtNo, '') ELSE '' END, ")
+                    .append("COALESCE(cb.deptId, ''), ")
+                    .append("CASE WHEN b.billFinanceDetails IS NOT NULL THEN COALESCE(b.billFinanceDetails.totalPurchaseValue, 0.0) ELSE 0.0 END, ")
+                    .append("COALESCE(b.total, 0.0), ")
+                    .append("COALESCE(b.margin, 0.0), ")
+                    .append("COALESCE(b.discount, 0.0), ")
+                    .append("COALESCE(b.netTotal, 0.0) ")
+                    .append(") ")
+                    .append("FROM Bill b ")
+                    .append("LEFT JOIN b.cancelledBill cb ")
+                    .append("WHERE b.createdAt BETWEEN :fd AND :td ")
+                    .append("AND b.department=:fdept ");
+
+            if (admissionType != null) {
+                sql.append("  and b.patientEncounter.admissionType=:at ") ;
+                m.put("at", admissionType);
+            }
+
+            sql.append(" and b.billType=:bt order by b.id");
+
+            transferIssueDtos = (List<PharmacyTransferIssueBillDTO>) getBillFacade().findLightsByJpql(sql.toString(), m, TemporalType.TIMESTAMP);
+            totalsValue = 0.0;
+            discountsValue = 0.0;
+            netTotalValues = 0.0;
+            marginValue = 0;
+            netTotalPurchaseValues = 0.0;
+            for (PharmacyTransferIssueBillDTO b : transferIssueDtos) {
+                netTotalPurchaseValues += b.getPurchaseValue();
+                totalsValue = totalsValue + (b.getTotal());
+                discountsValue = discountsValue + b.getDiscount();
+                marginValue += b.getMargin();
+                netTotalValues = netTotalValues + b.getNetValue();
             }
 
             Date endTime = new Date();

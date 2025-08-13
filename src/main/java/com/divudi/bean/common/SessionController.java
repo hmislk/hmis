@@ -446,6 +446,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (configOptionApplicationController.getBooleanValueByKey("Allow Store Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
             availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Store);
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Etu Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Etu);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Theatre Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
+        }
     }
 
     public void setAvailableDepartmentTypesForPharmacyTransactions(List<DepartmentType> availableDepartmentTypesForPharmacyTransactions) {

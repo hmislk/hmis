@@ -269,17 +269,25 @@
 
                             <div class="mb-3">
                                 <p:fileUpload 
-                                    listener="#{configOptionController.handleFileUpload}"
-                                    mode="advanced" 
-                                    dragDropSupport="true"
-                                    update="optionsForm:optionsTable"
+                                    value="#{configOptionController.uploadedFile}"
+                                    mode="simple" 
                                     allowTypes="/(\.|\/)(csv)$/"
-                                    fileLimit="1"
                                     sizeLimit="1000000"
-                                    uploadLabel="Choose CSV File"
-                                    cancelLabel="Clear"
-                                    label="Browse"
-                                    oncomplete="PF('importDialog').hide();" />
+                                    label="Choose CSV File" />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p:commandButton 
+                                    value="Import CSV" 
+                                    icon="pi pi-upload"
+                                    ajax="false"
+                                    action="#{configOptionController.importOptionsFromCsv}"
+                                    styleClass="ui-button-success" />
+                                <p:commandButton 
+                                    value="Cancel" 
+                                    icon="pi pi-times"
+                                    onclick="PF('importDialog').hide();"
+                                    styleClass="ui-button-secondary ml-2" />
                             </div>
 
                             <div class="mt-3">
