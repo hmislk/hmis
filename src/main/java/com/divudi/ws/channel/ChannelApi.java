@@ -1226,7 +1226,7 @@ public class ChannelApi {
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings editing after session is started.", true)) {
             if (temporarySavedBill != null && temporarySavedBill.getSingleBillSession().getSessionInstance().isStarted()) {
-                JSONObject response = commonFunctionToErrorResponse("Can't edit the appoinment due to hospital restriction. Please contact hospital.");
+                JSONObject response = commonFunctionToErrorResponse("Can't edit the appointment due to hospital restriction. Please contact hospital.");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
 
