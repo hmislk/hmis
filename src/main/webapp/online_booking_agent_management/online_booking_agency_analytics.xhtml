@@ -70,7 +70,7 @@
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
-                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
                                 <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
@@ -128,7 +128,7 @@
 
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="">
                                 <f:facet name="title">
-                                    <div style="display: flex; align-items: center; justify-content: center">
+                                    <div style="text-align: center">
                                         <h:outputLabel value="Total Online Booking Count "></h:outputLabel>
                                     </div>
 
@@ -141,7 +141,7 @@
                             
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="mx-4">
                                 <f:facet name="title">
-                                    <div style="display: flex; align-items: center; justify-content: center">
+                                    <div style="text-align: center">
                                         <h:outputLabel value="Completed Online Booking Count "></h:outputLabel>
                                     </div>
 
@@ -154,7 +154,7 @@
 
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="">
                                 <f:facet name="title">
-                                    <div style="display: flex; align-items: center; justify-content: center">
+                                    <div style="text-align: center">
                                         <h:outputLabel value="Online Booking Earning "></h:outputLabel>
                                     </div>
 
@@ -167,7 +167,7 @@
 
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="mx-4">
                                 <f:facet name="title">
-                                    <div style="display: flex; align-items: center; justify-content: center">
+                                    <div style="text-align: center">
                                         <h:outputLabel value="Total Agency Deposits "></h:outputLabel>
                                     </div>
 
@@ -180,7 +180,7 @@
 
                             <p:card style="width: 25rem; margin-bottom: 2em; background-color: snow" class="">
                                 <f:facet name="title">
-                                    <div style="display: flex; align-items: center; justify-content: center">
+                                    <div style="text-align: center">
                                         <h:outputLabel value="Remain Amount To Pay "></h:outputLabel>
                                     </div>
 
