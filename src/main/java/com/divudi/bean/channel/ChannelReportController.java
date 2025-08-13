@@ -2752,10 +2752,24 @@ public class ChannelReportController implements Serializable {
         hm.put("td", toDate);
 
         List<Bill> b = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> billList = new ArrayList<>();
+        
+        for(Bill bill : b){
+            if(bill.getPaymentMethod() == PaymentMethod.OnCall){
+                if(bill.getReferenceBill() != null){
+                    billList.add(bill.getReferenceBill());
+                    continue;
+                }else{
+                    billList.add(bill);
+                }
+            }else{
+                billList.add(bill);
+            }
+        }
 
-        doctorFeeTotal = getStaffFeeTotal(b);
+        doctorFeeTotal = getStaffFeeTotal(billList);
 
-        return b;
+        return billList;
     }
 
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
