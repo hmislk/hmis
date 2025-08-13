@@ -9384,6 +9384,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             patientFacade.edit(patient);
         }
     }
+    
+    public void saveSelected() {
+        if (patient == null) {
+            return;
+        }
+        if (patient.getPerson() == null) {
+            return;
+        }
+        if (patient.getPerson().getId() == null) {
+            patient.getPerson().setCreatedAt(new Date());
+            patient.getPerson().setCreater(sessionController.getLoggedUser());
+            personFacade.create(patient.getPerson());
+        } else {
+            personFacade.edit(patient.getPerson());
+        }
+        if (patient.getId() == null) {
+            patient.setCreatedAt(new Date());
+            patient.setCreatedInstitution(sessionController.getInstitution());
+            patient.setCreater(sessionController.getLoggedUser());
+            patientFacade.create(patient);
+        } else {
+            patientFacade.edit(patient);
+        }
+    }
 
     @Override
     public void saveSelectedPatient() {
