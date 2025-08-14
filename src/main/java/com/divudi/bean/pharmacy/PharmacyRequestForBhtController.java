@@ -103,6 +103,10 @@ public class PharmacyRequestForBhtController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    com.divudi.ejb.PrescriptionService prescriptionService;
+    @EJB
+    com.divudi.ejb.PrescriptionToItemService prescriptionToItemService;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -1031,6 +1035,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         return false;
     }
 
+    public void addMedicine() {
+        //ToDo
+    }
+    
     public void addBillItem() {
 
         if (billItem == null) {
@@ -1171,6 +1179,13 @@ public class PharmacyRequestForBhtController implements Serializable {
     public void handleSelect(SelectEvent event) {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
+    }
+    
+    public void handleMedicineSelect(SelectEvent event) {
+        
+        //TODO
+//        getBillItem().getPharmaceuticalBillItem().setStock(stock);
+//        calculateRates(billItem);
     }
 
     public void paymentSchemeChanged(AjaxBehaviorEvent ajaxBehavior) {
@@ -1680,6 +1695,101 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    // Prescription Date and Duration Calculation Methods
+    
+    public void calculateDurationFromDates() {
+        if (billItem != null && billItem.getPrescription() != null) {
+            prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
+        }
+    }
+    
+    public void calculateToDateFromDuration() {
+        if (billItem != null && billItem.getPrescription() != null) {
+            prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
+        }
+    }
+    
+    public void calculateFromDateFromDuration() {
+        if (billItem != null && billItem.getPrescription() != null) {
+            prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
+        }
+    }
+    
+    public void validatePrescriptionDates() {
+        if (billItem != null && billItem.getPrescription() != null) {
+            String validationMessage = prescriptionService.validatePrescriptionDates(billItem.getPrescription());
+            if (validationMessage != null && !validationMessage.isEmpty()) {
+                setErrorMessage(validationMessage);
+            } else {
+                setErrorMessage(""); // Clear error message if valid
+            }
+        }
+    }
+    
+    /**
+     * Auto-calculate item and quantity from prescription details
+     */
+    public void calculateItemAndQuantityFromPrescription() {
+        if (billItem == null || billItem.getPrescription() == null) {
+            setErrorMessage("No prescription available for calculation");
+            return;
+        }
+        
+        try {
+            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result = 
+                prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
+            
+            if (result.isSuccess()) {
+                // Set the calculated item and quantity
+                if (result.getItem() != null) {
+                    setItem(result.getItem());
+                    billItem.setItem(result.getItem());
+                }
+                
+                if (result.getQuantity() != null) {
+                    setQty(result.getQuantity());
+                }
+                
+                // Clear any previous error messages
+                setErrorMessage("");
+                
+                // Show calculation note if available
+                if (result.getCalculationNote() != null && !result.getCalculationNote().isEmpty()) {
+                    // You could store this in a separate field or display it in UI
+                    // For now, we'll use it internally
+                    System.out.println("Calculation Note: " + result.getCalculationNote());
+                }
+                
+            } else {
+                // Show error message
+                setErrorMessage("Calculation Error: " + result.getErrorMessage());
+            }
+            
+        } catch (Exception e) {
+            setErrorMessage("Error calculating item and quantity: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Check if prescription has enough information for item/quantity calculation
+     */
+    public boolean isCalculationPossible() {
+        if (billItem == null || billItem.getPrescription() == null) {
+            return false;
+        }
+        return prescriptionToItemService.isCalculationPossible(billItem.getPrescription());
+    }
+    
+    /**
+     * Get calculation explanation for display
+     */
+    public String getCalculationExplanation() {
+        if (billItem == null || billItem.getPrescription() == null) {
+            return "No prescription available";
+        }
+        return prescriptionToItemService.getCalculationExplanation(billItem.getPrescription());
     }
 
     
