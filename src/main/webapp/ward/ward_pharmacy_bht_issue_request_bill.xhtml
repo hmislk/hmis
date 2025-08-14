@@ -195,7 +195,7 @@
 
 
 
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests')}" >
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true)}" >
                                         <p:panel>
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"  />
@@ -241,8 +241,8 @@
                                                     icon="fa fa-plus"
                                                     class="ui-button-success w-100"
                                                     action="#{pharmacyRequestForBhtController.addMedicine}"
-                                                    process="@this acStock txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"   >
+                                                    process="@this acMedicine txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"   >
                                                 </p:commandButton>
                                             </div>
                                         </div>
@@ -357,7 +357,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <p:outputLabel value="Calculate Item & Qty" />
+                                                <p:outputLabel value="Calculate Item &amp; Qty" />
                                                 <p:commandButton
                                                     value="Auto-Calculate"
                                                     icon="fa fa-magic"
@@ -414,8 +414,8 @@
                                                     itemValue="#{i}"
                                                     maxResults="10"
                                                     >
-                                                    <p:ajax event="focus" process="acStock" ></p:ajax>
-                                                    <p:ajax event="query" process="acStock"></p:ajax>
+                                                    <p:ajax event="focus" process="acItem" ></p:ajax>
+                                                    <p:ajax event="query" process="acItem"></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyRequestForBhtController.handleSelect}"
                                                             update="focusQty" ></p:ajax>
@@ -428,8 +428,8 @@
                                                     id="txtQty"
                                                     class="w-100"
                                                     value="#{pharmacyRequestForBhtController.qty}">
-                                                    <p:ajax event="keyup"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
-                                                    <p:ajax event="blur"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
+                                                    <p:ajax event="keyup"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acItem txtQty"></p:ajax>
+                                                    <p:ajax event="blur"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acItem txtQty"></p:ajax>
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -440,13 +440,13 @@
                                                     icon="fa fa-plus"
                                                     class="ui-button-success w-100"
                                                     action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                    process="@this acStock txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"   >
+                                                    process="@this acItem txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
                                                 </p:commandButton>
                                             </div>
 
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
-                                            <p:focus id="focusItem" for="acStock" ></p:focus>
+                                            <p:focus id="focusItem" for="acItem" ></p:focus>
                                         </div>
 
 
@@ -454,7 +454,7 @@
                                         <div class="row mt-1">
                                             <div class="col-md-12">
                                                 <p:outputLabel value="Comment" />
-                                                <p:inputTextarea id="txtComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
+                                                <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
                                             </div>
                                         </div>
 
