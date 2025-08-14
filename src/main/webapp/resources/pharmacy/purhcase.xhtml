@@ -161,8 +161,13 @@
                         style="padding: 4px; width: 3em;"
                         class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
                     <f:facet name="header">Profit %</f:facet>
+                    <!--                    <h:outputText id="profMargin"-->
+                    <!--                                  value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}">-->
+                    <!--                        <f:convertNumber pattern="0.0"/>-->
+                    <!--                    </h:outputText>-->
                     <h:outputText id="profMargin"
-                                  value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}">
+                                  value="#{bip.pharmaceuticalBillItem.purchaseRate eq 0 ? 0
+                                  : ((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate )/ bip.pharmaceuticalBillItem.purchaseRate)*100}">
                         <f:convertNumber pattern="0.0"/>
                     </h:outputText>
                 </p:column>
