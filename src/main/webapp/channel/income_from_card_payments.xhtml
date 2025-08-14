@@ -242,31 +242,31 @@
 
                         </p:dataTable>
 
-<!--                        <script>
-                            function calculateTotals(selector, targeter) {
-                                const values = Array.from(document.querySelectorAll(selector));
-                                const totalValue = values
-                                        .map(value => {
-                                            const cleanValue = value.innerText.replace(/,/g, "");
-                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                        })
-                                        .reduce((total, value) => total + value, 0);
-                        
-                                const targetElement = document.querySelector(targeter);
-                                if (targetElement) {
-                                    targetElement.innerText = totalValue.toFixed(2);
-                                }
-                        
-                            }
-                        
-                            function updateTotals() {
-                                calculateTotals('.grossFee', '.grossTotal');
-                                calculateTotals('.staffFee', '.staffFeeTotal');
-                                calculateTotals('.hosFee', '.hosFeeTotal');
-                            }
-                        
-                            setTimeout(updateTotals, 500);
-                        </script>-->
+                        <!--                        <script>
+                                                    function calculateTotals(selector, targeter) {
+                                                        const values = Array.from(document.querySelectorAll(selector));
+                                                        const totalValue = values
+                                                                .map(value => {
+                                                                    const cleanValue = value.innerText.replace(/,/g, "");
+                                                                    return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                                                })
+                                                                .reduce((total, value) => total + value, 0);
+                                                
+                                                        const targetElement = document.querySelector(targeter);
+                                                        if (targetElement) {
+                                                            targetElement.innerText = totalValue.toFixed(2);
+                                                        }
+                                                
+                                                    }
+                                                
+                                                    function updateTotals() {
+                                                        calculateTotals('.grossFee', '.grossTotal');
+                                                        calculateTotals('.staffFee', '.staffFeeTotal');
+                                                        calculateTotals('.hosFee', '.hosFeeTotal');
+                                                    }
+                                                
+                                                    setTimeout(updateTotals, 500);
+                                                </script>-->
 
                     </p:panel>
                 </h:form>

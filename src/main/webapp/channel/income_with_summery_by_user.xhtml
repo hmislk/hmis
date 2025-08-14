@@ -78,7 +78,7 @@
                                     <p:selectOneMenu
                                         class="w-100 mx-4"
                                         filter="true"
-                                        value="#{searchController.webUser}" id="acIx">
+                                        value="#{channelReportController.webUser}" id="acIx">
                                         <f:selectItem itemLabel="All Users"/>
                                         <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}"
                                                        itemValue="#{st}"/>
@@ -89,7 +89,7 @@
                                                   styleClass="fa mr-2"/>
                                     <h:outputLabel class="mx-2"  value="Category"  />
                                     <h:outputLabel value=":" />
-                                    <p:selectOneMenu class="w-100 mx-4" value="" filter="true" >
+                                    <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.category}" filter="true" >
                                         <f:selectItem itemLabel="All Category" />
                                         <f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                         <p:ajax event="change" process="@this"/>

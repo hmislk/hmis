@@ -33,6 +33,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
@@ -113,17 +114,18 @@ public class ChannelReportController implements Serializable {
     double hospitalFeeCancellededTotal;
     double hospitalFeeRefundededTotal;
     private int channelReportMenuIndex;
-    List<String1Value3> valueList;
-    ReportKeyWord reportKeyWord;
-    Date fromDate;
-    Date toDate;
+    private List<String1Value3> valueList;
+    private ReportKeyWord reportKeyWord;
+    private Date fromDate;
+    private Date toDate;
     private Date newSessionDateTime;
-    Institution institution;
-    WebUser webUser;
-    Staff staff;
-    ChannelBillTotals billTotals;
-    Department department;
+    private Institution institution;
+    private WebUser webUser;
+    private Staff staff;
+    private ChannelBillTotals billTotals;
+    private Department department;
     boolean paid = false;
+    private Category category;
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -443,6 +445,18 @@ public class ChannelReportController implements Serializable {
         ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
         dataBundle = bundle;
 
+    }
+    
+    public void fetchChannelIncomeSummeryByUserWise(){
+        if(fromDate == null || toDate == null){
+            JsfUtil.addErrorMessage("Date range is not selected.");
+            return;
+        }
+        
+        if(fromDate.after(toDate)){
+            JsfUtil.addErrorMessage("From date should be before to toDate.");
+            return;
+        }
     }
 
     public void fetchAgentSessionIncome() {
@@ -4412,6 +4426,14 @@ public class ChannelReportController implements Serializable {
 
     public void setReportStatus(String reportStatus) {
         this.reportStatus = reportStatus;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
