@@ -1922,6 +1922,17 @@ public class InvestigationController implements Serializable {
 
         investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
     }
+    
+    public List<InvestigationDTO> fillInvestigationNamesDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
+                + "i.id, "
+                + "i.name) "
+                + "FROM Investigation i "
+                + "ORDER BY i.name";
+
+        investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
+        return investigationDtos;
+    }
 
     public void createInvestigationWithFees() {
         Date startTime = new Date();
