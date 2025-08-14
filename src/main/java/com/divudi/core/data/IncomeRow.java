@@ -1,5 +1,6 @@
 package com.divudi.core.data;
 
+import com.divudi.core.data.dataStructure.InvestigationDetails;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
@@ -53,6 +54,7 @@ public class IncomeRow implements Serializable {
     private String bhtNo;
     private Date createdAt;
     private String deptId;
+    private Double itemValue;
 
     private boolean selected;
 
@@ -238,6 +240,16 @@ public class IncomeRow implements Serializable {
     public IncomeRow(BillFee billFee) {
         this();
         this.billFee = billFee;
+    }
+    
+    public IncomeRow(InvestigationDetails dto) {
+        this();
+        
+        this.billId = dto.getId();
+        this.billNo = dto.getBillNumber();
+        this.createdAt = dto.getBillDate();
+        this.patientName = dto.getPatientName();
+        this.itemValue = dto.getItemAmount();
     }
 
     public IncomeRow(PharmacyIncomeCostBillDTO dto) {
@@ -1624,5 +1636,13 @@ public class IncomeRow implements Serializable {
 
     public void setTotalPurchaseValue(double totalPurchaseValue) {
         this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public Double getItemValue() {
+        return itemValue;
+    }
+
+    public void setItemValue(Double itemValue) {
+        this.itemValue = itemValue;
     }
 }
