@@ -1202,14 +1202,22 @@ public class ChannelService {
 
     public List<Payment> fetchCardPaymentsFromChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus) {
         String jpql = "Select p from Payment p where "
-                + " p.bill.billType = :bt and p.bill.billTypeAtomic = :bta "
+                + " p.bill.billType = :bt and p.bill.billTypeAtomic in :bta "
                 + " and p.bill.paymentMethod = :type"
                 + " and p.bill.retired = false "
                 + " and p.bill.createdAt between :fromDate and :toDate ";
 
         Map params = new HashMap();
         params.put("bt", BillType.ChannelCash);
-        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        
+        if(reportStatus != null && reportStatus.equalsIgnoreCase("Details")){
+            bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        }
+        
+        params.put("bta", bta);
         params.put("type", PaymentMethod.Card);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
@@ -1222,19 +1230,9 @@ public class ChannelService {
         jpql += " order by p.bill.createdAt desc";
 
         List<Payment> list = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        return list;
 
-        if (reportStatus != null && reportStatus.equalsIgnoreCase("Summery")) {
-            List<Payment> newList = new ArrayList<>();
-            for (Payment p : list) {
-                if (p.getBill() instanceof BilledBill) {
-                    newList.add(p);
-                }
-            }
-
-            return newList;
-        } else {
-            return list;
-        }
     }
 
     public List<Bill> fetchAgentDirectFundBills(SearchKeyword searchKeyword, Date fromDate, Date toDate, Institution institution) {
