@@ -54,8 +54,8 @@
                             class="ui-button-warning"
                             icon="pi pi-download"
                             ajax="false" 
+                            action="#{investigationMonthSummeryOwnController.exportInvestigationReportToExcel()}"
                             value="Excel">
-                            <p:dataExporter fileName="Investigation_Month_End_Detail" target="tbl" type="xlsx" />
                         </p:commandButton>
                     </h:panelGrid>
 

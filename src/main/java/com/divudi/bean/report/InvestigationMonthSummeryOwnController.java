@@ -36,7 +36,9 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MachineFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import com.mysql.cj.x.protobuf.MysqlxDatatypes;
+import java.io.IOException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -198,13 +200,36 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     public void exportInvestigationReportToExcel() {
+    try {
+        // First, ensure data is processed and bundle is not null
+        if (bundle == null || bundle.getBundles() == null || bundle.getBundles().isEmpty()) {
+            processInvestigationMonthEndDetail(); // Call your data processing method
+        }
+        
+        // Double check after processing
+        if (bundle == null || bundle.getBundles() == null || bundle.getBundles().isEmpty()) {
+            JsfUtil.addErrorMessage("No data found to export");
+            return;
+        }
+        
         FacesContext context = FacesContext.getCurrentInstance();
+        
+        // Check if response is already committed
+        if (context.getResponseComplete()) {
+            return;
+        }
+        
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-
+        
+        // Set response headers before creating workbook
+        response.reset(); // Clear any existing response data
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=InvestigationReport.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             XSSFSheet sheet = workbook.createSheet("Investigation Report");
             int rowIndex = 0;
 
@@ -232,9 +257,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             titleCell.setCellStyle(boldStyle);
 
             Row dateRangeRow = sheet.createRow(rowIndex++);
-            SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
-            String dateRange = "From: " + dateFormat.format(getFromDate())
-                    + " To: " + dateFormat.format(getToDate());
+            SimpleDateFormat dateFormat = new SimpleDateFormat(
+                sessionController != null && sessionController.getApplicationPreference() != null ? 
+                sessionController.getApplicationPreference().getLongDateTimeFormat() : "dd/MM/yyyy HH:mm"
+            );
+            
+            String dateRange = "From: " + (getFromDate() != null ? dateFormat.format(getFromDate()) : "N/A")
+                    + " To: " + (getToDate() != null ? dateFormat.format(getToDate()) : "N/A");
             dateRangeRow.createCell(0).setCellValue(dateRange);
 
             // Add empty row
@@ -242,18 +271,19 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
             // Create headers
             Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"Investigation", "Department ID", "Date", "Patient Name", "Net Value"};
+            String[] headers = {"Investigation", "Bill Number", "Bill Date", "Patient Name", "Net Value"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
                 cell.setCellStyle(boldStyle);
             }
 
-            // Process data - iterate through itemDetails
-            for (InvestigationSummeryData c : getItemDetails()) {
+            // Process data - iterate through itemDetails with null checks
+            for (IncomeBundle b : bundle.getBundles()) {
+                if (b == null) continue;
 
                 // Get investigation name for grouping
-                String investigationName = c.getInvestigation().getName();
+                String investigationName = b.getName() != null ? b.getName() : "Unknown Investigation";
 
                 // Add investigation group header
                 Row groupRow = sheet.createRow(rowIndex++);
@@ -262,28 +292,42 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 groupCell.setCellStyle(boldStyle);
 
                 // Process bill items for this investigation
-                for (BillItem bc : c.getBillItems()) {
+                if (b.getRows() != null) {
+                    for (IncomeRow icr : b.getRows()) {
+                        if (icr == null) continue;
+                        
+                        Row dataRow = sheet.createRow(rowIndex++);
+                        
+                        // Investigation Name
+                        dataRow.createCell(0).setCellValue(investigationName);
 
-                    Row dataRow = sheet.createRow(rowIndex++);
+                        // Bill Number - with null check
+                        String billNo = icr.getBillNo() != null ? icr.getBillNo() : "";
+                        dataRow.createCell(1).setCellValue(billNo);
 
-                    // Investigation name
-                    dataRow.createCell(0).setCellValue(investigationName);
+                        // Date - with null check
+                        Cell dateCell = dataRow.createCell(2);
+                        if (icr.getCreatedAt() != null) {
+                            dateCell.setCellValue(icr.getCreatedAt());
+                            dateCell.setCellStyle(dateStyle);
+                        } else {
+                            dateCell.setCellValue("");
+                        }
 
-                    // Department ID
-                    dataRow.createCell(1).setCellValue(bc.getBill().getDeptId());
+                        // Patient Name - with null check
+                        String patientName = icr.getPatientName() != null ? icr.getPatientName() : "";
+                        dataRow.createCell(3).setCellValue(patientName);
 
-                    // Date
-                    Cell dateCell = dataRow.createCell(2);
-                    dateCell.setCellValue(bc.getCreatedAt());
-                    dateCell.setCellStyle(dateStyle);
-
-                    // Patient Name
-                    dataRow.createCell(3).setCellValue(bc.getBill().getPatient().getPerson().getName());
-
-                    // Net Value
-                    Cell amountCell = dataRow.createCell(4);
-                    amountCell.setCellValue(bc.getNetValue());
-                    amountCell.setCellStyle(amountStyle);
+                        // Net Value - with null check
+                        Cell amountCell = dataRow.createCell(4);
+                        if (icr.getItemValue() != null) {
+                            amountCell.setCellValue(icr.getItemValue());
+                            amountCell.setCellStyle(amountStyle);
+                        } else {
+                            amountCell.setCellValue(0.0);
+                            amountCell.setCellStyle(amountStyle);
+                        }
+                    }
                 }
 
                 // Add empty row after each investigation group
@@ -292,7 +336,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
             // Add footer with printed by information
             Row footerRow = sheet.createRow(rowIndex++);
-            String printedBy = "Printed By: " + sessionController.getLoggedUser().getWebUserPerson().getName();
+            String printedBy = "Printed By: " + 
+                (sessionController != null && 
+                 sessionController.getLoggedUser() != null && 
+                 sessionController.getLoggedUser().getWebUserPerson() != null && 
+                 sessionController.getLoggedUser().getWebUserPerson().getName() != null ? 
+                 sessionController.getLoggedUser().getWebUserPerson().getName() : "Unknown User");
+            
             Cell footerCell = footerRow.createCell(0);
             footerCell.setCellValue(printedBy);
             footerCell.setCellStyle(boldStyle);
@@ -302,13 +352,30 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 sheet.autoSizeColumn(i);
             }
 
-            workbook.write(out);
+            // Write to response output stream
+            try (OutputStream out = response.getOutputStream()) {
+                workbook.write(out);
+                out.flush();
+            }
+            
+            // Mark response as complete
             context.responseComplete();
 
-        } catch (Exception e) {
-            Logger.getLogger(InvestigationMonthSummeryOwnController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+        } catch (IOException e) {
+            Logger.getLogger(InvestigationMonthSummeryOwnController.class.getName()).log(Level.SEVERE, "IO Error during Excel export", e);
+            if (!context.getResponseComplete()) {
+                JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
+            }
+        }
+        
+    } catch (Exception e) {
+        Logger.getLogger(InvestigationMonthSummeryOwnController.class.getName()).log(Level.SEVERE, "Error during Excel export", e);
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (!context.getResponseComplete()) {
+            JsfUtil.addErrorMessage("Unexpected error during export: " + e.getMessage());
         }
     }
+}
 
     public List<InvestigationSummeryData> getItems2() {
         items = new ArrayList<>();
