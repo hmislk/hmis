@@ -465,6 +465,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 if(bundle.getBundles() == null){ 
                     bundle.setBundles(new ArrayList<>());
                 }
+                
                 bundle.getBundles().add(itemBundle);
             }
         }
