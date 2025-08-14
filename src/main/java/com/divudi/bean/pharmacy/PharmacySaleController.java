@@ -1938,6 +1938,67 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
                 false
         );
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getTitle() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select title.");
+                return;
+            }
+            if (getPatient().getPerson().getSex() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select gender.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Name to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getName()== null || getPatient().getPerson().getName().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter name.");
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getDob() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select patient date of birth.");
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Phone Number to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter phone number.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Address to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getAddress()== null || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select patient address.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Area to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select patient area.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Referring Doctor to settlle bill in Pharmacy Sale",false)) {
+            if (getPreBill().getReferredBy() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select referring doctor.");
+                return;
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
             if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
@@ -2295,6 +2356,67 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     || getPatient().getPerson().getName().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
                 billSettlingStarted = false;
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getTitle() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select title.");
+                return;
+            }
+            if (getPatient().getPerson().getSex() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select gender.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Name to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getName()== null || getPatient().getPerson().getName().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter name.");
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getDob() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select patient date of birth.");
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Phone Number to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter phone number.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Address to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getAddress()== null || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select patient address.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Area to save Patient in Pharmacy Sale",false)) {
+            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select patient area.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Referring Doctor to settlle bill in Pharmacy Sale",false)) {
+            if (getPreBill().getReferredBy() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select referring doctor.");
                 return;
             }
         }
