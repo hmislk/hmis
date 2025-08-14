@@ -202,12 +202,12 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     public void exportInvestigationReportToExcel() {
     try {
         // First, ensure data is processed and bundle is not null
-        if (bundle == null || bundle.getBundles() == null || bundle.getBundles().isEmpty()) {
+        if (getBundle() == null || getBundle().getBundles() == null || getBundle().getBundles().isEmpty()) {
             processInvestigationMonthEndDetail(); // Call your data processing method
         }
         
         // Double check after processing
-        if (bundle == null || bundle.getBundles() == null || bundle.getBundles().isEmpty()) {
+        if (getBundle() == null || getBundle().getBundles() == null || getBundle().getBundles().isEmpty()) {
             JsfUtil.addErrorMessage("No data found to export");
             return;
         }
@@ -279,7 +279,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             }
 
             // Process data - iterate through itemDetails with null checks
-            for (IncomeBundle b : bundle.getBundles()) {
+            for (IncomeBundle b : getBundle().getBundles()) {
                 if (b == null) continue;
 
                 // Get investigation name for grouping
@@ -412,23 +412,12 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private IncomeBundle bundle = new IncomeBundle();
 
     public void processInvestigationMonthEndDetail() {
-        System.out.println("processInvestigationMonthEndDetail");
         bundle = new IncomeBundle();
-        
-        
-
         List<InvestigationDTO> lst = investigationController.fillInvestigationNamesDtos();
-
-        System.out.println("lst = " + lst.size());
-
         for (InvestigationDTO dto : lst) {
-
             List<InvestigationDetails> itemList = new ArrayList<>();
-
-            System.out.println("Investigation = " + dto.getName());
-
             Map<String, Object> params = new HashMap<>();
-
+            
             String jpql = "select new com.divudi.core.data.dataStructure.InvestigationDetails("
                     + " pi.id,"
                     + " pi.billItem.bill.deptId, "
@@ -460,36 +449,23 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                     BillTypeAtomic.INWARD_SERVICE_BILL);
             params.put("bType", bTypes);
 
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
-
             itemList = (List<InvestigationDetails>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             if (itemList == null || itemList.isEmpty()) {
-                System.out.println(dto.getName() + " BillItems is Empty - Continue");
                 continue;
             } else {
                 
-                System.out.println(dto.getName() + " = " + itemList.size());
-
                 IncomeBundle itemBundle = new IncomeBundle();
-
                 itemBundle.setName(dto.getName());
 
                 for (InvestigationDetails insDetail : itemList) {
                     IncomeRow billIncomeRow = new IncomeRow(insDetail);
-
                     itemBundle.getRows().add(billIncomeRow);
-                    System.out.println("ADD billIncomeRow");
                 }
-                
-                if(bundle.getBundles() == null){
-                    System.out.println("bundle.getBundles() is Null and Create");   
+                if(bundle.getBundles() == null){ 
                     bundle.setBundles(new ArrayList<>());
                 }
-
                 bundle.getBundles().add(itemBundle);
-                System.out.println("Add Main Bundle");
             }
         }
     }
