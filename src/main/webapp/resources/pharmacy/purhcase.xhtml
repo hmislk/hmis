@@ -284,7 +284,7 @@
                     </div>
                     <div style="text-align: right;">
                         <div style="margin-bottom: 5px;"><strong>Voucher No:</strong>
-                            <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
                         </div>
                         <div><strong>Voucher Date:</strong>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}">
@@ -369,7 +369,7 @@
                             <h:outputText value="TOTALS"/>
                         </td>
                         <td style="border: 1px solid #000; padding: 8px; text-align: right;">
-                            <h:outputLabel value="#{0-cc.attrs.bill.total}">
+                            <h:outputLabel value="#{0-cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </td>
@@ -394,7 +394,7 @@
                             <div style="font-weight: bold;">AMOUNT IN WORDS</div>
                             <h:outputLabel
                                     class="amount-world-text"
-                                    value="** #{supplierPaymentController.convertToWord(0-cc.attrs.bill.total)} Only **">
+                                    value="** #{supplierPaymentController.convertToWord(0-cc.attrs.bill.netTotal)} Only **">
                             </h:outputLabel>
                         </div>
 
@@ -421,7 +421,7 @@
                     <div style="width: 35%;">
                         <div style="border: 2px solid #000; padding: 10px; margin-bottom: 15px; text-align: right;">
                             <div style="font-weight: bold; font-size: 16px;">
-                                Total: <h:outputLabel value="#{0-cc.attrs.bill.total}">
+                                Total: <h:outputLabel value="#{0-cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             </div>
