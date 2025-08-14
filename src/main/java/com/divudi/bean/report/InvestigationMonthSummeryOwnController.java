@@ -4,12 +4,20 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.InvestigationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.InvestigationDetails;
 import com.divudi.core.data.dataStructure.InvestigationSummeryData;
 import com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
+import com.divudi.core.data.dto.InvestigationDTO;
+import com.divudi.core.data.reports.LaboratoryReport;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -28,6 +36,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MachineFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -224,8 +233,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
             Row dateRangeRow = sheet.createRow(rowIndex++);
             SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
-            String dateRange = "From: " + dateFormat.format(getFromDate()) +
-                    " To: " + dateFormat.format(getToDate());
+            String dateRange = "From: " + dateFormat.format(getFromDate())
+                    + " To: " + dateFormat.format(getToDate());
             dateRangeRow.createCell(0).setCellValue(dateRange);
 
             // Add empty row
@@ -328,6 +337,95 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
+    @Inject
+    ReportTimerController reportTimerController;
+    @Inject
+    InvestigationController investigationController;
+
+    private IncomeBundle bundle = new IncomeBundle();
+
+    public void processInvestigationMonthEndDetail() {
+        System.out.println("processInvestigationMonthEndDetail");
+        bundle = new IncomeBundle();
+        
+        
+
+        List<InvestigationDTO> lst = investigationController.fillInvestigationNamesDtos();
+
+        System.out.println("lst = " + lst.size());
+
+        for (InvestigationDTO dto : lst) {
+
+            List<InvestigationDetails> itemList = new ArrayList<>();
+
+            System.out.println("Investigation = " + dto.getName());
+
+            Map<String, Object> params = new HashMap<>();
+
+            String jpql = "select new com.divudi.core.data.dataStructure.InvestigationDetails("
+                    + " pi.id,"
+                    + " pi.billItem.bill.deptId, "
+                    + " pi.billItem.bill.createdAt, "
+                    + " pi.billItem.bill.patient.person.name, "
+                    + " pi.billItem.netValue) "
+                    + " from PatientInvestigation pi "
+                    + " where pi.billItem.retired = :ret "
+                    + " and pi.investigation.id =:insId "
+                    + " and pi.billItem.bill.cancelled =:can "
+                    + " and pi.billItem.refunded =:ref "
+                    + " and pi.billItem.bill.createdAt between :fd and :td "
+                    + " and pi.billItem.bill.billTypeAtomic IN :bType "
+                    + " order by pi.billItem.bill.createdAt asc ";
+
+            params.put("ret", false);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("insId", dto.getId());
+            params.put("can", false);
+            params.put("ref", false);
+
+
+            List<BillTypeAtomic> bTypes = Arrays.asList(
+                    BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                    BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                    BillTypeAtomic.CC_BILL,
+                    BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                    BillTypeAtomic.INWARD_SERVICE_BILL);
+            params.put("bType", bTypes);
+
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
+
+            itemList = (List<InvestigationDetails>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            if (itemList == null || itemList.isEmpty()) {
+                System.out.println(dto.getName() + " BillItems is Empty - Continue");
+                continue;
+            } else {
+                
+                System.out.println(dto.getName() + " = " + itemList.size());
+
+                IncomeBundle itemBundle = new IncomeBundle();
+
+                itemBundle.setName(dto.getName());
+
+                for (InvestigationDetails insDetail : itemList) {
+                    IncomeRow billIncomeRow = new IncomeRow(insDetail);
+
+                    itemBundle.getRows().add(billIncomeRow);
+                    System.out.println("ADD billIncomeRow");
+                }
+                
+                if(bundle.getBundles() == null){
+                    System.out.println("bundle.getBundles() is Null and Create");   
+                    bundle.setBundles(new ArrayList<>());
+                }
+
+                bundle.getBundles().add(itemBundle);
+                System.out.println("Add Main Bundle");
+            }
+        }
+    }
 
     public void createIxCountByInstitutionAndCollectingCentre() {
         String jpql;
@@ -545,7 +643,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //        ////// // System.out.println("refunded = " + refunded);
 //
 //        countTotal = billed - (refunded + cancelled);
-
 
     }
 
@@ -1310,8 +1407,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         }
 
-
-
     }
 
     public void createLabServiceWithCountByMachineAndBillType() {
@@ -1399,7 +1494,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
-
     }
 
     public void createLabServiceWithCountAndValueByMachineAndBillType() {
@@ -1469,7 +1563,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         totalInward += row.getInwardTotal();
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
-
 
     }
 
@@ -1641,7 +1734,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         investigationCountWithMachines.add(row);
 
-
     }
 
     public List<Item> getInvestigationItems() {
@@ -1748,6 +1840,14 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     List<Machine> machines;
     @EJB
     MachineFacade machineFacade;
+
+    public IncomeBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(IncomeBundle bundle) {
+        this.bundle = bundle;
+    }
 
     public class InvestigationCountWithMachine {
 
