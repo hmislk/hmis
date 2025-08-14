@@ -29,6 +29,7 @@ import com.divudi.core.data.dataStructure.ItemLastSupplier;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.dto.BillItemDTO;
+import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AgentHistory;
@@ -316,6 +317,7 @@ public class PharmacyReportController implements Serializable {
     private boolean consignmentItem;
     private List<PharmacyRow> pharmacyRows;
     private List<BillItemDTO> billItemsDtos;
+    private List<CostOfGoodSoldBillDTO> cogsBillDtos;
 
     //Constructor
     public PharmacyReportController() {
@@ -1982,6 +1984,93 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
+        try {
+            // STEP 1: Fetch all parent bills (CostOfGoodSoldBillDTOs) in one query.
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("b.netTotal, ")
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND ").append(billTypeField).append(" IN :billTypes ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            billJpql.append("AND b.paymentMethod IN :pm ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("pm", paymentMethod);
+            billParams.put("billTypes", billTypeValue);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the results.
+            List<Long> billIds = cogsBillDtos.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems in a single second query.
+            StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                    .append("bi.id, ")
+                    .append("bi.bill.id, ")
+                    .append("bi.bill.createdAt, ")
+                    .append("bi.item.name, ")
+                    .append("bi.item.code, ")
+                    .append("bi.bill.deptId, ")
+                    .append("pbi.itemBatch.batchNo, ")
+                    .append("bi.qty, ")
+                    .append("pbi.itemBatch.costRate, ")
+                    .append("pbi.retailRate, ")
+                    .append("bi.bill.netTotal) ")
+                    .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND bi.bill.id IN :billIds");
+
+            Map<String, Object> itemParams = new HashMap<>();
+            itemParams.put("billIds", billIds);
+
+            List<BillItemDTO> allBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+            // STEP 4: Group the fetched BillItems by their parent Bill's ID.
+            Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+            // STEP 5: Attach the grouped items to their corresponding parent bills.
+            for (CostOfGoodSoldBillDTO billDto : cogsBillDtos) {
+                List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+                if (itemsForThisBill != null) {
+                    // Populate the map as needed
+                    Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                            .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                    billDto.setBillItemsMap(billItemMap);
+
+                    // For the list, simply set it
+                    billDto.setBillItems(itemsForThisBill);
+                }
+            }
+
+            netTotal = cogsBillDtos.stream()
+                    .mapToDouble(CostOfGoodSoldBillDTO::getNetTotal)
+                    .sum();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            cogsBillDtos = new ArrayList<>();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+        }
+    }
+
     public void processIpDrugReturn() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
@@ -2125,11 +2214,14 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processSaleCreditCard() {
+        List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
+                .filter(pm -> pm != PaymentMethod.Credit)
+                .collect(Collectors.toList());
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Card));
+        retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
     }
 
     public void processSaleCash() {
@@ -2190,7 +2282,7 @@ public class PharmacyReportController implements Serializable {
                 // Date
                 table.addCell(new Phrase(
                         row.getBill() != null && row.getBill().getCreatedAt() != null
-                                ? sdf.format(row.getBill().getCreatedAt()) : "", cellFont));
+                        ? sdf.format(row.getBill().getCreatedAt()) : "", cellFont));
 
                 // Item Name
                 table.addCell(new Phrase(
@@ -2207,7 +2299,7 @@ public class PharmacyReportController implements Serializable {
                 // Ref Doc No
                 table.addCell(new Phrase(
                         row.getBill() != null && row.getBill().getReferenceBill() != null
-                                ? row.getBill().getReferenceBill().getDeptId() : "", cellFont));
+                        ? row.getBill().getReferenceBill().getDeptId() : "", cellFont));
 
                 // QTY
                 table.addCell(new Phrase(
@@ -2334,12 +2426,12 @@ public class PharmacyReportController implements Serializable {
                 // Ref Doc No
                 table.addCell(new Phrase(
                         f.getBill() != null && f.getBill().getReferenceBill() != null
-                                ? f.getBill().getReferenceBill().getDeptId() : "", cellFont));
+                        ? f.getBill().getReferenceBill().getDeptId() : "", cellFont));
 
                 // Request Department
                 table.addCell(new Phrase(
                         f.getBill() != null && f.getBill().getToDepartment() != null
-                                ? f.getBill().getToDepartment().getName() : "", cellFont));
+                        ? f.getBill().getToDepartment().getName() : "", cellFont));
 
                 // Code
                 table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "", cellFont));
@@ -2454,12 +2546,12 @@ public class PharmacyReportController implements Serializable {
                 // Reference Document No
                 table.addCell(new Phrase(
                         f.getBill() != null && f.getBill().getReferenceBill() != null
-                                ? f.getBill().getReferenceBill().getDeptId() : "", cellFont));
+                        ? f.getBill().getReferenceBill().getDeptId() : "", cellFont));
 
                 // Issue Department
                 table.addCell(new Phrase(
                         f.getBill() != null && f.getBill().getFromDepartment() != null
-                                ? f.getBill().getFromDepartment().getName() : "", cellFont));
+                        ? f.getBill().getFromDepartment().getName() : "", cellFont));
 
                 // Code
                 table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "", cellFont));
@@ -2561,7 +2653,7 @@ public class PharmacyReportController implements Serializable {
                 // Date
                 table.addCell(new Phrase(
                         row.getBill() != null && row.getBill().getCreatedAt() != null
-                                ? sdf.format(row.getBill().getCreatedAt()) : "", cellFont));
+                        ? sdf.format(row.getBill().getCreatedAt()) : "", cellFont));
 
                 // Item Name
                 table.addCell(new Phrase(
@@ -2578,8 +2670,8 @@ public class PharmacyReportController implements Serializable {
                 // Batch Code
                 table.addCell(new Phrase(
                         (row.getPharmaceuticalBillItem() != null
-                                && row.getPharmaceuticalBillItem().getItemBatch() != null)
-                                ? row.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "", cellFont));
+                        && row.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? row.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "", cellFont));
 
                 // QTY
                 Double qty = row.getQty();
@@ -2607,7 +2699,7 @@ public class PharmacyReportController implements Serializable {
                 // Payment Method
                 table.addCell(new Phrase(
                         row.getBill() != null && row.getBill().getPaymentMethod() != null
-                                ? row.getBill().getPaymentMethod().toString() : "", cellFont));
+                        ? row.getBill().getPaymentMethod().toString() : "", cellFont));
 
                 // MRP
                 table.addCell(new Phrase(
@@ -3085,7 +3177,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -3141,10 +3233,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                    "Closing Stock", "Rate", "Closing Value"
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -3971,23 +4063,23 @@ public class PharmacyReportController implements Serializable {
     }
 
     private void calculateSaleWithoutCreditPaymentMethod() {
-    try {
-        List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
-                .filter(pm -> pm != PaymentMethod.Credit)
-                .collect(Collectors.toList());
+        try {
+            List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
+                    .filter(pm -> pm != PaymentMethod.Credit)
+                    .collect(Collectors.toList());
 
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-        );
+            List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+            );
 
-        Map<String, Double> saleWithoutCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes, nonCreditPaymentMethods);
-        cogsRows.put("Sale ", saleWithoutCreditValues);
+            Map<String, Double> saleWithoutCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes, nonCreditPaymentMethods);
+            cogsRows.put("Sale ", saleWithoutCreditValues);
 
-    } catch (Exception e) {
-        JsfUtil.addErrorMessage(e, "Error calculating sale without credit payment method value");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale without credit payment method value");
+        }
     }
-}
 
     double totalCalculatedClosingStockPurchaseValue = 0.0;
     double totalCalculatedClosingStockCostValue = 0.0;
@@ -4093,7 +4185,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                    "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
+                "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -4471,9 +4563,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -4577,8 +4669,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -4924,7 +5016,6 @@ public class PharmacyReportController implements Serializable {
 //        } else {
 //            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
 //        }
-
         if (sortType.equalsIgnoreCase("byquantity") && !fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
         }
@@ -5796,5 +5887,13 @@ public class PharmacyReportController implements Serializable {
 
     public void setBillItemsDtos(List<BillItemDTO> billItemsDtos) {
         this.billItemsDtos = billItemsDtos;
+    }
+
+    public List<CostOfGoodSoldBillDTO> getCogsBillDtos() {
+        return cogsBillDtos;
+    }
+
+    public void setCogsBillDtos(List<CostOfGoodSoldBillDTO> cogsBillDtos) {
+        this.cogsBillDtos = cogsBillDtos;
     }
 }
