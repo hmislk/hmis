@@ -600,19 +600,10 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
 
-            // Handle prescription separately to avoid cascade issues
-            Prescription tempPrescription = null;
-            if (tbi.getPrescription() != null) {
-                // Save reference and remove from bill item
-                tempPrescription = tbi.getPrescription();
-                tbi.setPrescription(null);
-                
-                // Save prescription separately if not yet persisted
-                if (tempPrescription.getId() == null) {
-                    tempPrescription.setCreatedAt(Calendar.getInstance().getTime());
-                    tempPrescription.setCreater(getSessionController().getLoggedUser());
-                    getPrescriptionFacade().create(tempPrescription);
-                }
+            // Set prescription metadata if prescription exists
+            if (tbi.getPrescription() != null && tbi.getPrescription().getId() == null) {
+                tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
+                tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
             }
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
@@ -620,12 +611,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
-            }
-            
-            // After saving both entities separately, rebuild the relationship
-            if (tempPrescription != null) {
-                tbi.setPrescription(tempPrescription);
-                getBillItemFacade().edit(tbi);
             }
 
             if (tmpPh.getId() == null) {
@@ -729,22 +714,14 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
 
-            // Handle prescription separately to avoid cascade issues
-            Prescription tempPrescription = null;
+            // Set prescription metadata if prescription exists
             if (tbi.getPrescription() != null) {
-                // Save reference and remove from bill item
-                tempPrescription = tbi.getPrescription();
-                tbi.setPrescription(null);
-                
-                // Save prescription separately
-                if (tempPrescription.getId() == null) {
-                    tempPrescription.setCreatedAt(Calendar.getInstance().getTime());
-                    tempPrescription.setCreater(getSessionController().getLoggedUser());
-                    getPrescriptionFacade().create(tempPrescription);
+                if (tbi.getPrescription().getId() == null) {
+                    tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
+                    tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
                 } else {
-                    tempPrescription.setEditedAt(Calendar.getInstance().getTime());
-                    tempPrescription.setEditer(getSessionController().getLoggedUser());
-                    getPrescriptionFacade().edit(tempPrescription);
+                    tbi.getPrescription().setEditedAt(Calendar.getInstance().getTime());
+                    tbi.getPrescription().setEditer(getSessionController().getLoggedUser());
                 }
             }
 
@@ -754,12 +731,6 @@ public class PharmacyRequestForBhtController implements Serializable {
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
             } else {
-                getBillItemFacade().edit(tbi);
-            }
-            
-            // After saving both entities separately, rebuild the relationship
-            if (tempPrescription != null) {
-                tbi.setPrescription(tempPrescription);
                 getBillItemFacade().edit(tbi);
             }
 
