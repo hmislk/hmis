@@ -781,7 +781,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
-        if (getBillItems().isEmpty()) {
+        if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
@@ -861,7 +861,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.edit(getPreBill());
         }
-        for (BillItem savingBillItem : getBillItems()) {
+        for (BillItem savingBillItem : getPreBill().getBillItems()) {
             savingBillItem.setBill(getPreBill());
             if (savingBillItem.getId() == null) {
                 savingBillItem.setCreatedAt(new Date());
@@ -1029,11 +1029,11 @@ public class PharmacyRequestForBhtController implements Serializable {
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getBillItems();
+        List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
         getPreBill().getBillItems().clear();
 
-        if (!getBillItems().isEmpty()) {
-            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
+        if (!tmpBillItems.isEmpty()) {
+            getPreBill().setReferenceBill(tmpBillItems.get(0).getReferanceBillItem().getBill());
         }
 
         savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
@@ -1142,7 +1142,12 @@ public class PharmacyRequestForBhtController implements Serializable {
         billItem.setItem(getItem());
         billItem.setQty(getQty());
         billItem.setBill(getPreBill());
-        billItem.getPrescription().setItem(getItem());
+        
+        // Only set prescription item if user hasn't already set it
+        if (billItem.getPrescription().getItem() == null) {
+            billItem.getPrescription().setItem(getItem());
+        }
+        
         billItem.getPrescription().setPatient(getPatientEncounter().getPatient());
         billItem.getPrescription().setEncounter(getPatientEncounter());
         billItem.getPrescription().setIndoor(true);
