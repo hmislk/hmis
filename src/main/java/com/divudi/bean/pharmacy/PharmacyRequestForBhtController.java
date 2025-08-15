@@ -600,6 +600,13 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
 
+            // Persist prescription if it exists and is not yet persisted
+            if (tbi.getPrescription() != null && tbi.getPrescription().getId() == null) {
+                tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
+                tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
+                getPrescriptionFacade().create(tbi.getPrescription());
+            }
+
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
@@ -707,6 +714,17 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setBill(getPreBill());
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
+
+            // Persist prescription if it exists and is not yet persisted
+            if (tbi.getPrescription() != null && tbi.getPrescription().getId() == null) {
+                tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
+                tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
+                getPrescriptionFacade().create(tbi.getPrescription());
+            } else if (tbi.getPrescription() != null && tbi.getPrescription().getId() != null) {
+                tbi.getPrescription().setEditedAt(Calendar.getInstance().getTime());
+                tbi.getPrescription().setEditer(getSessionController().getLoggedUser());
+                getPrescriptionFacade().edit(tbi.getPrescription());
+            }
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
@@ -1145,42 +1163,31 @@ public class PharmacyRequestForBhtController implements Serializable {
         boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
         
         if (hasPrescriptionData) {
-            // Don't create prescription entity - just use data for description only
-            // This completely avoids cascade persistence issues
+            // Create a detached prescription instance for in-memory use only
+            // This will be persisted later during settle operations
+            Prescription inMemoryPrescription = new Prescription();
+            inMemoryPrescription.setItem(billItem.getItem());
+            inMemoryPrescription.setDose(billItem.getPrescription().getDose());
+            inMemoryPrescription.setDoseUnit(billItem.getPrescription().getDoseUnit());
+            inMemoryPrescription.setFrequencyUnit(billItem.getPrescription().getFrequencyUnit());
+            inMemoryPrescription.setDuration(billItem.getPrescription().getDuration());
+            inMemoryPrescription.setDurationUnit(billItem.getPrescription().getDurationUnit());
+            inMemoryPrescription.setPrescribedFrom(billItem.getPrescription().getPrescribedFrom());
+            inMemoryPrescription.setPrescribedTo(billItem.getPrescription().getPrescribedTo());
+            inMemoryPrescription.setComment(billItem.getPrescription().getComment());
+            inMemoryPrescription.setPatient(getPatientEncounter().getPatient());
+            inMemoryPrescription.setEncounter(getPatientEncounter());
+            inMemoryPrescription.setIndoor(true);
             
-            StringBuilder prescriptionText = new StringBuilder();
+            // Attach prescription to bill item for later persistence (but don't persist now)
+            newBillItem.setPrescription(inMemoryPrescription);
             
-            // Build prescription description manually to avoid entity issues
-            if (billItem.getItem() != null) {
-                prescriptionText.append(billItem.getItem().getName());
+            // Compute description from in-memory prescription object
+            String prescriptionText = inMemoryPrescription.getFormattedPrescriptionWithoutIndoorOutdoor();
+            if (inMemoryPrescription.getComment() != null && !inMemoryPrescription.getComment().trim().isEmpty()) {
+                prescriptionText += " - " + inMemoryPrescription.getComment();
             }
-            
-            if (billItem.getPrescription().getDose() != null) {
-                prescriptionText.append(" ").append(billItem.getPrescription().getDose());
-            }
-            
-            if (billItem.getPrescription().getDoseUnit() != null) {
-                prescriptionText.append(" ").append(billItem.getPrescription().getDoseUnit().getName());
-            }
-            
-            if (billItem.getPrescription().getFrequencyUnit() != null) {
-                prescriptionText.append(" ").append(billItem.getPrescription().getFrequencyUnit().getName());
-            }
-            
-            if (billItem.getPrescription().getDuration() != null) {
-                prescriptionText.append(" for ").append(billItem.getPrescription().getDuration());
-            }
-            
-            if (billItem.getPrescription().getDurationUnit() != null) {
-                prescriptionText.append(" ").append(billItem.getPrescription().getDurationUnit().getName());
-            }
-            
-            if (billItem.getPrescription().getComment() != null && !billItem.getPrescription().getComment().trim().isEmpty()) {
-                prescriptionText.append(" - ").append(billItem.getPrescription().getComment());
-            }
-            
-            // Set description from prescription data (no prescription entity created)
-            newBillItem.setDescreption(prescriptionText.toString());
+            newBillItem.setDescreption(prescriptionText);
         } else {
             // No meaningful prescription data, use simple description
             newBillItem.setDescreption(billItem.getItem().getName() + " - Qty: " + getQty());
@@ -1672,6 +1679,14 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
+    }
+
+    public PrescriptionFacade getPrescriptionFacade() {
+        return prescriptionFacade;
+    }
+
+    public void setPrescriptionFacade(PrescriptionFacade prescriptionFacade) {
+        this.prescriptionFacade = prescriptionFacade;
     }
 
     public ItemFacade getItemFacade() {
