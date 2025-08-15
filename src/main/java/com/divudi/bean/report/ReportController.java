@@ -3080,13 +3080,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/opd_credit?faces-redirect=true";
             case "BHT Issue":
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
-            case "Sale Credit Card":
+            case "Sale ":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
             case "Closing Stock":
             case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
-            case "Sale Cash":
-                return "/reports/inventoryReports/opd_sale_cash?faces-redirect=true";
             case "Variance":
             case "Calculated Closing Stock Value":
                 JsfUtil.addErrorMessage("No Given Report Template");
