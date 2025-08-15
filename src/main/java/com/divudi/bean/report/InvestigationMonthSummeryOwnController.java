@@ -424,6 +424,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                     + " where pi.billItem.retired = :ret "
                     + " and pi.investigation.id =:insId "
                     + " and pi.billItem.bill.cancelled =:can "
+                    + " and pi.billItem.bill.retired = :bRet "
                     + " and pi.billItem.refunded =:ref "
                     + " and pi.billItem.bill.createdAt between :fd and :td "
                     + " and pi.billItem.bill.billTypeAtomic IN :bType "
@@ -435,7 +436,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             params.put("insId", dto.getId());
             params.put("can", false);
             params.put("ref", false);
-
+            params.put("bRet", false);
 
             List<BillTypeAtomic> bTypes = Arrays.asList(
                     BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
