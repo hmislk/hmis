@@ -1125,7 +1125,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-        if (getItem() == null) {
+        if (billItem.getItem() == null) {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
@@ -1139,25 +1139,31 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
-        billItem.setItem(getItem());
         billItem.setQty(getQty());
         billItem.setBill(getPreBill());
         
-        // Only set prescription item if user hasn't already set it
-        if (billItem.getPrescription().getItem() == null) {
-            billItem.getPrescription().setItem(getItem());
-        }
+        // Handle prescription only if prescription data is available
+        boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
         
-        billItem.getPrescription().setPatient(getPatientEncounter().getPatient());
-        billItem.getPrescription().setEncounter(getPatientEncounter());
-        billItem.getPrescription().setIndoor(true);
-        if (billItem.getPrescription().getId() == null) {
-            prescriptionFacade.create(billItem.getPrescription());
+        if (hasPrescriptionData) {
+            // Only set prescription item if user hasn't already set it
+            if (billItem.getPrescription().getItem() == null) {
+                billItem.getPrescription().setItem(billItem.getItem());
+            }
+            
+            // Set prescription metadata but DON'T persist until settle
+            billItem.getPrescription().setPatient(getPatientEncounter().getPatient());
+            billItem.getPrescription().setEncounter(getPatientEncounter());
+            billItem.getPrescription().setIndoor(true);
+            
+            // Set description from prescription (computed in memory)
+            billItem.setDescreption(billItem.getPrescription().getFormattedPrescriptionWithoutIndoorOutdoor()
+                    + (billItem.getPrescription().getComment() != null ? " " + billItem.getPrescription().getComment() : ""));
         } else {
-            prescriptionFacade.edit(billItem.getPrescription());
+            // No meaningful prescription data, set billItem prescription to null and use simple description
+            billItem.setPrescription(null);
+            billItem.setDescreption(billItem.getItem().getName() + " - Qty: " + getQty());
         }
-        billItem.setDescreption(billItem.getPrescription().getFormattedPrescriptionWithoutIndoorOutdoor()
-                + (billItem.getPrescription().getComment() != null ? " " + billItem.getPrescription().getComment() : ""));
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
@@ -1970,6 +1976,28 @@ public class PharmacyRequestForBhtController implements Serializable {
             return "No prescription available";
         }
         return prescriptionToItemService.getCalculationExplanation(billItem.getPrescription());
+    }
+
+    /**
+     * Check if the prescription has meaningful data that warrants persistence
+     * @param prescription The prescription to check
+     * @return true if prescription has meaningful data, false otherwise
+     */
+    private boolean hasMeaningfulPrescriptionData(Prescription prescription) {
+        if (prescription == null) {
+            return false;
+        }
+        
+        // Check if any of the key prescription fields have meaningful values
+        return prescription.getDose() != null 
+            || prescription.getDoseUnit() != null
+            || prescription.getFrequencyUnit() != null
+            || prescription.getDuration() != null
+            || prescription.getDurationUnit() != null
+            || prescription.getPrescribedFrom() != null
+            || prescription.getPrescribedTo() != null
+            || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
+            || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
     }
 
 }
