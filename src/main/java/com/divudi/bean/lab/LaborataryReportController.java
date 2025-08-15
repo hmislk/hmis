@@ -96,7 +96,9 @@ public class LaborataryReportController implements Serializable {
     @EJB
     PatientFacade patientFacade;
     @EJB
-    InvestigationFacade investigationFacade;
+    InvestigationFacade investigationFacade; 
+    @EJB
+    BillFeeFacade billFeeFacade;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -806,9 +808,9 @@ public class LaborataryReportController implements Serializable {
         params.put("bRet", false);
         params.put("bfRet", false);
         params.put("can", false);
-        params.put("fd", fromDate);
+        params.put("fd", getFromDate());
         params.put("feeType", FeeType.Chemical);
-        params.put("td", toDate);
+        params.put("td", getToDate());
         params.put("invType", Investigation.class);
 
         List<BillTypeAtomic> bTypes = Arrays.asList(
@@ -837,9 +839,6 @@ public class LaborataryReportController implements Serializable {
         List<TestCountDTO> safeList = testWiseReagentCount == null ? java.util.Collections.emptyList() : testWiseReagentCount;
         testWiseCountDtos = setAlphabetList(safeList);
     }
-    
-    @EJB
-    BillFeeFacade billFeeFacade;
 
     public List<TestWiseCountReport> alphabetList(List<TestWiseCountReport> testWiseCounts) {
 
