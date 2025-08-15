@@ -392,7 +392,7 @@
                                                      icon="pi pi-search"
                                                      title="View Item Details"
                                                      action="#{pharmacyDirectPurchaseController.displayItemDetails(ph)}"
-                                                     update=":#{p:resolveFirstComponentWithId('tab', view).clientId}"
+                                                     update=":bill:tot purchaseHistory"
                                                      process="@this"
                                                      styleClass="ui-button-icon-only mx-3"/>
                                 </p:column>
@@ -461,7 +461,9 @@
                                 </p:column>
                             </p:dataTable>
 
-                            <pharmacy:history/>
+                            <h:panelGroup id="purchaseHistory">
+                                <pharmacy:history/>
+                            </h:panelGroup>
 
                             <p:separator ></p:separator>
 
