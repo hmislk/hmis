@@ -772,6 +772,15 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton
+                                    value="#{pharmacyDirectPurchaseController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                                    icon="fas fa-eye"
+                                    id="btnTogglePrintAll"
+                                    class="ui-button-secondary mx-1"
+                                    ajax="false"
+                                    action="#{pharmacyDirectPurchaseController.toggleShowAllBillFormats}"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    title="Toggle visibility of all bill formats for development" />
+                                <p:commandButton
                                     ajax="false"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
@@ -783,11 +792,23 @@
                     </f:facet>
 
                     <h:panelGroup id="gpBillPreview" >
-                        <pharmacy:direct_purhcase_with_costing
-                            bill="#{pharmacyDirectPurchaseController.bill}"
-                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                        </pharmacy:direct_purhcase_with_costing>
+                        <!-- Main receipt format - always shown -->
+                        <h:panelGroup rendered="true">
+                            <pharmacy:direct_purhcase_with_costing
+                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:direct_purhcase_with_costing>
+                        </h:panelGroup>
+
+                        <!-- Additional formats for development - shown only when toggle is enabled -->
+                        <h:panelGroup rendered="#{pharmacyDirectPurchaseController.showAllBillFormats}">
+                            <pharmacy:direct_purhcase
+                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:direct_purhcase>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                 </p:panel>
