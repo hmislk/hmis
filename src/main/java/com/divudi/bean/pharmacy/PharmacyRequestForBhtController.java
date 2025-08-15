@@ -600,11 +600,19 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
 
-            // Persist prescription if it exists and is not yet persisted
-            if (tbi.getPrescription() != null && tbi.getPrescription().getId() == null) {
-                tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
-                tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
-                getPrescriptionFacade().create(tbi.getPrescription());
+            // Handle prescription separately to avoid cascade issues
+            Prescription tempPrescription = null;
+            if (tbi.getPrescription() != null) {
+                // Save reference and remove from bill item
+                tempPrescription = tbi.getPrescription();
+                tbi.setPrescription(null);
+                
+                // Save prescription separately if not yet persisted
+                if (tempPrescription.getId() == null) {
+                    tempPrescription.setCreatedAt(Calendar.getInstance().getTime());
+                    tempPrescription.setCreater(getSessionController().getLoggedUser());
+                    getPrescriptionFacade().create(tempPrescription);
+                }
             }
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
@@ -612,6 +620,12 @@ public class PharmacyRequestForBhtController implements Serializable {
 
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
+            }
+            
+            // After saving both entities separately, rebuild the relationship
+            if (tempPrescription != null) {
+                tbi.setPrescription(tempPrescription);
+                getBillItemFacade().edit(tbi);
             }
 
             if (tmpPh.getId() == null) {
@@ -715,15 +729,23 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
 
-            // Persist prescription if it exists and is not yet persisted
-            if (tbi.getPrescription() != null && tbi.getPrescription().getId() == null) {
-                tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
-                tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
-                getPrescriptionFacade().create(tbi.getPrescription());
-            } else if (tbi.getPrescription() != null && tbi.getPrescription().getId() != null) {
-                tbi.getPrescription().setEditedAt(Calendar.getInstance().getTime());
-                tbi.getPrescription().setEditer(getSessionController().getLoggedUser());
-                getPrescriptionFacade().edit(tbi.getPrescription());
+            // Handle prescription separately to avoid cascade issues
+            Prescription tempPrescription = null;
+            if (tbi.getPrescription() != null) {
+                // Save reference and remove from bill item
+                tempPrescription = tbi.getPrescription();
+                tbi.setPrescription(null);
+                
+                // Save prescription separately
+                if (tempPrescription.getId() == null) {
+                    tempPrescription.setCreatedAt(Calendar.getInstance().getTime());
+                    tempPrescription.setCreater(getSessionController().getLoggedUser());
+                    getPrescriptionFacade().create(tempPrescription);
+                } else {
+                    tempPrescription.setEditedAt(Calendar.getInstance().getTime());
+                    tempPrescription.setEditer(getSessionController().getLoggedUser());
+                    getPrescriptionFacade().edit(tempPrescription);
+                }
             }
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
@@ -732,6 +754,12 @@ public class PharmacyRequestForBhtController implements Serializable {
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
             } else {
+                getBillItemFacade().edit(tbi);
+            }
+            
+            // After saving both entities separately, rebuild the relationship
+            if (tempPrescription != null) {
+                tbi.setPrescription(tempPrescription);
                 getBillItemFacade().edit(tbi);
             }
 
