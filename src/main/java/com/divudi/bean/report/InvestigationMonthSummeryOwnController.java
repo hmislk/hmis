@@ -415,7 +415,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             
             String jpql = "select new com.divudi.core.data.dataStructure.InvestigationDetails("
-                    + " pi.id,"
+                    + " pi.billItem.bill.id,"
                     + " pi.billItem.bill.deptId, "
                     + " pi.billItem.bill.createdAt, "
                     + " pi.billItem.bill.patient.person.name, "
