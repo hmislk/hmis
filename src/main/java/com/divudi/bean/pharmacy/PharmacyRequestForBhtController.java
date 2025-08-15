@@ -883,10 +883,13 @@ public class PharmacyRequestForBhtController implements Serializable {
         BillType bt = BillType.InwardPharmacyRequest;
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
-        getPreBill().setFromDepartment(sessionController.getDepartment());
-        getPreBill().setFromInstitution(sessionController.getInstitution());
-        getPreBill().setFromDepartment(department);
-        getPreBill().setFromInstitution(department.getInstitution());
+        // From: ward (patient's current room department)
+        Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        getPreBill().setFromDepartment(fromDept);
+        getPreBill().setFromInstitution(fromDept.getInstitution());
+        // To: selected department (Pharmacy)
+        getPreBill().setToDepartment(department);
+        getPreBill().setToInstitution(department.getInstitution());
         getPreBill().setPatientEncounter(patientEncounter);
         getPreBill().setBillTypeAtomic(bta);
         getPreBill().setBillType(bt);
@@ -918,7 +921,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             }
         }
         setPrintBill(billService.reloadBill(getPreBill()));
-        notificationController.createNotification(bill);
+        notificationController.createNotification(getPrintBill());
         clearBill();
         clearBillItem();
         comment = "";
