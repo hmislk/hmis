@@ -158,18 +158,24 @@ public class TransferIssueController implements Serializable {
 //        return false;
 //    }
     public boolean isFullyIssued(Bill requestBill) {
-        if (requestBill == null || requestBill.getBillItems() == null || requestBill.getBillItems().isEmpty()) {
-            return false; // Null or empty bills are not considered fully issued
+        if (requestBill == null) {
+            return false; // Null bills are not considered fully issued
         }
 
-        for (BillItem requestItem : requestBill.getBillItems()) {
+        // Fetch fresh bill items from database to ensure latest remainingQty values
+        List<BillItem> freshBillItems = billController.billItemsOfBill(requestBill);
+        if (freshBillItems == null || freshBillItems.isEmpty()) {
+            return false; // Empty bills are not considered fully issued
+        }
+
+        for (BillItem requestItem : freshBillItems) {
             // Handle null remainingQty (legacy data) by using original quantity
             Double remainingQty = requestItem.getRemainingQty();
             if (remainingQty == null) {
                 remainingQty = requestItem.getQty();
             }
             // Use remainingQty field from database - if > 0, still has items to issue
-            if (remainingQty > 0) {
+            if (remainingQty > 0.001) { // Add small tolerance for floating point precision
                 return false; // Still has remaining quantity to issue
             }
         }
@@ -798,11 +804,17 @@ public class TransferIssueController implements Serializable {
 
         // Check if Transfer Request is fully issued and update fullyIssued status
         if (getRequestedBill() != null && !getRequestedBill().isFullyIssued()) {
-            if (isFullyIssued(getRequestedBill())) {
+            // Refresh the requested bill with latest data from database to ensure accurate remainingQty values
+            Bill freshRequestedBill = getBillFacade().findWithoutCache(getRequestedBill().getId());
+            if (isFullyIssued(freshRequestedBill)) {
+                freshRequestedBill.setFullyIssued(true);
+                freshRequestedBill.setFullyIssuedAt(new Date());
+                freshRequestedBill.setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(freshRequestedBill);
+                // Update the local reference as well
                 getRequestedBill().setFullyIssued(true);
-                getRequestedBill().setFullyIssuedAt(new Date());
-                getRequestedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
-                getBillFacade().edit(getRequestedBill());
+                getRequestedBill().setFullyIssuedAt(freshRequestedBill.getFullyIssuedAt());
+                getRequestedBill().setFullyIssuedBy(freshRequestedBill.getFullyIssuedBy());
             }
         }
 
