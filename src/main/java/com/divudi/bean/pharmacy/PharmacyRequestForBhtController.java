@@ -48,6 +48,8 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.entity.clinical.Prescription;
+import com.divudi.core.facade.PrescriptionFacade;
 import java.io.Serializable;
 import java.util.*;
 import javax.ejb.EJB;
@@ -99,6 +101,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private PrescriptionFacade prescriptionFacade;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -603,6 +607,9 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(tbi);
 
+            // Handle prescription persistence if attached to BillItem
+            persistPrescriptionIfAttached(tbi);
+
             tbi.getPharmaceuticalBillItem().setBillItem(tbi);
             getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
 
@@ -714,6 +721,10 @@ public class PharmacyRequestForBhtController implements Serializable {
 
             tbi.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(tbi);
+            
+            // Handle prescription persistence if attached to BillItem
+            persistPrescriptionIfAttached(tbi);
+            
             tbi.getPharmaceuticalBillItem().setBillItem(tbi);
             getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
 
@@ -1091,6 +1102,9 @@ public class PharmacyRequestForBhtController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
+        // Cleanup prescription if it was persisted
+        retirePrescriptionIfAttached(b);
+        
         getPreBill().getBillItems().remove(b);
         calTotal();
     }
@@ -1411,6 +1425,84 @@ public class PharmacyRequestForBhtController implements Serializable {
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
         JsfUtil.addSuccessMessage("Request Saved");
+    }
+
+    /**
+     * Handle prescription persistence if a Prescription object is attached to the BillItem.
+     * This method should be called during settle operations to persist prescriptions
+     * that were kept in-memory during addBillItem.
+     */
+    private void persistPrescriptionIfAttached(BillItem billItem) {
+        if (billItem == null) {
+            return;
+        }
+        
+        // Check if there's a transient prescription attached to the bill item
+        // This would typically be stored in a custom field or computed from description
+        Prescription prescription = extractPrescriptionFromBillItem(billItem);
+        
+        if (prescription != null && prescription.getId() == null) {
+            // Set required fields for prescription
+            prescription.setCreatedAt(new Date());
+            prescription.setCreater(getSessionController().getLoggedUser());
+            prescription.setInstitution(getSessionController().getInstitution());
+            prescription.setDepartment(getSessionController().getDepartment());
+            
+            // Persist the prescription
+            prescriptionFacade.create(prescription);
+            
+            // Update bill item description if computed from prescription
+            computeDescriptionFromPrescription(billItem, prescription);
+        } else if (prescription != null && prescription.getId() != null) {
+            // Update existing prescription
+            prescription.setEditedAt(new Date());
+            prescription.setEditer(getSessionController().getLoggedUser());
+            prescriptionFacade.edit(prescription);
+            
+            // Update bill item description if computed from prescription
+            computeDescriptionFromPrescription(billItem, prescription);
+        }
+    }
+    
+    /**
+     * Retire prescription if attached to BillItem during removal.
+     * This prevents orphan prescription records when bill items are removed.
+     */
+    private void retirePrescriptionIfAttached(BillItem billItem) {
+        if (billItem == null) {
+            return;
+        }
+        
+        Prescription prescription = extractPrescriptionFromBillItem(billItem);
+        
+        if (prescription != null && prescription.getId() != null) {
+            // Retire the prescription instead of deleting to maintain audit trail
+            prescription.setRetired(true);
+            prescription.setRetiredAt(new Date());
+            prescription.setRetirer(getSessionController().getLoggedUser());
+            prescriptionFacade.edit(prescription);
+        }
+    }
+    
+    /**
+     * Extract prescription from BillItem if one is attached.
+     * This method should be customized based on how prescriptions are attached to BillItems.
+     */
+    private Prescription extractPrescriptionFromBillItem(BillItem billItem) {
+        // TODO: Implement based on actual prescription attachment mechanism
+        // This could involve checking a custom field on BillItem or PharmaceuticalBillItem
+        // or parsing prescription data from the description field
+        return null;
+    }
+    
+    /**
+     * Compute BillItem description from prescription data.
+     */
+    private void computeDescriptionFromPrescription(BillItem billItem, Prescription prescription) {
+        if (billItem != null && prescription != null) {
+            // TODO: Implement based on actual prescription structure
+            // Example: billItem.setDescreption(prescription.getInstructions() + " - " + prescription.getDosage());
+        }
     }
 
     public SessionController getSessionController() {
