@@ -43,6 +43,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.core.util.BigDecimalUtil;
+import com.divudi.bean.pharmacy.PharmacyController;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -304,6 +305,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PharmacyController pharmacyController;
     /**
      * Properties
      */
@@ -498,6 +501,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         double margin = calculateProfitMargin(ph);
         return ph.getItem().getCategory().getProfitMargin() > margin;
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        pharmacyController.fillItemDetails(bi.getItem());
     }
 
     public List<PharmacyStockRow> getRows() {

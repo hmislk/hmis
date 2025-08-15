@@ -4284,21 +4284,20 @@ public class SearchController implements Serializable {
      * request DTO additionally loads its issued bill DTOs for display.
      */
     public void createRequestTableDto() {
-        
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + " b.id, "
                 + " b.deptId, "
                 + " b.createdAt, "
                 + " b.department.name, "
                 + " b.creater.webUserPerson.name, "
-                + " b.completed)"
+                + " b.completed, "
+                + " b.fullyIssued)"
                 + " from Bill b"
-                + " where b.retired=false"
+                + " where b.retired=false "
+                + " and b.cancelled=false "
                 + " and  b.toDepartment=:toDep"
                 + " and b.billTypeAtomic = :billTypeAtomic"
-                + " and b.cancelled=false "
                 + " and b.createdAt between :fromDate and :toDate";
-        
         HashMap<String, Object> params = new HashMap<>();
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
@@ -4319,17 +4318,22 @@ public class SearchController implements Serializable {
         jpql += " order by b.createdAt desc";
         
 
+        System.out.println("=== DEBUG: createRequestTableDto ===");
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Params: " + params);
+        System.out.println("From Date: " + getFromDate());
+        System.out.println("To Date: " + getToDate());
+        System.out.println("Department: " + getSessionController().getDepartment());
+        
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         
         
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
                 dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
-                // TODO: Remove this temporary fix once database has fullyIssued column
-                dto.setFullyIssued(false); // Default to false until database migration
+                // fullyIssued field is now fetched directly from database in the JPQL query above
             }
         }
-        
     }
 
     /**
@@ -4339,7 +4343,6 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
-        
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
                 + " b.id, "
                 + " b.deptId, "
