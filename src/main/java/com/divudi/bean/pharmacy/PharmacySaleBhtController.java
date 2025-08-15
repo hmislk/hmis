@@ -751,13 +751,22 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
 
     }
+    
+    private boolean startingBillingProcess = false;
 
     public void settlePharmacyBhtIssue() {
+        if(startingBillingProcess == true){
+            JsfUtil.addErrorMessage("Issue bill is Already Processing.");
+            return;
+        }
+        startingBillingProcess = true;
         if (getPreBill().getBillItems().isEmpty()) {
+            startingBillingProcess = false;
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
         if (errorCheck()) {
+            startingBillingProcess = false;
             return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
@@ -788,7 +797,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         settleBhtIssue(bt, bta, matrixDept);
-
+        startingBillingProcess = false;
     }
     
     private Department determineMatrixDepartment() {
@@ -909,6 +918,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
         if (matrixDepartment == null) {
+            startingBillingProcess = false;
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
@@ -2023,6 +2033,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItemTotal(Double billItemTotal) {
         this.billItemTotal = billItemTotal;
+    }
+
+    public boolean isStartingBillingProcess() {
+        return startingBillingProcess;
+    }
+
+    public void setStartingBillingProcess(boolean startingBillingProcess) {
+        this.startingBillingProcess = startingBillingProcess;
     }
 
 }
