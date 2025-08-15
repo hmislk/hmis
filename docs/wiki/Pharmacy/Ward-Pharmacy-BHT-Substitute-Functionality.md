@@ -9,9 +9,10 @@ The Ward Pharmacy BHT Issue system allows pharmacy staff to substitute requested
 Use the substitute functionality when:
 - The requested medication is out of stock
 - The requested medication has expired
-- An equivalent medication with better pricing is available
+- An equivalent medication within the same therapeutic category (VMP group) with better pricing is available
 - A medication with a longer expiry date is preferred
 
+Note: Substitutions are currently restricted to items with the same unit/pack (e.g., Amp→Amp). Pack-to-pack substitutions (e.g., Amp→Ampp) are not supported.
 ## How to Substitute Items
 
 ### Step 1: Access the Ward Pharmacy BHT Issue Page
