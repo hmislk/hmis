@@ -387,24 +387,14 @@
                                 </p:column>
 
                                 <p:column headerText="Item" width="10em">
-                                    <p:commandLink
-                                        class="w-100"
-                                        title="#{ph.item.name} - Click to view details"
-                                        value="#{ph.item.name}"
-                                        oncomplete="PF('dialog#{i}').show()"
-                                        update="itemList"
-                                        process="itemList">
-                                    </p:commandLink>
-                                    <p:dialog id="dialog"
-                                              widgetVar="dialog#{i}"
-                                              header="Details"
-                                              modal="true"
-                                              closable="true"
-                                              resizable="false"
-                                              class="w-75"
-                                              dynamic="true">
-                                        <ph:bill_item_finance_details pbi="#{ph}"/>
-                                    </p:dialog>
+                                    <h:outputText value="#{ph.item.name}" />
+                                    <p:commandButton id="btnViewSelectedItemDetails"
+                                                     icon="pi pi-search"
+                                                     title="View Item Details"
+                                                     action="#{pharmacyDirectPurchaseController.displayItemDetails(ph)}"
+                                                     update=":#{p:resolveFirstComponentWithId('tab', view).clientId}"
+                                                     process="@this"
+                                                     styleClass="ui-button-icon-only mx-3"/>
                                 </p:column>
 
                                 <p:column headerText="Qty"  styleClass="text-end">
@@ -470,6 +460,8 @@
                                     <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
+
+                            <pharmacy:history/>
 
                             <p:separator ></p:separator>
 
