@@ -4284,7 +4284,6 @@ public class SearchController implements Serializable {
      * request DTO additionally loads its issued bill DTOs for display.
      */
     public void createRequestTableDto() {
-        
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + " b.id, "
                 + " b.deptId, "
@@ -4293,12 +4292,11 @@ public class SearchController implements Serializable {
                 + " b.creater.webUserPerson.name, "
                 + " b.completed)"
                 + " from Bill b"
-                + " where b.retired=false"
+                + " where b.retired=false "
+                + " and b.cancelled=false "
                 + " and  b.toDepartment=:toDep"
                 + " and b.billTypeAtomic = :billTypeAtomic"
-                + " and b.cancelled=false "
                 + " and b.createdAt between :fromDate and :toDate";
-        
         HashMap<String, Object> params = new HashMap<>();
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
@@ -4319,6 +4317,13 @@ public class SearchController implements Serializable {
         jpql += " order by b.createdAt desc";
         
 
+        System.out.println("=== DEBUG: createRequestTableDto ===");
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Params: " + params);
+        System.out.println("From Date: " + getFromDate());
+        System.out.println("To Date: " + getToDate());
+        System.out.println("Department: " + getSessionController().getDepartment());
+        
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         
         
@@ -4329,7 +4334,6 @@ public class SearchController implements Serializable {
                 dto.setFullyIssued(false); // Default to false until database migration
             }
         }
-        
     }
 
     /**
@@ -4339,7 +4343,6 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
-        
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
                 + " b.id, "
                 + " b.deptId, "

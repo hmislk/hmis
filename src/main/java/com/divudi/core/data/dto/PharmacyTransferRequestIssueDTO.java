@@ -106,6 +106,29 @@ public class PharmacyTransferRequestIssueDTO implements Serializable {
         }
     }
 
+    // Simple constructor without cancellation details and toStaff
+    public PharmacyTransferRequestIssueDTO(Long billId, Object deptId, Date createdAt,
+            Object creatorName, Object netTotal) {
+        System.out.println("=== Basic Issue DTO Constructor called with: billId=" + billId + 
+            ", deptId=" + deptId + ", creatorName=" + creatorName + " ===");
+        
+        this.billId = billId;
+        this.deptId = deptId != null ? deptId.toString() : "";
+        this.createdAt = createdAt;
+        this.creatorName = creatorName != null ? creatorName.toString() : "";
+        this.cancelled = false;  // Default to not cancelled
+        this.cancelledAt = null;
+        this.cancellerName = "";
+        this.toStaffName = "";  // No toStaff data available
+        if (netTotal instanceof BigDecimal) {
+            this.netTotal = (BigDecimal) netTotal;
+        } else if (netTotal instanceof Number) {
+            this.netTotal = BigDecimal.valueOf(((Number) netTotal).doubleValue());
+        } else {
+            this.netTotal = BigDecimal.ZERO;
+        }
+    }
+
     // ---------------------------------------------------------------
     // Getters & Setters
     // ---------------------------------------------------------------
