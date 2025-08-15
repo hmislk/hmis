@@ -4837,11 +4837,18 @@ public class PharmacyReportController implements Serializable {
 
         sql += " group by bi.item ";
 
-        if (!fast) {
-            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
-        } else {
-            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
+//        if (!fast) {
+//            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
+//        } else {
+//            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
+//        }
+        if (sortType.equalsIgnoreCase("byvalue") && !fast) {
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty) desc";
         }
+        if (sortType.equalsIgnoreCase("byvalue") && fast) {
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty) asc";
+        }
+
         ////System.out.println("sql = " + sql);
         ////System.out.println("m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
@@ -4925,11 +4932,19 @@ public class PharmacyReportController implements Serializable {
 
         sql += " group by bi.item ";
 
-        if (!fast) {
+//        if (!fast) {
+//            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
+//        } else {
+//            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
+//        }
+
+        if (sortType.equalsIgnoreCase("byquantity") && !fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
-        } else {
+        }
+        if (sortType.equalsIgnoreCase("byquantity") && fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
         }
+
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
         if (objs == null) {
