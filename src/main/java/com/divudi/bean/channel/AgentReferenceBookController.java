@@ -276,7 +276,7 @@ public class AgentReferenceBookController implements Serializable {
         AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
         
         if (arb != null) {
-            JsfUtil.addErrorMessage("Book Number Is Already use in " + arb.getInstitution().getName());
+            JsfUtil.addErrorMessage("Book Number Is Already use in "+ arb.getInstitution().getCode()+ " - " + arb.getInstitution().getName());
             return;
         }
 
