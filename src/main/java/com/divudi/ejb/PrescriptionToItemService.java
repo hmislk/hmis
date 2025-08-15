@@ -110,8 +110,8 @@ public class PrescriptionToItemService {
             MeasurementUnit durationUnit = prescription.getDurationUnit();
             MeasurementUnit issueUnit = prescription.getIssueUnit();
 
-            if (dose == null || frequencyUnit == null || duration == null) {
-                return new PrescriptionToItemResult("Incomplete prescription: dose, frequency, and duration are required");
+            if (dose == null || frequencyUnit == null || duration == null || durationUnit == null) {
+                return new PrescriptionToItemResult("Incomplete prescription: dose, frequency, duration and duration unit are required");
             }
 
             // Calculate total quantity needed
@@ -333,7 +333,8 @@ public class PrescriptionToItemService {
         // Check for minimum required fields
         return prescription.getDose() != null && 
                prescription.getFrequencyUnit() != null && 
-               prescription.getDuration() != null;
+               prescription.getDuration() != null &&
+               prescription.getDurationUnit() != null;
     }
 
     /**

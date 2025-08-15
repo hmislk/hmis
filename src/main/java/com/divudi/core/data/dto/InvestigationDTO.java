@@ -26,6 +26,11 @@ public class InvestigationDTO implements Serializable {
         this.retired = retired;
         this.departmentName = departmentName;
     }
+    
+    public InvestigationDTO(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public Long getId() {
         return id;
