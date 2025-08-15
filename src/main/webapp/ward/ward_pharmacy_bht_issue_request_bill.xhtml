@@ -7,6 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
 
     <h:body>
@@ -164,13 +165,6 @@
                                     </div>
                                 </div>
 
-                                <h:panelGroup id="panelError" >
-                                    <h:panelGroup
-                                        rendered="#{pharmacyRequestForBhtController.errorMessage ne null and pharmacyRequestForBhtController.errorMessage ne ''}"
-                                        style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
-                                        <p:outputLabel value="#{pharmacyRequestForBhtController.errorMessage}" ></p:outputLabel>
-                                    </h:panelGroup>
-                                </h:panelGroup>
                             </f:facet>
 
                             <div class="row">
@@ -230,11 +224,11 @@
                                                     <p:ajax event="query" process="acMedicine"></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyRequestForBhtController.handleMedicineSelect}"
-                                                            update="focusQty cmbDose" ></p:ajax>
+                                                            update="focusQty doseUnitPanel" ></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="@this txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                            update="acItem txtQty"
+                                                            process="@this txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:autoComplete>
                                             </div>
                                         </div>
@@ -249,21 +243,33 @@
                                                             process="@this prescribedFrom txtDuration cmbDuration" />
                                                     <p:ajax event="keyup" 
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine @this cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                            update="acItem txtQty"
+                                                            process="acMedicine @this doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:inputText>
                                             </div>
 
                                             <div class="col-md-2">
                                                 <p:outputLabel value="Dose Unit" />
-                                                <p:selectOneMenu id="cmbDose" value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit}" class="w-100">
-                                                    <f:selectItem itemLabel="Select" />
-                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.billItem.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                    <p:ajax event="change" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine txtDose @this cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
-                                                </p:selectOneMenu>
+                                                <h:panelGroup id="doseUnitPanel">
+                                                    <!-- Show label for Amp/Vmp items (no user selection) -->
+                                                    <h:outputText id="lblDose" 
+                                                                 value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit.name}" 
+                                                                 class="form-control d-block"
+                                                                 style="background-color: #f8f9fa; border: 1px solid #ced4da; padding: 0.375rem 0.75rem;"
+                                                                 rendered="#{pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName eq 'Amp' or pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName eq 'Vmp'}" />
+                                                    <!-- Show dropdown for Vtm/Atm items (user can select) -->
+                                                    <p:selectOneMenu id="cmbDose" 
+                                                                    value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit}" 
+                                                                    class="w-100"
+                                                                    rendered="#{pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName ne 'Amp' and pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName ne 'Vmp'}">
+                                                        <f:selectItem itemLabel="Select" />
+                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.billItem.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                        <p:ajax event="change" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                    </p:selectOneMenu>
+                                                </h:panelGroup>
                                             </div>
 
                                             <div class="col-md-2">
@@ -277,8 +283,8 @@
                                                             process="@this prescribedFrom txtDuration cmbDuration" />
                                                     <p:ajax event="change" 
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine txtDose cmbDose @this txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                            update="acItem txtQty"
+                                                            process="acMedicine txtDose doseUnitPanel @this txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:selectOneMenu>
                                             </div>
 
@@ -292,8 +298,8 @@
                                                             process="@this prescribedFrom cmbDuration" />
                                                     <p:ajax event="keyup" 
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine txtDose cmbDose cmbFrequency @this cmbDuration prescribedFrom prescribedTo" />
+                                                            update="acItem txtQty"
+                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency @this cmbDuration prescribedFrom prescribedTo" />
                                                 </p:inputText>
                                             </div>
 
@@ -308,8 +314,8 @@
                                                             process="@this prescribedFrom txtDuration" />
                                                     <p:ajax event="change" 
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine txtDose cmbDose cmbFrequency txtDuration @this prescribedFrom prescribedTo" />
+                                                            update="acItem txtQty"
+                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration @this prescribedFrom prescribedTo" />
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
@@ -330,8 +336,8 @@
                                                             process="@this prescribedTo txtDuration cmbDuration" />
                                                     <p:ajax event="dateSelect" 
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration @this prescribedTo" />
+                                                            update="acItem txtQty"
+                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration @this prescribedTo" />
                                                 </p:calendar>
                                             </div>
                                             <div class="col-md-3">
@@ -349,8 +355,8 @@
                                                             process="@this prescribedFrom txtDuration cmbDuration" />
                                                     <p:ajax event="dateSelect" 
                                                             listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                            process="acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom @this" />
+                                                            update="acItem txtQty"
+                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom @this" />
                                                 </p:calendar>
                                             </div>
                                         </div>
@@ -421,8 +427,8 @@
                                                     icon="fa fa-plus"
                                                     class="ui-button-success w-100"
                                                     action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                    process="@this acItem txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
+                                                    process="@this acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
                                                 </p:commandButton>
                                             </div>
 
@@ -485,7 +491,7 @@
 
 
                 <h:form>
-                    <p:panel  rendered="#{pharmacyRequestForBhtController.billPreview}" >
+                    <p:panel id="printPanel"  rendered="#{pharmacyRequestForBhtController.billPreview}" >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <div class="col-md-4">
@@ -544,46 +550,12 @@
 
                         </f:facet>
 
-                        <div class="d-flex justify-content-between">
-                            <div></div>
-                            <div>
-                                <div class="d-flex m-2">
-                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
-                                        <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" />
-                                    </p:selectOneMenu>
-                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                                </div>
-                            </div>
-                        </div>
+                       
 
-                        <h:panelGroup   id="gpBillPreview" >
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
-                                        <phe:issueBill bill="#{pharmacyRequestForBhtController.printBill}"/>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
-                                        <phi:saleBill_five_five bill="#{pharmacyRequestForBhtController.printBill}"></phi:saleBill_five_five>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'A4Paper'}">
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
-                                        <phe:A4_paper_with_headings bill="#{pharmacyRequestForBhtController.printBill}"/>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
+                        <h:panelGroup id="gpBillPreview">
+                            <ph:pharmacy_bht_issue_request_receipt 
+                                bill="#{pharmacyRequestForBhtController.printBill}"
+                                comment="#{pharmacyRequestForBhtController.comment}" />
                         </h:panelGroup>
 
                     </p:panel>

@@ -59,6 +59,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -140,6 +141,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     NotificationController notificationController;
     @Inject
     MeasurementUnitController measurementUnitController;
+    @EJB
+    BillService billService;
     private String comment;
 
     public void selectSurgeryBillListener() {
@@ -371,11 +374,9 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void makeStockAsBillItemStock() {
-        ////// // System.out.println("replacableStock = " + replacableStock);
         setStock(replacableStock);
         getBillItem().getPharmaceuticalBillItem().setStock(getStock());
         calculateRates(billItem);
-        ////// // System.out.println("getStock() = " + getStock());
     }
 
     public void fillReplaceableStocksForAmp(Amp ampIn) {
@@ -473,7 +474,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -506,7 +506,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         items = getStockFacade().findByJpql(sql, m, 20);
         //  itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -791,6 +790,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
+    @Deprecated
     public void settlePharmacyBhtIssueRequest() {
         if (errorCheck()) {
             return;
@@ -798,6 +798,85 @@ public class PharmacyRequestForBhtController implements Serializable {
         BillTypeAtomic bta = BillTypeAtomic.REQUEST_MEDICINE_INWARD;
         BillType bt = BillType.InwardPharmacyRequest;
         settleBhtIssueRequest(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
+    }
+
+    public void settleBhtRequest() {
+        if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
+            JsfUtil.addErrorMessage("Please Select a BHT");
+            return;
+        }
+
+        if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("Please Select Patient Room");
+            return;
+        }
+
+        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Please Set Room");
+            return;
+        }
+
+        if (getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+            return;
+        }
+
+        if (getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Sorry this BHT was Settled !!!");
+            return;
+        }
+
+        if (getPreBill().getBillItems() == null) {
+            return;
+        }
+        if (getPreBill().getBillItems().isEmpty()) {
+            return;
+        }
+
+        BillTypeAtomic bta = BillTypeAtomic.REQUEST_MEDICINE_INWARD;
+        BillType bt = BillType.InwardPharmacyRequest;
+        Patient pt = getPatientEncounter().getPatient();
+        getPreBill().setPaidAmount(0);
+        getPreBill().setFromDepartment(sessionController.getDepartment());
+        getPreBill().setFromInstitution(sessionController.getInstitution());
+        getPreBill().setFromDepartment(department);
+        getPreBill().setFromInstitution(department.getInstitution());
+        getPreBill().setPatientEncounter(patientEncounter);
+        getPreBill().setBillTypeAtomic(bta);
+        getPreBill().setBillType(bt);
+        getPreBill().setComments(comment);
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), bta);
+        getPreBill().setDeptId(deptId);
+        getPreBill().setInsId(deptId);
+        if (getPreBill().getId() == null) {
+            getPreBill().setCreatedAt(new Date());
+            getPreBill().setCreater(sessionController.getLoggedUser());
+            getPreBill().setCompleted(true);
+            getPreBill().setCompletedAt(new Date());
+            getPreBill().setCompletedBy(sessionController.getLoggedUser());
+            billFacade.create(getPreBill());
+        } else {
+            getPreBill().setCompleted(true);
+            getPreBill().setCompletedAt(new Date());
+            getPreBill().setCompletedBy(sessionController.getLoggedUser());
+            billFacade.edit(getPreBill());
+        }
+        for (BillItem savingBillItem : getBillItems()) {
+            savingBillItem.setBill(getPreBill());
+            if (savingBillItem.getId() == null) {
+                savingBillItem.setCreatedAt(new Date());
+                savingBillItem.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(savingBillItem);
+            } else {
+                billItemFacade.edit(savingBillItem);
+            }
+        }
+        setPrintBill(billService.reloadBill(getPreBill()));
+        notificationController.createNotification(bill);
+        clearBill();
+        clearBillItem();
+        comment = "";
+        billPreview = true;
     }
 
     public void settleStoreBhtIssue() {
@@ -852,7 +931,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
+        getPreBill().getBillItems().clear();
 
         savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
@@ -907,6 +986,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
+    @Deprecated
     private void settleBhtIssueRequest(BillType bt, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
@@ -917,7 +997,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
+        getPreBill().getBillItems().clear();
 
         savePreBillFinallyRequest(pt, matrixDepartment, bt, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
@@ -950,7 +1030,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getBillItems();
-        getPreBill().setBillItems(null);
+        getPreBill().getBillItems().clear();
 
         if (!getBillItems().isEmpty()) {
             getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
@@ -1160,14 +1240,9 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////// // System.out.println("calculateBillItemForEditing");
-        //////// // System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////// // System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
-        //////// // System.out.println("bi.getQty() = " + bi.getQty());
-        //////// // System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
@@ -1178,102 +1253,71 @@ public class PharmacyRequestForBhtController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
     }
-    
+
     public void handleMedicineSelect(SelectEvent event) {
-        System.out.println("DEBUG: handleMedicineSelect called");
         if (billItem != null && billItem.getPrescription() != null && billItem.getPrescription().getItem() != null) {
-            System.out.println("DEBUG: Selected item: " + billItem.getPrescription().getItem().getName());
-            System.out.println("DEBUG: Selected item type: " + billItem.getPrescription().getItem().getClass().getSimpleName());
             autoSetDoseUnitForMedicine(billItem.getPrescription().getItem());
-        } else {
-            System.out.println("DEBUG: billItem or prescription or item is null");
         }
     }
-    
+
     /**
      * Automatically set dose unit for AMP or VMP based on their properties
      */
     private void autoSetDoseUnitForMedicine(Item selectedItem) {
-        System.out.println("DEBUG: autoSetDoseUnitForMedicine called for: " + selectedItem.getName());
         com.divudi.core.entity.pharmacy.MeasurementUnit preferredDoseUnit = null;
-        
+
         if (selectedItem instanceof com.divudi.core.entity.pharmacy.Amp) {
-            System.out.println("DEBUG: Processing AMP");
             preferredDoseUnit = getPreferredDoseUnitForAmp((com.divudi.core.entity.pharmacy.Amp) selectedItem);
         } else if (selectedItem instanceof com.divudi.core.entity.pharmacy.Vmp) {
-            System.out.println("DEBUG: Processing VMP");
             preferredDoseUnit = getPreferredDoseUnitForVmp((com.divudi.core.entity.pharmacy.Vmp) selectedItem);
-        } else {
-            System.out.println("DEBUG: Item is neither AMP nor VMP, type: " + selectedItem.getClass().getSimpleName());
         }
-        
+
         // Set the dose unit if found
         if (preferredDoseUnit != null && billItem.getPrescription() != null) {
-            System.out.println("DEBUG: Setting dose unit: " + preferredDoseUnit.getName());
             billItem.getPrescription().setDoseUnit(preferredDoseUnit);
-        } else {
-            System.out.println("DEBUG: No preferred dose unit found or prescription is null");
         }
     }
-    
+
     /**
-     * Get preferred dose unit for AMP
-     * Priority order: issueUnit > strengthUnit > VMP issueUnit > VMP strengthUnit
+     * Get preferred dose unit for AMP Priority order: issueUnit > strengthUnit
+     * > VMP issueUnit > VMP strengthUnit
      */
     private com.divudi.core.entity.pharmacy.MeasurementUnit getPreferredDoseUnitForAmp(com.divudi.core.entity.pharmacy.Amp amp) {
-        System.out.println("DEBUG: Getting preferred dose unit for AMP: " + amp.getName());
-        
         if (amp.getIssueUnit() != null) {
-            System.out.println("DEBUG: Found AMP issueUnit: " + amp.getIssueUnit().getName());
             return amp.getIssueUnit();
         } else if (amp.getStrengthUnit() != null) {
-            System.out.println("DEBUG: Found AMP strengthUnit: " + amp.getStrengthUnit().getName());
             return amp.getStrengthUnit();
         } else if (amp.getVmp() != null) {
-            System.out.println("DEBUG: Checking AMP's VMP: " + amp.getVmp().getName());
             if (amp.getVmp().getIssueUnit() != null) {
-                System.out.println("DEBUG: Found VMP issueUnit: " + amp.getVmp().getIssueUnit().getName());
                 return amp.getVmp().getIssueUnit();
             } else if (amp.getVmp().getStrengthUnit() != null) {
-                System.out.println("DEBUG: Found VMP strengthUnit: " + amp.getVmp().getStrengthUnit().getName());
                 return amp.getVmp().getStrengthUnit();
-            } else {
-                System.out.println("DEBUG: VMP has no issueUnit or strengthUnit");
             }
-        } else {
-            System.out.println("DEBUG: AMP has no issueUnit, strengthUnit, or VMP");
         }
         return null;
     }
-    
+
     /**
-     * Get preferred dose unit for VMP
-     * Priority order: issueUnit > strengthUnit > dosage form default
+     * Get preferred dose unit for VMP Priority order: issueUnit > strengthUnit
+     * > dosage form default
      */
     private com.divudi.core.entity.pharmacy.MeasurementUnit getPreferredDoseUnitForVmp(com.divudi.core.entity.pharmacy.Vmp vmp) {
-        System.out.println("DEBUG: Getting preferred dose unit for VMP: " + vmp.getName());
-        
         if (vmp.getIssueUnit() != null) {
-            System.out.println("DEBUG: Found VMP issueUnit: " + vmp.getIssueUnit().getName());
             return vmp.getIssueUnit();
         } else if (vmp.getStrengthUnit() != null) {
-            System.out.println("DEBUG: Found VMP strengthUnit: " + vmp.getStrengthUnit().getName());
             return vmp.getStrengthUnit();
         } else {
-            System.out.println("DEBUG: VMP has no issueUnit or strengthUnit");
             // Try to get default dose unit based on dosage form
             if (vmp.getDosageForm() != null) {
-                System.out.println("DEBUG: VMP has dosage form: " + vmp.getDosageForm().getName());
                 com.divudi.core.entity.pharmacy.MeasurementUnit defaultUnit = getDefaultDoseUnitForDosageForm(vmp.getDosageForm());
                 if (defaultUnit != null) {
-                    System.out.println("DEBUG: Found default dose unit for dosage form: " + defaultUnit.getName());
                     return defaultUnit;
                 }
             }
         }
         return null;
     }
-    
+
     /**
      * Get default dose unit based on dosage form
      */
@@ -1281,13 +1325,13 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (dosageForm == null || dosageForm.getName() == null) {
             return null;
         }
-        
+
         String formName = dosageForm.getName().toLowerCase();
-        
+
         // Try to get a suitable dose unit from measurement unit controller
         if (measurementUnitController != null) {
             java.util.List<com.divudi.core.entity.pharmacy.MeasurementUnit> doseUnits = measurementUnitController.getDoseUnits();
-            
+
             // Map common dosage forms to appropriate dose units
             if (formName.contains("tablet") || formName.contains("capsule") || formName.contains("pill")) {
                 // For solid forms, look for "tablet", "capsule", or count-based units
@@ -1323,7 +1367,7 @@ public class PharmacyRequestForBhtController implements Serializable {
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -1344,9 +1388,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        //////// // System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////// // System.out.println("stock is null");
             return;
         }
         getBillItem();
@@ -1398,10 +1440,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
-            //// // System.out.println("i.getQtyInUnit() = " + i.getItemBatch().getItem().getName());
-            //// // System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
             double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-            //// // System.out.println("billedIssue = " + billedIssue);
             double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
             double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
 
@@ -1493,10 +1532,8 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void handleSelectAction() {
         if (stock == null) {
-            //////// // System.out.println("Stock NOT selected.");
         }
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
-            //////// // System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
         }
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
@@ -1546,7 +1583,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
+        getPreBill().getBillItems().clear();
         getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
         getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
 
@@ -1837,25 +1874,24 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     // Prescription Date and Duration Calculation Methods
-    
     public void calculateDurationFromDates() {
         if (billItem != null && billItem.getPrescription() != null) {
             prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
         }
     }
-    
+
     public void calculateToDateFromDuration() {
         if (billItem != null && billItem.getPrescription() != null) {
             prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
         }
     }
-    
+
     public void calculateFromDateFromDuration() {
         if (billItem != null && billItem.getPrescription() != null) {
             prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
         }
     }
-    
+
     public void validatePrescriptionDates() {
         if (billItem != null && billItem.getPrescription() != null) {
             String validationMessage = prescriptionService.validatePrescriptionDates(billItem.getPrescription());
@@ -1866,7 +1902,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             }
         }
     }
-    
+
     /**
      * Auto-calculate item and quantity from prescription details
      */
@@ -1875,44 +1911,44 @@ public class PharmacyRequestForBhtController implements Serializable {
             setErrorMessage("No prescription available for calculation");
             return;
         }
-        
+
         try {
-            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result = 
-                prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
-            
+            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
+                    = prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
+
             if (result.isSuccess()) {
                 // Set the calculated item and quantity
                 if (result.getItem() != null) {
                     setItem(result.getItem());
                     billItem.setItem(result.getItem());
                 }
-                
+
                 if (result.getQuantity() != null) {
                     setQty(result.getQuantity());
                 }
-                
+
                 // Clear any previous error messages
                 setErrorMessage("");
-                
+
                 // Show calculation note if available
                 if (result.getCalculationNote() != null && !result.getCalculationNote().isEmpty()) {
                     // You could store this in a separate field or display it in UI
                     // For now, we'll use it internally
-                    System.out.println("Calculation Note: " + result.getCalculationNote());
                 }
-                
+
             } else {
                 // Show error message
                 setErrorMessage("Calculation Error: " + result.getErrorMessage());
             }
-            
+
         } catch (Exception e) {
             setErrorMessage("Error calculating item and quantity: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Check if prescription has enough information for item/quantity calculation
+     * Check if prescription has enough information for item/quantity
+     * calculation
      */
     public boolean isCalculationPossible() {
         if (billItem == null || billItem.getPrescription() == null) {
@@ -1920,7 +1956,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         return prescriptionToItemService.isCalculationPossible(billItem.getPrescription());
     }
-    
+
     /**
      * Get calculation explanation for display
      */
@@ -1931,6 +1967,4 @@ public class PharmacyRequestForBhtController implements Serializable {
         return prescriptionToItemService.getCalculationExplanation(billItem.getPrescription());
     }
 
-    
-    
 }
