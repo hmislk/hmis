@@ -73,6 +73,7 @@ public class UserPrivilageController implements Serializable {
     private List<Department> departments;
     private List<PrivilegeHolder> currentUserPrivilegeHolders;
     private boolean privilegesLoaded;
+    private String searchText;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -984,6 +985,45 @@ public class UserPrivilageController implements Serializable {
         }
     }
 
+    public void filterPrivileges() {
+        collapseAll(rootTreeNode);
+        rootTreeNode.setExpanded(true);
+        if (searchText == null || searchText.trim().isEmpty()) {
+            return;
+        }
+        String st = searchText.trim().toLowerCase();
+        expandMatches(rootTreeNode, st);
+    }
+
+    private void collapseAll(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        node.setExpanded(false);
+        for (TreeNode child : node.getChildren()) {
+            collapseAll(child);
+        }
+    }
+
+    private boolean expandMatches(TreeNode node, String search) {
+        boolean match = false;
+        if (node.getData() instanceof PrivilegeHolder) {
+            PrivilegeHolder ph = (PrivilegeHolder) node.getData();
+            if (ph.getName() != null && ph.getName().toLowerCase().contains(search)) {
+                match = true;
+            }
+        }
+        for (TreeNode child : node.getChildren()) {
+            if (expandMatches(child, search)) {
+                match = true;
+            }
+        }
+        if (match) {
+            node.setExpanded(true);
+        }
+        return match;
+    }
+
     public void fillUserPrivileges() {
         List<WebUserPrivilege> wups;
         if (currentWebUser == null) {
@@ -1213,6 +1253,14 @@ public class UserPrivilageController implements Serializable {
 
     public void setPrivilegesLoaded(boolean privilegesLoaded) {
         this.privilegesLoaded = privilegesLoaded;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     // </editor-fold>

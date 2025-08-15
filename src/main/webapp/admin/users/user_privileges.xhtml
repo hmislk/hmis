@@ -98,13 +98,24 @@
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{userPrivilageController.privilegesLoaded}">
+                            <p:inputText
+                                value="#{userPrivilageController.searchText}"
+                                autocomplete="off">
+                                <p:ajax
+                                    event="keyup"
+                                    process="@this"
+                                    listener="#{userPrivilageController.filterPrivileges}"
+                                    update="tree"
+                                    oncomplete="PF('privTree').filter()" />
+                            </p:inputText>
                             <p:tree
                                 id="tree"
+                                widgetVar="privTree"
                                 selectionMode="checkbox"
                                 datakey="#{node}"
                                 selection="#{userPrivilageController.selectedNodes}"
-                                value="#{userPrivilageController.rootTreeNode}" 
-                                var="node" 
+                                value="#{userPrivilageController.rootTreeNode}"
+                                var="node"
                                 propagateSelectionDown="true"
                                 propagateSelectionUp="true">
                                 <p:treeNode>
