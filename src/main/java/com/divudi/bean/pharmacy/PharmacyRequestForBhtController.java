@@ -138,6 +138,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     private BillBeanController billBean;
     @Inject
     NotificationController notificationController;
+    @Inject
+    MeasurementUnitController measurementUnitController;
     private String comment;
 
     public void selectSurgeryBillListener() {
@@ -1035,10 +1037,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         return false;
     }
 
-    public void addMedicine() {
-        //ToDo
-    }
-    
     public void addBillItem() {
 
         if (billItem == null) {
@@ -1182,10 +1180,151 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
     
     public void handleMedicineSelect(SelectEvent event) {
+        System.out.println("DEBUG: handleMedicineSelect called");
+        if (billItem != null && billItem.getPrescription() != null && billItem.getPrescription().getItem() != null) {
+            System.out.println("DEBUG: Selected item: " + billItem.getPrescription().getItem().getName());
+            System.out.println("DEBUG: Selected item type: " + billItem.getPrescription().getItem().getClass().getSimpleName());
+            autoSetDoseUnitForMedicine(billItem.getPrescription().getItem());
+        } else {
+            System.out.println("DEBUG: billItem or prescription or item is null");
+        }
+    }
+    
+    /**
+     * Automatically set dose unit for AMP or VMP based on their properties
+     */
+    private void autoSetDoseUnitForMedicine(Item selectedItem) {
+        System.out.println("DEBUG: autoSetDoseUnitForMedicine called for: " + selectedItem.getName());
+        com.divudi.core.entity.pharmacy.MeasurementUnit preferredDoseUnit = null;
         
-        //TODO
-//        getBillItem().getPharmaceuticalBillItem().setStock(stock);
-//        calculateRates(billItem);
+        if (selectedItem instanceof com.divudi.core.entity.pharmacy.Amp) {
+            System.out.println("DEBUG: Processing AMP");
+            preferredDoseUnit = getPreferredDoseUnitForAmp((com.divudi.core.entity.pharmacy.Amp) selectedItem);
+        } else if (selectedItem instanceof com.divudi.core.entity.pharmacy.Vmp) {
+            System.out.println("DEBUG: Processing VMP");
+            preferredDoseUnit = getPreferredDoseUnitForVmp((com.divudi.core.entity.pharmacy.Vmp) selectedItem);
+        } else {
+            System.out.println("DEBUG: Item is neither AMP nor VMP, type: " + selectedItem.getClass().getSimpleName());
+        }
+        
+        // Set the dose unit if found
+        if (preferredDoseUnit != null && billItem.getPrescription() != null) {
+            System.out.println("DEBUG: Setting dose unit: " + preferredDoseUnit.getName());
+            billItem.getPrescription().setDoseUnit(preferredDoseUnit);
+        } else {
+            System.out.println("DEBUG: No preferred dose unit found or prescription is null");
+        }
+    }
+    
+    /**
+     * Get preferred dose unit for AMP
+     * Priority order: issueUnit > strengthUnit > VMP issueUnit > VMP strengthUnit
+     */
+    private com.divudi.core.entity.pharmacy.MeasurementUnit getPreferredDoseUnitForAmp(com.divudi.core.entity.pharmacy.Amp amp) {
+        System.out.println("DEBUG: Getting preferred dose unit for AMP: " + amp.getName());
+        
+        if (amp.getIssueUnit() != null) {
+            System.out.println("DEBUG: Found AMP issueUnit: " + amp.getIssueUnit().getName());
+            return amp.getIssueUnit();
+        } else if (amp.getStrengthUnit() != null) {
+            System.out.println("DEBUG: Found AMP strengthUnit: " + amp.getStrengthUnit().getName());
+            return amp.getStrengthUnit();
+        } else if (amp.getVmp() != null) {
+            System.out.println("DEBUG: Checking AMP's VMP: " + amp.getVmp().getName());
+            if (amp.getVmp().getIssueUnit() != null) {
+                System.out.println("DEBUG: Found VMP issueUnit: " + amp.getVmp().getIssueUnit().getName());
+                return amp.getVmp().getIssueUnit();
+            } else if (amp.getVmp().getStrengthUnit() != null) {
+                System.out.println("DEBUG: Found VMP strengthUnit: " + amp.getVmp().getStrengthUnit().getName());
+                return amp.getVmp().getStrengthUnit();
+            } else {
+                System.out.println("DEBUG: VMP has no issueUnit or strengthUnit");
+            }
+        } else {
+            System.out.println("DEBUG: AMP has no issueUnit, strengthUnit, or VMP");
+        }
+        return null;
+    }
+    
+    /**
+     * Get preferred dose unit for VMP
+     * Priority order: issueUnit > strengthUnit > dosage form default
+     */
+    private com.divudi.core.entity.pharmacy.MeasurementUnit getPreferredDoseUnitForVmp(com.divudi.core.entity.pharmacy.Vmp vmp) {
+        System.out.println("DEBUG: Getting preferred dose unit for VMP: " + vmp.getName());
+        
+        if (vmp.getIssueUnit() != null) {
+            System.out.println("DEBUG: Found VMP issueUnit: " + vmp.getIssueUnit().getName());
+            return vmp.getIssueUnit();
+        } else if (vmp.getStrengthUnit() != null) {
+            System.out.println("DEBUG: Found VMP strengthUnit: " + vmp.getStrengthUnit().getName());
+            return vmp.getStrengthUnit();
+        } else {
+            System.out.println("DEBUG: VMP has no issueUnit or strengthUnit");
+            // Try to get default dose unit based on dosage form
+            if (vmp.getDosageForm() != null) {
+                System.out.println("DEBUG: VMP has dosage form: " + vmp.getDosageForm().getName());
+                com.divudi.core.entity.pharmacy.MeasurementUnit defaultUnit = getDefaultDoseUnitForDosageForm(vmp.getDosageForm());
+                if (defaultUnit != null) {
+                    System.out.println("DEBUG: Found default dose unit for dosage form: " + defaultUnit.getName());
+                    return defaultUnit;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get default dose unit based on dosage form
+     */
+    private com.divudi.core.entity.pharmacy.MeasurementUnit getDefaultDoseUnitForDosageForm(com.divudi.core.entity.Category dosageForm) {
+        if (dosageForm == null || dosageForm.getName() == null) {
+            return null;
+        }
+        
+        String formName = dosageForm.getName().toLowerCase();
+        
+        // Try to get a suitable dose unit from measurement unit controller
+        if (measurementUnitController != null) {
+            java.util.List<com.divudi.core.entity.pharmacy.MeasurementUnit> doseUnits = measurementUnitController.getDoseUnits();
+            
+            // Map common dosage forms to appropriate dose units
+            if (formName.contains("tablet") || formName.contains("capsule") || formName.contains("pill")) {
+                // For solid forms, look for "tablet", "capsule", or count-based units
+                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
+                    String unitName = unit.getName().toLowerCase();
+                    if (unitName.contains("tablet") || unitName.contains("capsule") || unitName.equals("nos") || unitName.equals("each")) {
+                        return unit;
+                    }
+                }
+            } else if (formName.contains("syrup") || formName.contains("liquid") || formName.contains("suspension") || formName.contains("solution")) {
+                // For liquid forms, look for "ml", "mL", or volume-based units
+                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
+                    String unitName = unit.getName().toLowerCase();
+                    if (unitName.equals("ml") || unitName.equals("ml") || unitName.contains("milliliter")) {
+                        return unit;
+                    }
+                }
+            } else if (formName.contains("cream") || formName.contains("ointment") || formName.contains("gel")) {
+                // For topical forms, look for "g", "gram", or weight-based units
+                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
+                    String unitName = unit.getName().toLowerCase();
+                    if (unitName.equals("g") || unitName.equals("gm") || unitName.contains("gram")) {
+                        return unit;
+                    }
+                }
+            } else if (formName.contains("injection") || formName.contains("ampoule") || formName.contains("vial")) {
+                // For injections, look for "ml", "ampoule", or "vial"
+                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
+                    String unitName = unit.getName().toLowerCase();
+                    if (unitName.equals("ml") || unitName.equals("ml") || unitName.contains("ampoule") || unitName.contains("vial")) {
+                        return unit;
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
 
     public void paymentSchemeChanged(AjaxBehaviorEvent ajaxBehavior) {

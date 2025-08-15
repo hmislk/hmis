@@ -230,20 +230,12 @@
                                                     <p:ajax event="query" process="acMedicine"></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyRequestForBhtController.handleMedicineSelect}"
-                                                            update="focusQty" ></p:ajax>
+                                                            update="focusQty cmbDose" ></p:ajax>
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="@this txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:autoComplete>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <p:commandButton
-                                                    accesskey="a"
-                                                    id="btnAddMedicine"
-                                                    value="AddMedicine"
-                                                    icon="fa fa-plus"
-                                                    class="ui-button-success w-100"
-                                                    action="#{pharmacyRequestForBhtController.addMedicine}"
-                                                    process="@this acMedicine txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtQty txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments"   >
-                                                </p:commandButton>
                                             </div>
                                         </div>
 
@@ -254,7 +246,11 @@
                                                     <p:ajax event="blur" 
                                                             listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
                                                             update="prescribedTo"
-                                                            process="@this" />
+                                                            process="@this prescribedFrom txtDuration cmbDuration" />
+                                                    <p:ajax event="keyup" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine @this cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:inputText>
                                             </div>
 
@@ -262,7 +258,11 @@
                                                 <p:outputLabel value="Dose Unit" />
                                                 <p:selectOneMenu id="cmbDose" value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit}" class="w-100">
                                                     <f:selectItem itemLabel="Select" />
-                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.billItem.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                    <p:ajax event="change" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine txtDose @this cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:selectOneMenu>
                                             </div>
 
@@ -275,6 +275,10 @@
                                                             listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
                                                             update="prescribedTo"
                                                             process="@this prescribedFrom txtDuration cmbDuration" />
+                                                    <p:ajax event="change" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine txtDose cmbDose @this txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                 </p:selectOneMenu>
                                             </div>
 
@@ -286,6 +290,10 @@
                                                             listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
                                                             update="prescribedTo"
                                                             process="@this prescribedFrom cmbDuration" />
+                                                    <p:ajax event="keyup" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine txtDose cmbDose cmbFrequency @this cmbDuration prescribedFrom prescribedTo" />
                                                 </p:inputText>
                                             </div>
 
@@ -298,6 +306,10 @@
                                                             listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
                                                             update="prescribedTo"
                                                             process="@this prescribedFrom txtDuration" />
+                                                    <p:ajax event="change" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine txtDose cmbDose cmbFrequency txtDuration @this prescribedFrom prescribedTo" />
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
@@ -309,7 +321,6 @@
                                                     id="prescribedFrom"
                                                     value="#{pharmacyRequestForBhtController.billItem.prescription.prescribedFrom}"
                                                     pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                    showOn="button"
                                                     class="w-100"
                                                     inputStyleClass="form-control"
                                                     >
@@ -317,6 +328,10 @@
                                                             listener="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
                                                             update="txtDuration prescribedTo"
                                                             process="@this prescribedTo txtDuration cmbDuration" />
+                                                    <p:ajax event="dateSelect" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration @this prescribedTo" />
                                                 </p:calendar>
                                             </div>
                                             <div class="col-md-3">
@@ -325,7 +340,6 @@
                                                     id="prescribedTo"
                                                     value="#{pharmacyRequestForBhtController.billItem.prescription.prescribedTo}"
                                                     pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                    showOn="button"
                                                     class="w-100"
                                                     inputStyleClass="form-control"
                                                     >
@@ -333,44 +347,11 @@
                                                             listener="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
                                                             update="txtDuration prescribedFrom"
                                                             process="@this prescribedFrom txtDuration cmbDuration" />
+                                                    <p:ajax event="dateSelect" 
+                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                            update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                            process="acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom @this" />
                                                 </p:calendar>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <p:outputLabel value="Auto-Calculate" />
-                                                <div class="d-flex gap-1 flex-wrap">
-                                                    <p:commandButton
-                                                        value="Calc Duration"
-                                                        icon="fa fa-calculator"
-                                                        class="ui-button-info"
-                                                        action="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
-                                                        process="prescribedFrom prescribedTo cmbDuration"
-                                                        update="txtDuration :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                        title="Calculate duration from dates" />
-                                                    <p:commandButton
-                                                        value="Calc To Date"
-                                                        icon="fa fa-calendar"
-                                                        class="ui-button-info"
-                                                        action="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
-                                                        process="prescribedFrom txtDuration cmbDuration"
-                                                        update="prescribedTo :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                        title="Calculate end date from start date and duration" />
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <p:outputLabel value="Calculate Item &amp; Qty" />
-                                                <p:commandButton
-                                                    value="Auto-Calculate"
-                                                    icon="fa fa-magic"
-                                                    class="ui-button-success w-100"
-                                                    action="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                    process="acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo"
-                                                    update="acItem txtQty :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
-                                                    title="Calculate item and quantity from prescription details"
-                                                    rendered="#{pharmacyRequestForBhtController.isCalculationPossible()}" />
-                                                <h:outputText 
-                                                    value="Insufficient data for calculation"
-                                                    class="text-muted small"
-                                                    rendered="#{!pharmacyRequestForBhtController.isCalculationPossible()}" />
                                             </div>
                                         </div>
 
