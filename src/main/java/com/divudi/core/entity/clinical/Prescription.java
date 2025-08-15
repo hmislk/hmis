@@ -327,7 +327,7 @@ public class Prescription implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.core.entity.clinical.FavouriteItem[ id=" + id + " ]";
+        return "com.divudi.core.entity.clinical.Prescription[ id=" + id + " ]";
     }
 
     public Item getItem() {

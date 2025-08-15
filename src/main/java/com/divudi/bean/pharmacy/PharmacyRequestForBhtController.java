@@ -1122,51 +1122,72 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (billItem == null) {
             return;
         }
-        if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
-        }
+        
         if (billItem.getItem() == null) {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
+        
         if (getQty() == null) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Quantity?");
             return;
         }
 
-        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
-
-        billItem.setInwardChargeType(InwardChargeType.Medicine);
-
-        billItem.setQty(getQty());
-        billItem.setBill(getPreBill());
+        // Create a new billItem for the collection to avoid entity state issues
+        BillItem newBillItem = new BillItem();
+        newBillItem.setItem(billItem.getItem());
+        newBillItem.setQty(getQty());
+        newBillItem.setInwardChargeType(InwardChargeType.Medicine);
+        newBillItem.setBill(getPreBill());
         
         // Handle prescription only if prescription data is available
         boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
         
         if (hasPrescriptionData) {
-            // Only set prescription item if user hasn't already set it
-            if (billItem.getPrescription().getItem() == null) {
-                billItem.getPrescription().setItem(billItem.getItem());
+            // Don't create prescription entity - just use data for description only
+            // This completely avoids cascade persistence issues
+            
+            StringBuilder prescriptionText = new StringBuilder();
+            
+            // Build prescription description manually to avoid entity issues
+            if (billItem.getItem() != null) {
+                prescriptionText.append(billItem.getItem().getName());
             }
             
-            // Set prescription metadata but DON'T persist until settle
-            billItem.getPrescription().setPatient(getPatientEncounter().getPatient());
-            billItem.getPrescription().setEncounter(getPatientEncounter());
-            billItem.getPrescription().setIndoor(true);
+            if (billItem.getPrescription().getDose() != null) {
+                prescriptionText.append(" ").append(billItem.getPrescription().getDose());
+            }
             
-            // Set description from prescription (computed in memory)
-            billItem.setDescreption(billItem.getPrescription().getFormattedPrescriptionWithoutIndoorOutdoor()
-                    + (billItem.getPrescription().getComment() != null ? " " + billItem.getPrescription().getComment() : ""));
+            if (billItem.getPrescription().getDoseUnit() != null) {
+                prescriptionText.append(" ").append(billItem.getPrescription().getDoseUnit().getName());
+            }
+            
+            if (billItem.getPrescription().getFrequencyUnit() != null) {
+                prescriptionText.append(" ").append(billItem.getPrescription().getFrequencyUnit().getName());
+            }
+            
+            if (billItem.getPrescription().getDuration() != null) {
+                prescriptionText.append(" for ").append(billItem.getPrescription().getDuration());
+            }
+            
+            if (billItem.getPrescription().getDurationUnit() != null) {
+                prescriptionText.append(" ").append(billItem.getPrescription().getDurationUnit().getName());
+            }
+            
+            if (billItem.getPrescription().getComment() != null && !billItem.getPrescription().getComment().trim().isEmpty()) {
+                prescriptionText.append(" - ").append(billItem.getPrescription().getComment());
+            }
+            
+            // Set description from prescription data (no prescription entity created)
+            newBillItem.setDescreption(prescriptionText.toString());
         } else {
-            // No meaningful prescription data, set billItem prescription to null and use simple description
-            billItem.setPrescription(null);
-            billItem.setDescreption(billItem.getItem().getName() + " - Qty: " + getQty());
+            // No meaningful prescription data, use simple description
+            newBillItem.setDescreption(billItem.getItem().getName() + " - Qty: " + getQty());
         }
 
-        billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
-        getPreBill().getBillItems().add(billItem);
+        newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+        getPreBill().getBillItems().add(newBillItem);
 
         clearBillItem();
         setActiveIndex(1);
