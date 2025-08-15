@@ -504,6 +504,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void displayItemDetails(BillItem bi) {
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
         pharmacyController.fillItemDetails(bi.getItem());
     }
 
