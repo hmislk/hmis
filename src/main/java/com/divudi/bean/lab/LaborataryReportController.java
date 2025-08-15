@@ -869,6 +869,8 @@ public class LaborataryReportController implements Serializable {
                     + " pi.billItem.bill.patient.person.sex) "
                     + " from PatientInvestigation pi "
                     + " where pi.billItem.retired = :ret "
+                    + " and pi.billItem.bill.cancelled =:can "
+                    + " and pi.billItem.refunded =:ref "
                     + " and pi.billItem.bill.createdAt between :fd and :td "
                     + " and pi.billItem.bill.billTypeAtomic IN :bType "
                     + " and type(pi.billItem.item) = :invType ";
@@ -897,6 +899,8 @@ public class LaborataryReportController implements Serializable {
             params.put("fd", fromDate);
             params.put("td", toDate);
             params.put("invType", Investigation.class);
+            params.put("can", false);
+            params.put("ref", false);
 
             List<BillTypeAtomic> bTypes = Arrays.asList(
                     BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
