@@ -241,15 +241,16 @@ public class IncomeRow implements Serializable {
         this();
         this.billFee = billFee;
     }
-    
+
     public IncomeRow(InvestigationDetails dto) {
         this();
-        
-        this.billId = dto.getId();
-        this.billNo = dto.getBillNumber();
-        this.createdAt = dto.getBillDate();
-        this.patientName = dto.getPatientName();
-        this.itemValue = dto.getItemAmount();
+        if (dto != null) {
+            this.billId = dto.getId();
+            this.billNo = dto.getBillNumber();
+            this.createdAt = dto.getBillDate();
+            this.patientName = dto.getPatientName();
+            this.itemValue = dto.getItemAmount();
+        }
     }
 
     public IncomeRow(PharmacyIncomeCostBillDTO dto) {
@@ -332,7 +333,7 @@ public class IncomeRow implements Serializable {
 
     public IncomeRow(LabIncomeReportDTO dto) {
         this();
-        
+
         System.out.println("DEBUG: Creating IncomeRow from LabIncomeReportDTO");
         System.out.println("  - DTO billId: " + dto.getBillId());
         System.out.println("  - DTO billNumber: " + dto.getBillNumber());
@@ -1556,7 +1557,6 @@ public class IncomeRow implements Serializable {
     public void setBhtNo(String bhtNo) {
         this.bhtNo = bhtNo;
     }
-
 
     public Date getCreatedAt() {
         return createdAt;

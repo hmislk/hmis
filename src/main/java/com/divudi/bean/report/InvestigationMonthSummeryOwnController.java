@@ -17,7 +17,6 @@ import com.divudi.core.data.dataStructure.InvestigationDetails;
 import com.divudi.core.data.dataStructure.InvestigationSummeryData;
 import com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.core.data.dto.InvestigationDTO;
-import com.divudi.core.data.reports.LaboratoryReport;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -37,7 +36,6 @@ import com.divudi.core.facade.MachineFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
-import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import java.io.IOException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -76,6 +74,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    InvestigationController investigationController;
 
     @EJB
     private BillFacade billFacade;
@@ -85,6 +85,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private InvestigationFacade investigationFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    
     private Date fromDate;
     private Date toDate;
     private Institution creditCompany;
@@ -97,10 +98,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private List<Item> investigations;
     List<InvestigationSummeryData> itemsLab;
     List<Bill> bills;
+    List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
+    private IncomeBundle bundle = new IncomeBundle();
 
     /**
      * Creates a new instance of CashierReportController
      */
+    
     public InvestigationMonthSummeryOwnController() {
     }
 
@@ -403,14 +407,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         this.itemValue = itemValue;
     }
 
-    List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
-    @Inject
-    ReportTimerController reportTimerController;
-    @Inject
-    InvestigationController investigationController;
-
-    private IncomeBundle bundle = new IncomeBundle();
-
     public void processInvestigationMonthEndDetail() {
         bundle = new IncomeBundle();
         List<InvestigationDTO> lst = investigationController.fillInvestigationNamesDtos();
@@ -434,8 +430,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                     + " order by pi.billItem.bill.createdAt asc ";
 
             params.put("ret", false);
-            params.put("fd", fromDate);
-            params.put("td", toDate);
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
             params.put("insId", dto.getId());
             params.put("can", false);
             params.put("ref", false);
