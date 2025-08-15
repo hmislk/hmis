@@ -1000,8 +1000,10 @@ public class UserPrivilageController implements Serializable {
             return;
         }
         node.setExpanded(false);
-        for (TreeNode child : node.getChildren()) {
-            collapseAll(child);
+        for (Object childObj : node.getChildren()) {
+            if (childObj instanceof TreeNode) {
+                collapseAll((TreeNode) childObj);
+            }
         }
     }
 
@@ -1013,9 +1015,11 @@ public class UserPrivilageController implements Serializable {
                 match = true;
             }
         }
-        for (TreeNode child : node.getChildren()) {
-            if (expandMatches(child, search)) {
-                match = true;
+        for (Object childObj : node.getChildren()) {
+            if (childObj instanceof TreeNode) {
+                if (expandMatches((TreeNode) childObj, search)) {
+                    match = true;
+                }
             }
         }
         if (match) {

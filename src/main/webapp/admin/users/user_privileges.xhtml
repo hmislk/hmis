@@ -98,9 +98,22 @@
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{userPrivilageController.privilegesLoaded}">
+                            <p:outputLabel 
+                                value="Search Privilege"
+                                class="m-1"
+                                for="txtSearch">
+                                <f:facet name="prepend">
+                                    <i class="fa fa-search"></i>
+                                </f:facet>    
+                            </p:outputLabel>
                             <p:inputText
+                                id="txtSearch"
+                                class="m-1"
                                 value="#{userPrivilageController.searchText}"
                                 autocomplete="off">
+                                <f:facet name="prepend">
+                                    <i class="fa fa-search"></i>
+                                </f:facet>
                                 <p:ajax
                                     event="keyup"
                                     process="@this"
