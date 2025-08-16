@@ -21,7 +21,7 @@
                         icon="fa fa-check"
                         value="Issue to BHT"
                         onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                    return false;"
+                                        return false;"
                         action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
                         ajax="false" >
                     </p:commandButton>
@@ -98,16 +98,18 @@
 
                                 <h:panelGrid columns="1" class="w-100" >
                                     <p:outputLabel value="&nbsp;" ></p:outputLabel>
-                                    <p:commandButton  accesskey="a"
-                                                      id="btnAdd"
-                                                      icon="fa fa-plus"
-                                                      value="Add"
-                                                      class="ui-button-success mx-1"
-                                                      action="#{pharmacySaleBhtController.addBillItemNew}"
-                                                      ajax="false"
-                                                      style="float: right;"
-                                                      update="focusItem"
-                                                      ></p:commandButton>
+                                    <p:commandButton  
+                                        accesskey="a"
+                                        id="btnAdd"
+                                        icon="fa fa-plus"
+                                        value="Add"
+                                        class="ui-button-success mx-1"
+                                        action="#{pharmacySaleBhtController.addBillItemNew}"
+                                        ajax="false"
+                                        style="float: right;"
+                                        update="focusItem"
+                                        >
+                                    </p:commandButton>
                                 </h:panelGrid>
 
                                 <p:focus id="focusQty" for="txtQty"></p:focus>
@@ -126,12 +128,6 @@
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
                                 <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
                                 <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
-<<<<<<< HEAD
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany.name}" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
-                                <p:outputLabel value="Consultant Name" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person.nameWithTitle}" ></p:outputLabel>
-=======
                                 <!-- Credit company name, only render if paymentMethod is Credit and creditCompany is non-null -->
                                 <p:outputLabel 
                                     value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany.name}" 
@@ -144,8 +140,7 @@
                                 <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}" ></p:outputLabel>
                                 <p:outputLabel  value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person.nameWithTitle}" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}" >
                                 </p:outputLabel>
-                                
->>>>>>> 37ae6728503184710ccee7341d80c8c7ee609e89
+
                                 <p:outputLabel value="Patient Name" ></p:outputLabel>
                                 <p:outputLabel value=":" ></p:outputLabel>
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.patient.person.nameWithTitle}" ></p:outputLabel>
@@ -201,55 +196,7 @@
                         <h:outputText id="Isitem" value="#{bItm.item.name}" >
                         </h:outputText>
                     </p:column>
-<<<<<<< HEAD
 
-                    <p:column headerText="Issuing Item" style="width: 50px!important;"  >
-                        <p:autoComplete accesskey="i"    id="acStock"
-                                        value="#{bItm.pharmaceuticalBillItem.stock}"
-                                        completeMethod="#{stockController.completeAvailableStocks}"
-                                        var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
-                                        >
-                            <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                 severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Code" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Generic" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                         commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Rate" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                        commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.stock}" >
-                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Expiry" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
-                                               style="width: 100px!important;" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:ajax process="@this" update="@all" event="change" listener="#{pharmacySaleBhtController.changeBillItem(bItm , bItm.pharmaceuticalBillItem.stock)}"/>
-                        </p:autoComplete>
-                    </p:column>
-=======
-                    
->>>>>>> 37ae6728503184710ccee7341d80c8c7ee609e89
 
                     <p:column headerText="Description" style="width: 50px!important;"  >
                         <h:outputText id="dis" value="#{bItm.item.descreption}" >

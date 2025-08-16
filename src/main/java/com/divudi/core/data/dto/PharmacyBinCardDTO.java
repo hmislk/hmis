@@ -54,6 +54,30 @@ public class PharmacyBinCardDTO implements Serializable {
         this.batchNo = batchNo;
     }
 
+    public PharmacyBinCardDTO(Long id,
+            Date createdAt,
+            BillType billType,
+            BillTypeAtomic billTypeAtomic,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double qtyPacks,
+            Double freeQtyPacks,
+            Double itemDblValue,
+            Double itemStock) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.billType = billType;
+        this.billTypeAtomic = billTypeAtomic;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.qtyPacks = qtyPacks;
+        this.freeQtyPacks = freeQtyPacks;
+        this.itemDblValue = itemDblValue;
+        this.itemStock = itemStock;
+    }
+
     public PharmacyBinCardDTO() {
     }
 
