@@ -4383,7 +4383,7 @@ public class SearchController implements Serializable {
         tmp.put("bTp", BillType.InwardPharmacyRequest);
 
         sql = "Select b From Bill b where "
-                + " b.retired=false and  b.department=:dep "
+                + " b.retired=false and  b.toDepartment=:dep "
                 + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
