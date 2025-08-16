@@ -98,19 +98,19 @@ public class AgentReferenceBookController implements Serializable {
         String eventTrigger = "Edit Collection Centre Referance Book";
         refBookEditDetails = auditEventController.fillAllAuditEvents(refBookID, eventTrigger);
     }
-    
+
     public static String escapeSingleBackslash(String json) {
-    if (json == null) {
-        return null;
+        if (json == null) {
+            return null;
+        }
+        // Replace a single backslash (\) with double backslash (\\)
+        return json.replace("\\", "\\\\")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
-    // Replace a single backslash (\) with double backslash (\\)
-    return json.replace("\\", "\\\\")
-            .replace("\b", "\\b")
-            .replace("\f", "\\f")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r")
-            .replace("\t", "\\t");
-}
 
     public static String findDifferences(String beforeJson, String afterJson) {
         Map<String, String> differences = new HashMap<>();
@@ -274,9 +274,9 @@ public class AgentReferenceBookController implements Serializable {
         hm.put("sbNumber", agentReferenceBook.getStrbookNumber().trim());
 
         AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
-        
+
         if (arb != null) {
-            JsfUtil.addErrorMessage("Book Number Is Already use in "+ arb.getInstitution().getCode()+ " - " + arb.getInstitution().getName());
+            JsfUtil.addErrorMessage("Book Number Is Already use in " + arb.getInstitution().getCode() + " - " + arb.getInstitution().getName());
             return;
         }
 
@@ -300,8 +300,10 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
-    
+
     public void updateAgentBook(AgentReferenceBook book) {
+        System.out.println("book = " + book.getStrbookNumber());
+
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");
             return;
@@ -320,13 +322,29 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("You have No Privilege for Edit Book.");
             return;
         }
-        book.setEditedAt(new Date());
-        book.setEditor(sessionController.getLoggedUser());
-        getAgentReferenceBookFacade().edit(book);
 
-        auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
+        // Check if book number already exists
+        String sql = "SELECT a FROM AgentReferenceBook a WHERE a.retired=false AND a.deactivate=false AND a.referenceBookEnum=:rfe AND a.strbookNumber=:sbNumber";
+        HashMap hm = new HashMap();
+        hm.put("rfe", ReferenceBookEnum.LabBook);
+        hm.put("sbNumber", book.getStrbookNumber());
 
-        JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
+        AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
+
+        if (arb != null) {
+            searchReferenceBooks();
+            JsfUtil.addErrorMessage("Book Number Is Already use in " + arb.getInstitution().getCode() + " - " + arb.getInstitution().getName());
+            return;
+        } else {
+            book.setEditedAt(new Date());
+            book.setEditor(sessionController.getLoggedUser());
+            getAgentReferenceBookFacade().edit(book);
+
+            auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
+
+            JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
+        }
+        searchReferenceBooks();
     }
 
     public void deleteAgentBook(AgentReferenceBook agentReferenceBook) {
