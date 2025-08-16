@@ -265,7 +265,7 @@
                                     value="To Print" 
                                     ajax="false"
                                     styleClass="ui-button-warning m-1"
-                                    action="laboratary_income_report_print?faces-redirect=true;"
+                                    action="laboratary_income_report_print?faces-redirect=true"
                                     icon="pi pi-print">
                                 </p:commandButton>
                             </div>
@@ -360,7 +360,7 @@
                             </p:column>
 
                             <p:column headerText="Net Total"  width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.netTotal}">
+                                <h:outputText value="#{row.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
@@ -459,11 +459,11 @@
                             </p:column>
 
                             <p:column headerText="Actual Total" width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.netTotal}" >
+                                <h:outputText value="#{row.actualTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.actualTotal}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>

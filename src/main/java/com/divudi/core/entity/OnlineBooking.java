@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -25,7 +26,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
 //    class level variables
     private String patientName;
     private String nic;
@@ -48,7 +49,22 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private boolean absent;
     private boolean canceled;
     private String cancelledBy;
-    
+    private boolean paidToHospital;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date paidToHospitalDate;
+    private WebUser paidToHospitalProcessedBy;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    private Bill paidToHospitalBill;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    private Bill paidToHospitalCancelledBill;
+
+    private WebUser paidToHospitalBillCancelledBy;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date paidToHospitalBillCancelledAt;
+    private String comment;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
 
@@ -62,22 +78,86 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     @ManyToOne
     private WebUser retirer;
     private String retireComments;
-    
+
     @ManyToOne
     private Institution agency;
-    
+
     @ManyToOne
     private Department department;
-    
+
     @ManyToOne
     private Institution hospital;
-    
+
     @OneToOne(mappedBy = "onlineBooking", fetch = FetchType.EAGER)
     private Bill bill;
-    
+
     @Enumerated(EnumType.STRING)
     private OnlineBookingStatus onlineBookingStatus;
-    
+
+    public Bill getPaidToHospitalCancelledBill() {
+        return paidToHospitalCancelledBill;
+    }
+
+    public void setPaidToHospitalCancelledBill(Bill paidToHospitalCancelledBill) {
+        this.paidToHospitalCancelledBill = paidToHospitalCancelledBill;
+    }
+
+    public boolean isPaidToHospital() {
+        return paidToHospital;
+    }
+
+    public void setPaidToHospital(boolean paidToHospital) {
+        this.paidToHospital = paidToHospital;
+    }
+
+    public Date getPaidToHospitalDate() {
+        return paidToHospitalDate;
+    }
+
+    public void setPaidToHospitalDate(Date paidToHospitalDate) {
+        this.paidToHospitalDate = paidToHospitalDate;
+    }
+
+    public WebUser getPaidToHospitalProcessedBy() {
+        return paidToHospitalProcessedBy;
+    }
+
+    public void setPaidToHospitalProcessedBy(WebUser paidToHospitalProcessedBy) {
+        this.paidToHospitalProcessedBy = paidToHospitalProcessedBy;
+    }
+
+    public Bill getPaidToHospitalBill() {
+        return paidToHospitalBill;
+    }
+
+    public void setPaidToHospitalBill(Bill paidToHospitalBill) {
+        this.paidToHospitalBill = paidToHospitalBill;
+    }
+
+    public WebUser getPaidToHospitalBillCancelledBy() {
+        return paidToHospitalBillCancelledBy;
+    }
+
+    public void setPaidToHospitalBillCancelledBy(WebUser paidToHospitalBillCancelledBy) {
+        this.paidToHospitalBillCancelledBy = paidToHospitalBillCancelledBy;
+    }
+
+    public Date getPaidToHospitalBillCancelledAt() {
+        return paidToHospitalBillCancelledAt;
+    }
+
+    public void setPaidToHospitalBillCancelledAt(Date paidToHospitalBillCancelledAt) {
+        this.paidToHospitalBillCancelledAt = paidToHospitalBillCancelledAt;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -197,7 +277,6 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     public void setHospital(Institution hospital) {
         this.hospital = hospital;
     }
-
 
     @Override
     public int hashCode() {

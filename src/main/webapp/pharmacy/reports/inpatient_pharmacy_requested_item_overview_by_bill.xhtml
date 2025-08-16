@@ -69,21 +69,21 @@
                         <h:outputText styleClass="fa fa-id-card"></h:outputText>
                         <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
 
-<!--                                                <p:commandButton 
-                                                    value="Download" 
-                                                    ajax="false"
-                                                    class="ui-button-primary m-1"
-                                                    icon="fa fa-download">
-                                                    <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
-                                                </p:commandButton>
-
-                                                <p:commandButton 
-                                                    value="Print" 
-                                                    ajax="false"
-                                                    class="ui-button-primary m-1"
-                                                    icon="fa fa-print">
-                                                    <p:printer target="tbl1"></p:printer>
-                                                </p:commandButton>-->
+                        <!--                                                <p:commandButton 
+                                                                            value="Download" 
+                                                                            ajax="false"
+                                                                            class="ui-button-primary m-1"
+                                                                            icon="fa fa-download">
+                                                                            <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
+                                                                        </p:commandButton>
+                        
+                                                                        <p:commandButton 
+                                                                            value="Print" 
+                                                                            ajax="false"
+                                                                            class="ui-button-primary m-1"
+                                                                            icon="fa fa-print">
+                                                                            <p:printer target="tbl1"></p:printer>
+                                                                        </p:commandButton>-->
 
                         <p:commandButton 
                             value="Back to Inpatient Profile" 
@@ -136,7 +136,7 @@
                                             var="b"
                                             itemLabel="#{b.deptId}"
                                             itemValue="#{b}"/>
-                                        <p:ajax process="@this" update="tblreq tblIssue reqtbls @all" event="change"/>
+                                        <p:ajax process="@this" update="tblreq reqtbls" event="change"/>
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                             </p:panel>
@@ -184,23 +184,23 @@
                                         </p:column>
                                     </p:dataTable>
                                     <ui:repeat value="#{inwardReportControllerBht.getReturnAndCancelBHTIssueBills(b)}" var="b">
-                                    <p:dataTable id="tblIssue" value="#{billBeanController.fetchBillItems(b)}" var="bi">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} From &nbsp;" />
-                                            <h:outputLabel value="&nbsp;:&nbsp;" />
-                                            <h:outputLabel value="#{b.department.name}" /><br/>
-                                            <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} User&nbsp;" />
-                                            <h:outputLabel value="&nbsp;:&nbsp;" />
-                                            <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
-                                        </f:facet>
-                                        <p:column headerText="Item" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}" >
-                                            <h:outputLabel value="#{bi.item.name}" />
-                                        </p:column>
-                                        <p:column headerText="Qty" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}">
-                                            <h:outputLabel value="#{-commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
-                                        </p:column>
-                                    </p:dataTable>
-                                </ui:repeat>
+                                        <p:dataTable id="tblIssueRet" value="#{billBeanController.fetchBillItems(b)}" var="bi">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} From &nbsp;" />
+                                                <h:outputLabel value="&nbsp;:&nbsp;" />
+                                                <h:outputLabel value="#{b.department.name}" /><br/>
+                                                <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} User&nbsp;" />
+                                                <h:outputLabel value="&nbsp;:&nbsp;" />
+                                                <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
+                                            </f:facet>
+                                            <p:column headerText="Item" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}" >
+                                                <h:outputLabel value="#{bi.item.name}" />
+                                            </p:column>
+                                            <p:column headerText="Qty" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}">
+                                                <h:outputLabel value="#{-commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </ui:repeat>
                                 </ui:repeat>
                             </h:panelGroup>
                         </div>

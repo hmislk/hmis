@@ -203,18 +203,9 @@
                     rendered="#{webUserController.hasPrivilege('Developers')}">
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
-                    <p:commandLink 
-                        ajax="false"
-                        value="Edit"
-                        action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
-                    </p:commandLink>
-                    <p:commandLink 
-                        value="View" 
-                        ajax="false"
-                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
-                    </p:commandLink>
                 </p:column>
+
+
 
                 <p:column 
                     width="5rem" 
@@ -258,8 +249,8 @@
                     sortBy="#{agentHx.bill.fromInstitution.code}" 
                     filterBy="#{agentHx.bill.fromInstitution.code}" 
                     filterMatchMode="contains">
-<!--                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>-->
-                    <h:outputText value="#{agentHx.bill.fromInstitution.code}" style="text-align: right; display: block;" />
+                    <h:outputText value="#{agentHx.agency.code}" rendered="#{agentHx.historyType eq 'RepaymentToCollectingCentre'}" style="text-align: right; display: block;"/>
+                    <h:outputText value="#{agentHx.bill.fromInstitution.code}" rendered="#{agentHx.historyType ne 'RepaymentToCollectingCentre'}" style="text-align: right; display: block;" />
                 </p:column>
 
                 <p:column
@@ -269,7 +260,8 @@
                     sortBy="#{agentHx.bill.fromInstitution.name}" 
                     filterBy="#{agentHx.bill.fromInstitution.name}" 
                     filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.fromInstitution.name}" />
+                    <h:outputText value="#{agentHx.agency.name}" rendered="#{agentHx.historyType eq 'RepaymentToCollectingCentre'}"/>
+                    <h:outputText value="#{agentHx.bill.fromInstitution.name}" rendered="#{agentHx.historyType ne 'RepaymentToCollectingCentre'}"/>
                 </p:column>
 
                 <p:column 
@@ -382,6 +374,47 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
+
+
+                <p:column
+                    width="10em"
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    headerText="Developers" >
+                    <p:commandLink 
+                        ajax="false"
+                        value="Edit Balance History"
+                        class="mx-1"
+                        action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
+                    </p:commandLink>
+                    <p:commandButton 
+                        title="View" 
+                        icon="fa fa-eye" 
+                        class="m-1 ui-button-info"
+                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                        ajax="false">
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        title="Manage" 
+                        icon="fa fa-tools" 
+                        class="m-1 ui-button-warning" 
+                        action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                        ajax="false">
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        title="Admin" 
+                        icon="fa fa-shield-alt" 
+                        class="m-1 ui-button-danger" 
+                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                        ajax="false" 
+                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
+                </p:column>
+
 
             </p:dataTable>
 

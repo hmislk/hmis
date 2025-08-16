@@ -84,11 +84,11 @@ public class AgentReferenceBookController implements Serializable {
 
     public String navigateToBookEditHistory(Long refBookID) {
         fillBookEditDetails(refBookID);
-        return "/collecting_centre/cc_book_edit_history?faces-redirect=true;";
+        return "/collecting_centre/cc_book_edit_history?faces-redirect=true";
     }
 
     public String navigateToBackCCBookSearch() {
-        return "/collecting_centre/report_collecting_center_referece_book?faces-redirect=true;";
+        return "/collecting_centre/report_collecting_center_referece_book?faces-redirect=true";
     }
 
     private List<AuditEvent> refBookEditDetails;
@@ -98,14 +98,27 @@ public class AgentReferenceBookController implements Serializable {
         String eventTrigger = "Edit Collection Centre Referance Book";
         refBookEditDetails = auditEventController.fillAllAuditEvents(refBookID, eventTrigger);
     }
+    
+    public static String escapeSingleBackslash(String json) {
+    if (json == null) {
+        return null;
+    }
+    // Replace a single backslash (\) with double backslash (\\)
+    return json.replace("\\", "\\\\")
+            .replace("\b", "\\b")
+            .replace("\f", "\\f")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
+}
 
     public static String findDifferences(String beforeJson, String afterJson) {
         Map<String, String> differences = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-            Map<String, Object> map1 = mapper.readValue(beforeJson, Map.class);
-            Map<String, Object> map2 = mapper.readValue(afterJson, Map.class);
+            Map<String, Object> map1 = mapper.readValue(escapeSingleBackslash(beforeJson), Map.class);
+            Map<String, Object> map2 = mapper.readValue(escapeSingleBackslash(afterJson), Map.class);
 
             Set<String> allKeys = new HashSet<>();
             allKeys.addAll(map1.keySet());
@@ -260,8 +273,10 @@ public class AgentReferenceBookController implements Serializable {
         hm.put("rfe", bookEnum);
         hm.put("sbNumber", agentReferenceBook.getStrbookNumber().trim());
 
-        if (!getAgentReferenceBookFacade().findByJpql(sql, hm).isEmpty()) {
-            JsfUtil.addErrorMessage("Book Number Is Already Given.");
+        AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
+        
+        if (arb != null) {
+            JsfUtil.addErrorMessage("Book Number Is Already use in "+ arb.getInstitution().getCode()+ " - " + arb.getInstitution().getName());
             return;
         }
 
@@ -285,7 +300,7 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
-
+    
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");

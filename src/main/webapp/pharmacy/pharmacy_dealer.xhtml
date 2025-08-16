@@ -20,22 +20,22 @@
             <p:panel header="Manage Pharmecy Supplier" >
                 <div class="row">
                     <div class="col-5">
-                        <p:commandButton id="btnAdd" value="Add" action="#{dealerController.prepareAdd()}" 
+                        <p:commandButton id="btnAdd" value="Add" action="#{dealerController.prepareAdd()}"
                                          class="w-25 ui-button-success"
-                                         update="lstSelect gpDetail" 
+                                         update="lstSelect gpDetail"
                                          icon="fa fa-plus"
                                          process="btnAdd">
 
                         </p:commandButton>
-                        <p:commandButton id="btnDelete" 
+                        <p:commandButton id="btnDelete"
                                          onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                     return false;" action="#{dealerController.delete()}" 
+                                                     return false;" action="#{dealerController.delete()}"
                                          icon="fas fa-trash"
                                          update="lstSelect gpDetail msg" process="btnDelete"
                                          class=" m-1 ui-button-danger w-25"
                                          value="Delete"  >
                         </p:commandButton>
-                        <p:selectOneListbox  id="lstSelect"   
+                        <p:selectOneListbox  id="lstSelect"
                                              style="w-100"
                                              filter="true" value="#{dealerController.current}">
                             <f:selectItems  value="#{dealerController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
@@ -57,24 +57,31 @@
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.address}" class="w-100" ></p:inputText>
                                 <h:outputText  value="Phone" ></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.phone}" class="w-100" ></p:inputText>
+                                <h:outputText  value="Email" ></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{dealerController.current.email}" class="w-100" ></p:inputText>
                                 <h:outputText  value="Fax" ></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.fax}" class="w-100" ></p:inputText>
+                                <h:outputText value="Status" />
+                                <p:selectOneMenu value="#{dealerController.current.inactive}" class="w-100">
+                                    <f:selectItem itemLabel="Active" itemValue="#{false}" />
+                                    <f:selectItem itemLabel="Inactive" itemValue="#{true}" />
+                                </p:selectOneMenu>
                             </h:panelGrid>
 
 
-                            <p:commandButton id="generateCode" value="Generate Code" 
-                                             action="#{dealerController.generateCodeForDealor()}" 
-                                             process="generateCode gpDetail" 
-                                             update="gpDetail" 
+                            <p:commandButton id="generateCode" value="Generate Code"
+                                             action="#{dealerController.generateCodeForDealor()}"
+                                             process="generateCode gpDetail"
+                                             update="gpDetail"
                                              class=" m-1 ui-button-success w-25"
                                              icon="fas fa-save">
 
                             </p:commandButton>
 
-                            <p:commandButton id="btnSave" value="Save" 
-                                             action="#{dealerController.saveSelected()}" 
-                                             process="btnSave gpDetail" 
-                                             update="lstSelect msg" 
+                            <p:commandButton id="btnSave" value="Save"
+                                             action="#{dealerController.saveSelected()}"
+                                             process="btnSave gpDetail"
+                                             update="lstSelect msg"
                                              class=" m-1 ui-button-warning w-25"
                                              icon="fas fa-save">
 

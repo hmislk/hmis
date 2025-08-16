@@ -15,8 +15,16 @@
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Transfer Recieve Reprint" ></h:outputLabel>
+                            <h:outputLabel value="Transfer Receive Reprint" ></h:outputLabel>
                             <div style="float: right">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 10em;">
+                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                </h:panelGroup>
                                 <p:commandButton
                                         value="Reprint"
                                         icon="fas fa-print"
@@ -24,6 +32,14 @@
                                         ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
+                                <p:commandButton
+                                    value="#{pharmacyBillSearch.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                                    icon="fas fa-eye"
+                                    class="ui-button-secondary mx-2"
+                                    ajax="false"
+                                    action="#{pharmacyBillSearch.toggleShowAllBillFormats}"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    title="Toggle visibility of all bill formats for development" />
                                 <p:commandButton
                                         ajax="false"
                                         value="To Cancel"
@@ -43,12 +59,59 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+
+                            <h:panelGroup
+                                rendered="#{pharmacyBillSearch.showAllBillFormats 
+                                            or (sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper' 
+                                            and not sessionController.loggedPreference.grnBillDetailed)}"
+                                styleClass="noBorder">
+                                <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}" >
+                                    <p:separator></p:separator>
+                                    <h:outputText value="Preference - Pharmacy Bill Paper Type = A4Paper" class="h3" ></h:outputText>
+                                    <br/>
+                                    <h:outputText value="Preference - grnBillDetailed = false" class="h3" ></h:outputText>
+                                    <p:separator></p:separator>
+                                </h:panelGroup>
+                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />
+                                <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}" >
+                                    <p:separator></p:separator>
+                                </h:panelGroup>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
+
+                            <h:panelGroup
+                                rendered="#{pharmacyBillSearch.showAllBillFormats 
+                                            or (sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper' 
+                                            and sessionController.loggedPreference.grnBillDetailed)}"
+                                styleClass="noBorder">
+                                <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}">
+                                    <p:separator/>
+                                    <h:outputText value="Preference - Pharmacy Bill Paper Type = A4Paper" class="h3"/>
+                                    <br/>
+                                    <h:outputText value="Preference - grnBillDetailed = true" class="h3"/>
+                                    <p:separator/>
+                                </h:panelGroup>
+                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}" />
+                                <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}">
+                                    <p:separator/>
+                                </h:panelGroup>
                             </h:panelGroup>
+
+                            <h:panelGroup 
+                                id="gpBillTemplate" 
+                                rendered="#{pharmacyBillSearch.showAllBillFormats 
+                                            or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive Bill is Template',false)}"
+                                styleClass="noBorder">
+                                <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}">
+                                    <p:separator/>
+                                    <h:outputText value="Configuration Option - Pharmacy Transfer Receive Bill is Template = true" class="h3"/>
+                                    <p:separator/>
+                                </h:panelGroup>
+                                <ph:pharmacy_transfer_receive_receipt bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                <h:panelGroup rendered="#{pharmacyBillSearch.showAllBillFormats}">
+                                    <p:separator/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
                         </h:panelGroup>
 
                     </p:panel>

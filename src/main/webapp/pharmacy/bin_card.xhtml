@@ -85,7 +85,7 @@
 
                 </h:panelGrid>
 
-                <p:dataTable value="#{pharmacyErrorChecking.stockHistories}"
+                <p:dataTable value="#{pharmacyErrorChecking.binCardEntries}"
                              var="sh"
                              rowIndexVar="i"
                              rows="10"
@@ -101,10 +101,10 @@
                         headerText="Stock Hx ID"
                         rendered="#{webUserController.hasPrivilege('Developers')}"
                         width="10rem">
-                        <p:commandLink 
+                        <p:commandLink
                             ajax="false"
-                            action="#{stockHistoryController.navigateToViewStockHistory(sh)}"
-                            value="#{sh.id}" 
+                            action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
+                            value="#{sh.id}"
                             ></p:commandLink>
                         <f:facet name="footer">
                             <h:outputText value="Total"/>
@@ -120,22 +120,20 @@
 
                     <!-- Bill Type -->
                     <p:column headerText="Bill Type">
-                        <h:outputText value="#{sh.pbItem.billItem.bill.billType.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic eq null}"/>
-                        <h:outputText value="#{sh.pbItem.billItem.bill.billTypeAtomic.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic ne null}"/>
+                        <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
+                        <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
                     </p:column>
 
-                    <!-- Quantity In -->
+                    <!-- Batch Number -->
                     <p:column headerText="Batch Number" class="text-end">
-                        <h:outputText
-                            value="#{sh.pbItem.stock.itemBatch.batchNo}" >
-                        </h:outputText>
+                        <h:outputText value="#{sh.batchNo}" />
                     </p:column>
 
                     <!-- Quantity In -->
                     <p:column headerText="Qty In" class="text-end">
-                        <h:outputText value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
-                                      rendered="#{sh.pbItem.transThisIsStockIn}"
-                                      styleClass="#{sh.pbItem.qty gt 0 ? 'text-success' : ''}">
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                                      rendered="#{sh.transThisIsStockIn}"
+                                      styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                         <p:commandLink value="" ></p:commandLink>
@@ -144,9 +142,9 @@
                     <!-- Quantity Out -->
                     <p:column headerText="Qty Out" class="text-end">
                         <h:outputText 
-                            value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
-                            rendered="#{sh.pbItem.transThisIsStockOut}"
-                            styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
+                            value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                            rendered="#{sh.transThisIsStockOut}"
+                            styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>

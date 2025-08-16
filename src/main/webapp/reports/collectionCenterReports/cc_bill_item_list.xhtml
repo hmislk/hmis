@@ -31,15 +31,34 @@
                             <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                             <h:outputLabel class="mx-3" value="From Date"/>
                         </h:panelGroup>
-
-                        <p:datePicker inputStyleClass="w-100" id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <p:datePicker
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="fromDate"
+                            showTime="true"
+                            yearNavigator="true"
+                            monthNavigator="true"
+                            timeInput="true"
+                            value="#{patientInvestigationController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            />
 
                         <h:panelGroup class="mx-2">
                             <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                             <h:outputLabel class="mx-3" value="To Date"/>
                         </h:panelGroup>
 
-                        <p:datePicker id="toDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <p:datePicker 
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="toDate"
+                            showTime="true"
+                            yearNavigator="true"
+                            monthNavigator="true"
+                            timeInput="true"
+                            value="#{patientInvestigationController.toDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            />
 
                         <h:panelGroup >
                             <h:outputText value="&#xf46d;" styleClass="fa mr-2" />

@@ -18,6 +18,7 @@ public class String1Value3 {
     private Double value1 = 0.0;
     private Double value2 = 0.0;
     private Double value3 = 0.0;
+    private Double value4 = 0.0;
     Long longValue1;
     Boolean summery = false;
     Date date;
@@ -29,8 +30,6 @@ public class String1Value3 {
     public void setLongValue1(Long longValue1) {
         this.longValue1 = longValue1;
     }
-
-
 
     public String1Value3() {
     }
@@ -85,6 +84,16 @@ public class String1Value3 {
     public void setSummery(Boolean summery) {
         this.summery = summery;
     }
+
+    public Double getValue4() {
+        return value4;
+    }
+
+    public void setValue4(Double value4) {
+        this.value4 = value4;
+    }
+    
+    
 
     //overridden method, has to be exactly the same like the following
     public boolean equals(Object obj) {

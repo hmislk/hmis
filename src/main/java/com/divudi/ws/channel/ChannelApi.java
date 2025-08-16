@@ -61,6 +61,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
+import com.divudi.service.WebSocketService;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
@@ -156,6 +158,8 @@ public class ChannelApi {
     @EJB
     ChannelService channelService;
 
+    private static final Logger LOGGER = Logger.getLogger(ChannelApi.class.getName());
+
     /**
      * Creates a new instance of Api
      */
@@ -177,6 +181,14 @@ public class ChannelApi {
             String json = response.toString();
             return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
         }
+
+        try {
+            validateAndFetchAgency(null, bookingChannel);
+        } catch (ValidationException e) {
+            response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         List<Object[]> specializations = specilityList();
         Map<String, String> specialityMap = new HashMap<>();
 
@@ -286,6 +298,14 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
+
+        try {
+            validateAndFetchAgency(null, bookingChannel);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         // Get the list of institutions from the controller
         List<Institution> institutions = channelService.findHospitals();
         if (institutions == null || institutions.isEmpty()) {
@@ -413,6 +433,13 @@ public class ChannelApi {
         String specIDStr = (String) requestBody.get("specID");
         String dateStr = (String) requestBody.get("date");
         String name = (String) requestBody.get("name");
+
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         Long hosId = channelService.checkSafeParseLong(hosIdStr);
         Long specId = channelService.checkSafeParseLong(specIDStr);
@@ -581,6 +608,13 @@ public class ChannelApi {
 
         String agencyCode = (String) requestBody.get("bookingChannel");
 
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         List<Institution> hospitals = channelService.findInstitutionFromId(hospitalIdLong);
 
         if (hospitals == null || hospitals.isEmpty()) {
@@ -607,7 +641,7 @@ public class ChannelApi {
             }
         }
 
-        List<SessionInstance> sessions = channelService.findSessionInstance(hospitals, null, doctorList, null);
+        List<SessionInstance> sessions = channelService.findSessionInstanceForDoctorSessions(hospitals, null, doctorList, null);
         if (sessions == null || sessions.isEmpty()) {
             JSONObject json = commonFunctionToErrorResponse("No data for this criteria.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
@@ -893,10 +927,12 @@ public class ChannelApi {
             throw new ValidationException("Agency attributes : ", "Missing agency code and name. Check fields");
         }
 
-        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
+        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.OnlineBookingAgent);
 
         if (creditCompany == null) {
-            throw new ValidationException("Agency : ", "Your agency not register in the hospital system. Contact Carecode.");
+            throw new ValidationException("Agency : ", "Your agency is not registered in the hospital system.");
+        } else if (creditCompany != null && creditCompany.isInactive()) {
+            throw new ValidationException("Agency : ", "Your agency is deactivated from the hospital system.");
         }
 
         return creditCompany;
@@ -924,6 +960,14 @@ public class ChannelApi {
         Map<String, String> patientDetails = (Map<String, String>) requestBody.get("patient");
         String sessionId = requestBody.get("sessionID").toString();
         Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
+
+        String agencyCode = payment.get("paymentChannel");
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         if (patientDetails == null || patientDetails.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Patien details not in the request");
@@ -988,7 +1032,6 @@ public class ChannelApi {
         }
 
         String agencyName = payment.get("paymentMode");
-        String agencyCode = payment.get("paymentChannel");
         String bookingForm = payment.get("channelFrom");
 
         Institution bookingAgency;
@@ -1019,6 +1062,12 @@ public class ChannelApi {
         newBooking.setAddress(address);
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+
+        try {
+            WebSocketService.broadcastToSessions("Online Temporary Booking Added - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at temporary booking" + e.getMessage());
+        }
 
         if (bill == null) {
             JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
@@ -1175,6 +1224,14 @@ public class ChannelApi {
 
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingDetails);
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings editing after session is started.", true)) {
+            if (temporarySavedBill != null && temporarySavedBill.getSingleBillSession().getSessionInstance().isStarted()) {
+                JSONObject response = commonFunctionToErrorResponse("Can't edit the appointment due to hospital restriction. Please contact hospital.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
+        }
+
         try {
             validateBillForCompleteBooking(temporarySavedBill);
             validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
@@ -1187,6 +1244,12 @@ public class ChannelApi {
 
         Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Edited - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at edit booking" + e.getMessage());
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1389,6 +1452,12 @@ public class ChannelApi {
         OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
 
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Completed - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at complete booking " + e.getMessage());
+        }
+
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
@@ -1578,6 +1647,8 @@ public class ChannelApi {
             bookingStatus = "Doctor Canceled";
         } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
             bookingStatus = "Completed";
+        } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.ABSENT) {
+            bookingStatus = "Absent";
         }
 
         Map<String, Object> appoinment = new HashMap<>();
@@ -1713,6 +1784,9 @@ public class ChannelApi {
             } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.PATIENT_CANCELED || bookingData.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
                 JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " is already cancelled");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
+                JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " patient alredy visited and completed the appoinment");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
         }
 
@@ -1726,13 +1800,22 @@ public class ChannelApi {
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings cancellation after session is started.", true)) {
-            JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            if (completedSaveBill != null && completedSaveBill.getSingleBillSession().getSessionInstance().isStarted()) {
+                JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
         }
 
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Cancelled - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at cancel booking " + e.getMessage());
+        }
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {
@@ -2008,8 +2091,10 @@ public class ChannelApi {
     public Response getApiKeyWithRenewal(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String bookingChannel = (String) requestBody.get("bookingChannel");
 
-        if (!bookingChannel.equalsIgnoreCase("WEB_DOC990")) {
-            JSONObject response = commonFunctionToErrorResponse("Authentication failed");
+        try {
+            validateAndFetchAgency(null, bookingChannel);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 

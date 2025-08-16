@@ -36,7 +36,6 @@ public class PharmaceuticalBillItem implements Serializable {
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "bill_item_id") // This is the owning side, so it should have the @JoinColumn annotation.
     private BillItem billItem;
 
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -54,20 +53,29 @@ public class PharmaceuticalBillItem implements Serializable {
     private double remainingFreeQty;
     private double remainingFreeQtyPack;
 
+    private double remainingQty;
+    private double remainingQtyPack;
+
     private double purchaseRate;
     private double purchaseRatePack;
 
     private double retailRate;
     private double retailRatePack;
 
+    private double wholesaleRate;
+    private double wholesaleRatePack;
+
+    private double costRate;
+    private double costRatePack;
+
     private double purchaseValue;
+    @Deprecated // Not different from purchase value
     private double purchaseRatePackValue;
 
     private double retailValue;
+    @Deprecated // Not different from retail value
     private double retailPackValue;
-
-    private double wholesaleRate;
-    private double wholesaleRatePack;
+    private double costValue;
 
     private double lastPurchaseRate;
     private double lastPurchaseRatePack;
@@ -281,6 +289,8 @@ public class PharmaceuticalBillItem implements Serializable {
 
         remainingFreeQty = ph.remainingFreeQty;
         remainingFreeQtyPack = ph.remainingFreeQtyPack;
+        remainingQty = ph.remainingQty;
+        remainingQtyPack = ph.remainingQtyPack;
 
         wholesaleRate = ph.wholesaleRate;
         wholesaleRatePack = ph.wholesaleRatePack;
@@ -292,7 +302,6 @@ public class PharmaceuticalBillItem implements Serializable {
         stock = ph.getStock();
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
-        //  remainingQty=ph.getRemainingQty();
 
         make = ph.getMake();
         model = ph.getModel();
@@ -320,6 +329,13 @@ public class PharmaceuticalBillItem implements Serializable {
         qtyPacks = 0 - ph.qtyPacks;
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
+    }
+
+    public void invertValue() {
+        qty = 0 - qty;
+        qtyPacks = 0 - qtyPacks;
+        freeQty = 0 - freeQty;
+        freeQtyPacks = 0 - freeQtyPacks;
     }
 
     public Stock getStock() {
@@ -464,12 +480,10 @@ public class PharmaceuticalBillItem implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    
     public double getRetailRateInUnit() {
         return retailRate;
     }
 
-    
     public void setRetailRateInUnit(double retailRate) {
         this.retailRate = retailRate;
     }
@@ -655,6 +669,22 @@ public class PharmaceuticalBillItem implements Serializable {
         this.remainingFreeQtyPack = remainingFreeQtyPack;
     }
 
+    public double getRemainingQty() {
+        return remainingQty;
+    }
+
+    public void setRemainingQty(double remainingQty) {
+        this.remainingQty = remainingQty;
+    }
+
+    public double getRemainingQtyPack() {
+        return remainingQtyPack;
+    }
+
+    public void setRemainingQtyPack(double remainingQtyPack) {
+        this.remainingQtyPack = remainingQtyPack;
+    }
+
     public double getWholesaleRatePack() {
         return wholesaleRatePack;
     }
@@ -782,6 +812,31 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
 
+    public double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
+    }
+
+    public double getCostRatePack() {
+        return costRatePack;
+    }
+
+    public void setCostRatePack(double costRatePack) {
+        this.costRatePack = costRatePack;
+    }
+
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
+
+    
+    
 }

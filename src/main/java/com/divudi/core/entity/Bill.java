@@ -41,6 +41,7 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
 
 /**
  * @author buddhika
@@ -112,11 +113,14 @@ public class Bill implements Serializable, RetirableEntity {
     @Lob
     private String comments;
     @Lob
+    private String paymentMemo;
+    @Lob
     private String indication;
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
     private boolean creditBill;
+    private boolean consignment;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -183,6 +187,8 @@ public class Bill implements Serializable, RetirableEntity {
     private double billerFee;
     private double grantTotal;
     private double expenseTotal;
+    private double expensesTotalConsideredForCosting;
+    private double expensesTotalNotConsideredForCosting;
     //with minus tax and discount
     private double grnNetTotal;
 
@@ -342,6 +348,12 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
 
+    private boolean fullyIssued;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullyIssuedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullyIssuedAt;
+
     //Print Information
     private boolean printed;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -440,10 +452,11 @@ public class Bill implements Serializable, RetirableEntity {
 
     private String externalDoctor;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private StockBill stockBill;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "BILLFINANCEDETAILS_ID", unique = true)
     private BillFinanceDetails billFinanceDetails;
 
     @Transient
@@ -458,6 +471,7 @@ public class Bill implements Serializable, RetirableEntity {
         reactivated = false;
         refunded = false;
         cancelled = false;
+        consignment = false;
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
@@ -872,6 +886,8 @@ public class Bill implements Serializable, RetirableEntity {
         refundAmount = 0 - bill.getRefundAmount();
         serviceCharge = 0 - bill.getServiceCharge();
         expenseTotal = 0 - bill.getExpenseTotal();
+        expensesTotalConsideredForCosting = 0 - bill.getExpensesTotalConsideredForCosting();
+        expensesTotalNotConsideredForCosting = 0 - bill.getExpensesTotalNotConsideredForCosting();
         claimableTotal = 0 - bill.getClaimableTotal();
         tenderedAmount = 0 - bill.getTenderedAmount();
         totalHospitalFee = 0 - bill.getTotalHospitalFee();
@@ -908,6 +924,8 @@ public class Bill implements Serializable, RetirableEntity {
         refundAmount = 0 - getRefundAmount();
         serviceCharge = 0 - getServiceCharge();
         expenseTotal = 0 - getExpenseTotal();
+        expensesTotalConsideredForCosting = 0 - getExpensesTotalConsideredForCosting();
+        expensesTotalNotConsideredForCosting = 0 - getExpensesTotalNotConsideredForCosting();
         claimableTotal = 0 - getClaimableTotal();
         tenderedAmount = 0 - getTenderedAmount();
         totalHospitalFee = 0 - getTotalHospitalFee();
@@ -943,6 +961,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
         indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
@@ -984,6 +1003,7 @@ public class Bill implements Serializable, RetirableEntity {
         this.tax = bill.getTax();
         this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
+        this.consignment = bill.isConsignment();
         this.settledAmountByPatient = bill.getSettledAmountByPatient();
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
@@ -1018,6 +1038,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
         indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
@@ -1033,6 +1054,7 @@ public class Bill implements Serializable, RetirableEntity {
         sessionId = bill.getSessionId();
         ipOpOrCc = bill.getIpOpOrCc();
         chequeRefNo = bill.getChequeRefNo();
+        consignment = bill.isConsignment();
         settledAmountByPatient = bill.getSettledAmountByPatient();
         settledAmountBySponsor = bill.getSettledAmountBySponsor();
         qty = bill.getQty();
@@ -1138,6 +1160,22 @@ public class Bill implements Serializable, RetirableEntity {
         this.expenseTotal = expenseTotal;
     }
 
+    public double getExpensesTotalConsideredForCosting() {
+        return expensesTotalConsideredForCosting;
+    }
+
+    public void setExpensesTotalConsideredForCosting(double expensesTotalConsideredForCosting) {
+        this.expensesTotalConsideredForCosting = expensesTotalConsideredForCosting;
+    }
+
+    public double getExpensesTotalNotConsideredForCosting() {
+        return expensesTotalNotConsideredForCosting;
+    }
+
+    public void setExpensesTotalNotConsideredForCosting(double expensesTotalNotConsideredForCosting) {
+        this.expensesTotalNotConsideredForCosting = expensesTotalNotConsideredForCosting;
+    }
+
     public double getDiscountPercentPharmacy() {
         ////System.out.println("getting discount percent");
 //        ////System.out.println("bill item"+getBillItems());
@@ -1190,9 +1228,10 @@ public class Bill implements Serializable, RetirableEntity {
         return balance;
     }
 
-//    public void setBalance(double balance) {
-//        this.balance = balance;
-//    }
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
             listOfBill = new ArrayList<>();
@@ -1758,6 +1797,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getPaymentMemo() {
+        return paymentMemo;
+    }
+
+    public void setPaymentMemo(String paymentMemo) {
+        this.paymentMemo = paymentMemo;
     }
 
     public Bill getReferenceBill() {
@@ -2614,6 +2661,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.creditBill = creditBill;
     }
 
+    public boolean isConsignment() {
+        return consignment;
+    }
+
+    public void setConsignment(boolean consignment) {
+        this.consignment = consignment;
+    }
+
     public boolean isCompleted() {
         return completed;
     }
@@ -2644,6 +2699,30 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setCompletedAt(Date completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public boolean isFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
+    }
+
+    public WebUser getFullyIssuedBy() {
+        return fullyIssuedBy;
+    }
+
+    public void setFullyIssuedBy(WebUser fullyIssuedBy) {
+        this.fullyIssuedBy = fullyIssuedBy;
+    }
+
+    public Date getFullyIssuedAt() {
+        return fullyIssuedAt;
+    }
+
+    public void setFullyIssuedAt(Date fullyIssuedAt) {
+        this.fullyIssuedAt = fullyIssuedAt;
     }
 
     public BankAccount getBankAccount() {

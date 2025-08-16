@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -165,7 +165,8 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process"
+                                action="#{pharmacyReportController.processGrnCash()}" >
                             </p:commandButton>
 
                             <p:commandButton 
@@ -201,46 +202,69 @@
                         </div>
 
 
-                        <p:dataTable id="tbl" 
-                                     value="" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
-                                     paginatorPosition="bottom"
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
-
-                            <p:column headerText="Date" width="5em">
-                                <h:outputText value="" />
+                        <p:dataTable value="#{pharmacyReportController.billItems}" var="bi" id="tbl">
+                            <p:column headerText="DATE">
+                                <h:outputText value="#{bi.bill.createdAt}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="Total" />
+                                    <h:outputText value="Net Amount" />
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Item Name" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="ITEM NAME">
+                                <h:outputText value="#{bi.item.name}" />
                             </p:column>
-                            <p:column headerText="Code" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="CODE">
+                                <h:outputText value="#{bi.item.code}" />
                             </p:column>
-                            <p:column headerText="Batch Code" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="GRN No">
+                                <p:commandLink 
+                                    value="#{bi.bill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bi.bill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
-                            <p:column headerText="QTY" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="BATCH CODE">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
-                            <p:column headerText="Rate" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="QTY">
+                                <h:outputText value="#{bi.qty}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="GRN Value" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="COST RATE" width="5em">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Total" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="COST VALUE" width="5em">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate * bi.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-
+                            <p:column headerText="PURCHASE RATE">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="GRN VALUE">
+                                <h:outputText value="#{0.0-bi.netValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Total">
+                                <h:outputText value="#{bi.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>

@@ -4,12 +4,19 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.InvestigationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.InvestigationDetails;
 import com.divudi.core.data.dataStructure.InvestigationSummeryData;
 import com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
+import com.divudi.core.data.dto.InvestigationDTO;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -28,7 +35,18 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MachineFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import java.io.IOException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -36,11 +54,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -52,6 +74,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    InvestigationController investigationController;
 
     @EJB
     private BillFacade billFacade;
@@ -61,6 +85,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private InvestigationFacade investigationFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    
     private Date fromDate;
     private Date toDate;
     private Institution creditCompany;
@@ -73,10 +98,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private List<Item> investigations;
     List<InvestigationSummeryData> itemsLab;
     List<Bill> bills;
+    List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
+    private IncomeBundle bundle = new IncomeBundle();
 
     /**
      * Creates a new instance of CashierReportController
      */
+    
     public InvestigationMonthSummeryOwnController() {
     }
 
@@ -175,6 +203,184 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         }
     }
 
+    public void exportInvestigationReportToExcel() {
+    try {
+        // First, ensure data is processed and bundle is not null
+        if (getBundle() == null || getBundle().getBundles() == null || getBundle().getBundles().isEmpty()) {
+            processInvestigationMonthEndDetail(); // Call your data processing method
+        }
+        
+        // Double check after processing
+        if (getBundle() == null || getBundle().getBundles() == null || getBundle().getBundles().isEmpty()) {
+            JsfUtil.addErrorMessage("No data found to export");
+            return;
+        }
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        
+        // Check if response is already committed
+        if (context.getResponseComplete()) {
+            return;
+        }
+        
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        
+        // Set response headers before creating workbook
+        response.reset(); // Clear any existing response data
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=InvestigationReport.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("Investigation Report");
+            int rowIndex = 0;
+
+            // Create styles
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+            XSSFCellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd/MM/yyyy"));
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            XSSFCellStyle mergedStyle = workbook.createCellStyle();
+            mergedStyle.cloneStyleFrom(amountStyle);
+            mergedStyle.setFont(boldFont);
+
+            // Add report title and date range
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Investigation Month End Detail");
+            titleCell.setCellStyle(boldStyle);
+
+            Row dateRangeRow = sheet.createRow(rowIndex++);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(
+                sessionController != null && sessionController.getApplicationPreference() != null ? 
+                sessionController.getApplicationPreference().getLongDateTimeFormat() : "dd/MM/yyyy HH:mm"
+            );
+            
+            String dateRange = "From: " + (getFromDate() != null ? dateFormat.format(getFromDate()) : "N/A")
+                    + " To: " + (getToDate() != null ? dateFormat.format(getToDate()) : "N/A");
+            dateRangeRow.createCell(0).setCellValue(dateRange);
+
+            // Add empty row
+            rowIndex++;
+
+            // Create headers
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"Investigation", "Bill Number", "Bill Date", "Patient Name", "Net Value"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            // Process data - iterate through itemDetails with null checks
+            for (IncomeBundle b : getBundle().getBundles()) {
+                if (b == null) continue;
+
+                // Get investigation name for grouping
+                String investigationName = b.getName() != null ? b.getName() : "Unknown Investigation";
+
+                // Add investigation group header
+                Row groupRow = sheet.createRow(rowIndex++);
+                Cell groupCell = groupRow.createCell(0);
+                groupCell.setCellValue(investigationName);
+                groupCell.setCellStyle(boldStyle);
+
+                // Process bill items for this investigation
+                if (b.getRows() != null) {
+                    for (IncomeRow icr : b.getRows()) {
+                        if (icr == null) continue;
+                        
+                        Row dataRow = sheet.createRow(rowIndex++);
+                        
+                        // Investigation Name
+                        dataRow.createCell(0).setCellValue(investigationName);
+
+                        // Bill Number - with null check
+                        String billNo = icr.getBillNo() != null ? icr.getBillNo() : "";
+                        dataRow.createCell(1).setCellValue(billNo);
+
+                        // Date - with null check
+                        Cell dateCell = dataRow.createCell(2);
+                        if (icr.getCreatedAt() != null) {
+                            dateCell.setCellValue(icr.getCreatedAt());
+                            dateCell.setCellStyle(dateStyle);
+                        } else {
+                            dateCell.setCellValue("");
+                        }
+
+                        // Patient Name - with null check
+                        String patientName = icr.getPatientName() != null ? icr.getPatientName() : "";
+                        dataRow.createCell(3).setCellValue(patientName);
+
+                        // Net Value - with null check
+                        Cell amountCell = dataRow.createCell(4);
+                        if (icr.getItemValue() != null) {
+                            amountCell.setCellValue(icr.getItemValue());
+                            amountCell.setCellStyle(amountStyle);
+                        } else {
+                            amountCell.setCellValue(0.0);
+                            amountCell.setCellStyle(amountStyle);
+                        }
+                    }
+                }
+
+                // Add empty row after each investigation group
+                rowIndex++;
+            }
+
+            // Add footer with printed by information
+            Row footerRow = sheet.createRow(rowIndex++);
+            String printedBy = "Printed By: " + 
+                (sessionController != null && 
+                 sessionController.getLoggedUser() != null && 
+                 sessionController.getLoggedUser().getWebUserPerson() != null && 
+                 sessionController.getLoggedUser().getWebUserPerson().getName() != null ? 
+                 sessionController.getLoggedUser().getWebUserPerson().getName() : "Unknown User");
+            
+            Cell footerCell = footerRow.createCell(0);
+            footerCell.setCellValue(printedBy);
+            footerCell.setCellStyle(boldStyle);
+
+            // Auto-size columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Write to response output stream
+            try (OutputStream out = response.getOutputStream()) {
+                workbook.write(out);
+                out.flush();
+            }
+            
+            // Mark response as complete
+            context.responseComplete();
+
+        } catch (IOException e) {
+            Logger.getLogger(InvestigationMonthSummeryOwnController.class.getName()).log(Level.SEVERE, "IO Error during Excel export", e);
+            if (!context.getResponseComplete()) {
+                JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
+            }
+        }
+        
+    } catch (Exception e) {
+        Logger.getLogger(InvestigationMonthSummeryOwnController.class.getName()).log(Level.SEVERE, "Error during Excel export", e);
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (!context.getResponseComplete()) {
+            JsfUtil.addErrorMessage("Unexpected error during export: " + e.getMessage());
+        }
+    }
+}
+
     public List<InvestigationSummeryData> getItems2() {
         items = new ArrayList<>();
 
@@ -201,7 +407,66 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         this.itemValue = itemValue;
     }
 
-    List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
+    public void processInvestigationMonthEndDetail() {
+        bundle = new IncomeBundle();
+        List<InvestigationDTO> lst = investigationController.fillInvestigationNamesDtos();
+        for (InvestigationDTO dto : lst) {
+            List<InvestigationDetails> itemList = new ArrayList<>();
+            Map<String, Object> params = new HashMap<>();
+            
+            String jpql = "select new com.divudi.core.data.dataStructure.InvestigationDetails("
+                    + " pi.billItem.bill.id,"
+                    + " pi.billItem.bill.deptId, "
+                    + " pi.billItem.bill.createdAt, "
+                    + " pi.billItem.bill.patient.person.name, "
+                    + " pi.billItem.netValue) "
+                    + " from PatientInvestigation pi "
+                    + " where pi.billItem.retired = :ret "
+                    + " and pi.investigation.id =:insId "
+                    + " and pi.billItem.bill.cancelled =:can "
+                    + " and pi.billItem.bill.retired = :bRet "
+                    + " and pi.billItem.refunded =:ref "
+                    + " and pi.billItem.bill.createdAt between :fd and :td "
+                    + " and pi.billItem.bill.billTypeAtomic IN :bType "
+                    + " order by pi.billItem.bill.createdAt asc ";
+
+            params.put("ret", false);
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+            params.put("insId", dto.getId());
+            params.put("can", false);
+            params.put("ref", false);
+            params.put("bRet", false);
+
+            List<BillTypeAtomic> bTypes = Arrays.asList(
+                    BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                    BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                    BillTypeAtomic.CC_BILL,
+                    BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                    BillTypeAtomic.INWARD_SERVICE_BILL);
+            params.put("bType", bTypes);
+
+            itemList = (List<InvestigationDetails>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            if (itemList == null || itemList.isEmpty()) {
+                continue;
+            } else {
+                
+                IncomeBundle itemBundle = new IncomeBundle();
+                itemBundle.setName(dto.getName());
+
+                for (InvestigationDetails insDetail : itemList) {
+                    IncomeRow billIncomeRow = new IncomeRow(insDetail);
+                    itemBundle.getRows().add(billIncomeRow);
+                }
+                if(bundle.getBundles() == null){ 
+                    bundle.setBundles(new ArrayList<>());
+                }
+                
+                bundle.getBundles().add(itemBundle);
+            }
+        }
+    }
 
     public void createIxCountByInstitutionAndCollectingCentre() {
         String jpql;
@@ -419,7 +684,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //        ////// // System.out.println("refunded = " + refunded);
 //
 //        countTotal = billed - (refunded + cancelled);
-
 
     }
 
@@ -1184,8 +1448,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         }
 
-
-
     }
 
     public void createLabServiceWithCountByMachineAndBillType() {
@@ -1273,7 +1535,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
-
     }
 
     public void createLabServiceWithCountAndValueByMachineAndBillType() {
@@ -1343,7 +1604,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         totalInward += row.getInwardTotal();
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
-
 
     }
 
@@ -1515,7 +1775,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         investigationCountWithMachines.add(row);
 
-
     }
 
     public List<Item> getInvestigationItems() {
@@ -1622,6 +1881,14 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     List<Machine> machines;
     @EJB
     MachineFacade machineFacade;
+
+    public IncomeBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(IncomeBundle bundle) {
+        this.bundle = bundle;
+    }
 
     public class InvestigationCountWithMachine {
 

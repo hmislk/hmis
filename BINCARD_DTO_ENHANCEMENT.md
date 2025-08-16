@@ -90,6 +90,35 @@ Both approaches available, recommend migrating to DTO for performance.
 - All dependencies resolved
 - Navigation methods implemented for both approaches
 
+## Merge Conflict Resolution
+
+When merging this hotfix branch with development, the following conflicts were resolved:
+
+### 1. PharmacyBinCardDTO.java
+**Conflicts**: Missing `stockQty` and `batchNo` fields in development version
+**Resolution**: Kept hotfix additions for both fields and their getters/setters
+
+### 2. StockHistoryController.java  
+**Conflicts**: DTO query missing enhanced fields
+**Resolution**: Updated JPQL to include `s.stockQty, s.pbItem.stock.itemBatch.batchNo`
+
+### 3. bin_card.xhtml
+**Conflicts**: Different column structures between branches
+**Resolution**: Used DTO-based approach with all hotfix columns:
+- "Batch Number" → `#{sh.batchNo}`
+- "Balance Qty (Item)" → `#{sh.itemStock}`  
+- "Balance Qty (Batch)" → `#{sh.stockQty}`
+
+### 4. Method Signature Updates
+**Issue**: Development branch requires `TemporalType` parameter in facade methods
+**Files Fixed**:
+- `PharmacyBean.java` - Added `TemporalType.TIMESTAMP` parameter and import
+- `PharmacyCalculation.java` - Added `TemporalType.TIMESTAMP` parameter
+
+**Resolution Steps**:
+1. Added `import javax.persistence.TemporalType;` to required files
+2. Updated method calls to include `TemporalType.TIMESTAMP` parameter
+
 ## Related GitHub Issue
 
 **Issue**: [#14938 - Add missing fields to PharmacyBinCardDTO for hotfix merge compatibility](https://github.com/hmislk/hmis/issues/14938)

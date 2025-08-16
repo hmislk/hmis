@@ -116,27 +116,32 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
+                            <p:column headerText="Consignment" width="5em">
+                                <h:outputText value="#{p.consignment ? 'Yes' : 'No'}" />
+                            </p:column>
+
                             <p:column 
                                 headerText="Actions"
                                 width="6em">
                                 <div class="row">
                                     <div class="d-flex gap-2 mb-1">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
                                             value="Receive"
                                             class="w-100 ui-button-warning"
-                                            action="#{grnController.navigateToResive()}" 
-                                            disabled="#{p.cancelled or p.billClosed}">
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                            action="#{grnController.navigateToResive()}"
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="Receive&nbsp;All" 
-                                            rendered="false"
-                                            class="w-50 ui-button-info"
-                                            action="#{grnController.navigateToResiveAll()}" 
-                                            disabled="#{p.cancelled or p.billClosed}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Receive"
+                                            class="w-100 ui-button-warning"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                            action="#{grnCostingController.navigateToResiveCosting()}"
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                            <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
                                     <div class="col-md-12">
@@ -146,7 +151,7 @@
                                             value="Receive Wholesale" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Pharmacy Wholesales', true)}"
                                             action="#{grnController.navigateToReceiveWholesale()}" 
-                                            disabled="#{p.cancelled or p.billClosed}">
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
@@ -156,7 +161,7 @@
                                             class="w-100 ui-button-success my-1"
                                             value="PO Close" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.closeSelectedPurchesOrder()}" 
+                                            action="#{grnController.closeSelectedPurchaseOrder()}"
                                             disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                         </p:commandButton>
@@ -167,7 +172,7 @@
                                             class="w-100 ui-button-success my-1"
                                             value="PO Re-Open" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.openSelectedPurchesOrder()}" 
+                                            action="#{grnController.openSelectedPurchaseOrder()}"
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                         </p:commandButton>

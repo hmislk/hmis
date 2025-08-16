@@ -23,6 +23,7 @@ public enum BillType {
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
+    CollectingCentreAgentPayment,
     CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
@@ -65,6 +66,7 @@ public enum BillType {
     @Deprecated
     SandryGrn,
     PharmacyIssue,
+    PharmacyDisposalIssue,
     @Deprecated
     PharmacyBhtIssue,
     PharmacyBhtPre,
@@ -102,6 +104,7 @@ public enum BillType {
     PharmacyAdjustmentSaleRate,
     PharmacyAdjustmentWholeSaleRate,
     PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentCostRate,
     PharmacyAdjustmentExpiryDate,
     PharmacyAddtoStock,
     DrawerAdjustment,
@@ -117,6 +120,8 @@ public enum BillType {
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
+    ChannelOnlineBookingAgentPaidToHospital,
+    ChannelOnlineBookingAgentPaidToHospitalBillCancellation,
     gpBooking,
     gpSettling,
     Appointment,
@@ -270,7 +275,9 @@ public enum BillType {
             case StoreTransferIssue:
                 return "Store Transfer Issue";
             case PharmacyIssue:
-                return "Pharmacy Issue";
+                return "Pharmacy Transfer Issue";
+            case PharmacyDisposalIssue:
+                return "Pharmacy Disposal Issue";
             case PharmacyBhtPre:
                 return "Pharmacy BHT Issue (Pre)";
             case OpdPreBill:

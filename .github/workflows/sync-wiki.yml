@@ -1,0 +1,198 @@
+name: Sync Wiki Documentation
+
+on:
+  push:
+    branches: [ development, master ]
+    paths:
+      - 'docs/wiki/**'
+      - 'developer_docs/**'
+  workflow_dispatch:
+    inputs:
+      force_sync:
+        description: 'Force sync all wiki content'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    if: github.repository == 'hmislk/hmis'
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout wiki repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+        if [ "${{ github.event.inputs.force_sync || 'false' }}" == "true" ]; then
+          echo "Force sync requested, processing all files"
+          echo "changed_files=all" >> "$GITHUB_OUTPUT"
+        else
+          # Get list of changed files in docs/wiki directory
+          BEFORE_SHA="${{ github.event.before || '' }}"
+          if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            CHANGED_FILES=$(git diff --name-only "$BEFORE_SHA" "${{ github.sha }}" | grep "^docs/wiki/" | head -20 || echo "")
+          else
+            # For new branches or when before SHA is not available, get all files in docs/wiki
+            echo "No valid before SHA available, checking all docs/wiki files"
+            CHANGED_FILES=$(find docs/wiki -name "*.md" -type f 2>/dev/null | head -20 || echo "")
+          fi
+          echo "Changed files: $CHANGED_FILES"
+          # Use multiline format for GITHUB_OUTPUT to handle newlines properly
+          {
+            echo "changed_files<<EOF"
+            echo "$CHANGED_FILES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+        fi
+
+      - name: Sync documentation files to wiki
+        run: |
+        echo "🔄 Starting wiki sync process..."
+
+        # Backup current wiki content
+        mkdir -p wiki-backup
+        cp -r wiki/* wiki-backup/ 2>/dev/null || true
+
+        # Copy documentation files from docs/wiki/ to wiki root
+        if [ -d "docs/wiki" ]; then
+          echo "📋 Copying documentation files..."
+
+          # Copy all markdown files
+          find docs/wiki -name "*.md" -type f -print0 | while IFS= read -r -d '' file; do
+            # Convert file path to wiki format
+            relative_path="${file#docs/wiki/}"
+            target_path="wiki/$relative_path"
+
+            # Create target directory if needed
+            mkdir -p "$(dirname "$target_path")"
+
+            # Copy file
+            cp "$file" "$target_path"
+            echo "  ✓ Copied: $file → $target_path"
+          done
+
+          # Copy any images or assets
+          if [ -d "docs/wiki/images" ]; then
+            cp -r docs/wiki/images wiki/
+            echo "  ✓ Copied images directory"
+          fi
+
+        else
+          echo "⚠️  No docs/wiki directory found"
+        fi
+
+        # Copy developer documentation if it exists
+        if [ -d "developer_docs" ]; then
+          echo "📚 Processing developer documentation..."
+          mkdir -p wiki/Developer
+
+          # Copy developer docs with proper naming
+          find developer_docs -name "*.md" -type f -print0 | while IFS= read -r -d '' file; do
+            # Convert to wiki-friendly name
+            wiki_name=$(echo "$file" | sed 's|developer_docs/||' | sed 's|/|-|g')
+            cp "$file" "wiki/Developer-$wiki_name"
+            echo "  ✓ Copied: $file → wiki/Developer-$wiki_name"
+          done
+        fi
+
+      - name: Update wiki navigation
+        run: |
+        cd wiki
+
+        # Update main Pharmacy.md if it doesn't have our issue link
+        if [ -f "Pharmacy.md" ] && ! grep -q "Issue (Disposal)" "Pharmacy.md"; then
+          echo "🔗 Updating Pharmacy page navigation..."
+          # Add the Issue link in the right place
+          sed -i '/\* \[Transactions between different units\]/a\\n* [Issue (Disposal)](https://github.com/hmislk/hmis/wiki/Pharmacy-Issue)' Pharmacy.md
+        fi
+
+        echo "✅ Navigation updated"
+
+      - name: Validate wiki content
+        run: |
+        cd wiki
+        echo "🔍 Validating wiki content..."
+
+        # Check for broken internal links
+        find . -name "*.md" -type f -print0 | while IFS= read -r -d '' file; do
+          # Check for relative links that might be broken
+          if grep -q "\](\." "$file"; then
+            echo "⚠️  Found relative links in $file - please verify they work correctly"
+          fi
+        done
+
+        # List all markdown files for verification
+        echo "📄 Wiki files:"
+        find . -name "*.md" -type f | sort
+
+      - name: Commit and push wiki changes
+        run: |
+        cd wiki
+        git config --local user.email "action@github.com"
+        git config --local user.name "HMIS Wiki Sync Bot"
+
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "📝 Changes detected, preparing commit..."
+
+          # Get commit details from main repository
+          cd ../
+          COMMIT_AUTHOR=$(git log -1 --format='%an <%ae>')
+          COMMIT_MESSAGE=$(git log -1 --format='%s')
+          SHORT_SHA=$(git rev-parse --short "${{ github.sha }}")
+
+          cd wiki
+          git add .
+
+          # Create detailed commit message
+          cat > commit_message.txt << EOF
+        Auto-sync: $COMMIT_MESSAGE
+
+        📊 Sync Details:
+        • Source commit: $SHORT_SHA
+        • Branch: ${{ github.ref_name }}
+        • Author: $COMMIT_AUTHOR
+        • Trigger: ${{ github.event_name }}
+
+        📁 Changed files in this sync:
+        ${{ steps.changed-files.outputs.changed_files }}
+
+        🤖 Generated by HMIS Wiki Sync Bot
+        🔗 View original commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+        EOF
+
+          git commit -F commit_message.txt
+          rm commit_message.txt
+
+          echo "🚀 Pushing changes to wiki..."
+          git push origin master
+
+          echo "✅ Wiki sync completed successfully!"
+
+          # Output summary
+          echo "📋 Sync Summary:"
+          echo "  • Files synced from main repository"
+          echo "  • Navigation links updated"
+          echo "  • Content validation completed"
+          echo "  • Changes pushed to wiki repository"
+
+        else
+          echo "ℹ️  No changes to sync"
+        fi
+
+      - name: Post-sync cleanup
+        if: always()
+        run: |
+        # Clean up any temporary files
+        rm -rf wiki-backup 2>/dev/null || true
+        echo "🧹 Cleanup completed"

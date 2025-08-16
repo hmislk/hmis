@@ -13,11 +13,11 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <h:panelGroup rendered="#{(!webUserController.hasPrivilege('DashBoardMenu') and !webUserController.hasPrivilege('DashBoardBillSearch'))}">
             <na:not_authorize />
         </h:panelGroup>
-        
+
         <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardBillSearch'))}">
             <h3><h:outputText value="BILLS" class="d-flex justify-content-center mt-4"/> </h3>
             <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
@@ -212,6 +212,10 @@
                     <h:outputLabel value="#{b.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
+                    <br/>
+                    <h:panelGroup rendered="#{b.patientEncounter ne null}">
+                        <h:outputLabel style="color: #0d6efd;" value="#{b.patientEncounter.bhtNo}"/>
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->
@@ -219,17 +223,19 @@
                     <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
                     <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
                     <br/>
-                    <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                    <h:outputLabel value="#{b.patient.person.mobile}" />
-                </p:column>
-
-                <p:column headerText="Age/Sex" width="13em;" style="vertical-align: top;">
+                    <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
+                    <h:outputLabel value="#{b.patient.person.ageAsString}" />
+                    <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
                     <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
                     <h:outputLabel value="#{b.patient.person.sex.label}" />
                     <br/>
-                    <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
-                    <h:outputLabel value="#{b.patient.person.ageAsString}" />
+                    <h:panelGroup rendered="#{!b.patient.person.mobile.blank}">
+                        <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                        <h:outputLabel value="#{b.patient.person.mobile}" />
+                    </h:panelGroup>
+
                 </p:column>
+
 
                 <!-- Ordered Institution and Department Column -->
                 <p:column headerText="Ordering From"  style="vertical-align: top;">

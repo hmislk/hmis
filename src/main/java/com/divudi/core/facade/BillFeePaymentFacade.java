@@ -16,6 +16,7 @@ import javax.persistence.PersistenceContext;
  * @author Sniper 619
  */
 @Stateless
+@Deprecated
 public class BillFeePaymentFacade extends AbstractFacade<BillFeePayment> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;

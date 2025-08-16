@@ -4,14 +4,17 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
@@ -32,6 +35,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Sms;
@@ -52,6 +56,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -64,6 +69,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -156,12 +162,21 @@ public class ChannelReportController implements Serializable {
     SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ReportTimerController reportTimerController;
+    @Inject
+    private InstitutionController institutionController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+
+    private String reportStatus;
+
+    @EJB
+    ChannelService channelService;
+
+    private ReportTemplateRowBundle dataBundle;
 
     public Institution getInstitution() {
         return institution;
@@ -341,6 +356,116 @@ public class ChannelReportController implements Serializable {
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
+    }
+
+    public String navigateToIncomeForScanning() {
+        makeNull();
+        return "/channel/income_for_scanning_bookings?faces-redirect=true";
+    }
+
+    public String navigateToIncomeForAgentBookings() {
+        makeNull();
+        return "/channel/income_with_agent_bookings?faces-redirect=true";
+    }
+
+    private List<Payment> paymentsFromCardAppoinments;
+
+    public List<Payment> getPaymentsFromCardAppoinments() {
+        return paymentsFromCardAppoinments;
+    }
+
+    public void setPaymentsFromCardAppoinments(List<Payment> paymentsFromCardAppoinments) {
+        this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
+    }
+
+    public List<Institution> getInstitutionForChannelReports() {
+        List<Institution> list = institutionController.getItems();
+
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+
+        return list;
+    }
+
+    public void getPaymentsForChannelCardAppoinments() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        paymentsFromCardAppoinments = channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
+    }
+
+    public double calculateTotalsFromPayment(List<Payment> payments, String type) {
+        if (payments == null || payments.isEmpty()) {
+            return 0;
+        }
+
+        if (type == null || type.trim().isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+        switch (type) {
+            case "TotalFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getTotal();
+                    }
+                }
+                return total;
+            case "HosFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getHospitalFee();
+                    }
+                }
+                return total;
+            case "StaffFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getStaffFee();
+                    }
+                }
+                return total;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public void fetchScanningSessionForIncome() {
+//        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
+        dataBundle = bundle;
+
+    }
+
+    public void fetchAgentSessionIncome() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
+        dataBundle = bundle;
+    }
+
+    public List<Bill> getChildBills(Bill parent) {
+        List<Bill> childList = new ArrayList<>();
+
+        if (parent.isCancelled()) {
+            childList.add(parent.getCancelledBill());
+        } else if (parent.isRefunded()) {
+            childList.addAll(parent.getRefundBills());
+        }
+
+        return childList;
     }
 
     public void fillSessionsForChannelDoctorCard() {
@@ -2616,7 +2741,7 @@ public class ChannelReportController implements Serializable {
             hm.put("st", stf);
         }
 
-        if (pms != null) {
+        if (pms != null && !pms.isEmpty()) {
             sql += " and b.paymentMethod in :pm";
             hm.put("pm", pms);
         }
@@ -3315,6 +3440,7 @@ public class ChannelReportController implements Serializable {
         serviceSession = null;
         billSessions = null;
         valueList = null;
+        dataBundle = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4270,6 +4396,22 @@ public class ChannelReportController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public ReportTemplateRowBundle getDataBundle() {
+        return dataBundle;
+    }
+
+    public void setDataBundle(ReportTemplateRowBundle dataBundle) {
+        this.dataBundle = dataBundle;
+    }
+
+    public String getReportStatus() {
+        return reportStatus;
+    }
+
+    public void setReportStatus(String reportStatus) {
+        this.reportStatus = reportStatus;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

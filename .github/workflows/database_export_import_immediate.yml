@@ -1,0 +1,98 @@
+name: Database Export and Import - Immediate Execution
+
+on:
+  workflow_dispatch:
+    inputs:
+      fromEnv:
+        description: 'Select Environment to Export'
+        required: true
+        type: choice
+        options:
+          - COOP_Dev
+          - COOP_Prod
+          - Ruhunu_Prod
+          - MP_Prod
+          - RMH_Prod
+          - SLH_Prod
+      toEnv:
+        description: 'Select Environment to Import'
+        required: true
+        type: choice
+        options:
+          - QA1
+          - QA2
+
+jobs:
+  immediate_export_import:
+    name: Execute Export & Import Immediately
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Database Export/Import Script Immediately
+        id: immediate_execution
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          FROM_ENV: ${{ inputs.fromEnv }}
+          TO_ENV: ${{ inputs.toEnv }}
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          echo "Starting immediate database backup from $FROM_ENV to $TO_ENV"
+          
+          # Execute the script immediately (not scheduled)
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            /home/azureuser/utils/db_utils/db_export_import_scheduler.sh $FROM_ENV $TO_ENV
+          "
+          
+          rm private_key.pem
+
+      - name: Send Success Email from Remote Server
+        if: success()
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          FROM_ENV: ${{ inputs.fromEnv }}
+          TO_ENV: ${{ inputs.toEnv }}
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            curl -X POST 'http://localhost:8081/messenger/api/email/send' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              \"subject\": \"✅ Database Export and Import Completed Successfully\",
+              \"body\": \"The database export from $FROM_ENV to $TO_ENV has been completed successfully at $(date).\",
+              \"recipients\": $RECIPIENT_EMAILS,
+              \"isHtml\": false
+            }'
+          "
+          
+          rm private_key.pem
+
+      - name: Send Failure Email from Remote Server
+        if: failure()
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          FROM_ENV: ${{ inputs.fromEnv }}
+          TO_ENV: ${{ inputs.toEnv }}
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            curl -X POST 'http://localhost:8081/messenger/api/email/send' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              \"subject\": \"❌ Database Export and Import Failed\",
+              \"body\": \"The database export from $FROM_ENV to $TO_ENV has failed at $(date). Please check the logs for details.\",
+              \"recipients\": $RECIPIENT_EMAILS,
+              \"isHtml\": false
+            }'
+          "
+          
+          rm private_key.pem

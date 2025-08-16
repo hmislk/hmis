@@ -49,6 +49,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -89,6 +90,8 @@ public class GrnController implements Serializable {
     PaymentFacade paymentFacade;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /////////////////
     private Institution dealor;
     private Bill approveBill;
@@ -121,7 +124,7 @@ public class GrnController implements Serializable {
     BillItem currentExpense;
     List<BillItem> billExpenses;
 
-    public void closeSelectedPurchesOrder() {
+    public void closeSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -132,7 +135,7 @@ public class GrnController implements Serializable {
 
     }
 
-    public void openSelectedPurchesOrder() {
+    public void openSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -226,6 +229,7 @@ public class GrnController implements Serializable {
         return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
     }
 
+    @Deprecated // Please use navigateToResive
     public String navigateToResiveAll() {
         grnBill = null;
         dealor = null;
@@ -674,8 +678,43 @@ public class GrnController implements Serializable {
         Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
         //  getPharmacyBillBean().editBill(, , getSessionController());
+        
+        // Check if Purchase Order is fully received and update fullyIssued status
+        if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {
+            if (isPurchaseOrderFullyReceived(getApproveBill())) {
+                getApproveBill().setFullyIssued(true);
+                getApproveBill().setFullyIssuedAt(new Date());
+                getApproveBill().setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getApproveBill());
+            }
+        }
+        
         printPreview = true;
 
+    }
+
+    private boolean isPurchaseOrderFullyReceived(Bill purchaseOrderBill) {
+        if (purchaseOrderBill == null) {
+            return false;
+        }
+        
+        List<PharmaceuticalBillItem> orderItems = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(purchaseOrderBill);
+        
+        if (orderItems == null || orderItems.isEmpty()) {
+            return true;
+        }
+        
+        for (PharmaceuticalBillItem orderItem : orderItems) {
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(orderItem);
+            double remainingQty = Math.abs(orderItem.getQtyInUnit()) - Math.abs(calculatedReturns);
+            double remainingFreeQty = orderItem.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(orderItem);
+            
+            if (remainingQty > 0 || remainingFreeQty > 0) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     public void settleWholesale() {
@@ -765,6 +804,17 @@ public class GrnController implements Serializable {
 
         getBillFacade().edit(getGrnBill());
         //  getPharmacyBillBean().editBill(, , getSessionController());
+        
+        // Check if Purchase Order is fully received and update fullyIssued status
+        if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {
+            if (isPurchaseOrderFullyReceived(getApproveBill())) {
+                getApproveBill().setFullyIssued(true);
+                getApproveBill().setFullyIssuedAt(new Date());
+                getApproveBill().setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(getApproveBill());
+            }
+        }
+        
         printPreview = true;
 
     }
@@ -991,9 +1041,9 @@ public class GrnController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double calculatedReturns = getPharmacyCalculation().calQtyInTwoSql(i);
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
             double remains = Math.abs(i.getQtyInUnit()) - Math.abs(calculatedReturns);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1024,7 +1074,8 @@ public class GrnController implements Serializable {
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
 
-                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1041,8 +1092,8 @@ public class GrnController implements Serializable {
 
         for (BillItem importBi : importGrnBill.getBillItems()) {
             PharmaceuticalBillItem i = importBi.getPharmaceuticalBillItem();
-            double remains = i.getQty() - getPharmacyCalculation().calQtyInTwoSql(i);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double remains = i.getQty() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1076,7 +1127,8 @@ public class GrnController implements Serializable {
                 ph.setDoe(i.getDoe());
                 ph.setStringValue(i.getStringValue());
 
-                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                double wholesaleFactor2 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor2) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1092,7 +1144,7 @@ public class GrnController implements Serializable {
     public void generateBillComponentAll() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
+            double remains = i.getQtyInUnit() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
 
             BillItem bi = new BillItem();
             bi.setSearialNo(getBillItems().size());
@@ -1116,7 +1168,8 @@ public class GrnController implements Serializable {
             ph.setPurchaseRate(i.getPurchaseRate());
             ph.setRetailRate(i.getRetailRate());
 
-            ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+            double wholesaleFactor3 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+            ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor3) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
             ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
             ph.setFreeQty(i.getFreeQty());

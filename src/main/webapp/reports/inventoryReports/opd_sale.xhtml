@@ -165,7 +165,8 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process" 
+                                action="#{pharmacyReportController.processSaleCreditCard()}">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -191,71 +192,135 @@
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="OPD Sale Report" />
+                                value="PDF"
+                                actionListener="#{pharmacyReportController.selectReportName('Sale Credit Card Report')}"
+                                action="#{pharmacyReportController.exportSaleCashPdf()}">
                             </p:commandButton>
 
                         </div>
 
 
-                        <p:dataTable id="tbl" 
-                                     value="" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
-                                     paginatorPosition="bottom"
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                        <p:dataTable id="tbl" value="#{pharmacyReportController.cogsBillDtos}" var="b" rowIndexVar="n" paginator="true" paginatorPosition="bottom" rows="10"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-
-                            <p:column headerText="Date">
-                                <h:outputText value="" />
+                            <p:column headerText="Date" width="4em">
+                                <h:outputText value="#{b.billCreatedAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Item Name">
-                                <h:outputText value="" />
-                            </p:column>              
-                            <p:column headerText="Code">
-                                <h:outputText value="" />
-                            </p:column>                             
-                            <p:column headerText="Doc No">
-                                <h:outputText value="" />
-                            </p:column>  
-                            <p:column headerText="Batch Code">
-                                <h:outputText value="" />
+
+                            <p:column headerText="Doc. No" sortBy="#{b.billDeptId}" width="8em">
+                                <p:commandLink value="#{b.billDeptId}" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false" styleClass="ui-button-info">
+                                    <f:setPropertyActionListener value="#{b.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:columnGroup type="header" >
+                                <p:row >
+                                    <p:column headerText="Date" width="6em"/>
+                                    <p:column headerText="Doc. No" width="6em"/>
+                                    <p:column headerText="NAME" width="12em"/>
+                                    <p:column headerText="CODE" width="6em"/>
+                                    <p:column headerText="BATCH NO" width="6em"/>
+                                    <p:column headerText="QTY" width="4em"/>
+                                    <p:column headerText="COST RATE" width="6em"/>
+                                    <p:column headerText="COST VALUE" width="6em"/>
+                                    <p:column headerText="SALE RATE" width="6em"/>
+                                    <p:column headerText="SALE VALUE" width="6em"/>
+                                    <p:column headerText="Net Total" width="6em"/>
+                                    <p:column headerText="Payment Mode/Modes" width="12em"/>
+                                    <p:column headerText="MRP" width="6em"/>
+                                    <p:column headerText="MRP Value" width="6em"/>
+                                    <p:column headerText="Discount" width="6em"/>
+                                </p:row>
+                            </p:columnGroup>
+
+                            <p:column headerText="NAME" width="50em">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
+                                    <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
+                                </ui:repeat>
+                            </p:column>
+                            <p:column headerText="CODE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.itemCode}" /><p:divider/><br/>
+                                </ui:repeat>
+                            </p:column>
+                            <p:column headerText="BATCH NO">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.batchNo}" /><p:divider/><br/>
+                                </ui:repeat>
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="" />
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.qty}" ><f:convertNumber pattern="#,##0"/></h:outputText><p:divider/><br/>
+                                </ui:repeat>
                             </p:column>
-                            <p:column headerText="Rate">
-                                <h:outputText value="" />
+                            <p:column headerText="COST RATE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
+                                </ui:repeat>
                             </p:column>
-                            <p:column headerText="Sale Value">
-                                <h:outputText value="" />
-                            </p:column>  
-                            <p:column headerText="Net Total">
-                                <h:outputText value="" />
+                            <p:column headerText="COST VALUE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
+                                </ui:repeat>
                             </p:column>
-                            <p:column headerText="Payment Mode/Methods">
-                                <h:outputText value="" />
+                            <p:column headerText="SALE RATE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
+                                </ui:repeat>
                             </p:column>
-                            <p:column headerText="MRP">
-                                <h:outputText value="" />
+                            <p:column headerText="SALE VALUE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
+                                </ui:repeat>
                             </p:column>
-                            <p:column headerText="MRP Value">
-                                <h:outputText value="" />
-                            </p:column> 
-                            <p:column headerText="Discount">
-                                <h:outputText value="" />
-                            </p:column> 
 
+                            <p:column headerText="Net Total" style="text-align: right;" width="6em">
+                                <h:outputText value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Payment Mode/Modes" sortBy="#{b.paymentMethod}" width="12em">
+                                <h:outputText value="#{b.paymentMethod}" rendered="#{b.paymentMethod ne 'MultiplePaymentMethods'}"/>
+                                <h:panelGroup rendered="#{b.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                    <h:outputText value="#{b.paymentMethod}" rendered="#{b.paymentMethod eq 'MultiplePaymentMethods'}"/><br/>
+                                    <ui:repeat value="#{searchController.getPaymentDetals(b.bill)}" var="payment">
+                                        <div class="d-flex mt-1">
+                                            <h:outputText value="#{payment.paymentMethod}" ></h:outputText>
+                                            <h:outputText value="-" style="width: 30px;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{payment.paidValue}" style="width: 70px;" class="d-flex justify-content-end" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText><br/>
+                                        </div>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="MRP" width="8em">
+                                <h:outputText value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="MRP Value" width="8em">
+                                <h:outputText value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Discount" width="8em">
+                                <h:outputText value="#{b.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>

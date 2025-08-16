@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ControllerWithReportFilters;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
@@ -32,6 +33,9 @@ import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -64,7 +68,7 @@ import javax.persistence.TemporalType;
  */
 @Named(value = "reportsStock")
 @SessionScoped
-public class ReportsStock implements Serializable {
+public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     /**
      * Bean Variables
@@ -72,10 +76,16 @@ public class ReportsStock implements Serializable {
     Department department;
     Staff staff;
     Institution institution;
+    Institution site;
+    private AdmissionType admissionType;
+    private PaymentScheme paymentScheme;
+    private ReportViewType reportViewType;
+    private List<ReportViewType> reportViewTypes;
     private Category category;
     List<Stock> stocks;
     double stockSaleValue;
     double stockPurchaseValue;
+    double stockCostValue;
     List<PharmacyStockRow> pharmacyStockRows;
     List<StockReportRecord> records;
     Date fromDate;
@@ -113,7 +123,8 @@ public class ReportsStock implements Serializable {
     private double saleValueAfterDisbursement;
     private double finalTotalPurchaseValue;
     private double finalTotalSaleValue;
-    
+    private boolean includeZeroStock;
+
     private int fromRecord;
     private int toRecord;
     Vmp vmp;
@@ -155,6 +166,11 @@ public class ReportsStock implements Serializable {
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
     }
 
+    public String navigateToPharmacyReportDepartmentStockByZeroItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_zero_item?faces-redirect=true";
+    }
+
     public String navigateToStockReportByBatch() {
         stocks = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
@@ -174,29 +190,33 @@ public class ReportsStock implements Serializable {
      * Methods
      */
     public void fillDepartmentStocks() {
+        List<DepartmentType> availableDepartmentTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
-            System.out.println("startedAt = " + startedAt);
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
             Map<String, Object> m = new HashMap<>();
-            String sql = "select s from Stock s "
-                    + " where s.department=:d "
-                    + " and s.stock > 0 ";
-            m.put("d", department);
+            StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
+
+            sql.append(" and s.itemBatch.item.departmentType in :dts ");
+            m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            } else if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            } else if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+
             Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql, m);
+            stocks = getStockFacade().findByJpql(sql.toString(), m);
 
             Date afterJpql = new Date();
-            System.out.println("afterJpql = " + afterJpql);
             stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
 
             Date beforeCal = new Date();
-            System.out.println("beforeCal = " + beforeCal);
             stockPurchaseValue = stocks.stream()
                     .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
                     .sum();
@@ -204,29 +224,49 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stocks.stream()
                     .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
                     .sum();
+
+            stockCostValue = stocks.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getItemBatch().getCostRate();
+                        return (cr == null ? 0.0 : cr) * s.getStock();
+                    })
+                    .sum();
             Date afterCal = new Date();
-            System.out.println("afterCal = " + afterCal);
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    public void toggleIncludeZeroStock() {
+        includeZeroStock = !includeZeroStock;
     }
 
     public void fillDepartmentStocksForDownload() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
-            System.out.println("startedAt = " + startedAt);
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
+
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT s FROM Stock s WHERE 1=1");
+
+            if (!includeZeroStock) {
+                jpql.append(" AND s.stock > 0");
             }
-            Map<String, Object> m = new HashMap<>();
-            String sql = "select s from Stock s "
-                    + " where s.department=:d "
-                    + " and s.stock > 0 "
-                    + " order by s.id";
-            m.put("d", department);
+
+            if (department != null) {
+                jpql.append(" AND s.department = :dept");
+                parameters.put("dept", department);
+            } else if (site != null) {
+                jpql.append(" AND s.department.site = :site");
+                parameters.put("site", site);
+            } else if (institution != null) {
+                jpql.append(" AND s.department.institution = :ins");
+                parameters.put("ins", institution);
+            }
+
+            jpql.append(" ORDER BY s.id");
+
             Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql, m, fromRecord, toRecord);
+
+            stocks = getStockFacade().findByJpql(jpql.toString(), parameters);
+
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
@@ -251,9 +291,11 @@ public class ReportsStock implements Serializable {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
     }
@@ -278,9 +320,11 @@ public class ReportsStock implements Serializable {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
         return "pharmacy_report_department_stock_by_single_product";
@@ -308,9 +352,6 @@ public class ReportsStock implements Serializable {
             m.put("d", department);
             m.put("z", 0.0);
         }
-//        //////System.out.println("sql = " + sql);
-//        //////System.out.println("m = " + m);
-//        //////System.out.println("getStockFacade().findObjects(sql, m) = " + getStockFacade().findObjects(sql, m));
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -323,10 +364,10 @@ public class ReportsStock implements Serializable {
     }
 
     public void generateDepartmentStockOverviewReport() {
-        
+
         startingPurchaseValue = 0.0;
         startingSaleValue = 0.0;
-        
+
         //ALL GRN
         commonReport.setFromDate(findStartOfMonth(toDate));
         commonReport.setToDate(findEndofMonth(toDate));
@@ -350,11 +391,10 @@ public class ReportsStock implements Serializable {
         totalDirectPurchasePurchaseValue = 0.0;
         totalDirectPurchaseRetailValue = 0.0;
         calDirectPurchaseTotalsForOverViewReport();
-        
+
         //Totals After GRN
         purchaseValueAfterGrn = Math.abs(totalGrnCashPurchaseValue) + Math.abs(totalGrnCreditPurchaseValue) + Math.abs(totalDirectPurchasePurchaseValue);
         saleValueAfterGrn = Math.abs(totalGrnCashRetailValue) + Math.abs(totalGrnCreditRetailValue) + Math.abs(totalDirectPurchaseRetailValue);
-        
 
         //GRN Return
         totalGrnReturnPurchaseValue = 0.0;
@@ -366,26 +406,25 @@ public class ReportsStock implements Serializable {
         totalGrnFreeQtyPurchaseValue = 0.0;
         totalGrnFreeQtyRetailValue = 0.0;
         calFreeQtyTotalsForOverViewReport();
-        
+
         //Total After Free Qty and Returns
         purchaseValueAfterGrnReturnAndFreeQty = (0 - Math.abs(totalGrnReturnPurchaseValue)) + Math.abs(totalGrnFreeQtyPurchaseValue);
         saleValueAfterGrnReturnAndFreeQty = (0 - Math.abs(totalGrnReturnRetailValue)) + Math.abs(totalGrnFreeQtyRetailValue);
 
         //Sale
         saleTotalsForOverViewReport();
-        
+
         //TotalAfterSales
         purchaseValueAfterSale = Math.abs(totalPurchaseSaleCashValue) + Math.abs(totalPurchaseSaleCreditValue);
         saleValueAfterSale = Math.abs(totalRetailSaleCashValue) + Math.abs(totalRetailSaleCreditValue);
 
         //Disbursment
         reportsTransfer.fetchBillTotalByToDepartment(findStartOfMonth(toDate), findEndofMonth(toDate), department, BillType.PharmacyTransferIssue);
-        
+
         //TotalsAfterDisbursment
         purchaseValueAfterDisbursement = Math.abs(reportsTransfer.getNetTotalPurchaseValues());
         saleValueAfterDisbursement = Math.abs(reportsTransfer.getNetTotalSaleValues());
-        
-        
+
         //Final Count
         finalTotalPurchaseValue = startingPurchaseValue + purchaseValueAfterGrn + purchaseValueAfterGrnReturnAndFreeQty - (purchaseValueAfterSale + purchaseValueAfterDisbursement);
         finalTotalSaleValue = startingSaleValue + saleValueAfterGrn + saleValueAfterGrnReturnAndFreeQty - (saleValueAfterSale + saleValueAfterDisbursement);
@@ -494,7 +533,7 @@ public class ReportsStock implements Serializable {
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
         );
-        
+
         List<PaymentMethod> creditPaymentMethod = Arrays.asList(
                 PaymentMethod.Credit,
                 PaymentMethod.Staff);
@@ -502,13 +541,13 @@ public class ReportsStock implements Serializable {
         // The optimized JPQL using SUM and CASE WHEN
         jpql = "SELECT "
                 + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.purchaseRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.retailRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.purchaseRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END) "
+                + "THEN (pbi.qty * pbi.retailRate) ELSE 0 END) "
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN bi.pharmaceuticalBillItem pbi "
@@ -561,6 +600,42 @@ public class ReportsStock implements Serializable {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
 
+            }
+            pharmacyStockRows = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentZeroItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null && site == null && institution == null) {
+                JsfUtil.addErrorMessage("Please select a department, site, or institution");
+                return;
+            }
+            Map m = new HashMap();
+            StringBuilder sql = new StringBuilder("select new com.divudi.core.data.dataStructure.PharmacyStockRow("
+                    + "s.itemBatch.item.code, "
+                    + "s.itemBatch.item.name, "
+                    + "sum(s.stock), "
+                    + "sum(s.itemBatch.purcahseRate * s.stock), "
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s where 1=1 ");
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            } else if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            } else if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            sql.append(" group by s.itemBatch.item.code, s.itemBatch.item.name having sum(s.stock) = 0 order by s.itemBatch.item.name");
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql.toString(), m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (PharmacyStockRow r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
             }
             pharmacyStockRows = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
@@ -632,9 +707,11 @@ public class ReportsStock implements Serializable {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
     }
@@ -832,9 +909,11 @@ public class ReportsStock implements Serializable {
             stocks = getStockFacade().findByJpql(sql, m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
+            stockCostValue = 0.0;
             for (Stock ts : stocks) {
                 stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
                 stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+                stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
             }
         }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
@@ -884,8 +963,6 @@ public class ReportsStock implements Serializable {
         }
         sql += " GROUP BY bi.item";
 
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
         Set<Item> bis = new HashSet<>(itemFacade.findByJpql(sql, m));
 
         sql = "SELECT s.itemBatch.item "
@@ -1251,7 +1328,6 @@ public class ReportsStock implements Serializable {
                 + " group by s.itemBatch.item.category "
                 + " order by s.itemBatch.item.category.name";
         List<Object[]> objs = getStockFacade().findAggregates(sql, m);
-        ////System.out.println("sql = " + sql);
         totalPurchaseValue = 0.0;
         stockRecords = new ArrayList<>();
 
@@ -1283,7 +1359,6 @@ public class ReportsStock implements Serializable {
         stockSaleValue = 0.0;
         stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            ////////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             m.put("d", department);
@@ -1294,7 +1369,6 @@ public class ReportsStock implements Serializable {
 
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                ////////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -1321,7 +1395,6 @@ public class ReportsStock implements Serializable {
         stockSaleValue = 0.0;
         stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            ////////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             m.put("d", department);
@@ -1333,7 +1406,6 @@ public class ReportsStock implements Serializable {
 
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                ////////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -1351,6 +1423,7 @@ public class ReportsStock implements Serializable {
      *
      * @return
      */
+    @Override
     public Department getDepartment() {
         if (department == null) {
             department = sessionController.getDepartment();
@@ -1358,14 +1431,17 @@ public class ReportsStock implements Serializable {
         return department;
     }
 
+    @Override
     public void setDepartment(Department department) {
         this.department = department;
     }
 
+    @Override
     public Institution getInstitution() {
         return institution;
     }
 
+    @Override
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
@@ -1408,6 +1484,14 @@ public class ReportsStock implements Serializable {
         this.stockPurchaseValue = stockPurchaseValue;
     }
 
+    public double getStockCostValue() {
+        return stockCostValue;
+    }
+
+    public void setStockCostValue(double stockCostValue) {
+        this.stockCostValue = stockCostValue;
+    }
+
     public Staff getStaff() {
         return staff;
     }
@@ -1440,6 +1524,7 @@ public class ReportsStock implements Serializable {
         this.category = category;
     }
 
+    @Override
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = Calendar.getInstance().getTime();
@@ -1447,10 +1532,12 @@ public class ReportsStock implements Serializable {
         return fromDate;
     }
 
+    @Override
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
 
+    @Override
     public Date getToDate() {
         if (toDate == null) {
             Calendar c = Calendar.getInstance();
@@ -1549,6 +1636,7 @@ public class ReportsStock implements Serializable {
         return CommonFunctions.getEndOfMonth(date);
     }
 
+    @Override
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -1851,7 +1939,7 @@ public class ReportsStock implements Serializable {
     public void setTotalPurchaseSaleCreditValue(double totalPurchaseSaleCreditValue) {
         this.totalPurchaseSaleCreditValue = totalPurchaseSaleCreditValue;
     }
-    
+
     public double getStartingPurchaseValue() {
         return startingPurchaseValue;
     }
@@ -1946,6 +2034,62 @@ public class ReportsStock implements Serializable {
 
     public void setFinalTotalSaleValue(double finalTotalSaleValue) {
         this.finalTotalSaleValue = finalTotalSaleValue;
+    }
+
+    @Override
+    public Institution getSite() {
+        return site;
+    }
+
+    @Override
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    @Override
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    @Override
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    @Override
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    @Override
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public ReportViewType getReportViewType() {
+        return reportViewType;
+    }
+
+    @Override
+    public void setReportViewType(ReportViewType reportViewType) {
+        this.reportViewType = reportViewType;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
+    }
+
+    public boolean isIncludeZeroStock() {
+        return includeZeroStock;
+    }
+
+    public void setIncludeZeroStock(boolean includeZeroStock) {
+        this.includeZeroStock = includeZeroStock;
     }
 
 }

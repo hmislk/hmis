@@ -132,6 +132,13 @@
                                         <br/>
                                     </ui:repeat>
                                 </h:panelGroup>
+                                
+                                <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
+                                    <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="pp">
+                                        <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
+                                        <br/>
+                                    </ui:repeat>
+                                </h:panelGroup>
 
                             </h:panelGroup>
                         </div>

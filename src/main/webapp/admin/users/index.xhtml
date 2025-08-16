@@ -75,13 +75,21 @@
                                             icon="fa fa-envelope"
                                             class="ui-button-warning"
                                             action="#{smsController.navigateToSendBulkSmsToPatients()}" />
-                                        
+
                                         <p:commandButton
                                             ajax="false"
                                             value="Send SMS for Phone Numbers"
                                             icon="fa fa-envelope"
                                             class="ui-button-warning"
                                             action="#{smsController.navigateToSendBulkSmsToNumbers()}" />
+                                        
+                                        <p:commandButton  
+                                                ajax="false"  
+                                                action="#{smsController.navigateToBillContactNumbers()}" 
+                                                value="Bulk Messaging" 
+                                                icon="fa fa-comments"
+                                                rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" >
+                                            </p:commandButton>    
 
                                         <hr/>
                                     </div>

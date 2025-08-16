@@ -7,11 +7,8 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.*;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.data.BillType;
-import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.FeeType;
-import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.BillItemWithFee;
 import com.divudi.core.data.table.String1Value5;
 
@@ -952,7 +949,35 @@ public class ServiceSummery implements Serializable {
         m.put("btas", btas);
 
         payments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        fixDiscountsAndMarginsInRows(payments);
         calculateTotalsForPayments(payments);
+    }
+
+    public void fixDiscountsAndMarginsInRows(List<Payment> payments) {
+        for (Payment ir : payments) {
+            if (ir == null) {
+                continue;
+            }
+
+            Bill bill = ir.getBill();
+            if (bill != null && bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().getBillCategory() != null) {
+                switch (bill.getBillTypeAtomic().getBillCategory()) {
+                    case BILL:
+                        bill.setDiscount(-Math.abs(bill.getDiscount()));
+                        bill.setMargin(Math.abs(bill.getMargin()));
+                        break;
+                    case REFUND:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                    case CANCELLATION:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                }
+            }
+        }
     }
 
     public void calTotal(List<Bill> bills) {
@@ -995,8 +1020,11 @@ public class ServiceSummery implements Serializable {
             double proportion = paidValue / billNetTotal;
 
             // Proportionally allocate total and discount
+            boolean isCancelledBill = bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill);
+            double billProportionalDiscount = billDiscount * proportion;
+
             totalBill += billTotal * proportion;
-            discountBill += billDiscount * proportion;
+            discountBill += isCancelledBill ? (billProportionalDiscount > 0 ? -billProportionalDiscount:billProportionalDiscount) : billProportionalDiscount;
             netTotalBill += paidValue; // The payment amount is already the proportional net
         }
     }

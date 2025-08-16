@@ -8,11 +8,13 @@ import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.entity.cashTransaction.DrawerEntry;
 import com.divudi.core.facade.DrawerEntryFacade;
 import com.divudi.core.facade.DrawerFacade;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -26,8 +28,8 @@ public class DrawerService {
     DrawerEntryFacade ejbFacade;
     @EJB
     DrawerFacade drawerFacade;
-    @EJB
-    ConfigurationService configurationService;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     DrawerEntry drawerEntry;
 
     // <editor-fold defaultstate="collapsed" desc="UP">
@@ -636,7 +638,7 @@ public class DrawerService {
             default:
                 break;
         }
-        if (!configurationService.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
             canReturn = true;
         }
         return canReturn;

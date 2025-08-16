@@ -1744,7 +1744,7 @@ public class BhtSummeryController implements Serializable {
         updateTotal();
         settleOriginalBill();
 
-        return "inward_bill_final?faces-redirect=true;";
+        return "inward_bill_final?faces-redirect=true";
 
     }
 

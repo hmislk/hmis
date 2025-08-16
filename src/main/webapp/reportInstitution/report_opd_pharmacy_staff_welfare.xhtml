@@ -34,7 +34,7 @@
                         value="To Print"
                         ajax="false"
                         styleClass="ui-button-warning m-1"
-                        action="report_opd_pharmacy_staff_welfare_print?faces-redirect=true;"
+                        action="report_opd_pharmacy_staff_welfare_print?faces-redirect=true"
                         icon="pi pi-print">
                     </p:commandButton>
 
@@ -112,11 +112,11 @@
 
                         <p:column headerText="Discount" style="text-align: right">
                             <f:facet name="header"><p:outputLabel value="Discount"/></f:facet>
-                            <p:outputLabel value="#{p.discountValue}">
+                            <p:outputLabel value="#{commonFunctionsProxy.reverseSign(p.discountValue)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{serviceSummery.discountBill}">
+                                <h:outputLabel value="#{commonFunctionsProxy.reverseSign(serviceSummery.discountBill)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>

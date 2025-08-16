@@ -5054,14 +5054,14 @@ public class CommonReport implements Serializable {
             getGrnReturn().setSaleCredit(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Credit));
 
 // GRN Refunded Bill Cancel
-            List<BillTypeAtomic> grnReturnsOrRefunds = new ArrayList<>();
-            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-            getGrnReturnCancel().setBills(getBills(grnReturnsOrRefunds, department, institution, null, supplier, null, ""));
-            getGrnReturnCancel().setCash(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
-            getGrnReturnCancel().setCredit(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
-            getGrnReturnCancel().setSaleCash(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
-            getGrnReturnCancel().setSaleCredit(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
+//            List<BillTypeAtomic> grnReturnsOrRefunds = new ArrayList<>();
+//            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+//            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+//            getGrnReturnCancel().setBills(getBills(grnReturnsOrRefunds, department, institution, null, supplier, null, ""));
+//            getGrnReturnCancel().setCash(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
+//            getGrnReturnCancel().setCredit(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
+//            getGrnReturnCancel().setSaleCash(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
+//            getGrnReturnCancel().setSaleCredit(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
 
             Date endTime = new Date();
             duration = endTime.getTime() - startTime.getTime();
