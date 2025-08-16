@@ -289,6 +289,7 @@
                             var="row"
                             paginator="true" 
                             rows="20"
+                            
                             rowsPerPageTemplate="20,50,100,500,1000,2000,5000,10000"
                             paginatorPosition="bottom">
 
@@ -305,6 +306,13 @@
                                                 <h:outputText value="#{laborataryReportController.department.name}"/>
                                             </div>
                                         </h:panelGroup>
+                                        <h:panelGroup  rendered="#{laborataryReportController.admissionType ne null}">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
+                                                <h:outputText value="#{laborataryReportController.admissionType.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                        
                                     </div>
                                     <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
                                         <div class="d-flex gap-3">
@@ -351,6 +359,10 @@
 
                             <p:column headerText="Patient"  style="padding: 2px!important; margin: 0px!important;" >
                                 <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 2px!important; margin: 0px!important;" />
+                            </p:column>
+                            
+                            <p:column headerText="BHT No" width="6em" style="padding: 2px!important; margin: 0px!important;">
+                                <h:outputText value="#{row.bhtNo}"  style="padding: 2px!important; margin: 0px!important;" ></h:outputText>
                             </p:column>
 
                             <p:column headerText="Date"   width="8em" style="padding: 2px!important; margin: 0px!important;">

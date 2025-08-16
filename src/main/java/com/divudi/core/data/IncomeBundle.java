@@ -1160,6 +1160,12 @@ public class IncomeBundle implements Serializable {
         r.setDiscount(b.getDiscount());
         r.setServiceCharge(b.getMargin());
         r.setActualTotal(r.getNetTotal() - r.getServiceCharge());
+        
+        if(b.getPatientEncounter() != null){
+            r.setBhtNo(b.getPatientEncounter().getBhtNo());
+        }else{
+            r.setBhtNo("");
+        }
 
         PaymentMethod pm = b.getPaymentMethod();
 
