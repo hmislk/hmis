@@ -593,7 +593,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Store the current toDepartment and toInstitution before updating
         Department currentToDepartment = getPreBill().getToDepartment();
         Institution currentToInstitution = getPreBill().getToInstitution();
-        
+
         getPreBill().setBillType(billType);
         getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
         getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
@@ -843,7 +843,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
-    @Deprecated
+    @Deprecated // Use settleBhtRequest
     public void settlePharmacyBhtIssueRequest() {
         if (errorCheck()) {
             return;
@@ -892,6 +892,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
         // From: ward (patient's current room department)
         Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+
+        getPreBill().setDepartment(sessionController.getDepartment());
+        getPreBill().setInstitution(sessionController.getInstitution());
+
         getPreBill().setFromDepartment(fromDept);
         getPreBill().setFromInstitution(fromDept.getInstitution());
         // To: selected department (Pharmacy)
@@ -1178,12 +1182,12 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (billItem == null) {
             return;
         }
-        
+
         if (billItem.getItem() == null) {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        
+
         if (getQty() == null) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Quantity?");
@@ -1196,10 +1200,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
-        
+
         // Handle prescription only if prescription data is available
         boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
-        
+
         if (hasPrescriptionData) {
             // Create a detached prescription instance for in-memory use only
             // This will be persisted later during settle operations
@@ -1216,10 +1220,10 @@ public class PharmacyRequestForBhtController implements Serializable {
             inMemoryPrescription.setPatient(getPatientEncounter().getPatient());
             inMemoryPrescription.setEncounter(getPatientEncounter());
             inMemoryPrescription.setIndoor(true);
-            
+
             // Attach prescription to bill item for later persistence (but don't persist now)
             newBillItem.setPrescription(inMemoryPrescription);
-            
+
             // Compute description from in-memory prescription object
             String prescriptionText = inMemoryPrescription.getFormattedPrescriptionWithoutIndoorOutdoor();
             if (inMemoryPrescription.getComment() != null && !inMemoryPrescription.getComment().trim().isEmpty()) {
@@ -1230,6 +1234,12 @@ public class PharmacyRequestForBhtController implements Serializable {
             // No meaningful prescription data, use simple description
             newBillItem.setDescreption(billItem.getItem().getName() + " - Qty: " + getQty());
         }
+
+        // Create pharmaceutical bill item with quantity
+        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
+        pharmaceuticalBillItem.setQty(-getQty()); // Negative quantity for requests
+        pharmaceuticalBillItem.setBillItem(newBillItem);
+        newBillItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
 
         newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(newBillItem);
@@ -2054,6 +2064,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     /**
      * Check if the prescription has meaningful data that warrants persistence
+     *
      * @param prescription The prescription to check
      * @return true if prescription has meaningful data, false otherwise
      */
@@ -2061,17 +2072,17 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (prescription == null) {
             return false;
         }
-        
+
         // Check if any of the key prescription fields have meaningful values
-        return prescription.getDose() != null 
-            || prescription.getDoseUnit() != null
-            || prescription.getFrequencyUnit() != null
-            || prescription.getDuration() != null
-            || prescription.getDurationUnit() != null
-            || prescription.getPrescribedFrom() != null
-            || prescription.getPrescribedTo() != null
-            || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
-            || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
+        return prescription.getDose() != null
+                || prescription.getDoseUnit() != null
+                || prescription.getFrequencyUnit() != null
+                || prescription.getDuration() != null
+                || prescription.getDurationUnit() != null
+                || prescription.getPrescribedFrom() != null
+                || prescription.getPrescribedTo() != null
+                || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
+                || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
     }
 
 }
