@@ -172,7 +172,8 @@ public class StockHistoryController implements Serializable {
                 .append("s.pbItem.billItem.item.name, ")
                 .append("s.pbItem.qty, s.pbItem.freeQty, ")
                 .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
-                .append("s.pbItem.billItem.item.dblValue, s.itemStock")
+                .append("s.pbItem.billItem.item.dblValue, s.itemStock, ")
+                .append("s.stockQty, s.pbItem.stock.itemBatch.batchNo")
                 .append(") from StockHistory s ")
                 .append("where s.createdAt between :fd and :td ");
 

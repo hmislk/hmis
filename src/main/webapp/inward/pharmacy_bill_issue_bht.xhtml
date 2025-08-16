@@ -69,6 +69,8 @@
                                     value="Settle"
                                     ajax="false"
                                     action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     class="ui-button-success mx-2"
                                     icon ="fa-solid fa-check">
                                 </p:commandButton>
