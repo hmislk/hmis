@@ -176,7 +176,13 @@ public class StockHistoryController implements Serializable {
                 .append("s.pbItem.billItem.item.dblValue, s.itemStock, ")
                 .append("s.stockQty, s.pbItem.stock.itemBatch.batchNo")
                 .append(") from StockHistory s ")
-                .append("where s.createdAt between :fd and :td ");
+                .append("where s.createdAt between :fd and :td ")
+                .append("and s.pbItem is not null ")
+                .append("and s.pbItem.billItem is not null ")
+                .append("and s.pbItem.billItem.bill is not null ")
+                .append("and s.pbItem.billItem.item is not null ")
+                .append("and s.pbItem.stock is not null ")
+                .append("and s.pbItem.stock.itemBatch is not null ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("fd", fd);
