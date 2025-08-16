@@ -1159,4 +1159,70 @@ public class PharmacyCalculation implements Serializable {
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
+
+    /**
+     * Bulk calculation method to replace individual N+1 queries for bill item calculations.
+     * Retrieves issued and cancelled quantities for all bill items in a single query.
+     * 
+     * @param billItems List of bill items to calculate for
+     * @param billType The bill type to filter by (e.g., PharmacyTransferIssue)
+     * @return Map with bill item ID as key and calculation DTO as value
+     */
+    public java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> getBulkCalculationsForBillItems(
+            java.util.List<com.divudi.core.entity.BillItem> billItems, com.divudi.core.data.BillType billType) {
+        
+        if (billItems == null || billItems.isEmpty()) {
+            return new java.util.HashMap<>();
+        }
+        
+        java.util.List<Long> billItemIds = billItems.stream()
+            .map(com.divudi.core.entity.BillItem::getId)
+            .filter(id -> id != null)
+            .collect(java.util.stream.Collectors.toList());
+        
+        if (billItemIds.isEmpty()) {
+            return new java.util.HashMap<>();
+        }
+        
+        String sql = "SELECT " +
+            "  bi.id as billItemId, " +
+            "  bi.qty as originalQty, " +
+            "  COALESCE(SUM(CASE WHEN TYPE(issued.bill) = " + com.divudi.core.entity.BilledBill.class.getSimpleName() + " THEN ABS(issued.qty) ELSE 0 END), 0) as billedIssued, " +
+            "  COALESCE(SUM(CASE WHEN TYPE(cancelled.bill) = " + com.divudi.core.entity.CancelledBill.class.getSimpleName() + " THEN ABS(cancelled.qty) ELSE 0 END), 0) as cancelledIssued " +
+            "FROM BillItem bi " +
+            "LEFT JOIN BillItem issued ON issued.referanceBillItem = bi " +
+            "  AND issued.bill.billType = :billType " +
+            "  AND issued.creater IS NOT NULL " +
+            "  AND TYPE(issued.bill) = " + com.divudi.core.entity.BilledBill.class.getSimpleName() + " " +
+            "LEFT JOIN BillItem cancelled ON cancelled.referanceBillItem.referanceBillItem = bi " +
+            "  AND cancelled.bill.billType = :billType " +
+            "  AND cancelled.creater IS NOT NULL " +
+            "  AND TYPE(cancelled.bill) = " + com.divudi.core.entity.CancelledBill.class.getSimpleName() + " " +
+            "WHERE bi.id IN :billItemIds " +
+            "GROUP BY bi.id, bi.qty";
+        
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("billItemIds", billItemIds);
+        params.put("billType", billType);
+        
+        try {
+            java.util.List<Object[]> results = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+            
+            return results.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                    row -> ((Number) row[0]).longValue(), // billItemId as key
+                    row -> new com.divudi.core.data.dto.BillItemCalculationDTO(
+                        ((Number) row[0]).longValue(),    // billItemId
+                        ((Number) row[1]).doubleValue(),  // originalQty
+                        ((Number) row[2]).doubleValue(),  // billedIssued
+                        ((Number) row[3]).doubleValue()   // cancelledIssued
+                    )
+                ));
+        } catch (Exception e) {
+            // Log error and return empty map as fallback
+            System.err.println("Error in getBulkCalculationsForBillItems: " + e.getMessage());
+            e.printStackTrace();
+            return new java.util.HashMap<>();
+        }
+    }
 }
