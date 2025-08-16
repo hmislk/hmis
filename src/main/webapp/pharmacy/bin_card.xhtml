@@ -125,6 +125,13 @@
                     </p:column>
 
                     <!-- Quantity In -->
+                    <p:column headerText="Batch Number" class="text-end">
+                        <h:outputText
+                            value="#{sh.pbItem.stock.itemBatch.batchNo}" >
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Quantity In -->
                     <p:column headerText="Qty In" class="text-end">
                         <h:outputText value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
                                       rendered="#{sh.pbItem.transThisIsStockIn}"
@@ -144,12 +151,18 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Balance Qty" class="text-end">
+                    <p:column headerText="Balance Qty (Item)" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
+                    
+                     <p:column headerText="Balance Qty (Batch)" class="text-end">
+                         <h:outputText value="#{sh.stockQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
 
 
                 </p:dataTable>
