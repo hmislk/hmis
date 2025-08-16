@@ -1206,16 +1206,16 @@ public class PharmacyCalculation implements Serializable {
         params.put("billType", billType);
         
         try {
-            java.util.List<Object[]> results = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, params);
+            java.util.List<Object[]> results = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
             
             return results.stream()
                 .collect(java.util.stream.Collectors.toMap(
-                    row -> (Long) row[0], // billItemId as key
+                    row -> ((Number) row[0]).longValue(), // billItemId as key
                     row -> new com.divudi.core.data.dto.BillItemCalculationDTO(
-                        (Long) row[0],    // billItemId
-                        (Double) row[1],  // originalQty
-                        (Double) row[2],  // billedIssued
-                        (Double) row[3]   // cancelledIssued
+                        ((Number) row[0]).longValue(),    // billItemId
+                        ((Number) row[1]).doubleValue(),  // originalQty
+                        ((Number) row[2]).doubleValue(),  // billedIssued
+                        ((Number) row[3]).doubleValue()   // cancelledIssued
                     )
                 ));
         } catch (Exception e) {

@@ -65,6 +65,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.math.BigDecimal;
 
@@ -2150,7 +2151,7 @@ public class PharmacyBean {
         params.put("department", department);
         
         try {
-            java.util.List<Object[]> results = getStockFacade().findObjectArrayByJpql(sql, params);
+            java.util.List<Object[]> results = getStockFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
             
             return results.stream()
                 .map(row -> new com.divudi.core.data.dto.StockAvailabilityDTO(

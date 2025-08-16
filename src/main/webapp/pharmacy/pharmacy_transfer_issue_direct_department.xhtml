@@ -63,17 +63,17 @@
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Cost Rate" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
+                                            <p:column headerText="Cost Rate" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.costRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Purchase Rate" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
+                                            <p:column headerText="Purchase Rate" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Retail Rate" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
+                                            <p:column headerText="Retail Rate" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
@@ -163,7 +163,7 @@
 
                                 <p:column 
                                     width="6em"
-                                    headerText="Transfer Rate" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"  
+                                    headerText="Transfer Rate"  
                                     class="text-end">
                                     <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -172,7 +172,7 @@
 
                                 <p:column 
                                     width="6em"
-                                    headerText="Transfer Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"  
+                                    headerText="Transfer Value"  
                                     class="text-end">
                                     <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -255,19 +255,19 @@
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
 
-                                <h:outputLabel value="Transfer Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
-                                <h:outputLabel value=": &nbsp;" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"/>
+                                <h:outputLabel value="Transfer Value" />
+                                <h:outputLabel value=": &nbsp;"/>
                                 <h:outputLabel 
                                     class="w-100 text-end"
-                                    value="#{transferIssueController.issuedBill.netTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" >
+                                    value="#{transferIssueController.issuedBill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
 
-                                <h:outputLabel value="Transfer Cost Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
-                                <h:outputLabel value=": &nbsp;" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"/>
+                                <h:outputLabel value="Transfer Cost Value" />
+                                <h:outputLabel value=": &nbsp;"/>
                                 <h:outputLabel 
                                     class="w-100 text-end"
-                                    value="#{transferIssueController.issuedBill.billFinanceDetails.totalCostValue}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" >
+                                    value="#{transferIssueController.issuedBill.billFinanceDetails.totalCostValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
 
