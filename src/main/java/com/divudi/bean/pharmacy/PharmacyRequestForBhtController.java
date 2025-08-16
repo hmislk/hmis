@@ -30,6 +30,7 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
@@ -588,6 +589,41 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
+    private void savePreBillFinallyPreservingToDepartment(Patient pt, Department matrixDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {
+        // Store the current toDepartment and toInstitution before updating
+        Department currentToDepartment = getPreBill().getToDepartment();
+        Institution currentToInstitution = getPreBill().getToInstitution();
+        
+        getPreBill().setBillType(billType);
+        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
+        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
+
+        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getPreBill().setCreater(getSessionController().getLoggedUser());
+
+        getPreBill().setPatient(pt);
+        getPreBill().setPatientEncounter(getPatientEncounter());
+
+        // Preserve the existing toDepartment and toInstitution instead of nullifying them
+        getPreBill().setToDepartment(currentToDepartment);
+        getPreBill().setToInstitution(currentToInstitution);
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+
+        getPreBill().setFromDepartment(matrixDepartment);
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getBillBean().setSurgeryData(getPreBill(), getBatchBill(), SurgeryBillType.PharmacyItem);
+
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        }
+
+    }
+
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
             if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
@@ -1056,7 +1092,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             getPreBill().setReferenceBill(tmpBillItems.get(0).getReferanceBillItem().getBill());
         }
 
-        savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
+        savePreBillFinallyPreservingToDepartment(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin
