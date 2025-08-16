@@ -1693,19 +1693,24 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 originalBillItem.setItem(tbi.getItem());
                 originalBillItem.setRate(tbi.getRate());
                 originalBillItem.setNetValue(tbi.getNetValue());
-                
+
                 tbi.setQty(0.0);
+                // Keep PharmaceuticalBillItem quantities in sync for consistency
+                if (tbi.getPharmaceuticalBillItem() != null) {
+                    tbi.getPharmaceuticalBillItem().setQty(0.0);
+                    tbi.getPharmaceuticalBillItem().setFreeQty(0.0f);
+                }
                 JsfUtil.addErrorMessage("Error. Please check the bill again manually. When stock was recording, there was no sufficient stocks for the item : " + tbi.getItem().getName());
-                
+
                 // Record audit event for insufficient stock
                 auditService.logAudit(
-                    originalBillItem, 
-                    tbi, 
-                    sessionController.getLoggedUser(), 
-                    "BillItem", 
-                    "INSUFFICIENT_STOCK_QUANTITY_RESET"
+                        originalBillItem,
+                        tbi,
+                        sessionController.getLoggedUser(),
+                        "BillItem",
+                        "INSUFFICIENT_STOCK_QUANTITY_RESET"
                 );
-                
+
                 getBillItemFacade().edit(tbi);
             }
             getPreBill().getBillItems().add(tbi);
