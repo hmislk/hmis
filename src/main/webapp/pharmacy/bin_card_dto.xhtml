@@ -11,9 +11,9 @@
     <ui:define name="subcontent">
 
         <h:form>
-            <p:panel header="Pharmacy Bin Card" >
+            <p:panel header="Pharmacy Bin Card (DTO Enhanced)" >
                 <f:facet name="header" >
-                    <h:outputLabel value="Pharmacy Bin Card" ></h:outputLabel>
+                    <h:outputLabel value="Pharmacy Bin Card (DTO Enhanced)" ></h:outputLabel>
                 </f:facet>
                 <h:panelGrid columns="7" class="w-100">
                     <h:outputLabel value="From" ></h:outputLabel>
@@ -78,8 +78,8 @@
                         class="m-1 ui-button-warning" 
                         ajax="false" 
                         icon="fas fa-arrows-rotate"
-                        value="Process"
-                        action="#{pharmacyErrorChecking.processBinCard()}" >
+                        value="Process (DTO)"
+                        action="#{pharmacyErrorChecking.processBinCardWithDTO()}" >
                     </p:commandButton>
 
 
@@ -101,10 +101,10 @@
                         headerText="Stock Hx ID"
                         rendered="#{webUserController.hasPrivilege('Developers')}"
                         width="10rem">
-                        <p:commandLink
+                        <p:commandLink 
                             ajax="false"
                             action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
-                            value="#{sh.id}"
+                            value="#{sh.id}" 
                             ></p:commandLink>
                         <f:facet name="footer">
                             <h:outputText value="Total"/>
@@ -148,14 +148,15 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Balance Qty (Batch)" class="text-end">
-                        <h:outputText value="#{sh.stockQty}">
+                    <p:column headerText="Balance Qty (Item)" class="text-end">
+                        <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Closing Stock" class="text-end">
-                        <h:outputText value="#{sh.itemStock}">
+                    
+                     <p:column headerText="Balance Qty (Batch)" class="text-end">
+                         <h:outputText value="#{sh.stockQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
@@ -163,24 +164,9 @@
 
                 </p:dataTable>
 
-
-
-
-
-
-
-
-
-
-
             </p:panel>
 
-
-
-
         </h:form>
-
-
 
     </ui:define>
 
