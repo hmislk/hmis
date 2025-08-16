@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
@@ -237,8 +238,15 @@ public class PrescriptionToItemService {
         if (frequencyUnit == null) {
             return 1.0; // Default to once per day
         }
+        String frequencyName = Optional.ofNullable(frequencyUnit.getName())
+                .orElse("")
+                .trim()
+                .toLowerCase()
+                .replaceAll("\\s+", " ");
 
-        String frequencyName = frequencyUnit.getName().toLowerCase();
+        if (frequencyName.isEmpty()) {
+            return 1.0;
+        }
         
         // Common frequency mappings
         Map<String, Double> frequencyMap = new HashMap<>();
