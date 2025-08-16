@@ -18,6 +18,7 @@ import javax.persistence.PersistenceContext;
  * @author Sniper 619
  */
 @Stateless
+@PermitAll
 public class ConfigOptionFacade extends AbstractFacade<ConfigOption> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
