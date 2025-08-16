@@ -322,16 +322,20 @@ public class AgentReferenceBookController implements Serializable {
         }
 
         // Check if book number already exists
-        String sql = "SELECT a FROM AgentReferenceBook a WHERE a.retired=false AND a.deactivate=false AND a.referenceBookEnum=:rfe AND a.strbookNumber=:sbNumber";
+        String sql = "SELECT a FROM AgentReferenceBook a "
+                + " WHERE a.retired=false "
+                + " AND a.deactivate=false "
+                + " AND a.referenceBookEnum=:rfe "
+                + " AND a.strbookNumber=:sbNumber";
         HashMap hm = new HashMap();
         hm.put("rfe", ReferenceBookEnum.LabBook);
-        hm.put("sbNumber", book.getStrbookNumber());
+        hm.put("sbNumber", book.getStrbookNumber() == null ? null : book.getStrbookNumber().trim());
 
         AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
 
         if (arb != null) {
             searchReferenceBooks();
-            JsfUtil.addErrorMessage("Book Number Is Already use in " + arb.getInstitution().getCode() + " - " + arb.getInstitution().getName());
+            JsfUtil.addErrorMessage("Book number is already used in " + arb.getInstitution().getCode() + " - " + arb.getInstitution().getName());
             return;
         } else {
             book.setEditedAt(new Date());
