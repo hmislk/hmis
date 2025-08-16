@@ -148,6 +148,16 @@
 
 
 
+                    <p:column headerText="Batch Number" class="text-end">
+                        <h:outputText value="#{sh.batchNo}" />
+                    </p:column>
+
+                    <p:column headerText="Balance Qty (Batch)" class="text-end">
+                        <h:outputText value="#{sh.stockQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
                     <p:column headerText="Closing Stock" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#,##0.#"/>
