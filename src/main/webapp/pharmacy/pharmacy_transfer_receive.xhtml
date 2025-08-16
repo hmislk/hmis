@@ -71,13 +71,13 @@
                                         </h:outputText>
                                     </p:column>  
 
-                                    <p:column headerText="Rate"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                    <p:column headerText="Rate" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="rate" value="#{ph.rate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Net Rate"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                    <p:column headerText="Net Rate" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="netRate" value="#{ph.netRate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -101,7 +101,7 @@
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Value"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                    <p:column headerText="Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="value" value="#{ph.absoluteNetValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -123,13 +123,13 @@
                                     <h:outputLabel value="Staff" ></h:outputLabel>
                                     <h:outputLabel value="#{transferReceiveController.receivedBill.staff.person.nameWithTitle}" ></h:outputLabel>
 
-                                    <h:outputLabel value="Issued Value" ></h:outputLabel>
-                                    <h:outputLabel value="#{transferReceiveController.receivedBill.referenceBill.absoluteNetTotal}">
+                                    <h:outputLabel value="Issued Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" ></h:outputLabel>
+                                    <h:outputLabel value="#{transferReceiveController.receivedBill.referenceBill.absoluteNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
 
-                                    <h:outputLabel value="Receiving Value" ></h:outputLabel>
-                                    <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveController.displayReceivedNetTotal}">
+                                    <h:outputLabel value="Receiving Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" ></h:outputLabel>
+                                    <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveController.displayReceivedNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
 
@@ -172,18 +172,18 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputText>
 
-                            <h:outputLabel value="Purchase Price" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferReceiveController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                            <h:outputLabel value="Purchase Price" styleClass="fw-bold" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"/>
+                            <h:outputText value="#{transferReceiveController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
 
-                            <h:outputLabel value="Retail Rate" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferReceiveController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                            <h:outputLabel value="Retail Rate" styleClass="fw-bold" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"/>
+                            <h:outputText value="#{transferReceiveController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
 
-                            <h:outputLabel value="Cost" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferReceiveController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                            <h:outputLabel value="Cost" styleClass="fw-bold" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"/>
+                            <h:outputText value="#{transferReceiveController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:panelGrid>
