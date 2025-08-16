@@ -41,7 +41,9 @@
       "Bash(mvn compile:*)",
       "Bash(git merge:*)",
       "Bash(gh issue list:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

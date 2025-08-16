@@ -23,6 +23,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyBinCardDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
@@ -54,6 +55,7 @@ public class PharmacyErrorChecking implements Serializable {
 
     List<BillItem> billItems;
     private List<StockHistory> stockHistories;
+    private List<PharmacyBinCardDTO> binCardEntries;
     //private ReportTimerController reportTimerController;
     Date fromDate;
     Date toDate;
@@ -120,6 +122,30 @@ public class PharmacyErrorChecking implements Serializable {
                             && sh.getPbItem().getBillItem().getBill() != null
                             && bts.contains(sh.getPbItem().getBillItem().getBill().getBillType())) {
                         iterator.remove(); // modifies the original list safely
+                    }
+                }
+            }
+
+        }, PharmacyReports.PHARMACY_BIN_CARD, sessionController.getLoggedUser());
+    }
+
+    /**
+     * DTO-based version of processBinCard for better performance and future compatibility.
+     * This method can be used when merging hotfix into development.
+     */
+    public void processBinCardWithDTO() {
+        reportTimerController.trackReportExecution(() -> {
+            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Bin Card - Hide Adjustment Bills in Bin Card", true)) {
+                List<BillType> bts = new ArrayList<>();
+                bts.add(BillType.PharmacyAdjustmentSaleRate);
+
+                Iterator<PharmacyBinCardDTO> iterator = binCardEntries.iterator();
+                while (iterator.hasNext()) {
+                    PharmacyBinCardDTO dto = iterator.next();
+                    if (dto.getBillType() != null && bts.contains(dto.getBillType())) {
+                        iterator.remove();
                     }
                 }
             }
@@ -537,6 +563,14 @@ public class PharmacyErrorChecking implements Serializable {
 
     public void setStockHistories(List<StockHistory> stockHistories) {
         this.stockHistories = stockHistories;
+    }
+
+    public List<PharmacyBinCardDTO> getBinCardEntries() {
+        return binCardEntries;
+    }
+
+    public void setBinCardEntries(List<PharmacyBinCardDTO> binCardEntries) {
+        this.binCardEntries = binCardEntries;
     }
 
 }
