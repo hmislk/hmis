@@ -154,11 +154,10 @@ public class AgentReferenceBookController implements Serializable {
 
         sql = "select c from Institution c where c.retired=false and "
                 + " c.institutionType =:t and c.name like :q order by c.name";
-        //////System.out.println(sql);
+
         m.put("t", InstitutionType.Agency);
         m.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getInstitutionFacade().findByJpql(sql, m);
-        //////System.out.println("suggestions = " + suggestions);
 
         return suggestions;
     }
@@ -302,7 +301,6 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public void updateAgentBook(AgentReferenceBook book) {
-        System.out.println("book = " + book.getStrbookNumber());
 
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");
