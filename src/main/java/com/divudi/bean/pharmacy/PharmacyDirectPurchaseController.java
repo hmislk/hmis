@@ -149,6 +149,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        
+        // Calculate and set missing value fields in BillItemFinanceDetails
+        BigDecimal totalQty = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
+        if (BigDecimalUtil.isPositive(totalQty)) {
+            f.setValueAtPurchaseRate(BigDecimalUtil.multiply(totalQty, f.getLineGrossRate()));
+            f.setValueAtRetailRate(BigDecimalUtil.multiply(totalQty, f.getRetailSaleRatePerUnit()));
+            if (f.getLineCostRate() != null && BigDecimalUtil.isPositive(f.getLineCostRate())) {
+                f.setValueAtCostRate(BigDecimalUtil.multiply(totalQty, f.getLineCostRate()));
+            }
+        }
+        
         BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
 
@@ -164,12 +175,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setFreeQty(freeQtyUnits.doubleValue());
             pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantity()).doubleValue());
 
-            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
-            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
+            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
+            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
 
             pbi.setRetailRate(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
             pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
             pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+
+            // Calculate and set purchase and retail values
+            double purchaseValue = qtyUnits.doubleValue() * BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue();
+            double retailValue = qtyUnits.doubleValue() * BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue();
+            pbi.setPurchaseValue(purchaseValue);
+            pbi.setRetailValue(retailValue);
 
         } else {
             // AMP: no packs; assign both units and packs as same
@@ -179,8 +196,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setFreeQty(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
             pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
 
-            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
-            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
+            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
+            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
 
             // User Records f.getRetailSaleRatePerUnit(). It will be same same for all retail rates
             f.setRetailSaleRate(f.getRetailSaleRatePerUnit()); // User gives 
@@ -189,7 +206,20 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
             pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
+            // Calculate and set purchase and retail values  
+            double purchaseValueAmp = BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue() * BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue();
+            double retailValueAmp = BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue() * BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue();
+            pbi.setPurchaseValue(purchaseValueAmp);
+            pbi.setRetailValue(retailValueAmp);
+
         }
+
+        // Set BillItem rate and value fields
+        getCurrentBillItem().setRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
+        getCurrentBillItem().setNetRate(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+        getCurrentBillItem().setNetValue(getCurrentBillItem().getNetRate() * getCurrentBillItem().getQty());
+        getCurrentBillItem().setGrossValue(BigDecimalUtil.valueOrZero(f.getLineGrossTotal()).doubleValue());
+
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
 

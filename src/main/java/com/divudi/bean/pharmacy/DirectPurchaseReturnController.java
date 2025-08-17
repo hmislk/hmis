@@ -683,6 +683,8 @@ public class DirectPurchaseReturnController implements Serializable {
             getBillItems().add(newBillItemInReturnBill);
             calculateBillItemDetails(newBillItemInReturnBill);
         }
+        
+        callculateBillDetails();
     }
 
     private void calculateBillItemDetails(BillItem returningBillItem) {
