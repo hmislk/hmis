@@ -191,7 +191,7 @@
 
                 <p:columnGroup type="footer">
                     <p:row>
-                        <p:column colspan="6">
+                        <p:column colspan="9">
                             <f:facet name="footer">
                                 <h:outputLabel value="Total" />
                             </f:facet>
@@ -204,6 +204,7 @@
                             </f:facet>
                         </p:column>
                         <p:column />
+                        <p:column />
                         <p:column style="text-align: right;">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{reportsStock.stockCostValue}">
@@ -211,7 +212,6 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column />
                         <p:column style="text-align: right;">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{reportsStock.stockSaleValue}">
@@ -221,7 +221,7 @@
                         </p:column>
                     </p:row>
                     <p:row>
-                        <p:column colspan="11">
+                        <p:column colspan="14">
                             <f:facet name="footer">
                                 <h:outputLabel value="Printed At " />
                                 <h:outputLabel value="#{sessionController.currentDate}">
