@@ -289,14 +289,49 @@ Similar patterns apply for transfer requests and issues, using their respective 
   - `bill_id`: References parent bill
   - `qty`: Item quantity
   - `referanceBillItem_id`: Links GRN items to PO items
+  - `rate`: Item rate
+  - `netRate`: Net rate after discounts
+  - `netValue`: Net value (netRate × qty)
+  - `grossValue`: Gross value
+
+#### billitemfinancedetails
+- **Purpose**: Detailed financial information for bill items
+- **Key Fields**:
+  - `billItem_id`: References billitem
+  - `quantity`: User-entered quantity (AMP: units, AMPP: packs)
+  - `quantityByUnits`: Always in units (calculated for AMPP)
+  - `lineGrossRate`: Gross rate per user-entered unit
+  - `lineNetRate`: Net rate per user-entered unit
+  - `valueatPurchaseRate`: Total value at purchase rate
+  - `valueatRetailRate`: Total value at retail rate
+
+**🚨 CRITICAL BUSINESS RULES for BillItemFinanceDetails**:
+1. **User-entered quantities**: 
+   - **AMP items**: `quantity` = units (same as `quantityByUnits`)
+   - **AMPP items**: `quantity` = packs, `quantityByUnits` = packs × unitsPerPack
+2. **Rates match user input**: 
+   - **AMP**: Rate per unit
+   - **AMPP**: Rate per pack
+3. **Calculated values**: Always populate `valueatPurchaseRate`, `valueatRetailRate`, etc.
 
 #### pharmaceuticalbillitem
 - **Purpose**: Pharmacy-specific item data
 - **Key Fields**:
   - `billitem_id`: References billitem
-  - `qty`: Pharmaceutical quantity
-  - `freeqty`: Free quantity
-  - `purchaseRate`: Purchase price
+  - `qty`: Pharmaceutical quantity (ALWAYS in units)
+  - `freeqty`: Free quantity (ALWAYS in units)
+  - `purchaseRate`: Purchase price (ALWAYS positive)
+  - `retailRate`: Retail price (ALWAYS positive)
+  - `purchaseValue`: Calculated value (qty × purchaseRate)
+  - `retailValue`: Calculated value (qty × retailRate)
+
+**🚨 CRITICAL BUSINESS RULES for PharmaceuticalBillItem**:
+1. **Quantities ALWAYS in units**: Both `qty` and `freeqty` are stored in units, never in packs
+2. **Stock flow direction**: 
+   - **Incoming stock** (Purchase, GRN, Receive): Positive quantities (+)
+   - **Outgoing stock** (Issue, Sale, Return): Negative quantities (-)
+3. **Rates ALWAYS positive**: All rate fields (`purchaseRate`, `retailRate`, etc.) are always positive values
+4. **Values calculated**: `purchaseValue` = `qty` × `purchaseRate`, `retailValue` = `qty` × `retailRate`
 
 ### BillTypeAtomic Values for Pharmacy
 - `PHARMACY_ORDER_APPROVAL`: Approved Purchase Orders

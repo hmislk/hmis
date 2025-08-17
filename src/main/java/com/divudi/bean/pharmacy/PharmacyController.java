@@ -286,7 +286,7 @@ public class PharmacyController implements Serializable {
         if (department == null) {
             department = getSessionController().getDepartment();
         }
-        return "/pharmacy/bin_card?faces-redirect=true";
+        return "/pharmacy/bin_card_dto?faces-redirect=true";
     }
 
     public String navigateToItemsList() {

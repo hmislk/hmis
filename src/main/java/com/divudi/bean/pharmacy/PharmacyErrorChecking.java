@@ -569,5 +569,24 @@ public class PharmacyErrorChecking implements Serializable {
     public void setBinCardEntries(List<PharmacyBinCardDTO> binCardEntries) {
         this.binCardEntries = binCardEntries;
     }
+    
+    /**
+     * Generates a CSS class name for batch color coding.
+     * Returns a consistent color class for the same batch number.
+     * 
+     * @param batchNo the batch number
+     * @return CSS class name for coloring the row
+     */
+    public String getBatchColorClass(String batchNo) {
+        if (batchNo == null || batchNo.trim().isEmpty()) {
+            return "";
+        }
+        
+        // Use hash code to get consistent color for same batch
+        int hash = Math.abs(batchNo.hashCode());
+        int colorIndex = hash % 10; // Use 10 different colors
+        
+        return "batch-color-" + colorIndex;
+    }
 
 }
