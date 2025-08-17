@@ -192,13 +192,24 @@
                                     <f:setPropertyActionListener target="#{goodsReturnController.bill}" value="#{p}" />
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
                                     icon="pi pi-undo"
                                     title="Return"
                                     action="#{billSearch.navigateToPharmacyGrnReturnBillView()}"
                                     disabled="#{p.cancelled}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Return can be done without Approval')}"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
+                                    <f:setPropertyActionListener target="#{billSearch.bill}" value="#{p}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="pi pi-clock"
+                                    title="Return Request"
+                                    action="#{billSearch.navigateToPharmacyGrnReturnBillView()}"
+                                    disabled="#{p.cancelled}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Returns is only after Approval')}"
+                                    styleClass="ui-button-sm ui-button-secondary mx-1">
                                     <f:setPropertyActionListener target="#{billSearch.bill}" value="#{p}" />
                                 </p:commandButton>
                             </p:column>
