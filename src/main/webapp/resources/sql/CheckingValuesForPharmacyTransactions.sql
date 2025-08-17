@@ -4,7 +4,7 @@ SELECT id, `CREATEDAT`, `BILLITEMFINANCEDETAILS_ID`, `NETRATE`, `RATE`, `QTY`, `
 
 -- Check the latest bill item finance details for pharmacy transactions
 -- This query fetches the most recent 2 records to compare financial calculations
-select `ID`,  `CREATEDAT`,  `LINENETRATE`, `LINEGROSSTOTAL`, `GROSSRATE`, `GROSSTOTAL`, `LINEGROSSRATE`, `LINECOST`, `QUANTITY`, `QUANTITYBYUNITS`,
+select `ID`,  `CREATEDAT`,  `LINENETRATE`, `LINEGROSSTOTAL`, `GROSSRATE`, `GROSSTOTAL`, `LINEGROSSRATE`, `LINECOST`, `LINECOSTRATE`, `QUANTITY`, `QUANTITYBYUNITS`,
  `LINECOSTRATE`, `VALUEATCOSTRATE`, `VALUEATPURCHASERATE`, `VALUEATRETAILRATE` from billitemfinancedetails order by id desc limit 10;
 
 -- Check the latest pharmaceutical bill item data

@@ -321,13 +321,6 @@ public class DirectPurchaseReturnController implements Serializable {
             rate = fd.getTotalCostRate();
         }
 
-        if (originalBillItem.getItem() instanceof Ampp) {
-            BigDecimal upp = BigDecimalUtil.valueOrOne(fd.getUnitsPerPack());
-            if (BigDecimalUtil.isPositive(upp)) {
-                rate = BigDecimalUtil.multiply(rate, upp);
-            }
-        }
-
         return rate;
     }
 
