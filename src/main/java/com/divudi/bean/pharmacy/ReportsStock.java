@@ -252,14 +252,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             jpql.append("s.itemBatch.item.name, ");
             jpql.append("s.itemBatch.item.departmentType, ");
             jpql.append("s.itemBatch.item.code, ");
-            jpql.append("s.itemBatch.item.genericName, ");
+            jpql.append("amp.vmp.name, ");
             jpql.append("s.itemBatch.dateOfExpire, ");
             jpql.append("s.itemBatch.batchNo, ");
             jpql.append("s.stock, ");
             jpql.append("s.itemBatch.purcahseRate, ");
             jpql.append("s.itemBatch.costRate, ");
             jpql.append("s.itemBatch.retailsaleRate) ");
-            jpql.append("from Stock s where s.stock > 0");
+            jpql.append("from Stock s join TREAT(s.itemBatch.item as Amp) amp where s.stock > 0");
             jpql.append(" and s.itemBatch.item.departmentType in :dts");
             m.put("dts", availableDepartmentTypes);
 
