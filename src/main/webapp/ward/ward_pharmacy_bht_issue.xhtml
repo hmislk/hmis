@@ -62,7 +62,8 @@
                                             <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Rate" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}"
+                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                             <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
@@ -308,13 +309,13 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Purchase Rate">
+                        <p:column headerText="Purchase Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                             <h:outputText value="#{sStock.itemBatch.purcahseRate}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Retail Rate">
+                        <p:column headerText="Retail Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                             <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
