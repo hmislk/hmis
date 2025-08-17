@@ -73,6 +73,7 @@ public class UserPrivilageController implements Serializable {
     private List<Department> departments;
     private List<PrivilegeHolder> currentUserPrivilegeHolders;
     private boolean privilegesLoaded;
+    private String searchText;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -633,6 +634,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
         TreeNode TransferReciveApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.TransferReciveApproval, "Recieve Approval"), disbursementNode);
         TreeNode PharmacyDisbursementReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementReports, "Pharmacy Disbursement Reports"), disbursementNode);
+        TreeNode PharmacyTransferViewRates = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferViewRates, "Pharmacy Transfer View Rates"), disbursementNode);
 
         TreeNode InpatientMedicationManagementNode = new DefaultTreeNode("Inpatient medication Management", pharmacyNode);
         TreeNode InpatientMedicationManagementMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientMedicationManagementMenue, "Procurement Menu"), InpatientMedicationManagementNode);
@@ -984,6 +986,49 @@ public class UserPrivilageController implements Serializable {
         }
     }
 
+    public void filterPrivileges() {
+        collapseAll(rootTreeNode);
+        rootTreeNode.setExpanded(true);
+        if (searchText == null || searchText.trim().isEmpty()) {
+            return;
+        }
+        String st = searchText.trim().toLowerCase();
+        expandMatches(rootTreeNode, st);
+    }
+
+    private void collapseAll(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        node.setExpanded(false);
+        for (Object childObj : node.getChildren()) {
+            if (childObj instanceof TreeNode) {
+                collapseAll((TreeNode) childObj);
+            }
+        }
+    }
+
+    private boolean expandMatches(TreeNode node, String search) {
+        boolean match = false;
+        if (node.getData() instanceof PrivilegeHolder) {
+            PrivilegeHolder ph = (PrivilegeHolder) node.getData();
+            if (ph.getName() != null && ph.getName().toLowerCase().contains(search)) {
+                match = true;
+            }
+        }
+        for (Object childObj : node.getChildren()) {
+            if (childObj instanceof TreeNode) {
+                if (expandMatches((TreeNode) childObj, search)) {
+                    match = true;
+                }
+            }
+        }
+        if (match) {
+            node.setExpanded(true);
+        }
+        return match;
+    }
+
     public void fillUserPrivileges() {
         List<WebUserPrivilege> wups;
         if (currentWebUser == null) {
@@ -1213,6 +1258,14 @@ public class UserPrivilageController implements Serializable {
 
     public void setPrivilegesLoaded(boolean privilegesLoaded) {
         this.privilegesLoaded = privilegesLoaded;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     // </editor-fold>

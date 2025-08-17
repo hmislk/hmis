@@ -124,36 +124,51 @@
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
                     </p:column>
 
-                    <!-- Item -->
-                    <p:column headerText="Item">
-                        <h:outputText value="#{sh.itemName}" />
+                    <!-- Batch Number -->
+                    <p:column headerText="Batch Number" class="text-end">
+                        <h:outputText value="#{sh.batchNo}" />
                     </p:column>
-                    <p:column headerText="Qty In" styleClass="text-end">
-                        <h:outputText
-                            value="#{sh.transAbsoluteQtyPlusFreeQty}"
-                            rendered="#{sh.transThisIsStockIn}"
-                            styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
+
+                    <!-- Quantity In -->
+                    <p:column headerText="Qty In" class="text-end">
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                                      rendered="#{sh.transThisIsStockIn}"
+                                      styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Qty Out" styleClass="text-end">
-                        <h:outputText
-                            value="#{sh.transAbsoluteQtyPlusFreeQty}"
+                    <!-- Quantity Out -->
+                    <p:column headerText="Qty Out" class="text-end">
+                        <h:outputText 
+                            value="#{sh.transAbsoluteQtyPlusFreeQty}" 
                             rendered="#{sh.transThisIsStockOut}"
                             styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-
-
-                    <p:column headerText="Closing Stock" class="text-end">
-                        <h:outputText value="#{sh.itemStock}">
-                            <f:convertNumber pattern="#,##0.#"/>
+                    <p:column headerText="Balance Qty (Batch)" class="text-end">
+                        <h:outputText value="#{sh.stockQty}">
+                            <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
+                    <p:column headerText="Batch Number" class="text-end">
+                        <h:outputText value="#{sh.batchNo}" />
+                    </p:column>
+
+                    <p:column headerText="Balance Qty (Batch)" class="text-end">
+                        <h:outputText value="#{sh.stockQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Closing Stock" class="text-end">
+                        <h:outputText value="#{sh.itemStock}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
 
 
                 </p:dataTable>

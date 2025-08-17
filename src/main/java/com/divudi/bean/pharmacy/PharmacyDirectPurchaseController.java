@@ -77,6 +77,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private List<BillItem> billItems;
     private BillItem currentBillItem;
     private boolean printPreview;
+    private boolean showAllBillFormats = false;
     private BillItem currentExpense;
     private List<BillItem> billExpenses;
     private String warningMessage;
@@ -504,6 +505,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void displayItemDetails(BillItem bi) {
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
         pharmacyController.fillItemDetails(bi.getItem());
     }
 
@@ -1110,6 +1114,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public boolean isShowAllBillFormats() {
+        return showAllBillFormats;
+    }
+
+    public void setShowAllBillFormats(boolean showAllBillFormats) {
+        this.showAllBillFormats = showAllBillFormats;
+    }
+
+    public String toggleShowAllBillFormats() {
+        this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
     }
 
 }

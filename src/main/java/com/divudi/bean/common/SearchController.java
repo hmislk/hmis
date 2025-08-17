@@ -4290,7 +4290,8 @@ public class SearchController implements Serializable {
                 + " b.createdAt, "
                 + " b.department.name, "
                 + " b.creater.webUserPerson.name, "
-                + " b.completed)"
+                + " b.completed, "
+                + " b.fullyIssued)"
                 + " from Bill b"
                 + " where b.retired=false "
                 + " and b.cancelled=false "
@@ -4330,8 +4331,7 @@ public class SearchController implements Serializable {
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
                 dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
-                // TODO: Remove this temporary fix once database has fullyIssued column
-                dto.setFullyIssued(false); // Default to false until database migration
+                // fullyIssued field is now fetched directly from database in the JPQL query above
             }
         }
     }
@@ -4383,7 +4383,7 @@ public class SearchController implements Serializable {
         tmp.put("bTp", BillType.InwardPharmacyRequest);
 
         sql = "Select b From Bill b where "
-                + " b.retired=false and  b.department=:dep "
+                + " b.retired=false and  b.toDepartment=:dep "
                 + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
