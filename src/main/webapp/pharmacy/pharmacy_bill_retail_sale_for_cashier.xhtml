@@ -214,7 +214,7 @@
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100"
                                                      selection="#{pharmacySaleController.selectedBillItems}">
 
-                                            <p:column selectionMode="multiple" style="width: 2%;"></p:column>
+                                            <p:column selectRow="true" width="2em"></p:column>
 
                                             <p:column headerText="No" style="width: 4%; padding: 0;" >
                                                 <h:outputLabel id="no" value="#{s+1}." >
