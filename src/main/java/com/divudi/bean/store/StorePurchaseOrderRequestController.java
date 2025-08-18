@@ -128,21 +128,33 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        //System.err.println("5 " + bi.getItem().getName());
-        //System.err.println("6 " + bi.getSearialNo());
-        ////// // System.out.println("bi = " + bi);
-        if (bi != null) {
-            getBillItems().remove(bi.getSearialNo());
-            if (bi.getId() != null) {
-                bi.setRetired(true);
-                bi.setCreater(getSessionController().getLoggedUser());
-                bi.setCreatedAt(new Date());
-                billItemFacade.edit(bi);
-            }
-            calTotal();
-            billFacade.edit(currentBill);
+        if (bi == null) {
+            return;
         }
 
+        getBillItems().remove(bi.getSearialNo());
+
+        Date now = new Date();
+
+        bi.setRetired(true);
+        bi.setRetirer(getSessionController().getLoggedUser());
+        bi.setRetiredAt(now);
+
+        PharmaceuticalBillItem tmpPbi = bi.getPharmaceuticalBillItem();
+        if (tmpPbi != null) {
+            tmpPbi.setRetired(true);
+            tmpPbi.setRetirer(getSessionController().getLoggedUser());
+            tmpPbi.setRetiredAt(now);
+        }
+
+        if (bi.getId() != null) {
+            billItemFacade.edit(bi);
+        }
+        if (tmpPbi != null && tmpPbi.getId() != null) {
+            pharmaceuticalBillItemFacade.edit(tmpPbi);
+        }
+
+        calTotal();
     }
 
     @Inject
