@@ -86,14 +86,10 @@
                             rowsPerPageTemplate="5,10,15"
                             class="w-100"
                             >
-                            <p:column headerText="Request No" style="width: 13%;">
-<!--                                <p:commandLink value="#{p.deptId}" action="ward_pharmacy_reprint_bht_issue_request">
-                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                </p:commandLink>-->
-                                <p:commandButton class="ui-button-outlined" ajax="false" value="#{p.deptId}" action="ward_pharmacy_reprint_bht_issue_request?faces-redirect=true">
-                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
-                                </p:commandButton>                         
+                            <p:column headerText="Bill No" style="width: 10%;">
+                                <h:outputText value="#{p.deptId}" />
                             </p:column>
+
                             <p:column headerText="Requested Department" style="max-width: 100%">                      
                                 <h:outputLabel value="#{p.department.name}"/>                          
                             </p:column> 
@@ -115,7 +111,7 @@
 
                             </p:column>   
                             <p:column headerText="Requested By" style="width: 5%;" >    
-                                
+
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                          
                                 <br/>
@@ -125,16 +121,29 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column width="5%">
+                            <p:column headerText="Actions" style="width:12em; text-align:center;">
                                 <p:commandButton 
-                                    class="ui-button-success" 
+                                    id="btnViewRequest"
+                                    title="View Request"
+                                    class="ui-button-primary m-1"
                                     ajax="false" 
-                                    value="To Issue" 
+                                    icon="fa fa-eye"
+                                    action="ward_pharmacy_reprint_bht_issue_request?faces-redirect=true">
+                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    id="btnNavigtateToIssueMedicine"
+                                    title="Issue Medicines"
+                                    class="ui-button-success m-1" 
+                                    ajax="false" 
+                                    icon="fa fa-prescription-bottle-alt"
                                     action="#{pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest()}"
                                     disabled="#{p.cancelled eq true}">
-                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacySaleBhtController.bhtRequestBill}" ></f:setPropertyActionListener>
+                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacySaleBhtController.bhtRequestBill}" />
                                 </p:commandButton>
                             </p:column>
+
 
                             <p:column headerText="Issued" style="width: 40%;">                   
                                 <p:dataTable var="b" value="#{p.listOfBill}">                           

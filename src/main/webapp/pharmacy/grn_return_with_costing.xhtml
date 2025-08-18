@@ -66,13 +66,13 @@
                                     headerText="Already Returned Qty" >
                                     <h:outputLabel
                                         id="lblAlreadyReturnedQty"
-                                        value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                        value="#{grnReturnWithCostingController.getAlreadyReturnedQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column 
                                     width="5em" 
                                     headerText="Already Returned Free Qty" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <h:outputLabel  value="#{grnReturnWithCostingController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column
                                     width="5em" 
@@ -80,14 +80,14 @@
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
-                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
                                         </h:outputText>
                                         <p:inputText
                                             id="txtReturnRate"
                                             class="w-100 text-end"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                             <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{grnReturnWithCostingController.onReturnRateChange(ph)}" />
                                         </p:inputText>
@@ -98,7 +98,7 @@
                                 <p:column 
                                     width="5em" 
                                     headerText="Returning Total Qty"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity')}">
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
                                     <p:inputText
                                         id="txtReturningTotalQty"
                                         autocomplete="off"
@@ -118,7 +118,7 @@
                                 <p:column
                                     width="5em" 
                                     headerText="Returning Qty"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
                                         id="txtReturningQty"
                                         autocomplete="off"
@@ -137,7 +137,7 @@
                                 <p:column
                                     headerText="Returning Free Qty"
                                     width="5em" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
                                         class="w-100 text-end"
                                         id="txtReturningFreeQty"

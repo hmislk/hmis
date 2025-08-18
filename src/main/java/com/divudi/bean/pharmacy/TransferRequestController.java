@@ -8,18 +8,12 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.core.data.BillClassType;
-import com.divudi.core.data.BillNumberSuffix;
-import com.divudi.core.data.BillType;
+import com.divudi.core.data.*;
+import com.divudi.core.entity.*;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillItem;
-import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -34,11 +28,11 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.service.BillService;
+
+import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
@@ -140,6 +134,36 @@ public class TransferRequestController implements Serializable {
             }
         }
         return false;
+    }
+
+    public String fillHeaderDataOfTransferRequest(String s, Bill b) {
+        if (b != null) {
+            String filledHeader;
+
+            String fromDepartment = b.getFromDepartment().getName();
+            String fromInstitution = b.getFromDepartment().getInstitution().getName();
+            String toDepartment = b.getToDepartment().getName();
+            String toInstitution = b.getToDepartment().getInstitution().getName();
+            String billId = b.getDeptId();
+            String user = b.getCreater().getWebUserPerson().getName();
+            String billDate = (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
+            String billStatus = b.getStatus() == null ? "" : b.getStatus().toString();
+
+
+
+            filledHeader = s.replace("{{from_dept}}", fromDepartment)
+                    .replace("{{from_ins}}", fromInstitution)
+                    .replace("{{to_dept}}", toDepartment)
+                    .replace("{{to_ins}}", toInstitution)
+                    .replace("{{bill_id}}", billId)
+                    .replace("{{user}}", user)
+                    .replace("{{bill_date}}", billDate)
+                    .replace("{{bill_status}}", billStatus);
+
+            return filledHeader;
+        } else {
+            return s;
+        }
     }
 
     private boolean errorCheck() {
@@ -307,6 +331,8 @@ public class TransferRequestController implements Serializable {
 
         for (BillItem newBillItem : transferRequestPreBillItems) {
             newBillItem.setBill(newApprovedBill);
+            // Initialize remainingQty for new Transfer Requests
+            newBillItem.setRemainingQty(newBillItem.getQty());
             if (newBillItem.getId() == null) {
                 billItemFacade.create(newBillItem);
             } else {
@@ -538,6 +564,8 @@ public class TransferRequestController implements Serializable {
             BillItem newBillItemInApprovedRequest = new BillItem();
             newBillItemInApprovedRequest.copy(requestItemInPreBill);
             newBillItemInApprovedRequest.setBill(bill);
+            // Initialize remainingQty for new Transfer Requests
+            newBillItemInApprovedRequest.setRemainingQty(newBillItemInApprovedRequest.getQty());
             billItems.add(newBillItemInApprovedRequest);
         }
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(bill, billItems);

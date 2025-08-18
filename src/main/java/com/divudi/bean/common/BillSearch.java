@@ -352,6 +352,7 @@ public class BillSearch implements Serializable {
     private boolean duplicate;
 
     private Payment payment;
+    private int billItemSize;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
@@ -373,6 +374,42 @@ public class BillSearch implements Serializable {
 
     public List<Payment> fetchBillPayments(Bill bill) {
         return billService.fetchBillPayments(bill);
+    }
+    
+    public List<BillItem> groupBillItemByNameFromBill(Bill b){
+        return groupBillItemByName(billService.fetchBillItems(b));
+    }
+    
+    public List<BillItem> groupBillItemByName(List<BillItem> billItems) {
+        Map<String, BillItem> groupedMap = new HashMap<>();
+
+        for (BillItem item : billItems) {
+            if (item.getItem() == null || item.getItem().getName() == null) {
+                continue;
+            }
+
+            String name = item.getItem().getName();
+
+            if (!groupedMap.containsKey(name)) {
+
+                BillItem grouped = new BillItem();
+                grouped.setItem(item.getItem());
+                grouped.setQty(item.getQty());
+                grouped.setGrossValue(item.getGrossValue());
+                grouped.setNetValue(item.getNetValue());
+                groupedMap.put(name, grouped);
+            } else {
+
+                BillItem grouped = groupedMap.get(name);
+                grouped.setQty(grouped.getQty() + item.getQty());
+                grouped.setGrossValue(grouped.getGrossValue() + item.getGrossValue());
+                grouped.setNetValue(grouped.getNetValue() + item.getNetValue());
+            }
+        }
+        
+        billItemSize = new ArrayList<>(groupedMap.values()).size();
+
+        return new ArrayList<>(groupedMap.values());
     }
 
     public void fillBillFees() {
@@ -4353,9 +4390,7 @@ public class BillSearch implements Serializable {
         return "/pharmacy/pharmacy_cancel_purchase?faces-redirect=true";
     }
 
-    public String navigateToDirectPurchaseReturnBillView() {
-        System.out.println("navigateToDirectPurchaseReturnBillView");
-        System.out.println("bill = " + bill);
+    public String navigateToDirectPurchaseReturn() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -4366,10 +4401,29 @@ public class BillSearch implements Serializable {
         if (manageCosting) {
             directPurchaseReturnController.setBill(bill);
             directPurchaseReturnController.prepareReturnBill();
+            directPurchaseReturnController.setPrintPreview(false);
+            return "/pharmacy/direct_purchase_return?faces-redirect=true";
+        } else {
+            purchaseReturnController.makeNull();
+            purchaseReturnController.setBill(bill);
+            purchaseReturnController.setPrintPreview(false);
+            return "/pharmacy/pharmacy_return_purchase?faces-redirect=true";
+        }
+    }
+    
+    public String navigateToDirectPurchaseReturnBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            directPurchaseReturnController.setReturnBill(bill);
             directPurchaseReturnController.setPrintPreview(true);
             return "/pharmacy/direct_purchase_return?faces-redirect=true";
         } else {
-            purchaseReturnController.setBill(bill);
+            purchaseReturnController.setReturnBill(bill);
             purchaseReturnController.setPrintPreview(true);
             return "/pharmacy/pharmacy_return_purchase?faces-redirect=true";
         }
@@ -6001,6 +6055,14 @@ public class BillSearch implements Serializable {
 
     public void setDuplicate(boolean duplicate) {
         this.duplicate = duplicate;
+    }
+
+    public int getBillItemSize() {
+        return billItemSize;
+    }
+
+    public void setBillItemSize(int billItemSize) {
+        this.billItemSize = billItemSize;
     }
 
     public class PaymentSummary {

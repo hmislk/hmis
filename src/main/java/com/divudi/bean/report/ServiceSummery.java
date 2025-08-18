@@ -1020,8 +1020,11 @@ public class ServiceSummery implements Serializable {
             double proportion = paidValue / billNetTotal;
 
             // Proportionally allocate total and discount
+            boolean isCancelledBill = bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill);
+            double billProportionalDiscount = billDiscount * proportion;
+
             totalBill += billTotal * proportion;
-            discountBill += billDiscount * proportion;
+            discountBill += isCancelledBill ? (billProportionalDiscount > 0 ? -billProportionalDiscount:billProportionalDiscount) : billProportionalDiscount;
             netTotalBill += paidValue; // The payment amount is already the proportional net
         }
     }

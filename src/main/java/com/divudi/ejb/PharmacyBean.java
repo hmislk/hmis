@@ -65,6 +65,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.math.BigDecimal;
 
@@ -182,7 +183,7 @@ public class PharmacyBean {
     }
 
     public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
-        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
 
         for (BillItem returningBillItem : billItems) {
             if (returningBillItem == null) {
@@ -2087,6 +2088,94 @@ public class PharmacyBean {
 
     public void setStoreItemCategoryFacade(StoreItemCategoryFacade storeItemCategoryFacade) {
         this.storeItemCategoryFacade = storeItemCategoryFacade;
+    }
+
+    /**
+     * Bulk stock availability method to replace individual N+1 queries for stock lookups.
+     * Retrieves available stocks for all items in a single query.
+     * 
+     * @param items List of items to get stock availability for
+     * @param department The department to check stock availability in
+     * @return Map with item ID as key and list of stock availability DTOs as value
+     */
+    public java.util.Map<Long, java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO>> getBulkStockAvailability(
+            java.util.List<com.divudi.core.entity.Item> items, com.divudi.core.entity.Department department) {
+        
+        if (items == null || items.isEmpty() || department == null) {
+            return new java.util.HashMap<>();
+        }
+        
+        // Resolve items to AMPs and get unique IDs
+        java.util.List<Long> itemIds = items.stream()
+            .map(item -> {
+                if (item instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                    com.divudi.core.entity.pharmacy.Ampp ampp = (com.divudi.core.entity.pharmacy.Ampp) item;
+                    return ampp.getAmp() != null ? ampp.getAmp().getId() : item.getId();
+                } else {
+                    return item.getId();
+                }
+            })
+            .filter(id -> id != null)
+            .distinct()
+            .collect(java.util.stream.Collectors.toList());
+        
+        if (itemIds.isEmpty()) {
+            return new java.util.HashMap<>();
+        }
+        
+        String sql = "SELECT " +
+            "  i.id as itemId, " +
+            "  s.id as stockId, " +
+            "  ib.id as itemBatchId, " +
+            "  ib.batchNo, " +
+            "  ib.dateOfExpire, " +
+            "  s.stock as availableStock, " +
+            "  ib.purcahseRate as purchaseRate, " +
+            "  ib.retailsaleRate as retailRate, " +
+            "  ib.costRate, " +
+            "  i.name as itemName, " +
+            "  i.code as itemCode " +
+            "FROM Stock s " +
+            "JOIN s.itemBatch ib " +
+            "JOIN ib.item i " +
+            "WHERE i.id IN :itemIds " +
+            "  AND s.department = :department " +
+            "  AND s.stock >= 1.0 " +
+            "  AND s.retired = false " +
+            "  AND ib.retired = false " +
+            "  AND i.retired = false " +
+            "ORDER BY i.id, ib.dateOfExpire";
+        
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("itemIds", itemIds);
+        params.put("department", department);
+        
+        try {
+            java.util.List<Object[]> results = getStockFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+            
+            return results.stream()
+                .map(row -> new com.divudi.core.data.dto.StockAvailabilityDTO(
+                    (Long) row[0],    // itemId
+                    (Long) row[1],    // stockId
+                    (Long) row[2],    // itemBatchId
+                    (String) row[3],  // batchNo
+                    (java.util.Date) row[4], // dateOfExpire
+                    (Double) row[5],  // availableStock
+                    (Double) row[6],  // purchaseRate
+                    (Double) row[7],  // retailRate
+                    (Double) row[8],  // costRate
+                    (String) row[9],  // itemName
+                    (String) row[10]  // itemCode
+                ))
+                .collect(java.util.stream.Collectors.groupingBy(
+                    com.divudi.core.data.dto.StockAvailabilityDTO::getItemId
+                ));
+        } catch (Exception e) {
+            // Log error and return empty map as fallback
+            System.err.println("Error in getBulkStockAvailability: " + e.getMessage());
+            e.printStackTrace();
+            return new java.util.HashMap<>();
+        }
     }
 
 }

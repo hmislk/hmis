@@ -350,6 +350,7 @@ public class PurchaseOrderController implements Serializable {
             aprovedBill = new BilledBill();
             aprovedBill.setBillType(BillType.PharmacyOrderApprove);
             aprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+            aprovedBill.setConsignment(getRequestedBill() != null && getRequestedBill().isConsignment());
         }
         return aprovedBill;
     }
@@ -615,18 +616,112 @@ public class PurchaseOrderController implements Serializable {
 
     private String generatePurchaseOrderHtml() {
         try {
-            javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
-            javax.faces.component.UIComponent comp = fc.getViewRoot().findComponent("gpBillPreview");
-            if (comp == null) {
+            if (aprovedBill == null) {
                 return null;
             }
-            java.io.StringWriter sw = new java.io.StringWriter();
-            javax.faces.context.ResponseWriter original = fc.getResponseWriter();
-            javax.faces.context.ResponseWriter rw = fc.getRenderKit().createResponseWriter(sw, null, "UTF-8");
-            fc.setResponseWriter(rw);
-            comp.encodeAll(fc);
-            fc.setResponseWriter(original);
-            return sw.toString();
+            
+            StringBuilder html = new StringBuilder();
+            html.append("<html><head><title>Purchase Order</title></head><body>");
+            html.append("<div style='font-family: Arial, sans-serif; padding: 20px;'>");
+            
+            // Institution header
+            if (aprovedBill.getCreater() != null && aprovedBill.getCreater().getInstitution() != null) {
+                html.append("<div style='text-align: center; margin-bottom: 20px;'>");
+                html.append("<h2>").append(aprovedBill.getCreater().getInstitution().getName() != null ? aprovedBill.getCreater().getInstitution().getName() : "").append("</h2>");
+                if (aprovedBill.getCreater().getInstitution().getAddress() != null) {
+                    html.append("<p>").append(aprovedBill.getCreater().getInstitution().getAddress()).append("</p>");
+                }
+                if (aprovedBill.getCreater().getInstitution().getPhone() != null) {
+                    html.append("<p>Phone: ").append(aprovedBill.getCreater().getInstitution().getPhone()).append("</p>");
+                }
+                html.append("</div>");
+            }
+            
+            html.append("<h3 style='text-align: center; text-decoration: underline;'>Purchase Order</h3>");
+            
+            // Order details
+            html.append("<table style='width: 100%; margin-bottom: 20px;'>");
+            html.append("<tr><td><strong>Order No:</strong></td><td>").append(aprovedBill.getDeptId() != null ? aprovedBill.getDeptId() : "").append("</td></tr>");
+            if (aprovedBill.getDepartment() != null) {
+                html.append("<tr><td><strong>Order Department:</strong></td><td>").append(aprovedBill.getDepartment().getName() != null ? aprovedBill.getDepartment().getName() : "").append("</td></tr>");
+            }
+            if (aprovedBill.getToInstitution() != null) {
+                html.append("<tr><td><strong>Supplier:</strong></td><td>").append(aprovedBill.getToInstitution().getName() != null ? aprovedBill.getToInstitution().getName() : "").append("</td></tr>");
+                html.append("<tr><td><strong>Supplier Code:</strong></td><td>").append(aprovedBill.getToInstitution().getCode() != null ? aprovedBill.getToInstitution().getCode() : "").append("</td></tr>");
+                if (aprovedBill.getToInstitution().getPhone() != null) {
+                    html.append("<tr><td><strong>Supplier Phone:</strong></td><td>").append(aprovedBill.getToInstitution().getPhone()).append("</td></tr>");
+                }
+                if (aprovedBill.getToInstitution().getAddress() != null) {
+                    html.append("<tr><td><strong>Supplier Address:</strong></td><td>").append(aprovedBill.getToInstitution().getAddress()).append("</td></tr>");
+                }
+            }
+            html.append("<tr><td><strong>Payment Method:</strong></td><td>").append(aprovedBill.getPaymentMethod() != null ? aprovedBill.getPaymentMethod().toString() : "").append("</td></tr>");
+            html.append("<tr><td><strong>Consignment:</strong></td><td>").append(aprovedBill.isConsignment() ? "Yes" : "No").append("</td></tr>");
+            html.append("</table>");
+            
+            // Items table
+            html.append("<table border='1' style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>");
+            html.append("<thead style='background-color: #f0f0f0;'>");
+            html.append("<tr>");
+            html.append("<th style='padding: 8px;'>Item Code</th>");
+            html.append("<th style='padding: 8px;'>Item Name</th>");
+            html.append("<th style='padding: 8px;'>Qty</th>");
+            html.append("<th style='padding: 8px;'>Free Qty</th>");
+            html.append("<th style='padding: 8px;'>Purchase Rate</th>");
+            html.append("<th style='padding: 8px;'>Purchase Value</th>");
+            html.append("</tr></thead><tbody>");
+            
+            if (billItems != null) {
+                for (BillItem bi : billItems) {
+                    if (bi != null && !bi.isRetired() && bi.getItem() != null) {
+                        html.append("<tr>");
+                        html.append("<td style='padding: 8px;'>").append(bi.getItem().getCode() != null ? bi.getItem().getCode() : "").append("</td>");
+                        html.append("<td style='padding: 8px;'>").append(bi.getItem().getName() != null ? bi.getItem().getName() : "").append("</td>");
+                        html.append("<td style='padding: 8px; text-align: right;'>");
+                        if (bi.getPharmaceuticalBillItem() != null) {
+                            html.append(String.format("%,.0f", bi.getPharmaceuticalBillItem().getQty()));
+                        }
+                        html.append("</td>");
+                        html.append("<td style='padding: 8px; text-align: right;'>");
+                        if (bi.getPharmaceuticalBillItem() != null) {
+                            html.append(String.format("%,.0f", bi.getPharmaceuticalBillItem().getFreeQty()));
+                        }
+                        html.append("</td>");
+                        html.append("<td style='padding: 8px; text-align: right;'>");
+                        if (bi.getPharmaceuticalBillItem() != null) {
+                            html.append(String.format("%,.2f", bi.getPharmaceuticalBillItem().getPurchaseRate()));
+                        }
+                        html.append("</td>");
+                        html.append("<td style='padding: 8px; text-align: right;'>").append(String.format("%,.2f", bi.getNetValue())).append("</td>");
+                        html.append("</tr>");
+                    }
+                }
+            }
+            
+            html.append("</tbody>");
+            html.append("<tfoot style='font-weight: bold;'>");
+            html.append("<tr>");
+            html.append("<td colspan='5' style='padding: 8px; text-align: right;'>Net Total:</td>");
+            html.append("<td style='padding: 8px; text-align: right;'>").append(String.format("%,.2f", aprovedBill.getNetTotal())).append("</td>");
+            html.append("</tr></tfoot></table>");
+            
+            // Footer details
+            html.append("<div style='margin-top: 20px;'>");
+            if (aprovedBill.getCreater() != null && aprovedBill.getCreater().getWebUserPerson() != null) {
+                html.append("<p><strong>Order Initiated By:</strong> ").append(aprovedBill.getCreater().getWebUserPerson().getName() != null ? aprovedBill.getCreater().getWebUserPerson().getName() : "").append("</p>");
+            }
+            if (aprovedBill.getCheckedBy() != null) {
+                html.append("<p><strong>Order Finalized By:</strong> ").append(aprovedBill.getCheckedBy().getName() != null ? aprovedBill.getCheckedBy().getName() : "").append("</p>");
+            }
+            if (aprovedBill.getCheckeAt() != null) {
+                html.append("<p><strong>Order Finalized At:</strong> ").append(CommonFunctions.formatDate(aprovedBill.getCheckeAt(), "dd/MM/yyyy HH:mm:ss")).append("</p>");
+            }
+            html.append("<p><strong>Generated At:</strong> ").append(CommonFunctions.formatDate(new Date(), "dd/MM/yyyy HH:mm:ss")).append("</p>");
+            html.append("<p><strong>Total:</strong> ").append(String.format("%,.2f", aprovedBill.getNetTotal())).append("</p>");
+            html.append("</div>");
+            
+            html.append("</div></body></html>");
+            return html.toString();
         } catch (Exception e) {
             return null;
         }
