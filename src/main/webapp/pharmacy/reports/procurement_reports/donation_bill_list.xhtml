@@ -9,12 +9,14 @@
     <h:body>
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
+
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDonation')}">
                     <h:outputText value="You are not authorized" styleClass="text-danger" />
                 </h:panelGroup>
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDonation')}">
                     <h:form>
-                        <p:panel header="Donation Bills">
+                    <p:panel header="Donation Bills" rendered="#{webUserController.hasPrivilege('PharmacyDonation')}">
+
                         <p:dataTable value="#{pharmacyProcurementReportController.donationBills}" var="b" paginator="true"
                                      rows="20" rowIndexVar="i" styleClass="w-100" rowsPerPageTemplate="10,20,50">
                             <p:column headerText="No">

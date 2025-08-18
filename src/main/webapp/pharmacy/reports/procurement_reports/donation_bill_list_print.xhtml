@@ -8,6 +8,7 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
+
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDonation')}">
                     <h:outputText value="You are not authorized" styleClass="text-danger" />
                 </h:panelGroup>
@@ -46,6 +47,7 @@
                         </p:dataTable>
                     </h:form>
                 </h:panelGroup>
+
             </ui:define>
         </ui:composition>
     </h:body>
