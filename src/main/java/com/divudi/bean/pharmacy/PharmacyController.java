@@ -6033,4 +6033,50 @@ public class PharmacyController implements Serializable {
     public void setTotalCostValue(double totalCostValue) {
         this.totalCostValue = totalCostValue;
     }
+
+    /**
+     * Returns the appropriate PrimeFaces UI message CSS class based on item expiry date
+     * @param dateOfExpire the expiry date of the item
+     * @return PrimeFaces CSS class for styling
+     */
+    public String getExpiryStyleClass(Date dateOfExpire) {
+        if (dateOfExpire == null) {
+            return "ui-messages-success";
+        }
+        
+        // Normalize dates to end-of-day for consistent comparison
+        Date currentDateEndOfDay = CommonFunctions.getEndOfDay(new Date());
+        Date dateOfExpireEndOfDay = CommonFunctions.getEndOfDay(dateOfExpire);
+        Date threeMonthsFromNow = CommonFunctions.getDateAfterThreeMonthsCurrentDateTime();
+        
+        if (currentDateEndOfDay.after(dateOfExpireEndOfDay)) {
+            return "ui-messages-fatal";
+        } else if (threeMonthsFromNow.after(dateOfExpireEndOfDay)) {
+            return "ui-messages-warn";
+        }
+        return "ui-messages-success";
+    }
+
+    /**
+     * Returns the appropriate background style based on item expiry date
+     * @param dateOfExpire the expiry date of the item
+     * @return CSS background style
+     */
+    public String getExpiryBackgroundStyle(Date dateOfExpire) {
+        if (dateOfExpire == null) {
+            return "background-color: #dff0d8";
+        }
+        
+        // Normalize dates to end-of-day for consistent comparison
+        Date currentDateEndOfDay = CommonFunctions.getEndOfDay(new Date());
+        Date dateOfExpireEndOfDay = CommonFunctions.getEndOfDay(dateOfExpire);
+        Date threeMonthsFromNow = CommonFunctions.getDateAfterThreeMonthsCurrentDateTime();
+        
+        if (currentDateEndOfDay.after(dateOfExpireEndOfDay)) {
+            return "background-color: #f2dede";  // Light red for expired
+        } else if (threeMonthsFromNow.after(dateOfExpireEndOfDay)) {
+            return "background-color: #fcf8e3";  // Light yellow for expiring soon
+        }
+        return "background-color: #dff0d8";  // Light green for good expiry
+    }
 }

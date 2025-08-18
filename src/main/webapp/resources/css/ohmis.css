@@ -783,3 +783,10 @@ th.align-right-header .ui-column-title {
     font-weight: normal !important;
     padding: 2px 5px !important;
 }
+
+/* Expiry date styling for pharmacy items */
+.ui-messages-success {
+    background-color: #dff0d8 !important; /* Light green background */
+    color: #3c763d !important; /* Dark green text */
+    border-color: #d6e9c6 !important; /* Green border */
+}
