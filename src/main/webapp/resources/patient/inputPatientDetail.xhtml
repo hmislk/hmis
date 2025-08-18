@@ -44,35 +44,35 @@
 
             <!--<p:outputLabel value="Age"/>-->
             <h:panelGroup>
-                <p:inputText class="w-100" autocomplete="off"  id="year"  value="#{admissionController.yearMonthDay.year}">
+                <p:inputText class="w-100" autocomplete="off"  id="year"  placeholder="Year"  value="#{admissionController.yearMonthDay.year}">
                     <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
                 </p:inputText>
 
-                <p:inputText class="my-1 w-100" autocomplete="off" id="month"    value="#{admissionController.yearMonthDay.month}">
+                <p:inputText class="my-1 w-100" autocomplete="off" id="month"  placeholder="Month"    value="#{admissionController.yearMonthDay.month}">
                     <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
                 </p:inputText>
 
-                <p:inputText class="w-100" autocomplete="off" id="day"   value="#{admissionController.yearMonthDay.day}">
+                <p:inputText class="w-100" autocomplete="off" id="day" placeholder="Day"   value="#{admissionController.yearMonthDay.day}">
                     <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}" />
                 </p:inputText>
                 <br/>
-                <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
+                <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge"></p:outputLabel>
             </h:panelGroup>
             <!--<p:outputLabel value="Date of Birth"/>-->
-            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob" placeholder="Date of Birth"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                 <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
             </p:calendar>
 
             <!--<p:outputLabel value="Address"/>-->
-            <p:inputTextarea class="w-100" id="address" value="#{cc.attrs.patient.person.address}"/>                                  
+            <p:inputTextarea class="w-100" id="address" value="#{cc.attrs.patient.person.address}" placeholder="Address"/>                                  
 
             <h:panelGroup class="w-100">
                 <!--<p:outputLabel value="Mobile Phone"/>-->
                 <p:inputText class="w-100" id="mno"  autocomplete="off" maxlength="11" 
-                             value="#{cc.attrs.patient.person.mobile}" >
+                             value="#{cc.attrs.patient.person.mobile}" placeholder="Mobile No" >
                 </p:inputText>
                 <!--<p:outputLabel value="Home Phone"/>-->
-                <p:inputText class="w-100 my-1" id="hno" value="#{cc.attrs.patient.person.phone}" />
+                <p:inputText class="w-100 my-1" id="hno" value="#{cc.attrs.patient.person.phone}" placeholder="Home Phone Number" />
 <!--                <p:inputText id="hno"  autocomplete="off" maxlength="11" style="margin-top: 8px;"
                              value="#{cc.attrs.patient.person.phone}" >
                 </p:inputText>-->
