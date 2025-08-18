@@ -97,9 +97,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
@@ -198,6 +202,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Double qty;
     Integer intQty;
     Stock stock;
+    StockDTO stockDto;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -674,6 +679,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return stockFacade.find(stockDto.getId());
     }
 
+    public StockDTO getStockDto() {
+        return stockDto;
+    }
+
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
+        // Automatically convert DTO to entity
+        if (stockDto != null) {
+            this.stock = convertStockDtoToEntity(stockDto);
+        } else {
+            this.stock = null;
+        }
+    }
+
     public String newSaleBillWithoutReduceStock() {
         clearBill();
         clearBillItem();
@@ -1052,7 +1071,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
-        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
     public void handleSelectAction() {
@@ -2981,6 +3000,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         editingBillItem = null;
         qty = null;
         stock = null;
+        stockDto = null;
         editingQty = null;
         errorMessage = "";
         // paymentMethod = PaymentMethod.Cash; // Never do this. It shold be done in clear bill item
@@ -3472,6 +3492,48 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         patient.getPerson().calDobFromAge();
+    }
+
+    // Getter method for JSF to access the converter
+    public StockDtoConverter getStockDtoConverter() {
+        return new StockDtoConverter();
+    }
+
+    // StockDTO Converter for JSF
+    public static class StockDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "pharmacySaleController");
+                if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
+                    return controller.getStockDto();
+                }
+                // Create a minimal DTO with just the ID for form submission
+                StockDTO dto = new StockDTO();
+                dto.setId(id);
+                return dto;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
+            if (value == null) {
+                return "";
+            }
+            if (value instanceof StockDTO) {
+                StockDTO stockDto = (StockDTO) value;
+                return stockDto.getId() != null ? stockDto.getId().toString() : "";
+            }
+            return "";
+        }
     }
 
 }
