@@ -3638,15 +3638,16 @@ public class SearchController implements Serializable {
             tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :fDep )";
-            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            sql += " and  (upper(b.fromDepartment.name) like :fDep )";
+            tmp.put("fDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
-
+        System.out.println("tmp = " + tmp);
+        System.out.println("sql = " + sql);
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-
+        System.out.println("bills = " + bills);
         for (Bill b : bills) {
             b.setTmpRefBill(getRefBill(b));
 
