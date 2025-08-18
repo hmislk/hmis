@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.OnlineBookingAgentController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
@@ -28,6 +29,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
@@ -1233,6 +1235,89 @@ public class ChannelService {
         
         return list;
 
+    }
+    public void fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, Category category, String reportStatus, String paidStatus){
+        String sql = "select new ChannelReportController.ChannelIncomeDetailDto(bs.id, "
+                + "bs.sessionInstance.sessionDate, "
+                + "bs.bill.patient.person.nameWithTitle, "
+                + "bs.bill.patient.person.smsNumber, "
+                + "bs.bill.paymentMethod, "
+                + "bs.bill.hospitalFee, "
+                + "bs.bill.staffFee, "
+                + "bs.bill.netTotal, "
+                + "bs.bill.comments) "
+                + "from BillSession bs "
+                + "join bs.bill bill "
+                + "join bs.sessionInstance session"
+                + "where bs.createdAt between :fromDate and :todate "
+                + "and bill.billTypeAtomic in :bta";
+        
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+        
+        if(paidStatus != null && paidStatus.equalsIgnoreCase("Paid")){
+            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        }else{
+            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("todate", toDate);
+        params.put("bta", btaList);
+        
+        if(user != null){
+            sql += "and bill.creater = :user ";
+            params.put("user", user);
+        }
+        
+        if(institution != null){
+            sql += "and bill.instition = :ins ";
+            params.put("ins", institution);
+        }
+        
+        if(category != null){
+            sql += "and session.originatingSession.category = :category ";
+            params.put("category", category);
+        }
+        
+        sql += "order by bill.createdAt desc";
+        
+        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>)billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
+        
+        if(dtoList == null || dtoList.isEmpty()){
+            return;
+        }
+        
+        if(reportStatus != null && reportStatus.equalsIgnoreCase("summery")){
+            
+            List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
+            
+            for(ChannelReportController.ChannelIncomeDetailDto dto : dtoList){
+                if(summeryDtoList.isEmpty()){
+                    ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
+                    summery1.setAppoimentDate(dto.getAppoinmentDate());
+                    summeryDtoList.add(summery1);
+                }
+                for(ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList){
+                    if(dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())){
+                        summeryDto.set
+                    }
+                }
+            }
+        }
+        
+        ChannelReportController.ChannelIncomeDetailDto dto = new ChannelReportController.ChannelIncomeDetailDto(0, fromDate, sql, sql, PaymentMethod.PatientDeposit, 0, 0, 0, sql);
+        BillSession bs = new BillSession();
+        bs.getSessionInstance().getOriginatingSession().getCategory();
+        bs.getBill().getPatient().getPerson().getSmsNumber();
+        bs.getBill().getHospitalFee();
+        bs.getBill().getStaffFee();
+        bs.getBill().getNetTotal();
+        bs.getBill().getComments();
+        bs.getBill().getInstitution();
+        bs.getBill().getCreater();
     }
 
     public List<Bill> fetchAgentDirectFundBills(SearchKeyword searchKeyword, Date fromDate, Date toDate, Institution institution) {
