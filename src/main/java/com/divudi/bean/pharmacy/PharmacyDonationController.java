@@ -127,6 +127,7 @@ public class PharmacyDonationController implements Serializable {
             unitCostRate = packCostRate;
         }
         f.setLineCostRate(unitCostRate);
+        f.setBillCostRate(unitCostRate);
         f.setTotalCostRate(unitCostRate);
         BigDecimal lineCost = unitCostRate.multiply(totalQtyUnits);
         f.setLineCost(lineCost);
