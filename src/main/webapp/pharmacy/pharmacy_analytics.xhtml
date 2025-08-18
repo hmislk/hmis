@@ -346,6 +346,10 @@
                                                              value="Procurement Bill Item List"
                                                              action="#{pharmacyProcurementReportController.navigateToPurchaseItemList()}" />
 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Donation Bills', true)}" class="w-100 ui-button-warning" ajax="false"
+                                                             value="Donation Bills"
+                                                             action="#{pharmacyProcurementReportController.navigateToDonationBillList()}" />
+
                                         </div>
                                     </p:tab>
 
