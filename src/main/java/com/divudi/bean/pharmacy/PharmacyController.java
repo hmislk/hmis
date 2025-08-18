@@ -6033,4 +6033,25 @@ public class PharmacyController implements Serializable {
     public void setTotalCostValue(double totalCostValue) {
         this.totalCostValue = totalCostValue;
     }
+
+    /**
+     * Returns the appropriate PrimeFaces UI message CSS class based on item expiry date
+     * @param dateOfExpire the expiry date of the item
+     * @return PrimeFaces CSS class for styling
+     */
+    public String getExpiryStyleClass(Date dateOfExpire) {
+        if (dateOfExpire == null) {
+            return "ui-messages-success";
+        }
+        
+        Date currentDate = new Date();
+        Date threeMonthsFromNow = CommonFunctions.getDateAfterThreeMonthsCurrentDateTime();
+        
+        if (currentDate.after(dateOfExpire)) {
+            return "ui-messages-fatal";
+        } else if (threeMonthsFromNow.after(dateOfExpire)) {
+            return "ui-messages-warn";
+        }
+        return "ui-messages-success";
+    }
 }
