@@ -132,10 +132,10 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column 
-                                    headerText="Rate" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
-                                    width="8em" 
+                                <p:column
+                                    headerText="Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                                    width="8em"
                                     class="text-end">
                                     <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -145,11 +145,11 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     headerText="Value"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
-                                    width="8em" 
-                                    class="text-end">                   
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                                    width="8em"
+                                    class="text-end">
                                     <p:inputText autocomplete="off" id="netValue" 
                                                  value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -177,6 +177,8 @@
                                     icon="fas fa-check" 
                                     action="#{transferIssueController.settle}" 
                                     style="float: right;" 
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     ajax="false" 
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>  
@@ -194,9 +196,9 @@
                                                 disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
                                                 completeMethod="#{departmentController.completeDept}"/>
 
-                                <h:outputLabel value="Value &nbsp;" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" />
+                                <h:outputLabel value="Value &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}" />
+                                <h:outputLabel value=": &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"/>
+                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}" />
 
 
 

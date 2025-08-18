@@ -50,6 +50,14 @@
                                         #{bip.item.name}
                                 </p:column>
                                 <p:column>
+                                    <f:facet name="header">Quantity in Units</f:facet>
+                                        #{bip.pharmaceuticalBillItem.qty}
+                                </p:column>
+                                 <p:column>
+                                    <f:facet name="header">Free Quantity in Units</f:facet>
+                                        #{bip.pharmaceuticalBillItem.freeQty}
+                                </p:column>
+                                <p:column>
                                     <f:facet name="header">Value</f:facet>
                                         #{bip.netValue}
                                 </p:column>

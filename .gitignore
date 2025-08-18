@@ -22,3 +22,6 @@ nb-configuration.xml
 wiki/
 wiki-temp/
 wiki-backup/
+
+# Windows reserved filename
+nul

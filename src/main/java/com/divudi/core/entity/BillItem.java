@@ -63,7 +63,7 @@ public class BillItem implements Serializable, RetirableEntity {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Prescription prescription;
 
     double Rate;

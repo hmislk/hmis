@@ -541,6 +541,13 @@ public enum Privileges {
     PharmacySearch("Pharmacy Search"),
     PharmacyReports("Pharmacy Reports"),
     PharmacyTransfer("Pharmacy Transfer"),
+    PharmacyTransferViewRates("Pharmacy Transfer View Rates"),
+    NursingIPBillingViewRates("Nursing IP Billing View Rates"),
+    IPRequestViewRates("IP Request View Rates"),
+    StockRequestViewRates("Stock Request View Rates"),
+    ConsumptionViewRates("Consumption View Rates"),
+    StockTransactionViewRates("Stock Transaction View Rates"),
+    DiscardViewRates("Discard View Rates"),
     PharmacySummery("Pharmacy Summary"),
     PharmacyAdministration("Pharmacy Administration"),
     PharmacySetReorderLevel("Pharmacy Set Reorder Level"),
@@ -762,6 +769,13 @@ public enum Privileges {
             case PharmacySummery:
             case PharmacyPurchase:
             case PharmacyTransfer:
+            case PharmacyTransferViewRates:
+            case NursingIPBillingViewRates:
+            case IPRequestViewRates:
+            case StockRequestViewRates:
+            case ConsumptionViewRates:
+            case StockTransactionViewRates:
+            case DiscardViewRates:
             case PharmacyPurchaseWh:
             case PharmacySaleCancel:
             case PharmacySaleReturn:

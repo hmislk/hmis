@@ -158,18 +158,24 @@ public class TransferIssueController implements Serializable {
 //        return false;
 //    }
     public boolean isFullyIssued(Bill requestBill) {
-        if (requestBill == null || requestBill.getBillItems() == null || requestBill.getBillItems().isEmpty()) {
-            return false; // Null or empty bills are not considered fully issued
+        if (requestBill == null) {
+            return false; // Null bills are not considered fully issued
         }
 
-        for (BillItem requestItem : requestBill.getBillItems()) {
+        // Fetch fresh bill items from database to ensure latest remainingQty values
+        List<BillItem> freshBillItems = billController.billItemsOfBill(requestBill);
+        if (freshBillItems == null || freshBillItems.isEmpty()) {
+            return false; // Empty bills are not considered fully issued
+        }
+
+        for (BillItem requestItem : freshBillItems) {
             // Handle null remainingQty (legacy data) by using original quantity
             Double remainingQty = requestItem.getRemainingQty();
             if (remainingQty == null) {
                 remainingQty = requestItem.getQty();
             }
             // Use remainingQty field from database - if > 0, still has items to issue
-            if (remainingQty > 0) {
+            if (remainingQty > 0.001) { // Add small tolerance for floating point precision
                 return false; // Still has remaining quantity to issue
             }
         }
@@ -308,6 +314,17 @@ public class TransferIssueController implements Serializable {
         makeNull();
     }
 
+    /**
+     * PERFORMANCE OPTIMIZED: Generates bill components using bulk DTO queries 
+     * instead of individual N+1 queries for each bill item.
+     * 
+     * This method replaces individual calls to:
+     * - getBilledIssuedByRequestedItem() for each item (N queries)
+     * - getCancelledIssuedByRequestedItem() for each item (N queries)  
+     * - getStockByQty() for each item (N queries)
+     * 
+     * With just 2 bulk queries total, regardless of item count.
+     */
     public void generateBillComponent() {
         // Save the user stock container if this is a new bill
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
@@ -319,16 +336,45 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
         getIssuedBill().setToDepartment(requestedBill.getDepartment());
 
+        // OPTIMIZATION 1: Bulk fetch all calculations for all bill items (replaces 2N individual queries)
+        java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> calculationsMap = 
+            getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillType.PharmacyTransferIssue);
+
+        // OPTIMIZATION 2: Extract unique items and bulk fetch stock availability (replaces N individual queries)
+        java.util.List<Item> uniqueItems = billItemsOfRequest.stream()
+            .map(BillItem::getItem)
+            .map(item -> {
+                if (item instanceof Ampp) {
+                    Ampp ampp = (Ampp) item;
+                    return ampp.getAmp() != null ? ampp.getAmp() : item;
+                } else {
+                    return item;
+                }
+            })
+            .distinct()
+            .collect(java.util.stream.Collectors.toList());
+
+        java.util.Map<Long, java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO>> stockAvailabilityMap = 
+            pharmacyBean.getBulkStockAvailability(uniqueItems, getSessionController().getDepartment());
+
+        // Process each bill item using pre-fetched data (no additional database queries)
         for (BillItem billItemInRequest : billItemsOfRequest) {
             boolean flagStockFound = false;
 
-            // Calculate pending quantity to issue
-            double requestedQty = getPharmacyCalculation().getBilledIssuedByRequestedItem(billItemInRequest, BillType.PharmacyTransferIssue);
-            double cancelledIssued = getPharmacyCalculation().getCancelledIssuedByRequestedItem(billItemInRequest, BillType.PharmacyTransferIssue);
+            // Get calculations from pre-fetched data instead of individual queries
+            com.divudi.core.data.dto.BillItemCalculationDTO calculations = calculationsMap.get(billItemInRequest.getId());
+            if (calculations == null) {
+                // Create default calculation if not found
+                calculations = new com.divudi.core.data.dto.BillItemCalculationDTO(
+                    billItemInRequest.getId(), billItemInRequest.getQty(), 0.0, 0.0);
+            }
 
-            double alreadyIssuedQty = Math.abs(requestedQty) - Math.abs(cancelledIssued);
-            billItemInRequest.setIssuedPhamaceuticalItemQty(alreadyIssuedQty);
-            double quantityToIssue = billItemInRequest.getQty() - alreadyIssuedQty;
+            billItemInRequest.setIssuedPhamaceuticalItemQty(calculations.getNetIssuedQty());
+            double quantityToIssue = calculations.getRemainingQty();
+
+            if (quantityToIssue <= 0.001) { // Use small tolerance for floating point precision
+                continue; // Skip if nothing left to issue
+            }
 
             Item stockItem = billItemInRequest.getItem();
             double packSize = 1.0;
@@ -337,33 +383,33 @@ public class TransferIssueController implements Serializable {
                 Ampp ampp = (Ampp) stockItem;
                 stockItem = ampp.getAmp();
                 packSize = stockItem.getDblValue();
-
             }
             if (stockItem instanceof Vmpp) {
                 packSize = stockItem.getDblValue();
-                //TODO: Add Suppoer to VMPP as a new issue
+                //TODO: Add Support to VMPP as a new issue
                 continue;
             }
 
             Double quantityToIssueInUnits = quantityToIssue * packSize;
 
-            List<Stock> availableStocks = pharmacyBean.getStockByQty(stockItem, getSessionController().getDepartment());
-
+            // Get stock availability from pre-fetched data instead of individual query
+            java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO> availableStocks = 
+                stockAvailabilityMap.get(stockItem.getId());
+            
             if (availableStocks == null || availableStocks.isEmpty()) {
-            } else {
+                // Create empty bill item if no stock available
+                createEmptyBillItem(billItemInRequest);
+                continue;
             }
 
             Double totalIssuedQtyInUnits = 0.0;
 
-            for (Stock issuingStock : availableStocks) {
+            for (com.divudi.core.data.dto.StockAvailabilityDTO stockDTO : availableStocks) {
                 if (totalIssuedQtyInUnits >= quantityToIssueInUnits) {
                     break;
                 }
 
-                Double thisTimeIssuingQtyInUnits = issuingStock.getStock();
-
-                String batchNo = issuingStock.getItemBatch().getBatchNo();
-                Date doe = issuingStock.getItemBatch().getDateOfExpire();
+                Double thisTimeIssuingQtyInUnits = stockDTO.getAvailableStock();
 
                 if (totalIssuedQtyInUnits + thisTimeIssuingQtyInUnits > quantityToIssueInUnits) {
                     thisTimeIssuingQtyInUnits = quantityToIssueInUnits - totalIssuedQtyInUnits;
@@ -373,82 +419,30 @@ public class TransferIssueController implements Serializable {
                     break;
                 }
 
-                if (!userStockController.isStockAvailable(issuingStock, thisTimeIssuingQtyInUnits, getSessionController().getLoggedUser())) {
+                // Create minimal Stock entity from DTO for user stock validation only
+                Stock stock = createStockFromDTO(stockDTO);
+
+                if (!userStockController.isStockAvailable(stock, thisTimeIssuingQtyInUnits, getSessionController().getLoggedUser())) {
                     continue;
                 }
 
                 totalIssuedQtyInUnits += thisTimeIssuingQtyInUnits;
 
-                BillItem newlyCreatedBillItemInIssueBill = new BillItem();
-                newlyCreatedBillItemInIssueBill.setSearialNo(getBillItems().size());
-                newlyCreatedBillItemInIssueBill.setItem(billItemInRequest.getItem());
-                newlyCreatedBillItemInIssueBill.setReferanceBillItem(billItemInRequest);
-                newlyCreatedBillItemInIssueBill.setQty(thisTimeIssuingQtyInUnits / packSize);
+                // Create bill item using DTO data instead of entity traversal
+                BillItem newBillItem = createBillItemFromStockDTO(
+                    stockDTO, billItemInRequest, thisTimeIssuingQtyInUnits, packSize, getBillItems().size()
+                );
 
-                PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
-                phItem.setBillItem(newlyCreatedBillItemInIssueBill);
-                phItem.setQty(thisTimeIssuingQtyInUnits);
-                phItem.setPurchaseRate(issuingStock.getItemBatch().getPurcahseRate());
-                phItem.setRetailRateInUnit(issuingStock.getItemBatch().getRetailsaleRate());
-                phItem.setStock(issuingStock);
-                phItem.setDoe(issuingStock.getItemBatch().getDateOfExpire());
-                phItem.setItemBatch(issuingStock.getItemBatch());
+                // Link user stock
+                UserStock us = userStockController.saveUserStock(newBillItem, getSessionController().getLoggedUser(), usc);
+                newBillItem.setTransUserStock(us);
 
-                if (packSize != 1.0) {
-                    phItem.setQtyPacks(thisTimeIssuingQtyInUnits / packSize);
-                }
-
-                newlyCreatedBillItemInIssueBill.setPharmaceuticalBillItem(phItem);
-
-                // Financials - Store all rates and values during bill creation
-                BigDecimal qty = BigDecimal.valueOf(phItem.getQty() / packSize);
-                BigDecimal transferRate = determineTransferRate(phItem.getItemBatch());
-                BigDecimal purchaseRate = BigDecimal.valueOf(phItem.getItemBatch().getPurcahseRate());
-                BigDecimal retailRate = BigDecimal.valueOf(phItem.getItemBatch().getRetailsaleRate());
-                BigDecimal costRate = BigDecimal.valueOf(phItem.getItemBatch().getCostRate());
-                BigDecimal packSizeBD = BigDecimal.valueOf(packSize);
-
-                // Quantities
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setQuantity(qty);
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalQuantity(qty);
-
-                // Transfer rates and values (net values - what the transfer is priced at)
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineGrossRate(transferRate.multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineNetRate(transferRate.multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineGrossTotal(transferRate.multiply(qty).multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
-
-                // Purchase rate and value (for purchase value reporting)
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qty).multiply(packSizeBD));
-
-                // Retail rate and value (for sale value reporting)
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setRetailSaleRate(retailRate.multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qty).multiply(packSizeBD));
-
-                // Cost rate and value
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineCostRate(costRate);
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineCost(costRate.multiply(qty).multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalCost(costRate.multiply(qty).multiply(packSizeBD));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalCostRate(costRate);
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(qty).multiply(packSizeBD));
-
-                // Link stock issuance
-                UserStock us = userStockController.saveUserStock(newlyCreatedBillItemInIssueBill, getSessionController().getLoggedUser(), usc);
-                newlyCreatedBillItemInIssueBill.setTransUserStock(us);
-
-                getBillItems().add(newlyCreatedBillItemInIssueBill);
+                getBillItems().add(newBillItem);
                 flagStockFound = true;
-
             }
 
             if (!flagStockFound) {
-                BillItem bItem = new BillItem();
-                bItem.setSearialNo(getBillItems().size());
-                bItem.setItem(billItemInRequest.getItem());
-                bItem.setReferanceBillItem(billItemInRequest);
-                getBillItems().add(bItem);
-
+                createEmptyBillItem(billItemInRequest);
             }
         }
     }
@@ -798,11 +792,17 @@ public class TransferIssueController implements Serializable {
 
         // Check if Transfer Request is fully issued and update fullyIssued status
         if (getRequestedBill() != null && !getRequestedBill().isFullyIssued()) {
-            if (isFullyIssued(getRequestedBill())) {
+            // Refresh the requested bill with latest data from database to ensure accurate remainingQty values
+            Bill freshRequestedBill = getBillFacade().findWithoutCache(getRequestedBill().getId());
+            if (isFullyIssued(freshRequestedBill)) {
+                freshRequestedBill.setFullyIssued(true);
+                freshRequestedBill.setFullyIssuedAt(new Date());
+                freshRequestedBill.setFullyIssuedBy(getSessionController().getLoggedUser());
+                getBillFacade().edit(freshRequestedBill);
+                // Update the local reference as well
                 getRequestedBill().setFullyIssued(true);
-                getRequestedBill().setFullyIssuedAt(new Date());
-                getRequestedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
-                getBillFacade().edit(getRequestedBill());
+                getRequestedBill().setFullyIssuedAt(freshRequestedBill.getFullyIssuedAt());
+                getRequestedBill().setFullyIssuedBy(freshRequestedBill.getFullyIssuedBy());
             }
         }
 
@@ -1468,6 +1468,134 @@ public class TransferIssueController implements Serializable {
         }
 
         return "";
+    }
+
+    // ------------------------------------------------------------------
+    // Helper Methods for DTO-based Optimization
+    // ------------------------------------------------------------------
+
+    /**
+     * Creates a minimal Stock entity from DTO data for user stock validation.
+     * Only populates fields needed for isStockAvailable() check.
+     */
+    private Stock createStockFromDTO(com.divudi.core.data.dto.StockAvailabilityDTO dto) {
+        Stock stock = new Stock();
+        stock.setId(dto.getStockId());
+        stock.setStock(dto.getAvailableStock());
+        
+        ItemBatch batch = new ItemBatch();
+        batch.setId(dto.getItemBatchId());
+        batch.setBatchNo(dto.getBatchNo());
+        batch.setDateOfExpire(dto.getDateOfExpire());
+        batch.setPurcahseRate(dto.getPurchaseRate());
+        batch.setRetailsaleRate(dto.getRetailRate());
+        batch.setCostRate(dto.getCostRate());
+        
+        stock.setItemBatch(batch);
+        return stock;
+    }
+
+    /**
+     * Creates a complete BillItem from stock DTO data, avoiding entity traversals.
+     */
+    private BillItem createBillItemFromStockDTO(com.divudi.core.data.dto.StockAvailabilityDTO stockDTO, 
+                                               BillItem referenceItem, Double qtyInUnits, 
+                                               double packSize, int serialNo) {
+        BillItem newBillItem = new BillItem();
+        newBillItem.setSearialNo(serialNo);
+        newBillItem.setItem(referenceItem.getItem());
+        newBillItem.setReferanceBillItem(referenceItem);
+        newBillItem.setQty(qtyInUnits / packSize);
+        
+        // Create pharmaceutical bill item using DTO data
+        PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
+        phItem.setBillItem(newBillItem);
+        phItem.setQty(qtyInUnits);
+        phItem.setPurchaseRate(stockDTO.getPurchaseRate());
+        phItem.setRetailRateInUnit(stockDTO.getRetailRate());
+        phItem.setDoe(stockDTO.getDateOfExpire());
+        
+        // Create minimal entities for required relationships using DTO data
+        ItemBatch batch = new ItemBatch();
+        batch.setId(stockDTO.getItemBatchId());
+        batch.setBatchNo(stockDTO.getBatchNo());
+        batch.setPurcahseRate(stockDTO.getPurchaseRate());
+        batch.setRetailsaleRate(stockDTO.getRetailRate());
+        batch.setCostRate(stockDTO.getCostRate());
+        batch.setDateOfExpire(stockDTO.getDateOfExpire());
+        phItem.setItemBatch(batch);
+        
+        Stock stock = new Stock();
+        stock.setId(stockDTO.getStockId());
+        stock.setStock(stockDTO.getAvailableStock());
+        stock.setItemBatch(batch);
+        phItem.setStock(stock);
+        
+        if (packSize != 1.0) {
+            phItem.setQtyPacks(qtyInUnits / packSize);
+        }
+        
+        newBillItem.setPharmaceuticalBillItem(phItem);
+        
+        // Set financial details using DTO data
+        setFinancialDetailsFromDTO(newBillItem, stockDTO, packSize);
+        
+        return newBillItem;
+    }
+
+    /**
+     * Sets financial details for a bill item using DTO data.
+     */
+    private void setFinancialDetailsFromDTO(BillItem billItem, com.divudi.core.data.dto.StockAvailabilityDTO stockDTO, double packSize) {
+        BigDecimal qty = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getQty() / packSize);
+        BigDecimal transferRate = determineTransferRate(billItem.getPharmaceuticalBillItem().getItemBatch());
+        BigDecimal purchaseRate = BigDecimal.valueOf(stockDTO.getPurchaseRate());
+        BigDecimal retailRate = BigDecimal.valueOf(stockDTO.getRetailRate());
+        BigDecimal costRate = BigDecimal.valueOf(stockDTO.getCostRate());
+        BigDecimal packSizeBD = BigDecimal.valueOf(packSize);
+
+        // Initialize finance details if null
+        if (billItem.getBillItemFinanceDetails() == null) {
+            billItem.setBillItemFinanceDetails(new BillItemFinanceDetails());
+        }
+        
+        BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+
+        // Quantities
+        financeDetails.setQuantity(qty);
+        financeDetails.setTotalQuantity(qty);
+
+        // Transfer rates and values (net values - what the transfer is priced at)
+        financeDetails.setLineGrossRate(transferRate.multiply(packSizeBD));
+        financeDetails.setLineNetRate(transferRate.multiply(packSizeBD));
+        financeDetails.setLineGrossTotal(transferRate.multiply(qty).multiply(packSizeBD));
+        financeDetails.setLineNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
+        financeDetails.setNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
+
+        // Purchase rate and value (for purchase value reporting)
+        financeDetails.setValueAtPurchaseRate(purchaseRate.multiply(qty).multiply(packSizeBD));
+
+        // Retail rate and value (for sale value reporting)
+        financeDetails.setRetailSaleRate(retailRate.multiply(packSizeBD));
+        financeDetails.setValueAtRetailRate(retailRate.multiply(qty).multiply(packSizeBD));
+
+        // Cost rate and value
+        financeDetails.setLineCostRate(costRate);
+        financeDetails.setLineCost(costRate.multiply(qty).multiply(packSizeBD));
+        financeDetails.setTotalCost(costRate.multiply(qty).multiply(packSizeBD));
+        financeDetails.setTotalCostRate(costRate);
+        financeDetails.setValueAtCostRate(costRate.multiply(qty).multiply(packSizeBD));
+    }
+
+    /**
+     * Creates an empty bill item when no stock is available for an item.
+     */
+    private void createEmptyBillItem(BillItem referenceItem) {
+        BillItem bItem = new BillItem();
+        bItem.setSearialNo(getBillItems().size());
+        bItem.setItem(referenceItem.getItem());
+        bItem.setReferanceBillItem(referenceItem);
+        getBillItems().add(bItem);
     }
 
 }

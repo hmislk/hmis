@@ -907,7 +907,6 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         settleBhtIssue(bt, bta, matrixDept);
-
     }
     
     private Department determineMatrixDepartment() {
