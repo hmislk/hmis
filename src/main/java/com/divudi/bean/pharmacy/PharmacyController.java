@@ -283,7 +283,10 @@ public class PharmacyController implements Serializable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
     public String navigateToBinCard() {
-        return "/pharmacy/bin_card?faces-redirect=true";
+        if (department == null) {
+            department = getSessionController().getDepartment();
+        }
+        return "/pharmacy/bin_card_dto?faces-redirect=true";
     }
 
     public String navigateToItemsList() {

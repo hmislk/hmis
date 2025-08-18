@@ -28,6 +28,7 @@
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
 - **Fallback**: Machine-specific Maven paths
 - **JSF-Only Changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
+- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user
 
 ### DTO Implementation
 - **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
@@ -51,7 +52,8 @@
 1. **MANUAL PERSISTENCE.XML VERIFICATION**: Before any GitHub push, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` - NEVER commit hardcoded JNDI datasources
 2. **Include issue closing keywords** in commit messages
 3. **Update project board status** automatically  
-4. **Run tests before committing** using detect-maven script (only for Java changes)
+4. **Run tests before committing** using detect-maven script (only for Java changes, only when user requests)
+12. **🚨 MAVEN COMPILE RULE**: NEVER run Maven compile commands unless explicitly requested by user
 5. **Follow DTO patterns** to avoid breaking changes
 6. **JSF-only changes** do not require compilation or testing
 7. **🚨 CRITICAL QA RULE**: Before any QA deployment, verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables

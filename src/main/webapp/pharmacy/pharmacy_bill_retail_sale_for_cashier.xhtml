@@ -540,7 +540,7 @@
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
                                     action="#" >
-                                    <p:printer target="TokenPreview" ></p:printer>
+                                    <p:printer target="tokenPrint" ></p:printer>
                                 </p:commandButton>
 
                                 <p:commandButton
@@ -551,7 +551,7 @@
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
                                     action="#" >
-                                    <p:printer target="gpBillPreviewTokenAndBill" ></p:printer>
+                                    <p:printer target="billAndTokenPrint" ></p:printer>
                                 </p:commandButton>
                             </div>
                             <div class="col-4" >
@@ -589,16 +589,17 @@
                         </div>
 
 
-                        <h:panelGroup id="gpBillPreviewTokenAndBill">
-                            <h:panelGroup  rendered="#{pharmacySaleController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"  id="TokenPreview" class="m-2">
-<!--                                <h:panelGroup id="gpBillPreviewPosToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                    <div >
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
-                                            <phi:saleBillToken id="saleBillToken" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
-                                        </h:panelGroup>
-                                    </div>
-                                </h:panelGroup>-->
-                                <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+
+                        <h:panelGroup
+                            id="billAndTokenPrint">
+                            <h:panelGroup 
+                                layout="block"
+                                rendered="#{pharmacySaleController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"
+                                style="page-break-after: always!important;"
+                                id="tokenPrint">
+                                <h:panelGroup 
+                                    id="gpBillPreviewFiveFiveToken" 
+                                    rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                             <phi:saleBill_five_five_token id="saleBillTokenFiveFive" bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five_token>
@@ -606,7 +607,9 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or
+                                <h:panelGroup 
+                                    id="gpBillPreviewFiveFiveToken2" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or
                                                                                            sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
@@ -617,7 +620,12 @@
 
                             </h:panelGroup>
 
-                            <h:panelGroup styleClass="billPrint"   id="gpBillPreview">
+
+                            <h:panelGroup 
+                                styleClass="billPrint"  
+                                layout="block"
+                                style="page-break-after: always!important; page-break-before: always!important;"
+                                id="gpBillPreview">
 
                                 <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
                                     <div >
