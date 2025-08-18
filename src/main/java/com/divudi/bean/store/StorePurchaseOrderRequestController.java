@@ -71,6 +71,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     @Inject
     NotificationController notificationController;
+    @Inject
+    private StoreController1 storeController1;
 
     private double totalBillItemsCount;
 
@@ -155,12 +157,9 @@ public class StorePurchaseOrderRequestController implements Serializable {
         }
 
         calTotal();
-
-    @Inject
-    private StoreController1 storeController1;
+    }
 
     public void onFocus(BillItem bi) {
-
         getStoreController1().setPharmacyItem(bi.getItem());
     }
 
