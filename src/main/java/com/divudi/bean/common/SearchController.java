@@ -4051,6 +4051,11 @@ public class SearchController implements Serializable {
             jpql += " and  ((b.toDepartment.name) like :toDept )";
             params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            params.put("toDept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
 
         if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
             jpql += " and  ((b.referenceBill.deptId) like :refId )";
