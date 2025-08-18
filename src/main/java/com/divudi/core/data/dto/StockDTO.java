@@ -83,18 +83,6 @@ public class StockDTO implements Serializable {
         this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
     }
 
-    // Constructor for JPQL queries that don't include totalStockQty
-    public StockDTO(Long id, String itemName, String code, String genericName,
-                    Double retailRate, Double stockQty, Date dateOfExpire) {
-        this.id = id;
-        this.itemName = itemName;
-        this.code = code;
-        this.genericName = genericName;
-        this.retailRate = retailRate;
-        this.stockQty = stockQty;
-        this.dateOfExpire = dateOfExpire;
-        this.totalStockQty = null; // Not provided in 7-arg queries
-    }
 
     // Constructor for retail sale autocomplete (includes both stock qty and total stock qty)
     public StockDTO(Long id, String itemName, String code, String genericName,
