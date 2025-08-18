@@ -86,11 +86,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
         for (BillItem b : selectedBillItems) {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
-            BillItem tmp = getBillItems().remove(b.getSearialNo());
-            tmp.setRetired(true);
-            billItemFacade.edit(tmp);
+            getBillItems().remove(b);
+            b.setRetired(true);
+            billItemFacade.edit(b);
             //billFacade.edit(currentBill);
-            //System.err.println("Removed Item " + tmp.getItem().getName());
+            //System.err.println("Removed Item " + b.getItem().getName());
             calTotal();
         }
 
