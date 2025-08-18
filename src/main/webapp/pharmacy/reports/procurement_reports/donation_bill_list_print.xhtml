@@ -8,7 +8,7 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form>
+                <h:form rendered="#{webUserController.hasPrivilege('PharmacyDonation')}">
                     <div class="mb-2">
                         <p:commandButton value="Back" ajax="false" icon="pi pi-arrow-left"
                                          action="#{pharmacyProcurementReportController.navigateToDonationBillList()}" />
