@@ -132,7 +132,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
             return;
         }
 
-        getBillItems().remove(bi.getSearialNo());
+        getBillItems().remove(bi);
 
         Date now = new Date();
 
@@ -155,7 +155,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
         }
 
         calTotal();
-    }
 
     @Inject
     private StoreController1 storeController1;
