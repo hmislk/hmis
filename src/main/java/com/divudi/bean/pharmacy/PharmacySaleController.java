@@ -63,6 +63,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFeePaymentFacade;
@@ -98,9 +99,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
@@ -202,6 +207,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Double qty;
     Integer intQty;
     Stock stock;
+    StockDTO stockDto;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -671,6 +677,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.stock = stock;
     }
 
+    public Stock convertStockDtoToEntity(StockDTO stockDto) {
+        if (stockDto == null || stockDto.getId() == null) {
+            return null;
+        }
+        return stockFacade.find(stockDto.getId());
+    }
+
+    public StockDTO getStockDto() {
+        return stockDto;
+    }
+
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
+        // Automatically convert DTO to entity
+        if (stockDto != null) {
+            this.stock = convertStockDtoToEntity(stockDto);
+        } else {
+            this.stock = null;
+        }
+    }
+
     public String newSaleBillWithoutReduceStock() {
         clearBill();
         clearBillItem();
@@ -1001,6 +1028,54 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
         return getStockFacade().findByJpql(sql.toString(), parameters, 20);
+    }
+
+    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
     public void handleSelectAction() {
@@ -3048,6 +3123,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         editingBillItem = null;
         qty = null;
         stock = null;
+        stockDto = null;
         editingQty = null;
         errorMessage = "";
         // paymentMethod = PaymentMethod.Cash; // Never do this. It shold be done in clear bill item
@@ -3538,6 +3614,48 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         patient.getPerson().calDobFromAge();
+    }
+
+    // Getter method for JSF to access the converter
+    public StockDtoConverter getStockDtoConverter() {
+        return new StockDtoConverter();
+    }
+
+    // StockDTO Converter for JSF
+    public static class StockDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "pharmacySaleController");
+                if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
+                    return controller.getStockDto();
+                }
+                // Create a minimal DTO with just the ID for form submission
+                StockDTO dto = new StockDTO();
+                dto.setId(id);
+                return dto;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
+            if (value == null) {
+                return "";
+            }
+            if (value instanceof StockDTO) {
+                StockDTO stockDto = (StockDTO) value;
+                return stockDto.getId() != null ? stockDto.getId().toString() : "";
+            }
+            return "";
+        }
     }
 
 }
