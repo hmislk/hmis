@@ -27,6 +27,8 @@ public class StockDTO implements Serializable {
     private Double newCostRate;
     private Double costRateChange;
     private Double beforeCostAdjustmentValue;
+    // Field for total stock quantity across all departments (used in retail sale autocomplete)
+    private Double totalStockQty;
 
     public StockDTO() {
     }
@@ -79,6 +81,19 @@ public class StockDTO implements Serializable {
                     Double purchaseRate, Double wholesaleRate, Double beforeRetailAdjustmentValue) {
         this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
         this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
+    }
+
+    // Constructor for retail sale autocomplete (includes both stock qty and total stock qty)
+    public StockDTO(Long id, String itemName, String code, String genericName,
+                    Double retailRate, Double stockQty, Date dateOfExpire, Double totalStockQty) {
+        this.id = id;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.totalStockQty = totalStockQty;
     }
 
     public Long getId() {
@@ -231,5 +246,13 @@ public class StockDTO implements Serializable {
 
     public void setBeforeCostAdjustmentValue(Double beforeCostAdjustmentValue) {
         this.beforeCostAdjustmentValue = beforeCostAdjustmentValue;
+    }
+
+    public Double getTotalStockQty() {
+        return totalStockQty;
+    }
+
+    public void setTotalStockQty(Double totalStockQty) {
+        this.totalStockQty = totalStockQty;
     }
 }
