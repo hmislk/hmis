@@ -40,8 +40,8 @@
 
                             body {
                                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                                background: linear-gradient(180deg,rgba(12, 207, 38, 0.63) 0%, rgba(0, 30, 130, 1) 100%);
-                                min-height: 100vh;
+                                background: #{configOptionApplicationController.getColorValueByKey('Laboratory Report SMS Interface - Background Color ','linear-gradient(180deg,rgba(12, 207, 38, 0.63) 0%, rgba(0, 30, 130, 1) 100%)')};
+                                min-height: 90vh;
                                 padding: 20px;
                             }
 
@@ -443,7 +443,7 @@
                                 <h2 class="welcome-title">Hi <strong>#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle}</strong>, Welcome to #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.institution.chequePrintingName}</h2>
                                 <div class="phone-info gap-2">
                                     <span class="phone-icon"></span>
-                                    <span class="mt-3"><strong>Mobile: #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.mobile}</strong></span>
+                                    <span class="mt-3"><strong>Mobile : #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.mobile}</strong></span>
                                 </div>
                             </div>
 
@@ -491,17 +491,17 @@
                                     <div class="test-card">
                                         <div class="card-row">
                                             <span class="card-icon">#</span>
-                                            <span class="card-label">Bill No:</span>
+                                            <span class="card-label">Bill No : </span>
                                             <span class="card-value">#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}</span>
                                         </div>
                                         <div class="card-row">
                                             <span class="card-icon">📄</span>
-                                            <span class="card-label">Test Name:</span>
+                                            <span class="card-label">Test Name : </span>
                                             <span class="card-value">#{patientReportController.currentPatientReport.patientInvestigation.investigation.name}</span>
                                         </div>
                                         <div class="card-row">
                                             <span class="card-icon">📅</span>
-                                            <span class="card-label">Date:</span>
+                                            <span class="card-label">Date : </span>
                                             <span class="card-value">
                                                 <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" >
                                                     <f:convertDateTime pattern="yyyy-MM-dd" />
@@ -526,12 +526,12 @@
                                     <h3 class="info-title">Contact Information</h3>
                                     <div class="info-grid">
                                         <div>
-                                            <div class="info-item"><strong>Opening:</strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.description}</div>
-                                            <div class="info-item"><strong>Emergency Contact :</strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.telephone1}</div>
+                                            <div class="info-item"><strong>Opening : </strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.description}</div>
+                                            <div class="info-item"><strong>Emergency Contact : </strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.telephone1}</div>
                                         </div>
                                         <div>
-                                            <div class="info-item"><strong>Address :</strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.address}</div>
-                                            <div class="info-item"><strong>Email :</strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.email}</div>
+                                            <div class="info-item"><strong>Address : </strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.address}</div>
+                                            <div class="info-item"><strong>Email : </strong> #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.department.email}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -549,7 +549,7 @@
                                     <img 
                                         src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface -  Company Logo','https://i.ibb.co/V0bCPdZZ/fcare.png')}" 
                                         alt="CareCode Logo" 
-                                        height="35" 
+                                        height="33" 
                                         />
 
                                 </div>
@@ -585,7 +585,7 @@
 
                                 const opt = {
                                     margin: [0, 0, 0, 0], // top, left, bottom, right
-                                    filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle}-#{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                    filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
                                     image: {type: 'jpeg', quality: 1.00},
                                     html2canvas: {
                                         scale: 2
