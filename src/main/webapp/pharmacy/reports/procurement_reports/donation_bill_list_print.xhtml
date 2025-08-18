@@ -8,39 +8,44 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form>
-                    <div class="mb-2">
-                        <p:commandButton value="Back" ajax="false" icon="pi pi-arrow-left"
-                                         action="#{pharmacyProcurementReportController.navigateToDonationBillList()}" />
-                        <p:commandButton value="Print" ajax="false" icon="pi pi-print" styleClass="ui-button-info">
-                            <p:printer target="tbl" />
-                        </p:commandButton>
-                    </div>
-                    <p:dataTable id="tbl" value="#{pharmacyProcurementReportController.donationBills}" var="b" styleClass="w-100">
-                        <p:column headerText="Bill No">
-                            <h:outputText value="#{b.billNo}" />
-                        </p:column>
-                        <p:column headerText="Date">
-                            <h:outputText value="#{b.billDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Institution">
-                            <h:outputText value="#{b.institutionName}" />
-                        </p:column>
-                        <p:column headerText="Department">
-                            <h:outputText value="#{b.departmentName}" />
-                        </p:column>
-                        <p:column headerText="Donator">
-                            <h:outputText value="#{b.patientName}" />
-                        </p:column>
-                        <p:column headerText="Net Total" styleClass="text-end">
-                            <h:outputText value="#{b.netValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
-                </h:form>
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDonation')}">
+                    <h:outputText value="You are not authorized" styleClass="text-danger" />
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDonation')}">
+                    <h:form>
+                        <div class="mb-2">
+                            <p:commandButton value="Back" ajax="false" icon="pi pi-arrow-left"
+                                             action="#{pharmacyProcurementReportController.navigateToDonationBillList()}" />
+                            <p:commandButton value="Print" ajax="false" icon="pi pi-print" styleClass="ui-button-info">
+                                <p:printer target="tbl" />
+                            </p:commandButton>
+                        </div>
+                        <p:dataTable id="tbl" value="#{pharmacyProcurementReportController.donationBills}" var="b" styleClass="w-100">
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{b.billNo}" />
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputText value="#{b.billDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Institution">
+                                <h:outputText value="#{b.institutionName}" />
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputText value="#{b.departmentName}" />
+                            </p:column>
+                            <p:column headerText="Donator">
+                                <h:outputText value="#{b.patientName}" />
+                            </p:column>
+                            <p:column headerText="Net Total" styleClass="text-end">
+                                <h:outputText value="#{b.netValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

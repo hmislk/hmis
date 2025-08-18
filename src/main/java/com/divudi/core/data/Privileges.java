@@ -233,6 +233,7 @@ public enum Privileges {
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
     PharmacyTokenManagement("Pharmacy Token Management"),
+    PharmacyDonation("Pharmacy Donation"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
