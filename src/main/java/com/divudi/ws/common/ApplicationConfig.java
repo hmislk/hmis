@@ -18,13 +18,12 @@ public class ApplicationConfig extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();
-        // Updated to use Jackson 2.x JSON provider for CVE-2019-10202 security fix
+        // Use Jackson 2.x JAXB-aware provider and fail fast if not found
         try {
-            Class jacksonProvider = Class.forName("com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider");
+            Class<?> jacksonProvider = Class.forName("com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider");
             resources.add(jacksonProvider);
         } catch (ClassNotFoundException ex) {
-            // Fail fast if Jackson JSON provider is missing - this is a critical dependency
-            throw new IllegalStateException("Jackson JSON provider not found on classpath", ex);
+            throw new RuntimeException("Jackson JSON provider not found", ex);
         }
         addRestResourceClasses(resources);
         return resources;

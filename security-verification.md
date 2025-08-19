@@ -12,19 +12,25 @@ This document provides comprehensive verification steps for the Jackson CVE-2019
 ### 2. Jackson Dependencies Updated
 - **REMOVED**: `org.codehaus.jackson:jackson-jaxrs:1.9.13` (vulnerable)
 - **ADDED**: `com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider` (secure)
+- **ADDED**: `com.fasterxml.jackson.module:jackson-module-jaxb-annotations` (for JAXB support)
 - **UPDATED**: `com.fasterxml.jackson.core:jackson-databind` (now managed by BOM)
 - **ADDED**: `com.fasterxml.jackson.core:jackson-core` (for completeness)
 - **ADDED**: `com.fasterxml.jackson.core:jackson-annotations` (for completeness)
 
 ### 3. Java Code Updates
-- **UPDATED**: `ApplicationConfig.java` - Changed JAX-RS provider from `org.codehaus.jackson.jaxrs.JacksonJsonProvider` to `com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider`
-- **VERIFIED**: All other Jackson usage already uses `com.fasterxml.jackson` packages
+- **UPDATED**: `ApplicationConfig.java` - Changed JAX-RS provider from `org.codehaus.jackson.jaxrs.JacksonJsonProvider` to `com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider` to ensure JAXB annotations are respected.
+- **VERIFIED**: All other Jackson usage already uses `com.fasterxml.jackson` packages. This can be confirmed with the following command:
+  ```bash
+  grep -r "org.codehaus.jackson" src/
+  ```
+  Expected output: No results.
 
 ### 4. Security Improvements
 - All Jackson dependencies now use version 2.15.4 (managed by BOM)
 - Eliminates CVE-2019-10202 (Remote Code Execution)
 - Eliminates CVE-2018-7489 (Unsafe Deserialization)
 - Removes version conflicts between old and new Jackson
+- Added `maven-enforcer-plugin` to `pom.xml` to ban `org.codehaus.jackson` from being re-introduced.
 
 ## Verification Commands
 
@@ -36,15 +42,15 @@ mvn dependency:tree -Dincludes="*jackson*"
 # Expected output should show only com.fasterxml.jackson.* at version 2.15.4
 # No org.codehaus.jackson dependencies should appear
 
-# Check for any remaining vulnerable Jackson versions (comprehensive)
-mvn dependency:tree | grep -i jackson | grep -E "(1\.|2\.[0-9]\.|2\.1[0-4]\.)" | grep -v "2\.15\."
+# Verify no legacy org.codehaus.jackson dependencies remain using the enforcer plugin
+mvn enforcer:enforce
 
-# Expected: No output (no vulnerable versions found)
+# Expected: Successful build (all rules passed)
 
-# Verify no legacy org.codehaus.jackson dependencies remain
-mvn dependency:tree | grep -i "org.codehaus.jackson"
+# Tightly grep to flag any non-2.15.4 com.fasterxml.jackson versions
+mvn dependency:tree | grep "com.fasterxml.jackson" | grep -v "2.15.4"
 
-# Expected: No output (all legacy Jackson removed)
+# Expected: No output
 ```
 
 ### Security Scanning
@@ -103,8 +109,8 @@ mvn clean compile
 ## Implementation Notes
 
 ### Breaking Changes
-- Migration from `org.codehaus.jackson` to `com.fasterxml.jackson`
-- Package name changes may require code updates if direct Jackson usage exists
+- Migration from `org.codehaus.jackson` to `com.fasterxml.jackson`.
+- The new `JacksonJaxbJsonProvider` is now used, which respects JAXB annotations (`@XmlTransient`, etc.). This may change serialization behavior for some objects if they relied on the old provider ignoring those annotations.
 
 ### Compatibility
 - Jackson 2.15.4 maintains backward compatibility for most use cases
@@ -127,4 +133,4 @@ mvn clean compile
 - [CVE-2019-10202](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10202)
 - [CVE-2018-7489](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-7489)
 - [Jackson 2.15.4 Release Notes](https://github.com/FasterXML/jackson/wiki/Jackson-Release-2.15)
-- [Jackson Security Advisories](https://github.com/FasterXML/jackson-databind/blob/2.15/release-notes/CREDITS-2.x)
+- [Jackson Security Advisories](https://github.com/FasterXML/jackson/wiki/Security)
