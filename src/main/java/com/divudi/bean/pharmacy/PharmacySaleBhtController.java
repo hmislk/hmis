@@ -28,6 +28,7 @@ import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
@@ -44,6 +45,7 @@ import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -115,6 +117,9 @@ public class PharmacySaleBhtController implements Serializable {
     @EJB
     BillService billService;
 
+    @EJB
+    private PharmacyService pharmacyService;
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -146,6 +151,8 @@ public class PharmacySaleBhtController implements Serializable {
     /////////////////////////
     private UserStockContainer userStockContainer;
 
+    private List<ClinicalFindingValue> allergyListOfPatient;
+
     private Bill batchBill;
     @Inject
     private BillBeanController billBean;
@@ -173,6 +180,19 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getBatchBill().getPatientEncounter() != null ? getBatchBill().getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
@@ -879,6 +899,19 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
         Department matrixDept = null;
@@ -938,6 +971,19 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
@@ -956,6 +1002,19 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
 
     }
@@ -963,6 +1022,19 @@ public class PharmacySaleBhtController implements Serializable {
     public void settleStoreBhtIssue() {
         if (errorCheck()) {
             return;
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD;
         BillType bt = BillType.StoreBhtPre;
@@ -1268,6 +1340,20 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
+
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
@@ -1416,6 +1502,20 @@ public class PharmacySaleBhtController implements Serializable {
         if (!userStockController.isStockAvailable(getTmpStock(), getQty(), getSessionController().getLoggedUser())) {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
         }
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit(qty);
@@ -2165,6 +2265,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setItemForSubstitution(BillItem itemForSubstitution) {
         this.itemForSubstitution = itemForSubstitution;
+    }
+
+    public List<ClinicalFindingValue> getAllergyListOfPatient() {
+        return allergyListOfPatient;
+    }
+
+    public void setAllergyListOfPatient(List<ClinicalFindingValue> allergyListOfPatient) {
+        this.allergyListOfPatient = allergyListOfPatient;
     }
 
 }

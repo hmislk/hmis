@@ -793,6 +793,18 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             JsfUtil.addErrorMessage("Quentity Zero?");
             return;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            if (patient != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
@@ -1292,12 +1304,13 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (allergyListOfPatient == null) {
                 allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
             }
-            if (!pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
-                JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+            String allergyMsg = pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient);
+            if (!allergyMsg.isEmpty()) {
+                JsfUtil.addErrorMessage(allergyMsg);
                 billSettlingStarted = false;
                 return;
             }
@@ -1382,6 +1395,19 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
             return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            if (patient != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
         }
 
         billItem.setBill(getPreBill());
