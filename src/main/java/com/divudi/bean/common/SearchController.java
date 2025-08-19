@@ -3830,8 +3830,8 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :fDep )";
-            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            sql += " and  ((b.department.name) like :dept )";
+            tmp.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
@@ -4031,28 +4031,28 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
-            jpql += " and  ((b.fromInstitution.name) like :frmIns )";
+            jpql += " and  (upper(b.fromInstitution.name) like :frmIns )";
             params.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
-            jpql += " and  ((b.fromDepartment.name) like :frmDept )";
+            jpql += " and  (upper(b.fromDepartment.name) like :frmDept )";
             params.put("frmDept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
-            jpql += " and  ((b.toInstitution.name) like :toIns )";
+            jpql += " and  (upper(b.toInstitution.name) like :toIns )";
             params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
-            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            jpql += " and  (upper(b.toDepartment.name) like :toDept )";
             params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
         }
         
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            jpql += " and  ((b.toDepartment.name) like :toDept )";
-            params.put("toDept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            jpql += " and  (upper(b.department.name) like :dept )";
+            params.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
