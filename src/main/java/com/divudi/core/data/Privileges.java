@@ -233,6 +233,7 @@ public enum Privileges {
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
     PharmacyTokenManagement("Pharmacy Token Management"),
+    PharmacyDonation("Pharmacy Donation"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
@@ -848,6 +849,7 @@ public enum Privileges {
             case PharmacyReturnItemsAndPayments:
             case PharmacySearchReturnBill:
             case PharmacyAddToStock:
+            case PharmacyDonation:
 
             // Wholesale Transaction
             case PharmacyWholeSaleTransaction:

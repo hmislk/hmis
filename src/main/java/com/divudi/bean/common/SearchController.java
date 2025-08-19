@@ -3644,9 +3644,7 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.createdAt desc  ";
-
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-
         for (Bill b : bills) {
             b.setTmpRefBill(getRefBill(b));
 
