@@ -292,7 +292,7 @@ public class PharmacyProcurementReportController implements Serializable {
         m.put("bt", BillType.PharmacyDonationBill);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-        donationBills = billFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        donationBills = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
 // </editor-fold>
