@@ -14,7 +14,21 @@
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
     </properties>
-    
+
+    <!-- Dependency Management for Version Consistency -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Jackson BOM for version alignment and security -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.15.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- HAPI FHIR -->
         <dependency>
@@ -42,16 +56,27 @@
             <artifactId>hapi-structures-v24</artifactId>
             <version>2.3</version>
         </dependency>
-        <!-- Jackson -->
+        <!-- Jackson Dependencies - Updated for CVE-2019-10202 Security Fix -->
+        <!-- Replaced vulnerable org.codehaus.jackson:jackson-jaxrs 1.9.13 -->
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-jaxrs</artifactId>
-            <version>1.9.13</version>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <!-- Version managed by Jackson BOM (2.15.4) -->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.14.1</version>
+            <!-- Version managed by Jackson BOM (2.15.4) -->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <!-- Version managed by Jackson BOM (2.15.4) -->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <!-- Version managed by Jackson BOM (2.15.4) -->
         </dependency>
 
         <!-- Commons -->
