@@ -15,10 +15,16 @@ Critical SQL injection vulnerabilities have been identified in `PharmacyBean.jav
 
 ### Location and Impact
 - **File**: `src/main/java/com/divudi/ejb/PharmacyBean.java`
-- **Primary Lines**: 491, 497 (pattern found throughout the file)
 - **Vulnerability Type**: SQL Injection via String Concatenation
 - **Attack Vector**: Network-based through web interface
 - **Authentication Required**: Yes (but any authenticated user can exploit)
+
+### Specific Vulnerable Methods
+Based on code analysis, the following methods contain SQL injection vulnerabilities:
+- `getStockQty(ItemBatch, Institution)` - String concatenation in JPQL queries
+- `getStockQty(ItemBatch)` - String concatenation in JPQL queries
+- `StoreItemCategory lookup via findFirstByJpql` - Dynamic query building
+- `Ampp lookup via findFirstByJpql` - Dynamic query building
 
 ### Risk Assessment
 - **Patient Data**: All patient records, medical history, prescriptions at risk
@@ -38,16 +44,17 @@ Query query = em.createQuery(jpql);
 ### Specific Vulnerable Locations
 Based on code analysis, the following patterns are present:
 
-#### Line 1315 (getItemBatch method)
+#### Example of Secure Implementation (getItemBatch method)
 ```java
-jpql = "Select ib from ItemBatch ib where ib.item=:i and ib.dateOfExpire=:doe and ib.purcahseRate=:pr and ib.retailsaleRate=:rr";
+jpql = "Select ib from ItemBatch ib where ib.item=:i and ib.dateOfExpire=:doe and ib.purchaseRate=:pr and ib.retailSaleRate=:rr";
 ```
-**Note**: This line uses parameterized queries correctly (good example)
+**Note**: This example uses parameterized queries correctly (secure pattern to follow)
 
-#### Lines requiring investigation (string concatenation patterns):
+#### Areas Requiring Investigation:
 - Search functionality in pharmacy modules
 - Dynamic query building based on user filters
 - Report generation with user-provided parameters
+- Stock quantity calculations with user-provided criteria
 
 ### Attack Scenarios
 

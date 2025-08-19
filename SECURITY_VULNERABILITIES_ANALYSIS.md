@@ -28,7 +28,7 @@ The system uses Jackson 1.9.13, which contains multiple critical vulnerabilities
 
 ### Evidence
 ```xml
-<!-- pom.xml - Line 156 -->
+<!-- pom.xml -->
 <dependency>
     <groupId>org.codehaus.jackson</groupId>
     <artifactId>jackson-jaxrs</artifactId>
@@ -44,10 +44,11 @@ The system uses Jackson 1.9.13, which contains multiple critical vulnerabilities
 
 ### Recommended Solution
 **Immediate Action Required**:
-1. Upgrade to Jackson 2.15.4 or later
+1. Upgrade to Jackson 2.15.4 or later using Jackson BOM
 2. Remove conflicting jackson-databind 2.14.1 dependency
 3. Update all Jackson-related dependencies consistently
-4. Test thoroughly in staging environment
+4. Audit and remove `enableDefaultTyping` usage; migrate to `PolymorphicTypeValidator`
+5. Test thoroughly in staging environment
 
 **Implementation Timeline**: 1-2 weeks maximum
 
@@ -64,7 +65,7 @@ The system uses Log4j 3.0.0-alpha1, an alpha (pre-release) version in a producti
 
 ### Evidence
 ```xml
-<!-- pom.xml - Line 89 -->
+<!-- pom.xml -->
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-core</artifactId>
@@ -80,9 +81,9 @@ The system uses Log4j 3.0.0-alpha1, an alpha (pre-release) version in a producti
 
 ### Recommended Solution
 **Immediate Action Required**:
-1. Downgrade to Log4j 2.20.0 (latest stable)
+1. Downgrade to Log4j 2.25.1 (latest stable) using Log4j BOM
 2. Update all log4j-related dependencies
-3. Review logging configuration for compatibility
+3. Review logging configuration for compatibility (note 2.24.0+ breaking changes)
 4. Implement proper log rotation and security settings
 
 **Implementation Timeline**: 3-5 days
@@ -100,7 +101,7 @@ Critical SQL injection vulnerabilities found in PharmacyBean.java using string c
 
 ### Evidence
 ```java
-// PharmacyBean.java - Line 491 (example pattern)
+// PharmacyBean.java (example pattern)
 String jpql = "SELECT ... WHERE condition = '" + userInput + "'";
 // This pattern allows SQL injection attacks
 ```

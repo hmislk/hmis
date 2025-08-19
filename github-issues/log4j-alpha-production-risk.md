@@ -21,7 +21,7 @@ The HMIS system currently uses **Log4j 3.0.0-alpha1**, an alpha (pre-release) ve
 
 ### Current Configuration
 ```xml
-<!-- pom.xml - Line 89 -->
+<!-- pom.xml -->
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-core</artifactId>
@@ -53,26 +53,41 @@ The HMIS system currently uses **Log4j 3.0.0-alpha1**, an alpha (pre-release) ve
 
 ### Immediate Action: Downgrade to Stable Version
 
-#### Target Version: Log4j 2.20.0 (Latest Stable)
+#### Target Version: Log4j 2.25.1 (Latest Stable)
+
+**Use Log4j BOM for Version Consistency:**
 ```xml
+<!-- Add to dependencyManagement section -->
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-bom</artifactId>
+      <version>2.25.1</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
 <!-- Replace alpha version with stable release -->
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-core</artifactId>
-    <version>2.20.0</version>
+    <!-- Version managed by BOM -->
 </dependency>
 
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-api</artifactId>
-    <version>2.20.0</version>
+    <!-- Version managed by BOM -->
 </dependency>
 
 <!-- Add SLF4J bridge if needed -->
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-slf4j-impl</artifactId>
-    <version>2.20.0</version>
+    <!-- Version managed by BOM -->
 </dependency>
 ```
 
@@ -104,8 +119,16 @@ The HMIS system currently uses **Log4j 3.0.0-alpha1**, an alpha (pre-release) ve
 ### Log4j 2.x vs 3.x Differences
 - **Configuration Format**: May require log4j2.xml updates
 - **API Changes**: Some API methods may have changed
-- **Performance**: Log4j 2.20.0 has proven performance characteristics
+- **Performance**: Log4j 2.25.1 has proven performance characteristics
 - **Features**: Stable feature set vs experimental alpha features
+
+### Important Log4j 2.24.0+ Configuration Changes
+Since Log4j 2.24.0, several breaking changes require attention:
+
+- **Property Validation**: Property names are strictly validated - review all Log4j configuration property names for typos or unofficial variants
+- **Bridge Behavior**: If you rely on JUL or Log4j 1 bridges, explicitly enable modification via `log4j1.compatibility` and `log4j2.julLoggerAdapter`
+- **ThreadContextMap**: Test any custom ThreadContextMap implementations against the faster default introduced in 2.24.0
+- **Configuration Review**: Audit all log4j2.xml files for deprecated or changed property names
 
 ### Recommended Configuration Updates
 ```xml
@@ -170,10 +193,16 @@ The HMIS system currently uses **Log4j 3.0.0-alpha1**, an alpha (pre-release) ve
 # Verify Log4j version
 mvn dependency:tree | grep log4j
 
-# Expected output: log4j-core:jar:2.20.0
+# Expected output: log4j-core:jar:2.25.1
 
 # Check for vulnerabilities
 mvn org.owasp:dependency-check-maven:check
+
+# Confirm no 3.0.0-alpha* artifacts remain
+mvn -q dependency:tree | grep -E 'log4j.*3\.0\.0-alpha'
+
+# Search for any alpha references in XML files
+grep -r "3\.0\.0-alpha" --include="*.xml" .
 ```
 
 ### Operational Verification
