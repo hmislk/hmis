@@ -198,10 +198,10 @@ public class PharmacyDonationController implements Serializable {
         if (getBill().getBillFinanceDetails() == null) {
             getBill().setBillFinanceDetails(new BillFinanceDetails());
         }
-        getBill().getBillFinanceDetails().setTotalCostValue(totalCost.doubleValue());
-        getBill().getBillFinanceDetails().setTotalExpense(totalExpense.doubleValue());
-        getBill().getBillFinanceDetails().setTotalTaxValue(totalTax.doubleValue());
-        getBill().getBillFinanceDetails().setNetTotal(net.doubleValue());
+        getBill().getBillFinanceDetails().setTotalCostValue(totalCost);
+        getBill().getBillFinanceDetails().setTotalExpense(totalExpense);
+        getBill().getBillFinanceDetails().setTotalTaxValue(totalTax);
+        getBill().getBillFinanceDetails().setNetTotal(net);
     }
 
     public void settleDonationBillFinally() {
