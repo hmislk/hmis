@@ -92,6 +92,7 @@ public enum BillType {
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
+    PharmacyDonationBill,
     PharmacyTransferRequest,
     PharmacyTransferIssue,
     PharmacyDirectIssue,
@@ -221,6 +222,8 @@ public enum BillType {
                 return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
+            case PharmacyDonationBill:
+                return "Pharmacy Donation Bill";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
