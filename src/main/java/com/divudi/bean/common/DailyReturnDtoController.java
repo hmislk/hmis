@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.report.ReportTimerController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.core.data.dto.DailyReturnDTO;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.entity.Department;
