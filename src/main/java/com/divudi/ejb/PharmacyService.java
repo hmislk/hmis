@@ -130,7 +130,8 @@ public class PharmacyService {
         }
 
         if (vtm == null && vmp != null) {
-            vtm = vmp.getVtm();
+            // TODO: Temporarily stopped searching for VTM of VMP - need to remember how to get VTM from VMP
+            // vtm = vmp.getVtm(); // Commented out to prevent compilation error
         }
 
         for (ClinicalFindingValue c : allergyListOfPatient) {
