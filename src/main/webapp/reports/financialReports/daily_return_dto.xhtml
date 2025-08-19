@@ -155,24 +155,74 @@
                             </h:panelGroup>
                         </h:panelGrid>
 
-                        <p:commandButton
-                            value="Process"
+                        <p:commandButton 
+                            value="Process" 
                             ajax="false"
-                            action="#{dailyReturnDtoController.generateDailyReturnDto()}"
-                            class="ui-button-success m-1"
-                            icon="fas fa-cogs"
-                            style="background-color: #28a745; border-color: #28a745;">
+                            action="#{dailyReturnDtoController.generateDailyReturnDto()}" 
+                            class="ui-button-success m-1" 
+                            icon="fas fa-cogs" 
+                            style="background-color: #28a745; border-color: #28a745;"> 
                         </p:commandButton>
 
-                        <p:dataTable value="#{dailyReturnDtoController.dailyReturnDtos}" var="d"
-                                     rendered="#{not empty dailyReturnDtoController.dailyReturnDtos}">
-                            <p:column headerText="Payment Method">
-                                <h:outputText value="#{d.paymentMethod}" />
-                            </p:column>
-                            <p:column headerText="Total">
-                                <h:outputText value="#{d.total}" />
-                            </p:column>
-                        </p:dataTable>
+                        <p:commandButton
+                            value="Update"
+                            ajax="false"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            action="#{dailyReturnDtoController.updateBillItemValues()}"
+                            class="ui-button-danger m-1"
+                            icon="pi pi-pencil"
+                            onclick="return confirm('Are you sure you want to update the bill item values?');">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            icon="fas fa-download"
+                            class="ui-button-warning mx-2"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            <p:fileDownload value="#{dailyReturnDtoController.bundleAsExcel}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download PDF" 
+                            ajax="false" 
+                            icon="pi pi-file-pdf" 
+                            class="ui-button-info  m-1"
+                            style="background-color: #17a2b8; border-color: #17a2b8;" 
+                            onclick="PrimeFaces.monitorDownload(start, stop);">
+                            <p:fileDownload value="#{dailyReturnDtoController.bundleAsPdf}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Print" 
+                            class="m-1"
+                            icon="pi pi-print" 
+                            style="background-color: #f0ad4e; border-color: #f0ad4e;"> 
+                            <p:printer target="printPanel" />
+                        </p:commandButton>
+
+                        <!--Do not remove this part-->
+                        <h:panelGroup style="display: none;" >
+                            <ui:repeat value="#{dailyReturnDtoController.bundle.bundles}" var="myBundle1" >
+                                #{myBundle1.name} - #{myBundle1.bundleType} <br/>
+                            </ui:repeat>
+                        </h:panelGroup>
+                        <!--Do not remove the above part-->
+
+                        <h:panelGroup id="printPanel">        
+
+                            <!-- Use DTO bundle structure -->
+                            <ui:repeat value="#{dailyReturnDtoController.dtoBundle.bundles}" var="myDtoBundle">
+                                <!-- Use DTO-specific composite components -->
+                                <ez:opdServiceCollectionDto bundle="#{myDtoBundle}"  rendered="#{myDtoBundle.bundleType eq 'opdServiceCollection'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'pharmacyCollection'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'ccCollection'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'collectionForTheDay'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'netCash'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'netCashPlusCredit'}"/>
+                            </ui:repeat>
+
+                        </h:panelGroup>
 
                     </p:panel>
                 </h:form>
