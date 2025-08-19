@@ -3746,6 +3746,11 @@ public class SearchController implements Serializable {
             tmp.put("tdep", getSearchKeyword().getToDepartment());
         }
 
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and UPPER(b.toDepartment.name) LIKE :dep";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
         sql += " order by b.createdAt desc  ";
 
         List<Bill> list = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);

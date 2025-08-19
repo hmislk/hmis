@@ -55,14 +55,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setStaffName(null);
             
             // Execute - test that the method runs without error
-            try {
-                searchController.createIssueReport1();
-                // If we get here, the method executed successfully
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                // Method might fail due to database connection, which is acceptable in unit tests
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createIssueReport1(), 
+                "createIssueReport1 should execute without throwing exceptions");
             
             // Verify the filter was set correctly
             assertEquals("Emergency", searchKeyword.getFromDepartment());
@@ -77,12 +71,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setStaffName("");
             
             // Execute
-            try {
-                searchController.createIssueReport1();
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createIssueReport1(), 
+                "createIssueReport1 should execute without throwing exceptions");
             
             // Verify only fromDepartment filter is set
             assertEquals("Surgery", searchKeyword.getFromDepartment());
@@ -109,12 +99,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setNumber(null);
             
             // Execute - test that the method runs without error
-            try {
-                searchController.createGrnTable();
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createGrnTable(), 
+                "createGrnTable should execute without throwing exceptions");
             
             // Verify the filter was set correctly
             assertEquals("Pharmacy", searchKeyword.getToDepartment().getName());
@@ -134,12 +120,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setNumber(null);
             
             // Execute
-            try {
-                searchController.createGrnTable();
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createGrnTable(), 
+                "createGrnTable should execute without throwing exceptions");
             
             // Verify both filters are set correctly
             assertEquals("Pharmacy", searchKeyword.getToDepartment().getName());
@@ -166,12 +148,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setNumber(null);
             
             // Execute
-            try {
-                searchController.createGrnTable();
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createGrnTable(), 
+                "createGrnTable should execute without throwing exceptions");
             
             // Verify both filters are set correctly
             assertEquals("Emergency", searchKeyword.getFromDepartment());
@@ -192,12 +170,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setNumber(null);
             
             // Execute
-            try {
-                searchController.createGrnTable();
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createGrnTable(), 
+                "createGrnTable should execute without throwing exceptions");
             
             // Verify all three filters are set with unique values
             assertEquals("Emergency", searchKeyword.getFromDepartment());
@@ -216,14 +190,9 @@ public class SearchControllerDepartmentFilterRegressionTest {
             // Setup - set searchKeyword to null
             searchController.setSearchKeyword(null);
             
-            // Execute and verify it doesn't crash
-            try {
-                searchController.createGrnTable();
-                assertTrue(true, "Method executed without throwing exceptions with null searchKeyword");
-            } catch (Exception e) {
-                // This is expected and acceptable
-                assertTrue(true, "Method handled null searchKeyword gracefully: " + e.getMessage());
-            }
+            // Execute and verify it throws an exception with null searchKeyword
+            assertThrows(NullPointerException.class, () -> searchController.createGrnTable(), 
+                "createGrnTable should throw NullPointerException when searchKeyword is null");
         }
     }
     
@@ -262,12 +231,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setDepartment("   ");
             
             // Execute
-            try {
-                searchController.createGrnTable();
-                assertTrue(true, "Method executed without throwing exceptions");
-            } catch (Exception e) {
-                assertTrue(true, "Method handled gracefully: " + e.getMessage());
-            }
+            assertDoesNotThrow(() -> searchController.createGrnTable(), 
+                "createGrnTable should execute without throwing exceptions");
             
             // Verify values are set as expected
             assertEquals("", searchKeyword.getFromDepartment());
