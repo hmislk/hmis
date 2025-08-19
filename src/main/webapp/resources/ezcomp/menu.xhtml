@@ -919,13 +919,20 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"  
-                            value="Direct Purchase" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
+                            value="Direct Purchase"
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
                         </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
+                            value="Pharmacy Donation"
+                            icon="fas fa-donate"
+                            rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" ></p:menuitem>
 
                         <p:menuitem
                             ajax="false"
