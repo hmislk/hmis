@@ -3464,14 +3464,14 @@ public class SearchController implements Serializable {
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :fromDep )";
+            m.put("fromDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
-            sql += " and  ((b.toDepartment.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.toDepartment.name) like :toDep )";
+            m.put("toDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -3644,9 +3644,7 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.createdAt desc  ";
-
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-
         for (Bill b : bills) {
             b.setTmpRefBill(getRefBill(b));
 
@@ -3746,6 +3744,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getToDepartment() != null) {
             sql += " and b.toDepartment=:tdep";
             tmp.put("tdep", getSearchKeyword().getToDepartment());
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and UPPER(b.toDepartment.name) LIKE :dep";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
