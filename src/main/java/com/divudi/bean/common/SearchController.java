@@ -3640,7 +3640,7 @@ public class SearchController implements Serializable {
 
         if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
             sql += " and  (upper(b.fromDepartment.name) like :fDep )";
-            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            tmp.put("fDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
@@ -3832,8 +3832,8 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :fDep )";
-            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            sql += " and  ((b.department.name) like :dept )";
+            tmp.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
@@ -4053,8 +4053,8 @@ public class SearchController implements Serializable {
         }
         
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            jpql += " and  ((b.department.name) like :toDept )";
-            params.put("toDept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            jpql += " and  ((b.department.name) like :dept )";
+            params.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
