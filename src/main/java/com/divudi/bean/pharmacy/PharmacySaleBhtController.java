@@ -1340,20 +1340,6 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
-
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
@@ -1376,6 +1362,21 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
         calculateRates(billItem);
+
+        // Check for allergies after billItem is fully populated
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null && billItem != null && billItem.getItem() != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(getPreBill());
@@ -1461,7 +1462,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         billItem = new BillItem();
         if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
+            PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+            pbi.setBillItem(billItem);
+            billItem.setPharmaceuticalBillItem(pbi);
         }
         if (getTmpStock() == null) {
             errorMessage = "Item?";
@@ -1504,20 +1507,6 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
-
         billItem.getPharmaceuticalBillItem().setQtyInUnit(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
@@ -1531,6 +1520,22 @@ public class PharmacySaleBhtController implements Serializable {
 //        billItem.setBill(getPreBill());
         billItem.setSearialNo(getBillItems().size() + 1);
         calculateRates(billItem);
+        
+        // Check for allergies after billItem is fully populated
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
+            if (p != null && billItem != null && billItem.getItem() != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
+        
         getBillItems().add(billItem);
         
         calCurrentBillItemTotal(getBillItems());
