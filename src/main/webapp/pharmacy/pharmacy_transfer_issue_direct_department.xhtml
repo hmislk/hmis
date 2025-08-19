@@ -273,12 +273,14 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
 
-                                <h:outputLabel value="Comment" />
+                                <h:outputLabel value="Comment *" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:inputTextarea 
+                                <p:inputTextarea
                                     class="w-100"
-                                    value="#{transferIssueController.issuedBill.comments}" 
-                                    rows="3" />
+                                    value="#{transferIssueController.issuedBill.comments}"
+                                    rows="3"
+                                    required="true"
+                                    requiredMessage="Please enter a comment." />
 
                             </h:panelGrid>
                         </p:panel>
