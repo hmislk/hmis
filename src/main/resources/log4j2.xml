@@ -3,29 +3,23 @@
 <!-- Security: JNDI lookups disabled to prevent Log4Shell attacks -->
 <!-- HIPAA Compliance: Patterns configured to avoid logging sensitive patient data -->
 <Configuration status="WARN" shutdownHook="disable">
-    <!-- Security Properties -->
+    
+    <!-- CRITICAL: Security Properties to prevent Log4Shell attacks -->
     <Properties>
-        <!-- Disable JNDI lookups for Log4Shell protection -->
         <Property name="log4j2.formatMsgNoLookups">true</Property>
         <Property name="log4j2.enableJndiLookup">false</Property>
         <Property name="log4j2.enableJndiJms">false</Property>
         <Property name="log4j2.enableJndiContextSelector">false</Property>
     </Properties>
+    
     <Appenders>
 
         <!-- Console output for debugging -->
         <!-- HIPAA Compliance: Pattern avoids logging sensitive data -->
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n"/>
-            <!-- Security: Disable message lookups to prevent injection -->
             <PatternLayout disableAnsi="false" noConsoleNoAnsi="false">
                 <Pattern>[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n</Pattern>
             </PatternLayout>
-        </Console>
-
-        <!-- Additional console appender to stderr for early boot messages -->
-        <Console name="StartupLogger" target="SYSTEM_ERR">
-            <PatternLayout pattern="Log4j2 active — writing to %d{yyyy-MM-dd} at %c{1} [%p]: %m%n"/>
         </Console>
 
         <!-- Rolling file logger for errors -->
@@ -81,14 +75,13 @@
         </Logger>
 
         <!-- Security: SQL injection monitoring -->
-        <Logger name="org.hibernate.SQL" level="warn" additivity="false">
+        <Logger name="org.hibernate.SQL" level="debug" additivity="false">
             <AppenderRef ref="RollingFileLogger"/>
         </Logger>
 
         <!-- Root logger with secure configuration -->
         <Root level="info">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="StartupLogger"/>
             <AppenderRef ref="RollingFileLogger"/>
         </Root>
     </Loggers>

