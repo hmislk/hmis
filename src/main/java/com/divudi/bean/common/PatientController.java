@@ -2290,24 +2290,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String searchFamilyByNIC() {
         if (searchNic == null) {
-            JsfUtil.addErrorMessage("No Search Text");
+            JsfUtil.addErrorMessage("No NIC provided");
             return null;
         }
         if (searchNic.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("No Search Text");
+            JsfUtil.addErrorMessage("No NIC provided");
             return null;
         }
-        if (searchNic.trim().length() < 10) {
-            JsfUtil.addErrorMessage("Enter Complete NIC Number");
-            return null;
-        }
+
         families = null;
         String jpql = "Select f "
-                + "from Family f "
-                + "where f.retired=false "
-                + "and (f.nic = :pn or f.membershipCardNo = :mcn) ";
-        Map params = new HashMap();
-        params.put("nic", "%" + searchNic + "%");
+                                + " from Family f "
+                                + " where f.retired=false "
+                                + " and f.chiefHouseHolder.person.nic like :nic "
+                                + " order by f.chiefHouseHolder.person.name";
+                Map params = new HashMap();
+                params.put("nic", "%" + searchNic.trim().toUpperCase() + "%");
+
         List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
             JsfUtil.addErrorMessage("No matching families found");
@@ -2324,16 +2323,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String searchFamilyByAddress() {
-        if (searchNic == null) {
+        if (searchText == null) {
             JsfUtil.addErrorMessage("No Search Text");
             return null;
         }
-        if (searchNic.trim().isEmpty()) {
+        if (searchText.trim().isEmpty()) {
             JsfUtil.addErrorMessage("No Search Text");
             return null;
         }
-        if (searchNic.trim().length() < 10) {
-            JsfUtil.addErrorMessage("Enter Complete NIC Number");
+        if (searchText.trim().length() < 4) {
+            JsfUtil.addErrorMessage("Enter at least 4 characters");
             return null;
         }
         families = null;
@@ -2358,6 +2357,77 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
     }
+
+//    public String searchFamilyByNIC() {
+//        if (searchNic == null) {
+//            JsfUtil.addErrorMessage("No Search Text");
+//            return null;
+//        }
+//        if (searchNic.trim().isEmpty()) {
+//            JsfUtil.addErrorMessage("No Search Text");
+//            return null;
+//        }
+//        if (searchNic.trim().length() < 10) {
+//            JsfUtil.addErrorMessage("Enter Complete NIC Number");
+//            return null;
+//        }
+//        families = null;
+//        String jpql = "Select f "
+//                + "from Family f "
+//                + "where f.retired=false "
+//                + "and (f.nic = :pn or f.membershipCardNo = :mcn) ";
+//        Map params = new HashMap();
+//        params.put("nic", "%" + searchNic + "%");
+//        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+//        if (fs == null || fs.isEmpty()) {
+//            JsfUtil.addErrorMessage("No matching families found");
+//            return "";
+//        } else if (fs.size() == 1) {
+//            currentFamily = fs.get(0);
+//            searchNic = "";
+//            return navigateToManageFamilyMembership();
+//        } else {
+//            families = fs;
+//            searchNic = "";
+//            return null;
+//        }
+//    }
+//
+//    public String searchFamilyByAddress() {
+//        if (searchNic == null) {
+//            JsfUtil.addErrorMessage("No Search Text");
+//            return null;
+//        }
+//        if (searchNic.trim().isEmpty()) {
+//            JsfUtil.addErrorMessage("No Search Text");
+//            return null;
+//        }
+//        if (searchNic.trim().length() < 10) {
+//            JsfUtil.addErrorMessage("Enter Complete NIC Number");
+//            return null;
+//        }
+//        families = null;
+//        String jpql = "Select f "
+//                + " from Family f "
+//                + " where f.retired=false "
+//                + " and f.address like :address "
+//                + " order by f.chiefHouseHolder.person.name";
+//        Map params = new HashMap();
+//        params.put("address", "%" + searchText + "%");
+//        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+//        if (fs == null || fs.isEmpty()) {
+//            JsfUtil.addErrorMessage("No matching families found");
+//            return "";
+//        } else if (fs.size() == 1) {
+//            currentFamily = fs.get(0);
+//            searchText = "";
+//            return navigateToManageFamilyMembership();
+//        } else {
+//            families = fs;
+//            searchText = "";
+//            return null;
+//        }
+//    }
 
     public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (paramMembershipNumber == null) {
