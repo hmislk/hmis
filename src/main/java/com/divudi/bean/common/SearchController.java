@@ -3616,8 +3616,6 @@ public class SearchController implements Serializable {
     }
 
     public void createIssueTable() {
-        Date startTime = new Date();
-
         String sql;
         HashMap tmp = new HashMap();
         tmp.put("toDate", getToDate());

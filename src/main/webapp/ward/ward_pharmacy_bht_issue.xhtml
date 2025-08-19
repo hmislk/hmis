@@ -21,7 +21,7 @@
                         icon="fa fa-check"
                         value="Issue to BHT"
                         onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                        return false;"
+                                    return false;"
                         action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
                         ajax="false" >
                     </p:commandButton>
@@ -208,19 +208,19 @@
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
                     </p:column>
 
-                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -232,7 +232,9 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Qty" style="width:25px!important; text-align: right;">
+                    <p:column headerText="Qty" 
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                              style="width:25px!important; text-align: right;">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{bItm.pharmaceuticalBillItem.qty}" >
@@ -245,7 +247,8 @@
                         </p:cellEditor>
                     </p:column>
 
-                    <p:column headerText="Net Total"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Net Total"  style="width:50px!important; text-align: right;" 
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.netValue}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
