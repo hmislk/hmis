@@ -152,6 +152,7 @@ public class PharmacySaleBhtController implements Serializable {
     private UserStockContainer userStockContainer;
 
     private List<ClinicalFindingValue> allergyListOfPatient;
+    private Long allergyListCachedPatientId;
 
     private Bill batchBill;
     @Inject
@@ -184,9 +185,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getBatchBill().getPatientEncounter() != null ? getBatchBill().getPatientEncounter().getPatient() : null;
             if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -902,9 +901,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
             if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -974,9 +971,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
             if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -1005,9 +1000,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
             if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -1026,9 +1019,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
             if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -1367,9 +1358,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
             if (p != null && billItem != null && billItem.getItem() != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -1525,9 +1514,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
             if (p != null && billItem != null && billItem.getItem() != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
+                refreshAllergiesIfPatientChanged(p);
                 String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
@@ -2141,6 +2128,11 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
+        // Clear allergy cache when patient encounter changes
+        if (this.patientEncounter != patientEncounter) {
+            allergyListOfPatient = null;
+            allergyListCachedPatientId = null;
+        }
         this.patientEncounter = patientEncounter;
     }
 
@@ -2270,6 +2262,24 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setItemForSubstitution(BillItem itemForSubstitution) {
         this.itemForSubstitution = itemForSubstitution;
+    }
+
+    /**
+     * Refreshes the allergy list cache if the patient has changed.
+     * Clears both fields when patient is null.
+     */
+    private void refreshAllergiesIfPatientChanged(Patient p) {
+        if (p == null) {
+            allergyListOfPatient = null;
+            allergyListCachedPatientId = null;
+            return;
+        }
+        
+        Long currentPatientId = p.getId();
+        if (allergyListCachedPatientId == null || !allergyListCachedPatientId.equals(currentPatientId)) {
+            allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
+            allergyListCachedPatientId = currentPatientId;
+        }
     }
 
     public List<ClinicalFindingValue> getAllergyListOfPatient() {

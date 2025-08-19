@@ -186,10 +186,19 @@
 
                                 <h:outputLabel value="Select Staff Name" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
-                                                 forceSelection="true" 
+                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                                 forceSelection="true"
                                                  var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
                                                  value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+
+                                <h:outputLabel value="Comment *" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:inputTextarea
+                                    class="w-100"
+                                    rows="3"
+                                    value="#{transferIssueController.issuedBill.comments}"
+                                    required="true"
+                                    requiredMessage="Please enter a comment."/>
 
                             </h:panelGrid>
                         </p:panel>

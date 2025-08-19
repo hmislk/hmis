@@ -133,10 +133,18 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
 
-                                    <h:outputLabel value="Staff" ></h:outputLabel>
-                                    <p:outputLabel value="#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
+                                      <h:outputLabel value="Staff" ></h:outputLabel>
+                                      <p:outputLabel value="#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                                </p:panelGrid>
+                                      <h:outputLabel value="Comment *" />
+                                      <p:inputTextarea
+                                          class="w-100"
+                                          rows="3"
+                                          value="#{transferReceiveController.receivedBill.comments}"
+                                          required="true"
+                                          requiredMessage="Please enter a comment."/>
+
+                                  </p:panelGrid>
 
                             </p:panel>
                         </div>
