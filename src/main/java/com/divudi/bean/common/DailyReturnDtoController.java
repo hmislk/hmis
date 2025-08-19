@@ -391,14 +391,19 @@ public class DailyReturnDtoController implements Serializable {
 
         netCashCollection = collectionForTheDay;
 
-        // 5. Net Cash for the day
+        // 5. Credit Card Payments - add to DTO bundle
+        DailyReturnBundleDTO cardPayments = createCardPaymentDtoBundle();
+        dtoBundle.getBundles().add(cardPayments);
+        netCashCollection -= Math.abs(getSafeDtoTotal(cardPayments));
+
+        // 6. Net Cash for the day
         DailyReturnBundleDTO netCashForTheDayBundle = new DailyReturnBundleDTO();
         netCashForTheDayBundle.setName("Net Cash");
         netCashForTheDayBundle.setBundleType("netCash");
         netCashForTheDayBundle.setTotal(netCashCollection);
         dtoBundle.getBundles().add(netCashForTheDayBundle);
 
-        // 6. Net Cash Plus Credits
+        // 7. Net Cash Plus Credits
         netCollectionPlusCredits = netCashCollection;
         DailyReturnBundleDTO netCashForTheDayBundlePlusCredits = new DailyReturnBundleDTO();
         netCashForTheDayBundlePlusCredits.setName("Net Cash Plus Credits");
@@ -655,6 +660,60 @@ public class DailyReturnDtoController implements Serializable {
         System.out.println("DEBUG: CC Collection - final totals: " + totalCcCollection + ", rows: " + allRows.size());
         
         return ccBundle;
+    }
+    
+    private DailyReturnBundleDTO createCardPaymentDtoBundle() {
+        DailyReturnBundleDTO bundle = new DailyReturnBundleDTO();
+        bundle.setName("Credit Card Payments");
+        bundle.setBundleType("paymentReportCards");
+        
+        List<DailyReturnRowDTO> allRows = new ArrayList<>();
+        double totalCardPayments = 0.0;
+        long totalCount = 0L;
+        
+        if (cardPaymentDtos != null) {
+            for (PaymentDetailDTO payment : cardPaymentDtos) {
+                
+                // Create a row for each card payment
+                DailyReturnRowDTO row = new DailyReturnRowDTO();
+                
+                // Set bill information - following the same pattern as the original entity-based report
+                row.setBillNumber(payment.getBillNumber()); // Bill number 
+                row.setBillType(payment.getBillType()); // Bill type
+                row.setPaymentMethod(payment.getPaymentMethod()); // Payment method
+                row.setCreatedAt(payment.getCreatedAt()); // Date/time
+                row.setDepartmentName(payment.getDepartmentName()); // Department
+                
+                // Set display values for Credit Card Payments table
+                row.setItemName(payment.getBillNumber()); // Bill number 
+                row.setCategoryName(payment.getBillType() != null ? payment.getBillType().toString() : "BilledBill"); // Bill Class (BillType)
+                row.setFeeName(payment.getCreditCardRefNo()); // Card Ref. Number
+                row.setPaymentName(payment.getBankName()); // Bank name
+                row.setFromDepartmentName(""); // Reference Bill (not applicable for payments)
+                
+                // Set financial values
+                Double paidValue = Math.abs(payment.getPaidValue()); // Use absolute value for payments
+                row.setItemNetTotal(paidValue);
+                row.setItemHospitalFee(paidValue); // For payment reports, hospital fee = total
+                row.setItemProfessionalFee(0.0); // No professional fee breakdown for payments
+                row.setItemDiscountAmount(0.0); // No discount for payments
+                row.setItemCount(1L); // Each payment is one count
+                row.setTotal(paidValue);
+                
+                allRows.add(row);
+                totalCardPayments += paidValue;
+                totalCount++;
+            }
+        }
+        
+        bundle.setRows(allRows);
+        bundle.setTotal(totalCardPayments);
+        bundle.setHospitalTotal(totalCardPayments);
+        bundle.setStaffTotal(0.0);
+        bundle.setDiscount(0.0);
+        bundle.setCount(totalCount);
+        
+        return bundle;
     }
     
     private ReportTemplateRowBundle createCardPaymentBundle() {
