@@ -57,8 +57,8 @@ public class PharmacyDonationController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PharmacyBean pharmacyBean;
-    @EJB
-    private PharmacyCalculation pharmacyBillBean;
+    @Inject
+    PharmacyCalculation pharmacyBillBean;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
