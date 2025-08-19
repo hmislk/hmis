@@ -61,8 +61,10 @@ public class SearchControllerDepartmentFilterRegressionTest {
         @Test
         @DisplayName("FromDepartment filter should be settable and retrievable")
         public void testFromDepartmentFilter_ShouldBeSettableAndRetrievable() {
-            // Setup
-            searchKeyword.setFromDepartment("Emergency");
+            // Setup - use frmDepartment (Department object) instead of fromDepartment (String)
+            Department emergency = new Department();
+            emergency.setName("Emergency");
+            searchKeyword.setFrmDepartment(emergency);
             searchKeyword.setBillNo(null);
             searchKeyword.setStaffName(null);
             
@@ -71,14 +73,16 @@ public class SearchControllerDepartmentFilterRegressionTest {
                 "createIssueReport1 should execute without throwing exceptions");
             
             // Verify the filter was set correctly
-            assertEquals("Emergency", searchKeyword.getFromDepartment());
+            assertEquals("Emergency", searchKeyword.getFrmDepartment().getName());
         }
         
         @Test
         @DisplayName("FromDepartment filter should work with empty other filters")
         public void testFromDepartmentFilter_ShouldWorkWithEmptyOtherFilters() {
-            // Setup - only fromDepartment is set
-            searchKeyword.setFromDepartment("Surgery");
+            // Setup - only frmDepartment is set
+            Department surgery = new Department();
+            surgery.setName("Surgery");
+            searchKeyword.setFrmDepartment(surgery);
             searchKeyword.setBillNo("");
             searchKeyword.setStaffName("");
             
@@ -86,8 +90,8 @@ public class SearchControllerDepartmentFilterRegressionTest {
             assertDoesNotThrow(() -> searchController.createIssueReport1(), 
                 "createIssueReport1 should execute without throwing exceptions");
             
-            // Verify only fromDepartment filter is set
-            assertEquals("Surgery", searchKeyword.getFromDepartment());
+            // Verify only frmDepartment filter is set
+            assertEquals("Surgery", searchKeyword.getFrmDepartment().getName());
             assertEquals("", searchKeyword.getBillNo());
             assertEquals("", searchKeyword.getStaffName());
         }
