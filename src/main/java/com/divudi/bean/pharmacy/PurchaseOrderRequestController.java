@@ -198,27 +198,36 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void removeItem(BillItem bi) {
         Bill currentBill = getCurrentBill();
-        if (currentBill == null) {
+        if (currentBill == null || bi == null) {
             return;
         }
 
+        Date now = new Date();
+
+        bi.setRetired(true);
+        bi.setRetirer(sessionController.getLoggedUser());
+        bi.setRetiredAt(now);
+
+        PharmaceuticalBillItem tmpPbi = bi.getPharmaceuticalBillItem();
+        if (tmpPbi != null) {
+            tmpPbi.setRetired(true);
+            tmpPbi.setRetirer(sessionController.getLoggedUser());
+            tmpPbi.setRetiredAt(now);
+        }
+
+        if (bi.getId() != null) {
+            billItemFacade.edit(bi);
+        }
+
+        if (tmpPbi != null && tmpPbi.getId() != null) {
+            pharmaceuticalBillItemFacade.edit(tmpPbi);
+        }
+
         getBillItems().remove(bi);
-        getPharmaceuticalBillItemFacade().remove(bi.getPharmaceuticalBillItem());
 
         calTotal();
 
         currentBillItem = null;
-
-        if (currentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_ORDER_PRE) {
-            return;
-        }
-
-        try {
-            currentBill.getBillItems().remove(bi);
-            getBillFacade().edit(currentBill);
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Something went wrong");
-        }
     }
 
     @Inject

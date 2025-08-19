@@ -3378,7 +3378,7 @@ public class SearchController implements Serializable {
     public void listPharmacyIssue() {
         Date startTime = new Date();
 
-        listPharmacyPreBills(BillType.PharmacyIssue);
+        listPharmacyBilledBills(BillType.PharmacyIssue);
 
     }
 
@@ -3464,14 +3464,14 @@ public class SearchController implements Serializable {
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :fromDep )";
+            m.put("fromDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
-            sql += " and  ((b.toDepartment.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.toDepartment.name) like :toDep )";
+            m.put("toDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -3638,15 +3638,13 @@ public class SearchController implements Serializable {
             tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :fDep )";
-            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            sql += " and  (upper(b.fromDepartment.name) like :fDep )";
+            tmp.put("fDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
-
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-
         for (Bill b : bills) {
             b.setTmpRefBill(getRefBill(b));
 
@@ -3748,6 +3746,11 @@ public class SearchController implements Serializable {
             tmp.put("tdep", getSearchKeyword().getToDepartment());
         }
 
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and UPPER(b.toDepartment.name) LIKE :dep";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
         sql += " order by b.createdAt desc  ";
 
         List<Bill> list = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
@@ -3832,8 +3835,8 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :fDep )";
-            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            sql += " and  ((b.department.name) like :dept )";
+            tmp.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
@@ -4033,23 +4036,28 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
-            jpql += " and  ((b.fromInstitution.name) like :frmIns )";
+            jpql += " and  (upper(b.fromInstitution.name) like :frmIns )";
             params.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
-            jpql += " and  ((b.fromDepartment.name) like :frmDept )";
+            jpql += " and  (upper(b.fromDepartment.name) like :frmDept )";
             params.put("frmDept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
-            jpql += " and  ((b.toInstitution.name) like :toIns )";
+            jpql += " and  (upper(b.toInstitution.name) like :toIns )";
             params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
-            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            jpql += " and  (upper(b.toDepartment.name) like :toDept )";
             params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            jpql += " and  (upper(b.department.name) like :dept )";
+            params.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
@@ -4656,7 +4664,7 @@ public class SearchController implements Serializable {
         m.put("fromDate", fromDate);
         m.put("bType", BillType.PharmacyIssue);
         m.put("ins", getSessionController().getInstitution());
-        m.put("class", PreBill.class);
+        m.put("class", BilledBill.class);
 
         sql = "select bi from BillItem bi"
                 + " where  type(bi.bill)=:class "
