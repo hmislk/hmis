@@ -3638,8 +3638,8 @@ public class SearchController implements Serializable {
             tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :fDep )";
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            sql += " and  (upper(b.fromDepartment.name) like :fDep )";
             tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
