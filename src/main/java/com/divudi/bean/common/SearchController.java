@@ -4053,7 +4053,7 @@ public class SearchController implements Serializable {
         }
         
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            jpql += " and  ((b.department.name) like :toDept )";
             params.put("toDept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
