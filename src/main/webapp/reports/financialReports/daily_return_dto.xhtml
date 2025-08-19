@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Daily Return (DTO - Fast)" class="m-1">
+                        
+                        <!-- Performance Notice -->
+                        <div class="alert alert-info mb-3">
+                            <h:outputText value="&#xf2f1;" styleClass="fas mr-2" />
+                            <strong>Performance Optimized:</strong> This version uses DTO-based queries for significantly faster execution.
+                        </div>
+
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{dailyReturnDtoController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{dailyReturnDtoController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f7;" styleClass="fa ml-5" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="institution" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="institution" 
+                                value="#{dailyReturnDtoController.institution}" 
+                                completeMethod="#{institutionController.completeInstitution}" 
+                                var="ix" 
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}" 
+                                converter="instConverter" 
+                                forceSelection="true" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f7;" styleClass="fa ml-5" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Site" for="site" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="site" 
+                                value="#{dailyReturnDtoController.site}" 
+                                completeMethod="#{institutionController.completeSite}" 
+                                var="sx" 
+                                itemLabel="#{sx.name}" 
+                                itemValue="#{sx}" 
+                                converter="instConverter" 
+                                forceSelection="true" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa ml-5" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="department" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="department" 
+                                value="#{dailyReturnDtoController.department}" 
+                                completeMethod="#{departmentController.completeDepartment}" 
+                                var="dx" 
+                                itemLabel="#{dx.name}" 
+                                itemValue="#{dx}" 
+                                converter="departmentConverter" 
+                                forceSelection="true" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0d6;" styleClass="fa ml-5" /> <!-- FontAwesome money icon -->
+                                <h:outputLabel value="With Professional Fee" for="withProfessionalFee" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectBooleanCheckbox 
+                                id="withProfessionalFee" 
+                                value="#{dailyReturnDtoController.withProfessionalFee}" 
+                                styleClass="form-control"
+                                />
+                        </h:panelGrid>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-3 mb-3">
+                            <p:commandButton 
+                                value="Process (DTO - Fast)" 
+                                ajax="false"
+                                action="#{dailyReturnDtoController.generateDailyReturnDto()}" 
+                                class="ui-button-success m-1" 
+                                icon="fas fa-rocket" 
+                                style="background-color: #28a745; border-color: #28a745;"> 
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Reset" 
+                                ajax="false"
+                                action="#{dailyReturnDtoController.resetReport()}" 
+                                class="ui-button-secondary m-1" 
+                                icon="fas fa-undo"> 
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Compare with Original" 
+                                ajax="false"
+                                action="/reports/financialReports/daily_return?faces-redirect=true" 
+                                class="ui-button-info m-1" 
+                                icon="fas fa-balance-scale"> 
+                            </p:commandButton>
+                        </div>
+
+                        <!-- Performance Information -->
+                        <div class="alert alert-success mb-3" rendered="#{dailyReturnDtoController.reportGenerated}">
+                            <h:outputText value="&#xf201;" styleClass="fas mr-2" />
+                            <h:outputText value="#{dailyReturnDtoController.performanceImprovementMessage}" />
+                        </div>
+
+                        <!-- Report Summary -->
+                        <div class="card mb-3" rendered="#{dailyReturnDtoController.reportGenerated}">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <h:outputText value="&#xf200;" styleClass="fas mr-2" />
+                                    Report Summary
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <h:outputText value="#{dailyReturnDtoController.reportSummary}" />
+                            </div>
+                        </div>
+
+                        <!-- Report Content -->
+                        <h:panelGroup rendered="#{dailyReturnDtoController.reportGenerated}">
+                            
+                            <!-- Collection for the Day -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <h:outputText value="&#xf0d6;" styleClass="fas mr-2" />
+                                        Collection for the Day: 
+                                        <h:outputText value="#{dailyReturnDtoController.dailyReturnDto.collectionForTheDay}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h5>
+                                </div>
+                            </div>
+
+                            <!-- OPD Service Collections -->
+                            <div class="card mb-3" rendered="#{not empty dailyReturnDtoController.dailyReturnDto.opdServiceCollections}">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <h:outputText value="&#xf0f0;" styleClass="fas mr-2" />
+                                        OPD Service Collections
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p:dataTable value="#{dailyReturnDtoController.dailyReturnDto.opdServiceCollections}" 
+                                                 var="item" 
+                                                 styleClass="table table-striped"
+                                                 paginator="true" 
+                                                 rows="10">
+                                        
+                                        <p:column headerText="Item Name">
+                                            <h:outputText value="#{item.itemName}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Department">
+                                            <h:outputText value="#{item.departmentName}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Quantity">
+                                            <h:outputText value="#{item.formattedQuantity}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Rate">
+                                            <h:outputText value="#{item.formattedRate}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Total">
+                                            <h:outputText value="#{item.formattedTotal}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+
+                            <!-- Pharmacy Collections -->
+                            <div class="card mb-3" rendered="#{not empty dailyReturnDtoController.dailyReturnDto.pharmacyCollections}">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <h:outputText value="&#xf484;" styleClass="fas mr-2" />
+                                        Pharmacy Collections
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p:dataTable value="#{dailyReturnDtoController.dailyReturnDto.pharmacyCollections}" 
+                                                 var="item" 
+                                                 styleClass="table table-striped"
+                                                 paginator="true" 
+                                                 rows="10">
+                                        
+                                        <p:column headerText="Item Name">
+                                            <h:outputText value="#{item.itemName}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Department">
+                                            <h:outputText value="#{item.departmentName}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Quantity">
+                                            <h:outputText value="#{item.formattedQuantity}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Rate">
+                                            <h:outputText value="#{item.formattedRate}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Total">
+                                            <h:outputText value="#{item.formattedTotal}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+
+                            <!-- Net Cash Collection -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <h:outputText value="&#xf53a;" styleClass="fas mr-2" />
+                                        Net Cash Collection: 
+                                        <h:outputText value="#{dailyReturnDtoController.dailyReturnDto.netCashCollection}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h5>
+                                </div>
+                            </div>
+
+                            <!-- Net Collection Plus Credits -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <h:outputText value="&#xf1c0;" styleClass="fas mr-2" />
+                                        Net Collection Plus Credits: 
+                                        <h:outputText value="#{dailyReturnDtoController.dailyReturnDto.netCollectionPlusCredits}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h5>
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+
+                        <!-- No Report Message -->
+                        <div class="alert alert-warning" rendered="#{not dailyReturnDtoController.reportGenerated}">
+                            <h:outputText value="&#xf06a;" styleClass="fas mr-2" />
+                            <h:outputText value="#{dailyReturnDtoController.performanceImprovementMessage}" />
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

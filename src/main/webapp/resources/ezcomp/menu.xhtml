@@ -1713,7 +1713,8 @@
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
                                  rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-chart-line"></p:menuitem>  
-                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-file-alt" ></p:menuitem> 
+                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-file-alt" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="#{dailyReturnDtoController.navigateToDailyReturnDto()}" value="Daily return (DTO – fast)" rendered="#{webUserController.hasPrivilege('Reports')}" icon="fas fa-rocket" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/reports/dynamic_reports/dynamic_reports?faces-redirect=true" 
                                  value="Dynamic Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-cogs" ></p:menuitem> 
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own?faces-redirect=true" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-building" ></p:menuitem>                               
