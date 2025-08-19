@@ -179,8 +179,8 @@
                                     id="panelReturnBillDetails"
                                     layout="tabular"
                                     class="w-100">
-                                    <h:outputLabel value="Supplier : " />
-                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.fromInstitution.name}" />
+                                    <p:outputLabel value="Supplier : " />
+                                    <p:outputLabel value="#{grnReturnWithCostingController.bill.fromInstitution.name}" />
                                     <p:outputLabel  value="Receivable Amount : " />
                                     <p:outputLabel 
                                         id="returnTotal" 
@@ -189,11 +189,22 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
 
-                                    <h:outputLabel value="Payment Received as : " />
+                                    <p:outputLabel value="Payment Received as : " />
                                     <p:selectOneMenu id="cmbPs" value="#{grnReturnWithCostingController.returnBill.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethods}"/>
                                         <p:ajax process="cmbPs"  event="change" />
                                     </p:selectOneMenu>
+
+                                    <p:outputLabel
+                                        for="txtReturnComments"
+                                        value="Payment Received as : " />
+                                    <p:inputTextarea 
+                                        id="txtReturnComments"
+                                        class="w-100"
+                                        value="#{grnReturnWithCostingController.returnBill.comments}" 
+                                        required="true"
+                                        requiredMessage="Please enter a comment"
+                                        ></p:inputTextarea>
                                 </p:panelGrid>
 
 
