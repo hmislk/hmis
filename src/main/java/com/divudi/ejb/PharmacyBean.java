@@ -493,7 +493,7 @@ public class PharmacyBean {
         sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId and s.department.institution.id = :institutionId";
         params.put("batchId", batch.getId());
         params.put("institutionId", institution.getId());
-        return getStockFacade().findAggregateDbl(sql, params, true);
+        return getStockFacade().findDoubleByJpql(sql, params);
     }
 
     public double getStockQty(ItemBatch batch) {
@@ -501,7 +501,7 @@ public class PharmacyBean {
         Map<String, Object> params = new HashMap<>();
         sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId";
         params.put("batchId", batch.getId());
-        return getStockFacade().findAggregateDbl(sql, params, true);
+        return getStockFacade().findDoubleByJpql(sql, params);
     }
 
     public double getStockQty(Item item, Department department) {
