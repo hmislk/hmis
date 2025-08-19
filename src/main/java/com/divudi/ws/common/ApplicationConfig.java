@@ -23,7 +23,8 @@ public class ApplicationConfig extends Application {
             Class jacksonProvider = Class.forName("com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider");
             resources.add(jacksonProvider);
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            // Fail fast if Jackson JSON provider is missing - this is a critical dependency
+            throw new IllegalStateException("Jackson JSON provider not found on classpath", ex);
         }
         addRestResourceClasses(resources);
         return resources;

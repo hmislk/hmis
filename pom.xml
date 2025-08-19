@@ -78,6 +78,12 @@
             <artifactId>jackson-annotations</artifactId>
             <!-- Version managed by Jackson BOM (2.15.4) -->
         </dependency>
+        <!-- Jackson JAXB Annotations Module for JAXB annotation support -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <!-- Version managed by Jackson BOM (2.15.4) -->
+        </dependency>
 
         <!-- Commons -->
         <dependency>

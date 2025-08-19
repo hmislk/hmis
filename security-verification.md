@@ -20,7 +20,7 @@ This document provides comprehensive verification steps for the Jackson CVE-2019
 - **UPDATED**: `ApplicationConfig.java` - Changed JAX-RS provider from `org.codehaus.jackson.jaxrs.JacksonJsonProvider` to `com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider`
 - **VERIFIED**: All other Jackson usage already uses `com.fasterxml.jackson` packages
 
-### 3. Security Improvements
+### 4. Security Improvements
 - All Jackson dependencies now use version 2.15.4 (managed by BOM)
 - Eliminates CVE-2019-10202 (Remote Code Execution)
 - Eliminates CVE-2018-7489 (Unsafe Deserialization)
@@ -36,10 +36,15 @@ mvn dependency:tree -Dincludes="*jackson*"
 # Expected output should show only com.fasterxml.jackson.* at version 2.15.4
 # No org.codehaus.jackson dependencies should appear
 
-# Check for any remaining vulnerable Jackson versions
-mvn dependency:tree | grep -i jackson | grep -E "(1\.|2\.1[0-4]\.)"
+# Check for any remaining vulnerable Jackson versions (comprehensive)
+mvn dependency:tree | grep -i jackson | grep -E "(1\.|2\.[0-9]\.|2\.1[0-4]\.)" | grep -v "2\.15\."
 
 # Expected: No output (no vulnerable versions found)
+
+# Verify no legacy org.codehaus.jackson dependencies remain
+mvn dependency:tree | grep -i "org.codehaus.jackson"
+
+# Expected: No output (all legacy Jackson removed)
 ```
 
 ### Security Scanning
