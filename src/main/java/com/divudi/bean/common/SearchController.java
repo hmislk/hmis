@@ -131,6 +131,8 @@ import java.util.Collections;
 
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 // </editor-fold>
 
 /**
@@ -141,6 +143,8 @@ import java.util.stream.Collectors;
 public class SearchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
+    
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
@@ -3616,8 +3620,6 @@ public class SearchController implements Serializable {
     }
 
     public void createIssueTable() {
-        Date startTime = new Date();
-
         String sql;
         HashMap tmp = new HashMap();
         tmp.put("toDate", getToDate());
@@ -3644,6 +3646,8 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.createdAt desc  ";
+        logger.debug("Executing query: {}", sql);
+        logger.trace("Query parameters: {}", redactPiiFromParameters(tmp));
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
         for (Bill b : bills) {
             b.setTmpRefBill(getRefBill(b));
@@ -19236,6 +19240,33 @@ public class SearchController implements Serializable {
                     .filter(b -> b.getIndication() != null && !b.getIndication().trim().isEmpty())
                     .collect(Collectors.toList());
         }
+    }
+    
+    /**
+     * Redacts potentially sensitive PII from parameter map for safe logging
+     * @param parameters The parameter map to redact
+     * @return A new map with sensitive values masked
+     */
+    private Map<String, Object> redactPiiFromParameters(Map<String, Object> parameters) {
+        if (parameters == null) {
+            return null;
+        }
+        
+        Map<String, Object> redacted = new HashMap<>();
+        Set<String> sensitiveKeys = new HashSet<>(Arrays.asList(
+            "patient", "person", "phone", "nic", "stf", "staffname", 
+            "patientname", "personname", "name", "email", "address"
+        ));
+        
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String key = entry.getKey().toLowerCase();
+            if (sensitiveKeys.stream().anyMatch(key::contains)) {
+                redacted.put(entry.getKey(), "***");
+            } else {
+                redacted.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return redacted;
     }
 
     // </editor-fold>

@@ -199,8 +199,8 @@
                                     id="panelReturnBillDetails"
                                     layout="tabular"
                                     class="w-100">
-                                    <h:outputLabel value="Supplier : " />
-                                    <h:outputLabel value="#{directPurchaseReturnController.bill.fromInstitution.name}" />
+                                    <p:outputLabel value="Supplier : " />
+                                    <p:outputLabel value="#{directPurchaseReturnController.bill.fromInstitution.name}" />
                                     <p:outputLabel  value="Receivable Amount : " />
                                     <p:outputLabel 
                                         id="total" 
@@ -209,11 +209,23 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
 
-                                    <h:outputLabel value="Payment Received as : " />
+                                    <p:outputLabel value="Payment Received as : " />
                                     <p:selectOneMenu id="cmbPs" value="#{directPurchaseReturnController.returnBill.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethods}"/>
                                         <p:ajax process="cmbPs"  event="change" />
                                     </p:selectOneMenu>
+
+                                    <p:outputLabel
+                                        for="txtReturnComments"
+                                        value="Return Comments:" />
+                                    <p:inputTextarea 
+                                        id="txtReturnComments"
+                                        class="w-100"
+                                        value="#{directPurchaseReturnController.returnBill.comments}" 
+                                        required="true"
+                                        requiredMessage="Please enter a comment"
+                                        ></p:inputTextarea>
+                                    <p:message for="txtReturnComments" />
                                 </p:panelGrid>
 
 
