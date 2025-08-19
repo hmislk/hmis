@@ -340,8 +340,6 @@
 
                             <p:panel header="Bill Items" id="pBis" class="my-1">
                                 <p:messages id="msgs" ></p:messages>
-                                    #{webUserController.hasPrivilege('NursingIPBillingViewRates')}
-                                    #{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false)}
                                 <p:dataTable
                                     id="tblBillItem"
                                     value="#{pharmacySaleBhtController.preBill.billItems}"
