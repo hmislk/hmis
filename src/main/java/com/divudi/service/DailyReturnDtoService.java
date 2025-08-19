@@ -130,12 +130,14 @@ public class DailyReturnDtoService {
                                                                    Institution institution, Institution site, 
                                                                    Department department, boolean withProfessionalFee) {
         
+        // Honor withProfessionalFee parameter in JPQL projection
         String jpql = "SELECT NEW com.divudi.core.data.dto.DailyReturnItemDTO("
                 + "bi.id, bi.item.name, bi.item.code, bi.item.category.name, "
                 + "bi.bill.department.name, bi.bill.institution.name, bi.bill.id, "
                 + "bi.bill.billNumber, bi.bill.billTypeAtomic, bi.bill.createdAt, "
-                + "bi.qty, bi.rate, bi.grossValue, bi.discount, bi.netValue, "
-                + "bi.hospitalFee, bi.professionalFee, bi.netValue) "
+                + "bi.qty, bi.rate, bi.grossValue, bi.discount, "
+                + (withProfessionalFee ? "bi.netValue, bi.hospitalFee, bi.professionalFee, bi.netValue) "
+                                       : "(bi.netValue - COALESCE(bi.professionalFee, 0.0)), bi.hospitalFee, 0.0, (bi.netValue - COALESCE(bi.professionalFee, 0.0))) ")
                 + "FROM BillItem bi "
                 + "WHERE bi.bill.retired = :retired "
                 + "AND bi.retired = :itemRetired "
