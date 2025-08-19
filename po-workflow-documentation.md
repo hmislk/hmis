@@ -16,7 +16,7 @@
 ### 2. **PO Finalization** (`requestFinalize()`)
 - User clicks "Finalize" button
 - System validates all required fields
-- Sets `checkedBy` and `checkeAt` fields
+- Sets `checkedBy` and `checkedAt` fields
 - Sets `billTypeAtomic` to `PHARMACY_ORDER`
 - **Status**: Pending Approval
 - **Result**: PO appears in "To Approve" list
@@ -36,7 +36,7 @@
 | Field | Draft | Finalized | Approved |
 |-------|-------|-----------|----------|
 | `checkedBy` | null | User | User |
-| `checkeAt` | null | Timestamp | Timestamp |
+| `checkedAt` | null | Timestamp | Timestamp |
 | `referenceBill` | null | null | Approval Bill |
 | `billTypeAtomic` | `PHARMACY_ORDER` | `PHARMACY_ORDER` | `PHARMACY_ORDER` |
 

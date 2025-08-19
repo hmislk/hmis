@@ -93,7 +93,7 @@
 1. Create new PO
 2. Add items but don't select supplier
 3. Click "Finalize"
-4. **Expected Result**: ❌ Error message: "Please select a payment method"
+4. **Expected Result**: ❌ Error message: "Please select a supplier"
 
 #### Test 3C: Finalize With Zero Quantities
 1. Create new PO with items
