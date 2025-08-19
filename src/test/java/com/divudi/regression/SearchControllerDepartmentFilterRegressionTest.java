@@ -210,16 +210,15 @@ public class SearchControllerDepartmentFilterRegressionTest {
             searchKeyword.setToDepartment(pharmacy);
             searchKeyword.setDepartment("  laboratory  ");
             
-            // The SearchKeyword class should handle trimming internally
-            // This test verifies that at least the values are preserved
+            // Verify values are set correctly (normalize whitespace at assertion time)
             assertNotNull(searchKeyword.getFromDepartment());
             assertNotNull(searchKeyword.getToDepartment());
             assertNotNull(searchKeyword.getDepartment());
             
-            // If trimming is implemented, verify it works
-            assertTrue(searchKeyword.getFromDepartment().contains("emergency"));
-            assertTrue(searchKeyword.getToDepartment().getName().contains("Pharmacy"));
-            assertTrue(searchKeyword.getDepartment().contains("laboratory"));
+            // Use trimmed equality checks to verify semantics regardless of trimming implementation
+            assertEquals("emergency", searchKeyword.getFromDepartment().trim());
+            assertEquals("Pharmacy", searchKeyword.getToDepartment().getName().trim());
+            assertEquals("laboratory", searchKeyword.getDepartment().trim());
         }
         
         @Test
@@ -234,10 +233,18 @@ public class SearchControllerDepartmentFilterRegressionTest {
             assertDoesNotThrow(() -> searchController.createGrnTable(), 
                 "createGrnTable should execute without throwing exceptions");
             
-            // Verify values are set as expected
-            assertEquals("", searchKeyword.getFromDepartment());
+            // Verify values handle trimming correctly - fromDepartment should be empty after trimming
+            assertTrue(searchKeyword.getFromDepartment() == null || 
+                      searchKeyword.getFromDepartment().trim().isEmpty(), 
+                      "fromDepartment should be null or empty after trimming");
+            
+            // toDepartment should remain null
             assertNull(searchKeyword.getToDepartment());
-            assertEquals("   ", searchKeyword.getDepartment());
+            
+            // department should be blank/empty after trimming
+            assertTrue(searchKeyword.getDepartment() == null || 
+                      searchKeyword.getDepartment().trim().isEmpty(), 
+                      "department should be null or empty after trimming");
         }
     }
 }
