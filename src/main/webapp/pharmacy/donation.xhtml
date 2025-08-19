@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
     <ui:define name="content">
         <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDonation')}">
             <h:outputText value="You are not authorized" styleClass="text-danger"/>
@@ -165,34 +166,7 @@
                             </div>
                         </f:facet>
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable value="#{pharmacyDonationController.bill.billItems}" var="bi">
-                                <p:column headerText="Item">
-                                    <h:outputText value="#{bi.item.name}" />
-                                </p:column>
-                                <p:column headerText="Qty">
-                                    <h:outputText value="#{bi.billItemFinanceDetails.quantity}" />
-                                </p:column>
-                                <p:column headerText="Cost Rate">
-                                    <h:outputText value="#{bi.billItemFinanceDetails.lineCostRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Purchase Rate">
-                                    <h:outputText value="#{bi.billItemFinanceDetails.lineGrossRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Retail Rate">
-                                    <h:outputText value="#{bi.billItemFinanceDetails.retailSaleRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="DOE">
-                                    <h:outputText value="#{bi.pharmaceuticalBillItem.doe}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                    </h:outputText>
-                                </p:column>
-                            </p:dataTable>
+                            <pharmacy:pharmacy_donation_receipt bill="#{pharmacyDonationController.bill}"/>
                         </h:panelGroup>
                     </p:panel>
                 </h:panelGroup>

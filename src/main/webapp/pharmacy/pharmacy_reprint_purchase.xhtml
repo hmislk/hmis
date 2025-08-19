@@ -61,11 +61,16 @@
 
 
                         <h:panelGroup id="gpBillPreview" >
-                            <pharmacy:purhcase
-                                bill="#{pharmacyBillSearch.bill}"
-                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                            </pharmacy:purhcase>
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyDonationBill'}">
+                                <pharmacy:pharmacy_donation_receipt bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType ne 'PharmacyDonationBill'}">
+                                <pharmacy:purhcase
+                                    bill="#{pharmacyBillSearch.bill}"
+                                    ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                    ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                                </pharmacy:purhcase>
+                            </h:panelGroup>
                         </h:panelGroup>
 
                     </p:panel>
