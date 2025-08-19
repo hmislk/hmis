@@ -2411,6 +2411,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 return;
             }
         }
+        
+        if(getPaymentMethod() == PaymentMethod.Staff_Welfare && configOptionApplicationController.getBooleanValueByKey("Pharmacy discount should be staff when select Staff_welfare as payment method", false)){
+            if(paymentScheme == null || !paymentScheme.getName().equalsIgnoreCase("staff")){
+                JsfUtil.addErrorMessage("Saff Welfare need to set staff discount scheme.");
+                billSettlingStarted = false;
+                return;
+            }
+        }
 
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
         if (!discountSchemeValidation.isFlag()) {
