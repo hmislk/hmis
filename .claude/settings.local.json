@@ -43,7 +43,8 @@
       "Bash(gh issue list:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(gh issue view:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

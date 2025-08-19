@@ -37,10 +37,14 @@ import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -48,6 +52,8 @@ import javax.inject.Named;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
+import javax.persistence.TemporalType;
+import com.divudi.core.entity.Bill;
 // </editor-fold>
 
 /**
@@ -179,10 +185,33 @@ public class PharmacyProcurementReportController implements Serializable {
     // Numeric variables
     private int maxResult = 50;
 
+    private List<BillLight> donationBills;
+    private BillLight billLight;
+
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPurchaseItemList() {
         return "/pharmacy/reports/procurement_reports/purchase_item_list?faces-redirect=true";
+    }
+
+    public String navigateToDonationBillList() {
+        generateDonationBillList();
+        return "/pharmacy/reports/procurement_reports/donation_bill_list?faces-redirect=true";
+    }
+
+    public String navigateToDonationBillListPrint() {
+        generateDonationBillList();
+        return "/pharmacy/reports/procurement_reports/donation_bill_list_print?faces-redirect=true";
+    }
+
+    public String navigateToViewDonationBill() {
+        if (billLight == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill b = billFacade.find(billLight.getId());
+        pharmacyBillSearch.setBill(b);
+        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
     }
 
 
@@ -244,6 +273,26 @@ public class PharmacyProcurementReportController implements Serializable {
 
         }
         bundle.generateProcurementDetailsForBillItems();
+    }
+
+    private void generateDonationBillList() {
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "select new com.divudi.core.light.common.BillLight(b.id, b.deptId, b.createdAt, b.institution.name, b.toDepartment.name, b.creater.name, b.fromInstitution.name, b.fromInstitution.phone, b.total, b.discount, b.netTotal, b.fromInstitution.id) "
+                + " from Bill b where b.retired=:ret and b.billType=:bt and b.createdAt between :fromDate and :toDate";
+        if (institution != null) {
+            jpql += " and b.institution=:ins";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            m.put("dep", department);
+        }
+        jpql += " order by b.createdAt desc";
+        m.put("ret", false);
+        m.put("bt", BillType.PharmacyDonationBill);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        donationBills = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
 // </editor-fold>
@@ -1126,6 +1175,25 @@ public class PharmacyProcurementReportController implements Serializable {
      */
     public void setFile(UploadedFile file) {
         this.file = file;
+    }
+
+    public List<BillLight> getDonationBills() {
+        if (donationBills == null) {
+            donationBills = new ArrayList<>();
+        }
+        return donationBills;
+    }
+
+    public void setDonationBills(List<BillLight> donationBills) {
+        this.donationBills = donationBills;
+    }
+
+    public BillLight getBillLight() {
+        return billLight;
+    }
+
+    public void setBillLight(BillLight billLight) {
+        this.billLight = billLight;
     }
 
     /**
