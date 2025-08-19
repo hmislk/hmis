@@ -49,6 +49,15 @@ public class DailyReturnDtoService {
     private PaymentFacade paymentFacade;
     
     /**
+     * Type-safe cast helper method to handle facade results.
+     * Addresses compilation error with generic List<?> return types from facade methods.
+     */
+    @SuppressWarnings("unchecked")
+    private List<DailyReturnItemDTO> castDtoList(List<?> list) {
+        return (List<DailyReturnItemDTO>) list;
+    }
+    
+    /**
      * Generate complete Daily Return report using DTO-based queries
      * 
      * @param fromDate Report start date
@@ -146,9 +155,9 @@ public class DailyReturnDtoService {
         }
         
         // Add filters
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
         
         // Add payment type filter for non-credit
         jpql += "AND (bi.bill.paymentScheme IS NULL OR bi.bill.paymentScheme.paymentType != :creditPaymentType) ";
@@ -156,7 +165,7 @@ public class DailyReturnDtoService {
         
         jpql += "ORDER BY bi.bill.department.name, bi.item.category.name, bi.item.name";
         
-        return billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
     
     /**
@@ -191,13 +200,13 @@ public class DailyReturnDtoService {
         }
         
         // Add filters
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
         
         jpql += "ORDER BY bi.bill.department.name, bi.item.name";
         
-        return billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
     
     /**
@@ -232,13 +241,13 @@ public class DailyReturnDtoService {
         }
         
         // Add filters
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
         
         jpql += "ORDER BY bi.bill.department.name, bi.item.name";
         
-        return billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
     
     /**
@@ -265,13 +274,13 @@ public class DailyReturnDtoService {
         parameters.put("creditPaymentMethod", PaymentMethod.Credit);
         
         // Add filters
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "p");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "p");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "p");
         
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
         
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
     
     // Additional methods for other collections and payments would follow the same pattern
@@ -294,13 +303,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("patientDepositPaymentMethod", PaymentMethod.PatientDeposit);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generatePettyCashPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -321,13 +330,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("cashPaymentMethod", PaymentMethod.Cash);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateProfessionalPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -347,13 +356,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("staffPaymentMethod", PaymentMethod.Staff);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateCardPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -373,13 +382,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("cardPaymentMethod", PaymentMethod.Card);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateStaffPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -399,13 +408,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("staffWelfarePaymentMethod", PaymentMethod.Staff_Welfare);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateVoucherPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -425,13 +434,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("voucherPaymentMethod", PaymentMethod.Voucher);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateChequePaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -451,13 +460,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("chequePaymentMethod", PaymentMethod.Cheque);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateEwalletPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -477,13 +486,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("ewalletPaymentMethod", PaymentMethod.ewallet);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateSlipPaymentsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -503,13 +512,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("slipPaymentMethod", PaymentMethod.Slip);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY p.bill.department.name, p.createdAt";
 
-        return paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateCreditBillsDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -533,13 +542,13 @@ public class DailyReturnDtoService {
         parameters.put("toDate", toDate);
         parameters.put("creditPaymentType", PaymentType.CREDIT);
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY bi.bill.department.name, bi.item.category.name, bi.item.name";
 
-        return billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
     public List<DailyReturnItemDTO> generateOpdServiceCollectionCreditDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
@@ -570,35 +579,35 @@ public class DailyReturnDtoService {
             parameters.put("billTypes", opdBillTypes);
         }
 
-        jpql = addInstitutionFilter(jpql, parameters, institution, "institution");
-        jpql = addSiteFilter(jpql, parameters, site, "site");
-        jpql = addDepartmentFilter(jpql, parameters, department, "department");
+        jpql = addInstitutionFilter(jpql, parameters, institution, "institution", "bi");
+        jpql = addSiteFilter(jpql, parameters, site, "site", "bi");
+        jpql = addDepartmentFilter(jpql, parameters, department, "department", "bi");
 
         jpql += "ORDER BY bi.bill.department.name, bi.item.category.name, bi.item.name";
 
-        return billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return castDtoList(billItemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP));
     }
 
-    // Utility methods for adding filters
-    private String addInstitutionFilter(String jpql, Map<String, Object> parameters, Institution institution, String paramName) {
+    // Utility methods for adding filters - Fixed to accept alias parameter
+    private String addInstitutionFilter(String jpql, Map<String, Object> parameters, Institution institution, String paramName, String alias) {
         if (institution != null) {
-            jpql += "AND bi.bill.institution = :" + paramName + " ";
+            jpql += "AND " + alias + ".bill.institution = :" + paramName + " ";
             parameters.put(paramName, institution);
         }
         return jpql;
     }
 
-    private String addSiteFilter(String jpql, Map<String, Object> parameters, Institution site, String paramName) {
+    private String addSiteFilter(String jpql, Map<String, Object> parameters, Institution site, String paramName, String alias) {
         if (site != null) {
-            jpql += "AND bi.bill.site = :" + paramName + " ";
+            jpql += "AND " + alias + ".bill.site = :" + paramName + " ";
             parameters.put(paramName, site);
         }
         return jpql;
     }
 
-    private String addDepartmentFilter(String jpql, Map<String, Object> parameters, Department department, String paramName) {
+    private String addDepartmentFilter(String jpql, Map<String, Object> parameters, Department department, String paramName, String alias) {
         if (department != null) {
-            jpql += "AND bi.bill.department = :" + paramName + " ";
+            jpql += "AND " + alias + ".bill.department = :" + paramName + " ";
             parameters.put(paramName, department);
         }
         return jpql;

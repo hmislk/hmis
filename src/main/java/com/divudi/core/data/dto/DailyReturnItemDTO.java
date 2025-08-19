@@ -33,19 +33,19 @@ public class DailyReturnItemDTO implements Serializable {
     private Date billCreatedAt;
     private String billCreatedBy;
     
-    // Financial Information
-    private double quantity;
-    private double rate;
-    private double grossValue;
-    private double discount;
-    private double netValue;
-    private double hospitalFee;
-    private double professionalFee;
-    private double total;
+    // Financial Information - Using Double wrapper types to prevent NPE in JPQL constructors
+    private Double quantity;
+    private Double rate;
+    private Double grossValue;
+    private Double discount;
+    private Double netValue;
+    private Double hospitalFee;
+    private Double professionalFee;
+    private Double total;
     
     // Payment Information
     private PaymentMethod paymentMethod;
-    private double paidValue;
+    private Double paidValue;
     private String paymentCreatedBy;
     private Date paymentCreatedAt;
     
@@ -63,8 +63,8 @@ public class DailyReturnItemDTO implements Serializable {
     
     // Constructor for Bill Item based queries
     public DailyReturnItemDTO(Long id, String itemName, String categoryName, String departmentName,
-                             double quantity, double rate, double grossValue, double discount, 
-                             double netValue, double hospitalFee, double professionalFee, double total) {
+                             Double quantity, Double rate, Double grossValue, Double discount, 
+                             Double netValue, Double hospitalFee, Double professionalFee, Double total) {
         this.id = id;
         this.itemName = itemName;
         this.categoryName = categoryName;
@@ -80,7 +80,7 @@ public class DailyReturnItemDTO implements Serializable {
     }
     
     // Constructor for Payment based queries
-    public DailyReturnItemDTO(Long id, PaymentMethod paymentMethod, double paidValue, 
+    public DailyReturnItemDTO(Long id, PaymentMethod paymentMethod, Double paidValue, 
                              String paymentCreatedBy, Date paymentCreatedAt, String departmentName) {
         this.id = id;
         this.paymentMethod = paymentMethod;
@@ -93,7 +93,7 @@ public class DailyReturnItemDTO implements Serializable {
     
     // Constructor for Credit Company queries
     public DailyReturnItemDTO(Long id, String creditCompanyName, String creditCompanyCode,
-                             double paidValue, String departmentName, Date paymentCreatedAt) {
+                             Double paidValue, String departmentName, Date paymentCreatedAt) {
         this.id = id;
         this.creditCompanyName = creditCompanyName;
         this.creditCompanyCode = creditCompanyCode;
@@ -107,8 +107,8 @@ public class DailyReturnItemDTO implements Serializable {
     public DailyReturnItemDTO(Long id, String itemName, String itemCode, String categoryName, 
                              String departmentName, String institutionName, Long billId, 
                              String billNumber, BillTypeAtomic billTypeAtomic, Date billCreatedAt,
-                             double quantity, double rate, double grossValue, double discount,
-                             double netValue, double hospitalFee, double professionalFee, double total) {
+                             Double quantity, Double rate, Double grossValue, Double discount,
+                             Double netValue, Double hospitalFee, Double professionalFee, Double total) {
         this.id = id;
         this.itemName = itemName;
         this.itemCode = itemCode;
@@ -129,25 +129,25 @@ public class DailyReturnItemDTO implements Serializable {
         this.total = total;
     }
     
-    // Utility Methods
+    // Utility Methods - Null-safe formatting for Double wrapper types
     public String getFormattedTotal() {
-        return String.format("%.2f", total);
+        return total != null ? String.format("%.2f", total) : "0.00";
     }
     
     public String getFormattedQuantity() {
-        return String.format("%.2f", quantity);
+        return quantity != null ? String.format("%.2f", quantity) : "0.00";
     }
     
     public String getFormattedRate() {
-        return String.format("%.2f", rate);
+        return rate != null ? String.format("%.2f", rate) : "0.00";
     }
     
     public boolean isPositiveValue() {
-        return total > 0;
+        return total != null && total > 0;
     }
     
     public boolean isNegativeValue() {
-        return total < 0;
+        return total != null && total < 0;
     }
     
     // Getters and Setters
@@ -239,67 +239,67 @@ public class DailyReturnItemDTO implements Serializable {
         this.billCreatedBy = billCreatedBy;
     }
     
-    public double getQuantity() {
+    public Double getQuantity() {
         return quantity;
     }
     
-    public void setQuantity(double quantity) {
+    public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
     
-    public double getRate() {
+    public Double getRate() {
         return rate;
     }
     
-    public void setRate(double rate) {
+    public void setRate(Double rate) {
         this.rate = rate;
     }
     
-    public double getGrossValue() {
+    public Double getGrossValue() {
         return grossValue;
     }
     
-    public void setGrossValue(double grossValue) {
+    public void setGrossValue(Double grossValue) {
         this.grossValue = grossValue;
     }
     
-    public double getDiscount() {
+    public Double getDiscount() {
         return discount;
     }
     
-    public void setDiscount(double discount) {
+    public void setDiscount(Double discount) {
         this.discount = discount;
     }
     
-    public double getNetValue() {
+    public Double getNetValue() {
         return netValue;
     }
     
-    public void setNetValue(double netValue) {
+    public void setNetValue(Double netValue) {
         this.netValue = netValue;
     }
     
-    public double getHospitalFee() {
+    public Double getHospitalFee() {
         return hospitalFee;
     }
     
-    public void setHospitalFee(double hospitalFee) {
+    public void setHospitalFee(Double hospitalFee) {
         this.hospitalFee = hospitalFee;
     }
     
-    public double getProfessionalFee() {
+    public Double getProfessionalFee() {
         return professionalFee;
     }
     
-    public void setProfessionalFee(double professionalFee) {
+    public void setProfessionalFee(Double professionalFee) {
         this.professionalFee = professionalFee;
     }
     
-    public double getTotal() {
+    public Double getTotal() {
         return total;
     }
     
-    public void setTotal(double total) {
+    public void setTotal(Double total) {
         this.total = total;
     }
     
@@ -311,11 +311,11 @@ public class DailyReturnItemDTO implements Serializable {
         this.paymentMethod = paymentMethod;
     }
     
-    public double getPaidValue() {
+    public Double getPaidValue() {
         return paidValue;
     }
     
-    public void setPaidValue(double paidValue) {
+    public void setPaidValue(Double paidValue) {
         this.paidValue = paidValue;
     }
     
