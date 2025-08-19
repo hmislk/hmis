@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
@@ -192,6 +193,15 @@ public class PharmacyDonationController implements Serializable {
         BigDecimal net = totalCost.add(totalExpense).add(totalTax);
         getBill().setTotal(net.doubleValue());
         getBill().setNetTotal(net.doubleValue());
+        
+        // Populate BillFinanceDetails for the receipt template
+        if (getBill().getBillFinanceDetails() == null) {
+            getBill().setBillFinanceDetails(new BillFinanceDetails());
+        }
+        getBill().getBillFinanceDetails().setTotalCostValue(totalCost.doubleValue());
+        getBill().getBillFinanceDetails().setTotalExpense(totalExpense.doubleValue());
+        getBill().getBillFinanceDetails().setTotalTaxValue(totalTax.doubleValue());
+        getBill().getBillFinanceDetails().setNetTotal(net.doubleValue());
     }
 
     public void settleDonationBillFinally() {
