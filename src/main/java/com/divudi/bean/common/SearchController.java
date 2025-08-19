@@ -3378,7 +3378,7 @@ public class SearchController implements Serializable {
     public void listPharmacyIssue() {
         Date startTime = new Date();
 
-        listPharmacyPreBills(BillType.PharmacyIssue);
+        listPharmacyBilledBills(BillType.PharmacyIssue);
 
     }
 
@@ -4664,7 +4664,7 @@ public class SearchController implements Serializable {
         m.put("fromDate", fromDate);
         m.put("bType", BillType.PharmacyIssue);
         m.put("ins", getSessionController().getInstitution());
-        m.put("class", PreBill.class);
+        m.put("class", BilledBill.class);
 
         sql = "select bi from BillItem bi"
                 + " where  type(bi.bill)=:class "
