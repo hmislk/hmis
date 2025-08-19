@@ -35,7 +35,7 @@
                                 <h:outputLabel value="Donator"/><br/>
                                 <p:autoComplete class="w-100" inputStyleClass="w-100"
                                                 value="#{pharmacyDonationController.bill.fromInstitution}"
-                                                completeMethod="#{institutionController.completeCompany}"
+                                                completeMethod="#{pharmacyDonationController.completeDonator}"
                                                 forceSelection="true" var="vt"
                                                 itemLabel="#{vt.name}" itemValue="#{vt}"/>
                             </div>
