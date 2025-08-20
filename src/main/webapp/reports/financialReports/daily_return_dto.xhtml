@@ -13,6 +13,14 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel   header="Daily Return" class="m-1">
+                        
+                        <div class="row" >
+                            <div class="col-12" >
+                                <div class="bg-warning text-white" >
+                                    <p class=" m-1 p-1">Figures are correct for OPD Collection, CC Bills, Credit Card Payments. The total upto Net Cash Collection is correct for those. Exports and Prints are not yet ready. Others are under development</p>
+                                </div>
+                            </div>
+                        </div>
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -217,9 +225,16 @@
                                 <ez:opdServiceCollectionDto bundle="#{myDtoBundle}"  rendered="#{myDtoBundle.bundleType eq 'opdServiceCollection'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'pharmacyCollection'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'ccCollection'}"/>
+                                <ez:patientDepositPaymentsDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'patientDepositPayments'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'collectionForTheDay'}"/>
                                 <ez:paymentReportCardsDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportCards'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportVoucher'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportCheque'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportEwallet'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportSlip'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'netCash'}"/>
+                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'opdServiceCollectionCredit'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'netCashPlusCredit'}"/>
                             </ui:repeat>
 

@@ -60,6 +60,7 @@ public class DailyReturnDtoController implements Serializable {
     private List<BillItemDetailDTO> ccBillItemDtos;
     private List<DailyReturnDetailDTO> ccBillDtos;
     private List<PaymentDetailDTO> cardPaymentDtos;
+    private List<PaymentDetailDTO> patientDepositPaymentDtos;
     
     private ReportTemplateRowBundle bundle;
     private DailyReturnBundleDTO dtoBundle;
@@ -80,6 +81,7 @@ public class DailyReturnDtoController implements Serializable {
         ccBillItemDtos = dailyReturnDtoService.fetchCcCollectionBillItemsForDailyReturn(fromDate, toDate);
         ccBillDtos = dailyReturnDtoService.fetchCcCollectionBillsForDailyReturn(fromDate, toDate);
         cardPaymentDtos = dailyReturnDtoService.fetchCreditCardPaymentsForDailyReturn(fromDate, toDate);
+        patientDepositPaymentDtos = dailyReturnDtoService.fetchPatientDepositPaymentsForDailyReturn(fromDate, toDate);
         
         // Create both bundle structures
         createBundle();  // Keep original for compatibility
@@ -382,7 +384,12 @@ public class DailyReturnDtoController implements Serializable {
         dtoBundle.getBundles().add(ccCollection);
         collectionForTheDay += getSafeDtoTotal(ccCollection);
 
-        // 4. Collection for the day summary
+        // 4. Patient Deposit Payments - add to collection
+        DailyReturnBundleDTO patientDepositPayments = createPatientDepositPaymentsDtoBundle();
+        dtoBundle.getBundles().add(patientDepositPayments);
+        collectionForTheDay += getSafeDtoTotal(patientDepositPayments);
+
+        // 5. Collection for the day summary
         DailyReturnBundleDTO collectionForTheDayBundle = new DailyReturnBundleDTO();
         collectionForTheDayBundle.setName("Collection for the day");
         collectionForTheDayBundle.setBundleType("collectionForTheDay");
@@ -391,20 +398,49 @@ public class DailyReturnDtoController implements Serializable {
 
         netCashCollection = collectionForTheDay;
 
-        // 5. Credit Card Payments - add to DTO bundle
+        // 6. Credit Card Payments - add to DTO bundle
         DailyReturnBundleDTO cardPayments = createCardPaymentDtoBundle();
         dtoBundle.getBundles().add(cardPayments);
         netCashCollection -= Math.abs(getSafeDtoTotal(cardPayments));
 
-        // 6. Net Cash for the day
+        // 7. Staff Payments - typically empty, but needed for structure
+        DailyReturnBundleDTO staffPayments = createEmptyDtoBundle("paymentReportStaffWelfare", "Staff Payments");
+        dtoBundle.getBundles().add(staffPayments);
+        netCashCollection -= Math.abs(getSafeDtoTotal(staffPayments));
+
+        // 8. Voucher Payments - typically empty, but needed for structure
+        DailyReturnBundleDTO voucherPayments = createEmptyDtoBundle("paymentReportVoucher", "Voucher Payments");
+        dtoBundle.getBundles().add(voucherPayments);
+        netCashCollection -= Math.abs(getSafeDtoTotal(voucherPayments));
+
+        // 9. Cheque Payments - typically empty, but needed for structure
+        DailyReturnBundleDTO chequePayments = createEmptyDtoBundle("paymentReportCheque", "Cheque Payments");
+        dtoBundle.getBundles().add(chequePayments);
+        netCashCollection -= Math.abs(getSafeDtoTotal(chequePayments));
+
+        // 10. E-wallet Payments - typically empty, but needed for structure
+        DailyReturnBundleDTO ewalletPayments = createEmptyDtoBundle("paymentReportEwallet", "E-wallet Payments");
+        dtoBundle.getBundles().add(ewalletPayments);
+        netCashCollection -= Math.abs(getSafeDtoTotal(ewalletPayments));
+
+        // 11. Slip Payments - typically empty, but needed for structure
+        DailyReturnBundleDTO slipPayments = createEmptyDtoBundle("paymentReportSlip", "Slip Payments");
+        dtoBundle.getBundles().add(slipPayments);
+        netCashCollection -= Math.abs(getSafeDtoTotal(slipPayments));
+
+        // 12. Net Cash for the day
         DailyReturnBundleDTO netCashForTheDayBundle = new DailyReturnBundleDTO();
         netCashForTheDayBundle.setName("Net Cash");
         netCashForTheDayBundle.setBundleType("netCash");
         netCashForTheDayBundle.setTotal(netCashCollection);
         dtoBundle.getBundles().add(netCashForTheDayBundle);
 
-        // 7. Net Cash Plus Credits
-        netCollectionPlusCredits = netCashCollection;
+        // 13. OPD Service Collection - Credit - typically empty, but needed for structure
+        DailyReturnBundleDTO opdServiceCollectionCredit = createEmptyDtoBundle("opdServiceCollectionCredit", "OPD Service Collection - Credit");
+        dtoBundle.getBundles().add(opdServiceCollectionCredit);
+        netCollectionPlusCredits = netCashCollection + Math.abs(getSafeDtoTotal(opdServiceCollectionCredit)); // NOT deducted from net cash
+
+        // 14. Net Cash Plus Credits
         DailyReturnBundleDTO netCashForTheDayBundlePlusCredits = new DailyReturnBundleDTO();
         netCashForTheDayBundlePlusCredits.setName("Net Cash Plus Credits");
         netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
@@ -692,7 +728,7 @@ public class DailyReturnDtoController implements Serializable {
                 row.setFromDepartmentName(""); // Reference Bill (not applicable for payments)
                 
                 // Set financial values
-                Double paidValue = Math.abs(payment.getPaidValue()); // Use absolute value for payments
+                Double paidValue = payment.getPaidValue(); // Keep original value
                 row.setItemNetTotal(paidValue);
                 row.setItemHospitalFee(paidValue); // For payment reports, hospital fee = total
                 row.setItemProfessionalFee(0.0); // No professional fee breakdown for payments
@@ -713,6 +749,74 @@ public class DailyReturnDtoController implements Serializable {
         bundle.setDiscount(0.0);
         bundle.setCount(totalCount);
         
+        return bundle;
+    }
+    
+    private DailyReturnBundleDTO createPatientDepositPaymentsDtoBundle() {
+        DailyReturnBundleDTO bundle = new DailyReturnBundleDTO();
+        bundle.setName("Patient Deposit Payments");
+        bundle.setBundleType("patientDepositPayments");
+        
+        List<DailyReturnRowDTO> allRows = new ArrayList<>();
+        double totalPatientDeposits = 0.0;
+        long totalCount = 0L;
+        
+        if (patientDepositPaymentDtos != null) {
+            for (PaymentDetailDTO payment : patientDepositPaymentDtos) {
+                
+                // Create a row for each patient deposit payment
+                DailyReturnRowDTO row = new DailyReturnRowDTO();
+                
+                // Set bill information
+                row.setBillNumber(payment.getBillNumber()); // Bill number 
+                row.setBillType(payment.getBillType()); // Bill type
+                row.setPaymentMethod(payment.getPaymentMethod()); // Payment method
+                row.setCreatedAt(payment.getCreatedAt()); // Date/time
+                row.setDepartmentName(payment.getDepartmentName()); // Department
+                
+                // Set display values for Patient Deposit Payments table
+                // Following the pattern: Bill No | Patient | Payment Method | Value
+                row.setItemName(payment.getBillNumber()); // Bill No
+                row.setCategoryName(payment.getBankName()); // Patient name (stored in bankName field)
+                row.setFeeName(payment.getPaymentMethod() != null ? payment.getPaymentMethod().toString() : ""); // Payment Method
+                row.setPaymentName(""); // Not used for patient deposits
+                row.setFromDepartmentName(""); // Not used for patient deposits
+                
+                // Set financial values
+                Double paidValue = payment.getPaidValue(); // Keep original value (positive for deposits, negative for refunds)
+                row.setItemNetTotal(paidValue);
+                row.setItemHospitalFee(paidValue); // For patient deposits, hospital fee = total
+                row.setItemProfessionalFee(0.0); // No professional fee for patient deposits
+                row.setItemDiscountAmount(0.0); // No discount for patient deposits
+                row.setItemCount(1L); // Each deposit is one count
+                row.setTotal(paidValue);
+                
+                allRows.add(row);
+                totalPatientDeposits += paidValue;
+                totalCount++;
+            }
+        }
+        
+        bundle.setRows(allRows);
+        bundle.setTotal(totalPatientDeposits);
+        bundle.setHospitalTotal(totalPatientDeposits);
+        bundle.setStaffTotal(0.0);
+        bundle.setDiscount(0.0);
+        bundle.setCount(totalCount);
+        
+        return bundle;
+    }
+    
+    private DailyReturnBundleDTO createEmptyDtoBundle(String bundleType, String name) {
+        DailyReturnBundleDTO bundle = new DailyReturnBundleDTO();
+        bundle.setName(name);
+        bundle.setBundleType(bundleType);
+        bundle.setTotal(0.0);
+        bundle.setHospitalTotal(0.0);
+        bundle.setStaffTotal(0.0);
+        bundle.setDiscount(0.0);
+        bundle.setCount(0L);
+        bundle.setRows(new ArrayList<>()); // Empty list
         return bundle;
     }
     
@@ -746,7 +850,7 @@ public class DailyReturnDtoController implements Serializable {
                 row.setToDepartmentName(payment.getDepartmentName()); // Department
                 
                 // Set financial values
-                Double paidValue = Math.abs(payment.getPaidValue()); // Use absolute value for payments
+                Double paidValue = payment.getPaidValue(); // Keep original value
                 row.setItemNetTotal(paidValue);
                 row.setRowValue(paidValue);
                 row.setTotal(paidValue);
@@ -938,5 +1042,13 @@ public class DailyReturnDtoController implements Serializable {
     
     public void setCardPaymentDtos(List<PaymentDetailDTO> cardPaymentDtos) {
         this.cardPaymentDtos = cardPaymentDtos;
+    }
+    
+    public List<PaymentDetailDTO> getPatientDepositPaymentDtos() {
+        return patientDepositPaymentDtos;
+    }
+    
+    public void setPatientDepositPaymentDtos(List<PaymentDetailDTO> patientDepositPaymentDtos) {
+        this.patientDepositPaymentDtos = patientDepositPaymentDtos;
     }
 }

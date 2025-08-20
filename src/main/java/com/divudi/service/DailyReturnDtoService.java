@@ -192,9 +192,10 @@ public class DailyReturnDtoService {
     }
     
     public List<PaymentDetailDTO> fetchCreditCardPaymentsForDailyReturn(Date fromDate, Date toDate) {
-        System.out.println("DEBUG: Credit Card Payments - fromDate: " + fromDate + ", toDate: " + toDate);
+        List<PaymentDetailDTO> allResults = new ArrayList<>();
         
-        String jpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
+        // 1. Get regular Card payments
+        String paymentJpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
                 + "p.bill.deptId, p.bill.billType, p.paymentMethod, p.paidValue, p.createdAt, "
                 + "p.creditCardRefNo, "
                 + "case when p.bank is null then '' else p.bank.name end, "
@@ -206,13 +207,61 @@ public class DailyReturnDtoService {
                 + "and p.paymentMethod = :paymentMethod "
                 + "order by p.createdAt";
         
+        Map<String, Object> paymentParams = new HashMap<>();
+        paymentParams.put("fd", fromDate);
+        paymentParams.put("td", toDate);
+        paymentParams.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
+        
+        List<PaymentDetailDTO> paymentResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(paymentJpql, paymentParams, TemporalType.TIMESTAMP);
+        allResults.addAll(paymentResults);
+        
+        // 2. Get Card refund bills (Bills with Card payment method and negative amounts)
+        String refundJpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
+                + "b.deptId, b.billType, b.paymentMethod, b.netTotal, b.createdAt, "
+                + "'', "  // creditCardRefNo - not applicable for refunds
+                + "'', "  // bankName - not applicable for refunds
+                + "'', "  // institutionName - not applicable
+                + "coalesce(b.department.name, '')) "  // departmentName
+                + "from Bill b "
+                + "where b.retired = false "
+                + "and b.createdAt between :fd and :td "
+                + "and b.paymentMethod = :paymentMethod "
+                + "and b.netTotal < 0 "
+                + "order by b.createdAt";
+        
+        Map<String, Object> refundParams = new HashMap<>();
+        refundParams.put("fd", fromDate);
+        refundParams.put("td", toDate);
+        refundParams.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
+        
+        List<PaymentDetailDTO> refundResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(refundJpql, refundParams, TemporalType.TIMESTAMP);
+        allResults.addAll(refundResults);
+        
+        return allResults;
+    }
+    
+    public List<PaymentDetailDTO> fetchPatientDepositPaymentsForDailyReturn(Date fromDate, Date toDate) {
+        String jpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
+                + "b.deptId, b.billType, b.paymentMethod, b.netTotal, b.createdAt, "
+                + "'', "  // creditCardRefNo - not applicable for patient deposits
+                + "coalesce(b.patient.person.name, ''), "  // bankName field used for patient name
+                + "'', "  // institutionName - not applicable
+                + "coalesce(b.department.name, '')) "  // departmentName
+                + "from Bill b "
+                + "where b.retired = false "
+                + "and b.createdAt between :fd and :td "
+                + "and b.billTypeAtomic in :bts "
+                + "order by b.createdAt";
+        
+        // Patient Deposit specific BillTypeAtomic values
+        List<BillTypeAtomic> patientDepositBillTypes = BillTypeAtomic.findByServiceType(ServiceType.PATIENT_DEPOSIT);
+        
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        params.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
+        params.put("bts", patientDepositBillTypes);
         
         List<PaymentDetailDTO> result = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("DEBUG: Credit Card Payments - found " + (result != null ? result.size() : "null") + " payments");
         
         return result;
     }
