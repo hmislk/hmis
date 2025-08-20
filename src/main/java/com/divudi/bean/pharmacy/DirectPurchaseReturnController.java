@@ -488,6 +488,12 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public void settle() {
+        // Server-side validation for return comments
+        if (returnBill == null || returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return comments are required.");
+            return;
+        }
+        
         fillData();
         applyPendingReturnTotals();
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {

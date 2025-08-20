@@ -129,7 +129,9 @@
                                             </p:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;">
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Gross Value"/>
                                             </f:facet>
@@ -138,7 +140,9 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;">
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Matrix Value"/>
                                             </f:facet>
@@ -147,7 +151,9 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;">
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
@@ -158,14 +164,18 @@
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column  style="text-align: right;" colspan="4">
+                                                <p:column 
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                    style="text-align: right;" colspan="4">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
                                                         </h:outputLabel>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column  style="text-align: right;" colspan="2">
+                                                <p:column 
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                    style="text-align: right;" colspan="2">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
                                                             <f:convertNumber pattern="#0.00" />
