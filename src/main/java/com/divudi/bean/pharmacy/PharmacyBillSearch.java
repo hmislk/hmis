@@ -314,6 +314,20 @@ public class PharmacyBillSearch implements Serializable {
         bill = tb;
         return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
     }
+    
+    public String navigateToReprintInpatientIssueForRequestsById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb= billService.reloadBill(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_transfer_issue_for_inpatient_requests?faces-redirect=true";
+    }
 
     /**
      * Used by DTO reports where only the bill id is available.
@@ -3480,7 +3494,7 @@ public class PharmacyBillSearch implements Serializable {
                 case PharmacyIssue:
                     return "pharmacy_reprint_bill_unit_issue?faces-redirect=true";
                 case PharmacyTransferIssue:
-                    return "pharmacy_reprint_transfer_isssue?faces-redirect=true";
+                    return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
                 case PharmacyTransferReceive:
                     return "pharmacy_reprint_transfer_receive?faces-redirect=true";
                 case PharmacyPurchaseBill:
