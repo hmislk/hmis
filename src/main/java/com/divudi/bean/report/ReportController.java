@@ -1654,49 +1654,49 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     + " where bi.bill.createdAt between :fd and :td "
                     + " and bi.bill.billTypeAtomic IN :bType "
                     + " and TYPE(bi.item) = Investigation ";
-            Map<String, Object> baseParams = new HashMap<>();
-            baseParams.put("fd", fromDate);
-            baseParams.put("td", toDate);
+            Map<String, Object> params = new HashMap<>();
+            params.put("fd", fromDate);
+            params.put("td", toDate);
 
             if (fromInstitution != null) {
                 jpql += " and bi.bill.fromInstitution=:fi ";
-                baseParams.put("fi", fromInstitution);
+                params.put("fi", fromInstitution);
             }
 
             if (toInstitution != null) {
                 jpql += " and bi.bill.toInstitution=:ti ";
-                baseParams.put("ti", toInstitution);
+                params.put("ti", toInstitution);
             }
 
             if (fromDepartment != null) {
                 jpql += " and bi.bill.fromDepartment=:fdept ";
-                baseParams.put("fdept", fromDepartment);
+                params.put("fdept", fromDepartment);
             }
 
             if (machine != null) {
                 jpql += " and bi.item.machine=:machine ";
-                baseParams.put("machine", machine);
+                params.put("machine", machine);
             }
 
             if (institution != null) {
                 jpql += " and bi.bill.institution = :ins ";
-                baseParams.put("ins", institution);
+                params.put("ins", institution);
             }
 
             if (department != null) {
                 jpql += " and bi.bill.department = :dep ";
-                baseParams.put("dep", department);
+                params.put("dep", department);
             }
 
             if (site != null) {
                 jpql += " and bi.bill.department.site = :site ";
-                baseParams.put("site", site);
+                params.put("site", site);
             }
 
             if (siteIds != null && !siteIds.isEmpty()) {
                 jpql += " and bi.bill.department.site.id in :siteIds";
 
-                baseParams.put("siteIds", siteIds);
+                params.put("siteIds", siteIds);
             }
 
             List<BillTypeAtomic> bTypes = Arrays.asList(
@@ -1709,7 +1709,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             jpql += " group by bi.item.category.name, bi.item.name ";
             jpql += " order by bi.item.category.name, bi.item.name";
 
-            Map<String, Object> qParams = new HashMap<>(baseParams);
+            Map<String, Object> qParams = new HashMap<>(params);
             qParams.put("bType", bTypes);  // Use 'bType' for IN clause// Unchecked cast here
             List<ItemCount> allLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, qParams, TemporalType.TIMESTAMP);
 
@@ -1717,7 +1717,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 allLabTestCounts = new ArrayList<>();
             }
 
-            qParams = new HashMap<>(baseParams);
+            qParams = new HashMap<>(params);
             qParams.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
             List<ItemCount> cancelTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, qParams, TemporalType.TIMESTAMP);
 
@@ -1726,7 +1726,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             }
 
             // Now fetch results for OpdBillRefund (use a list for single bType)
-            qParams = new HashMap<>(baseParams);
+            qParams = new HashMap<>(params);
             qParams.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
             List<ItemCount> refundTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, qParams, TemporalType.TIMESTAMP);
 
