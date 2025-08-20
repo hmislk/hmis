@@ -15,7 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h:panelGroup rendered="#{empty cc.attrs.bundle.rows}">
+        <h:panelGroup rendered="#{empty cc.attrs.bundle or empty cc.attrs.bundle.rows}">
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
@@ -27,8 +27,7 @@
             </table>
         </h:panelGroup>
 
-        <h:panelGroup rendered="#{not empty cc.attrs.bundle.rows}">
-
+        <h:panelGroup rendered="#{not empty cc.attrs.bundle and not empty cc.attrs.bundle.rows}">
             <h:panelGroup rendered="true" >
                 <h:panelGroup styleClass="table-responsive">
                     <table class="table w-100">
