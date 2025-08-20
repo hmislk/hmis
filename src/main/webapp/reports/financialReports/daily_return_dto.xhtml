@@ -187,8 +187,9 @@
                             ajax="false" 
                             icon="fas fa-download"
                             class="ui-button-warning mx-2"
+                            rendered="#{dailyReturnDtoController.dtoBundle != null}"
                             onclick="PrimeFaces.monitorDownload(start, stop);" >
-                            <p:fileDownload value="#{dailyReturnDtoController.bundleAsExcel}" />
+                            <p:fileDownload value="#{dailyReturnDtoController.dtoBundleAsExcel}" />
                         </p:commandButton>
 
                         <p:commandButton 
@@ -196,9 +197,10 @@
                             ajax="false" 
                             icon="pi pi-file-pdf" 
                             class="ui-button-info  m-1"
-                            style="background-color: #17a2b8; border-color: #17a2b8;" 
+                            style="background-color: #17a2b8; border-color: #17a2b8;"
+                            rendered="#{dailyReturnDtoController.dtoBundle != null}"
                             onclick="PrimeFaces.monitorDownload(start, stop);">
-                            <p:fileDownload value="#{dailyReturnDtoController.bundleAsPdf}" />
+                            <p:fileDownload value="#{dailyReturnDtoController.dtoBundleAsPdf}" />
                         </p:commandButton>
 
                         <p:commandButton 
@@ -219,14 +221,20 @@
 
                         <h:panelGroup id="printPanel">        
 
-                            <!-- Use DTO bundle structure -->
-                            <ui:repeat value="#{dailyReturnDtoController.dtoBundle.bundles}" var="myDtoBundle">
-                                <!-- Use DTO-specific composite components -->
+                            <ui:repeat id="drBundles" value="#{dailyReturnDtoController.dtoBundle.bundles}" var="myDtoBundle">
                                 <ez:opdServiceCollectionDto bundle="#{myDtoBundle}"  rendered="#{myDtoBundle.bundleType eq 'opdServiceCollection'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'pharmacyCollection'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'ccCollection'}"/>
+                                <ez:companyPaymentBillOpdDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'companyPaymentBillOpd'}"/>
+                                <ez:companyPaymentBillInwardDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'companyPaymentBillInward'}"/>
+                                <ez:companyPaymentBillPharmacyDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'companyPaymentBillPharmacy'}"/>
+                                <ez:companyPaymentBillChannellingDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'companyPaymentBillChannelling'}"/>
                                 <ez:patientDepositPaymentsDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'patientDepositPayments'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'collectionForTheDay'}"/>
+                                <ez:pettyCashPaymentsDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'pettyCashPayments'}"/>
+                                <ez:professionalPaymentBillOpdDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}"/>
+                                <ez:professionalPaymentBillOpdDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
+                                <ez:professionalPaymentBillOpdDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'ProfessionalPaymentBillReportInward'}"/>
                                 <ez:paymentReportCardsDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportCards'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportVoucher'}"/>
@@ -234,7 +242,7 @@
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportEwallet'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'paymentReportSlip'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'netCash'}"/>
-                                <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'opdServiceCollectionCredit'}"/>
+                                <ez:opdServiceCollectionCreditDto bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'opdServiceCollectionCredit'}"/>
                                 <ez:genericDtoBundle bundle="#{myDtoBundle}" rendered="#{myDtoBundle.bundleType eq 'netCashPlusCredit'}"/>
                             </ui:repeat>
 
