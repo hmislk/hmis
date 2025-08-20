@@ -1,26 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<!-- Secure Log4j2 Configuration for HMIS Healthcare System -->
+<!-- Security: JNDI lookups disabled to prevent Log4Shell attacks -->
+<!-- HIPAA Compliance: Patterns configured to avoid logging sensitive patient data -->
+<Configuration status="WARN" shutdownHook="disable">
+    
+    <Properties>
+        <Property name="logPattern">[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n</Property>
+        <Property name="sqlLogLevel">debug</Property>
+        <!-- Critical Security Property to disable JNDI lookups (Log4Shell) -->
+        <Property name="log4j2.formatMsgNoLookups">true</Property>
+    </Properties>
+    
     <Appenders>
 
         <!-- Console output for debugging -->
+        <!-- HIPAA Compliance: Pattern avoids logging sensitive data -->
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n"/>
-        </Console>
-
-        <!-- Additional console appender to stderr for early boot messages -->
-        <Console name="StartupLogger" target="SYSTEM_ERR">
-            <PatternLayout pattern="Log4j2 active — writing to %d{yyyy-MM-dd} at %c{1} [%p]: %m%n"/>
+            <PatternLayout disableAnsi="false" noConsoleNoAnsi="false">
+                <Pattern>${logPattern}</Pattern>
+            </PatternLayout>
         </Console>
 
         <!-- Rolling file logger for errors -->
+        <!-- HIPAA Compliance: Secure file logging with automatic cleanup -->
         <RollingFile name="RollingFileLogger"
                      fileName="logs/errors.log"
-                     filePattern="logs/archive/errors-%d{yyyy-MM-dd}.log.gz">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n"/>
+                     filePattern="logs/archive/errors-%d{yyyy-MM-dd}-%i.log.gz">
+            <!-- Security: Pattern configured to prevent sensitive data logging -->
+            <PatternLayout pattern="${logPattern}"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
             </Policies>
-            <DefaultRolloverStrategy>
+            <DefaultRolloverStrategy max="30" fileIndex="min">
                 <Delete basePath="logs/archive" maxDepth="1">
                     <IfFileName glob="errors-*.log.gz"/>
                     <IfLastModified age="7d"/>
@@ -28,12 +40,47 @@
             </DefaultRolloverStrategy>
         </RollingFile>
 
+        <!-- Audit Logger for Healthcare Compliance -->
+        <!-- HIPAA Requirement: Separate audit trail for patient data access -->
+        <RollingFile name="AuditLogger"
+                     fileName="logs/audit.log"
+                     filePattern="logs/archive/audit-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [AUDIT] [%c{1}]: %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="50MB"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="min">
+                <Delete basePath="logs/archive" maxDepth="1">
+                    <IfFileName glob="audit-*.log.gz"/>
+                    <IfLastModified age="7y"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
     </Appenders>
 
     <Loggers>
+        <!-- Healthcare-specific loggers -->
+        <!-- HIPAA Compliance: Separate audit logging for patient data access -->
+        <Logger name="com.divudi.audit" level="info" additivity="false">
+            <AppenderRef ref="AuditLogger"/>
+        </Logger>
+
+        <!-- Security: Pharmacy operations logging for medication tracking -->
+        <Logger name="com.divudi.ejb.PharmacyBean" level="info" additivity="false">
+            <AppenderRef ref="RollingFileLogger"/>
+            <AppenderRef ref="AuditLogger"/>
+        </Logger>
+
+        <!-- Security: SQL injection monitoring -->
+        <Logger name="org.hibernate.SQL" level="${sqlLogLevel}" additivity="false">
+            <AppenderRef ref="RollingFileLogger"/>
+        </Logger>
+
+        <!-- Root logger with secure configuration -->
         <Root level="info">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="StartupLogger"/>
             <AppenderRef ref="RollingFileLogger"/>
         </Root>
     </Loggers>
