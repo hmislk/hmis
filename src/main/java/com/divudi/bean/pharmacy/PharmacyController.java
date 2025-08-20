@@ -2298,7 +2298,7 @@ public class PharmacyController implements Serializable {
                 + "bi.item, "
                 + "bi.item.category, "
                 + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
-                + "ib.costRate, "
+                + "COALESCE(ib.costRate, 0.0), "
                 + "bi.pharmaceuticalBillItem.purchaseRate, "
                 + "SUM(bi.qty)) "
                 + "FROM BillItem bi "
@@ -2345,7 +2345,7 @@ public class PharmacyController implements Serializable {
         }
 
         // Group by clause
-        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, ib.costRate, bi.pharmaceuticalBillItem.purchaseRate "
+        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
                 + "ORDER BY bi.bill.toDepartment, bi.item.category";
 
         try {
@@ -2411,14 +2411,14 @@ public class PharmacyController implements Serializable {
             departmentTotals
                     .computeIfAbsent(departmentName, k -> new TreeMap<>())
                     .merge(categoryName,
-                            new Double[]{item.getNetTotal(), item.getCostRate() * item.getQty()},
+                            new Double[]{item.getNetTotal(), (item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0)},
                             (existing, newValues) -> new Double[]{
                                     existing[0] + newValues[0],  // Sum net totals
                                     existing[1] + newValues[1]   // Sum cost rates
                             });
 
             totalSaleValue += item.getNetTotal();
-            totalCostValue += item.getCostRate() * item.getQty();
+            totalCostValue += (item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
         }
 
         setDepartmentCategoryMap(departmentCategoryMap);
