@@ -17,99 +17,138 @@
                     <p:panel header="Item - wise Purchase/Good Receive" >
                         
                         <div class="row">
-                            <div class="col-4">
+                            <div class="col-3">
                                 <h:outputLabel value="Department" />&nbsp;
-                            <p:autoComplete 
-                                completeMethod="#{departmentController.completeDept}" 
-                                var="dept" 
-                                itemLabel="#{dept.name}" 
-                                itemValue="#{dept}" 
-                                forceSelection="true" 
-                                value="#{pharmacyPurchaseController.department}" 
-                                 >
-                            </p:autoComplete>
+                                <p:autoComplete
+                                    completeMethod="#{departmentController.completeDept}"
+                                    var="dept"
+                                    itemLabel="#{dept.name}"
+                                    itemValue="#{dept}"
+                                    forceSelection="true"
+                                    value="#{pharmacyPurchaseController.department}"/>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <h:outputLabel value="From" />&nbsp;
-                            <p:calendar value="#{pharmacyPurchaseController.fromDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <p:calendar value="#{pharmacyPurchaseController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <h:outputLabel value="To" />&nbsp;
-                            <p:calendar value="#{pharmacyPurchaseController.toDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <p:calendar value="#{pharmacyPurchaseController.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-3">
+                                <h:outputLabel value="Item" />&nbsp;
+                                <p:autoComplete value="#{pharmacyPurchaseController.selectedItem}"
+                                                completeMethod="#{pharmacyPurchaseController.completeItems}"
+                                                var="it"
+                                                itemLabel="#{it.name}"
+                                                itemValue="#{it}"
+                                                forceSelection="true"
+                                                required="true"/>
                             </div>
                         </div>
 
-                        
+                        <div class="row my-2">
+                            <div class="col">
+                                <p:selectOneRadio value="#{pharmacyPurchaseController.reportType}" layout="responsive" columns="2">
+                                    <f:selectItem itemLabel="By Bill" itemValue="BILL"/>
+                                    <f:selectItem itemLabel="By Bill Item" itemValue="BILL_ITEM"/>
+                                </p:selectOneRadio>
+                            </div>
+                        </div>
 
-                        <h:panelGrid columns="3" class="my-2">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Process" 
-                                icon="fas fa-arrows-rotate"
+                        <h:panelGrid columns="4" class="my-2">
+                            <p:commandButton
+                                ajax="false"
+                                value="Process"
+                                icon="pi pi-refresh"
                                 class="ui-button-warning"
-                                action="#{pharmacyPurchaseController.fillItemVicePurchaseAndGoodReceive()}" >
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Excel" 
-                                icon="fas fa-file-excel"
+                                action="#{pharmacyPurchaseController.fillItemVicePurchaseAndGoodReceive()}" />
+                            <p:commandButton
+                                ajax="false"
+                                value="Excel"
+                                icon="pi pi-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Unit_Issue_Report_by_department"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="item_wise_purchase" />
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Print" 
-                                ajax="false" 
-                                icon="fas fa-print"
+                            <p:commandButton
+                                ajax="false"
+                                value="PDF"
+                                icon="pi pi-file-pdf"
+                                class="ui-button-danger mx-2">
+                                <p:dataExporter type="pdf" target="tbl" fileName="item_wise_purchase" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="pi pi-print"
                                 class="ui-button-info"
                                 action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                                <p:printer target="gpBillPreview" />
                             </p:commandButton>
-
-                            
-
                         </h:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         stickyHeader="false"
-                                         value="#{pharmacyPurchaseController.rows}" 
-                                         var="i"  
-                                         rowKey="#{i.name}"
+                                         value="#{pharmacyPurchaseController.rows}"
+                                         var="r"
+                                         rowKey="#{r.bill.id}"
                                          rows="10"
                                          paginator="true"
                                          paginatorPosition="bottom"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20,50,100"
-                                         >
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks}{NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20,50,100">
+
+                                <p:column headerText="Bill No"
+                                          sortBy="#{r.bill.deptId}"
+                                          filterBy="#{r.bill.deptId}"
+                                          filterMatchMode="contains">
+                                    <p:commandLink value="#{r.bill.deptId}"
+                                                   ajax="false"
+                                                   action="#{pharmacyPurchaseController.viewBill(r.bill)}"/>
+                                </p:column>
+
+                                <p:column headerText="Date"
+                                          sortBy="#{r.bill.createdAt}"
+                                          filterBy="#{r.bill.createdAt}"
+                                          filterMatchMode="contains">
+                                    <h:outputText value="#{r.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
 
                                 <p:column headerText="Item"
-                                          sortBy="#{i.name}" 
-                                          filterBy="#{i.name}"
+                                          rendered="#{pharmacyPurchaseController.reportType eq 'BILL_ITEM'}"
+                                          sortBy="#{r.item.name}"
+                                          filterBy="#{r.item.name}"
                                           filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.name}"></h:outputLabel>                                    
+                                    <h:outputText value="#{r.item.name}"/>
                                 </p:column>
 
-                                <p:column headerText="Quantity" 
-                                          style="text-align: right;"
-                                          sortBy="#{i.qty}" 
-                                          filterBy="#{i.qty}" 
-                                          filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.qty}" >
-                                    </h:outputLabel>
+                                <p:column headerText="Quantity"
+                                          sortBy="#{r.qty}"
+                                          filterBy="#{r.qty}"
+                                          filterMatchMode="contains"
+                                          styleClass="text-end">
+                                    <h:outputText value="#{r.qty}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="Free" sortBy="#{i.freeQty}" filterBy="#{i.freeQty}" style="text-align: right;">
-                                    <h:outputLabel value="#{i.freeQty}" >
-                                    </h:outputLabel>
+                                <p:column headerText="Free"
+                                          sortBy="#{r.freeQty}"
+                                          filterBy="#{r.freeQty}"
+                                          filterMatchMode="contains"
+                                          styleClass="text-end">
+                                    <h:outputText value="#{r.freeQty}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
 
                             </p:dataTable>
-
-
-                        </h:panelGroup>
+</h:panelGroup>
                     </p:panel>
                 </h:form>
 
