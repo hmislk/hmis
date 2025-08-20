@@ -21,6 +21,7 @@ public class DepartmentCategoryWiseItems {
      private Category category;
      private Double netTotal;
      private Double purchaseRate;
+     private Double costRate;
      private double qty;
      private double paidAmount;
 
@@ -40,6 +41,26 @@ public class DepartmentCategoryWiseItems {
         this.item = item;
         this.category = category;
         this.netTotal = netTotal;
+        this.purchaseRate = purchaseRate;
+        this.qty = qty;
+    }
+
+    public DepartmentCategoryWiseItems(
+            Department mainDepartment,
+            Department consumptionDepartment,
+            Item item,
+            Category category,
+            Double netTotal,
+            Double costRate,
+            Double purchaseRate,
+            double qty
+    ) {
+        this.mainDepartment = mainDepartment;
+        this.consumptionDepartment = consumptionDepartment;
+        this.item = item;
+        this.category = category;
+        this.netTotal = netTotal;
+        this.costRate = costRate;
         this.purchaseRate = purchaseRate;
         this.qty = qty;
     }
@@ -108,5 +129,11 @@ public class DepartmentCategoryWiseItems {
         this.paidAmount = paidAmount;
     }
 
+    public Double getCostRate() {
+        return costRate;
+    }
 
+    public void setCostRate(Double costRate) {
+        this.costRate = costRate;
+    }
 }

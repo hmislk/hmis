@@ -196,8 +196,8 @@ public class PharmacyController implements Serializable {
     private MeasurementUnit issueUnit;
     // </editor-fold>
 
-    private Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
-    private Map<String, Double> pharmacyTotals = new HashMap<>();
+    private Map<String, Map<String, Double[]>> departmentTotals = new HashMap<>();
+    private Map<String, Double[]> pharmacyTotals = new HashMap<>();
     private Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
 
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
@@ -2288,6 +2288,7 @@ public class PharmacyController implements Serializable {
 
     public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
         totalSaleValue = 0.0;
+        totalCostValue = 0.0;
         qty = 0.0;
 
         Map<String, Object> parameters = new HashMap<>();
@@ -2297,10 +2298,13 @@ public class PharmacyController implements Serializable {
                 + "bi.item, "
                 + "bi.item.category, "
                 + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                + "COALESCE(ib.costRate, 0.0), "
                 + "bi.pharmaceuticalBillItem.purchaseRate, "
                 + "SUM(bi.qty)) "
                 + "FROM BillItem bi "
+                + "JOIN ItemBatch ib ON ib.item = bi.item "
                 + "WHERE bi.retired = false AND bi.bill.retired = false "
+                + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
                 + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND bi.bill.billType = :billType ";
 
@@ -2341,7 +2345,7 @@ public class PharmacyController implements Serializable {
         }
 
         // Group by clause
-        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, bi.pharmaceuticalBillItem.purchaseRate "
+        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
                 + "ORDER BY bi.bill.toDepartment, bi.item.category";
 
         try {
@@ -2366,7 +2370,7 @@ public class PharmacyController implements Serializable {
             }
             return resultsList;
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption report by department and category", e);
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
             return Collections.emptyList();
@@ -2375,12 +2379,13 @@ public class PharmacyController implements Serializable {
 
     public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
         totalSaleValue = 0.0;
+        totalCostValue = 0.0;
         // Department Name -> Category Name -> Item List
         Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
         // Category Name -> Item List
         Map<String, List<DepartmentCategoryWiseItems>> categorizedItems = new HashMap<>();
-        // Department Name -> Category Name -> Total Value
-        Map<String, Map<String, Double>> departmentTotals = new TreeMap<>();
+        // Department Name -> Category Name -> [Total Value, Total Cost Value]
+        Map<String, Map<String, Double[]>> departmentTotals = new TreeMap<>();
 
         for (DepartmentCategoryWiseItems item : list) {
             String departmentName = item.getConsumptionDepartment().getName();
@@ -2405,9 +2410,15 @@ public class PharmacyController implements Serializable {
 
             departmentTotals
                     .computeIfAbsent(departmentName, k -> new TreeMap<>())
-                    .merge(categoryName, item.getNetTotal(), Double::sum);
+                    .merge(categoryName,
+                            new Double[]{item.getNetTotal(), (item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0)},
+                            (existing, newValues) -> new Double[]{
+                                    existing[0] + newValues[0],  // Sum net totals
+                                    existing[1] + newValues[1]   // Sum cost rates
+                            });
 
             totalSaleValue += item.getNetTotal();
+            totalCostValue += (item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
         }
 
         setDepartmentCategoryMap(departmentCategoryMap);
@@ -2417,7 +2428,7 @@ public class PharmacyController implements Serializable {
     public String getCategoryTotalForConsumptionReport(final String departmentName, final String categoryName) {
         double total = departmentTotals
                 .getOrDefault(departmentName, Collections.emptyMap())
-                .getOrDefault(categoryName, 0.0);
+                .getOrDefault(categoryName, new Double[]{0.0, 0.0})[0];
 
         return formatNumber(total);
     }
@@ -2427,7 +2438,26 @@ public class PharmacyController implements Serializable {
                 .getOrDefault(departmentName, Collections.emptyMap())
                 .values()
                 .stream()
-                .mapToDouble(Double::doubleValue)
+                .mapToDouble(arr -> arr[0])
+                .sum();
+
+        return formatNumber(total);
+    }
+
+    public String getCategoryCostTotalForConsumptionReport(final String departmentName, final String categoryName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .getOrDefault(categoryName, new Double[]{0.0, 0.0})[1];
+
+        return formatNumber(total);
+    }
+
+    public String getDepartmentCostTotalForConsumptionReport(final String departmentName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .values()
+                .stream()
+                .mapToDouble(arr -> arr[1])
                 .sum();
 
         return formatNumber(total);
@@ -2441,26 +2471,43 @@ public class PharmacyController implements Serializable {
     public void generateConsumptionReportTableAsDepartmentSummary(final List<DepartmentCategoryWiseItems> list) {
         departmentSummaries = new ArrayList<>();
         totalSaleValue = 0.0;
+        totalCostValue = 0.0;
 
-        Map<String, Map<String, Double>> departmentTotals = new TreeMap<>();
-        Map<String, Double> pharmacyTotals = new TreeMap<>();
+        // Main Department -> [Total Value, Total Cost Value]
+        Map<String, Map<String, Double[]>> departmentTotals = new TreeMap<>();
+        // Pharmacy Department -> [Total Value, Total Cost Value]
+        Map<String, Double[]> pharmacyTotals = new TreeMap<>();
 
         for (DepartmentCategoryWiseItems item : list) {
             String mainDepartmentName = item.getMainDepartment().getName();
             String consumptionDepartmentName = item.getConsumptionDepartment().getName();
             double paidAmount = item.getNetTotal();
+            double costAmount = item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0;
 
             if (paidAmount == 0.0) {
                 continue;
             }
 
-            pharmacyTotals.merge(mainDepartmentName, paidAmount, Double::sum);
+            // Store net total at [0] and cost rate at [1] for pharmacy totals
+            pharmacyTotals.merge(mainDepartmentName,
+                    new Double[]{paidAmount, costAmount},
+                    (existing, newValues) -> new Double[]{
+                            existing[0] + newValues[0],  // Sum net totals
+                            existing[1] + newValues[1]   // Sum cost rates
+                    });
 
+            // Store net total at [0] and cost rate at [1] for department totals
             departmentTotals
                     .computeIfAbsent(mainDepartmentName, k -> new TreeMap<>())
-                    .merge(consumptionDepartmentName, paidAmount, Double::sum);
+                    .merge(consumptionDepartmentName,
+                            new Double[]{paidAmount, costAmount},
+                            (existing, newValues) -> new Double[]{
+                                    existing[0] + newValues[0],  // Sum net totals
+                                    existing[1] + newValues[1]   // Sum cost rates
+                            });
 
             totalSaleValue += paidAmount;
+            totalCostValue += costAmount;
         }
 
         setPharmacyTotals(pharmacyTotals);
@@ -2490,7 +2537,7 @@ public class PharmacyController implements Serializable {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("Category Wise Issue Details by Department");
             titleCell.setCellStyle(headerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
 
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
@@ -2499,10 +2546,10 @@ public class PharmacyController implements Serializable {
                 Cell deptCell = deptRow.createCell(0);
                 deptCell.setCellValue("Department: " + departmentName);
                 deptCell.setCellStyle(headerStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
 
                 Row headerRow = sheet.createRow(rowIndex++);
-                String[] headers = {"Category", "Rate", "Quantity", "Value"};
+                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
                 for (int i = 0; i < headers.length; i++) {
                     Cell cell = headerRow.createCell(i);
                     cell.setCellValue(headers[i]);
@@ -2517,14 +2564,16 @@ public class PharmacyController implements Serializable {
                     Cell categoryCell = categoryRow.createCell(0);
                     categoryCell.setCellValue(categoryName);
                     categoryCell.setCellStyle(headerStyle);
-                    sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+                    sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
 
                     for (DepartmentCategoryWiseItems item : items) {
                         Row dataRow = sheet.createRow(rowIndex++);
                         dataRow.createCell(0).setCellValue(item.getItem().getName());
                         dataRow.createCell(1).setCellValue(item.getPurchaseRate());
                         dataRow.createCell(2).setCellValue(item.getQty());
-                        Cell valueCell = dataRow.createCell(3);
+                        dataRow.createCell(3).setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
+                        dataRow.getCell(3).setCellStyle(amountStyle);
+                        Cell valueCell = dataRow.createCell(4);
                         valueCell.setCellValue(item.getNetTotal());
                         valueCell.setCellStyle(amountStyle);
                     }
@@ -2532,7 +2581,8 @@ public class PharmacyController implements Serializable {
                     Row categoryTotalRow = sheet.createRow(rowIndex++);
                     categoryTotalRow.createCell(1).setCellValue("");
                     categoryTotalRow.createCell(2).setCellValue("Category Total:");
-                    Cell categoryTotalCell = categoryTotalRow.createCell(3);
+                    categoryTotalRow.createCell(3).setCellValue(getCategoryCostTotalForConsumptionReport(departmentName, categoryName));
+                    Cell categoryTotalCell = categoryTotalRow.createCell(4);
                     categoryTotalCell.setCellValue(getCategoryTotalForConsumptionReport(departmentName, categoryName));
                     categoryTotalCell.setCellStyle(amountStyle);
                 }
@@ -2540,14 +2590,17 @@ public class PharmacyController implements Serializable {
                 Row departmentTotalRow = sheet.createRow(rowIndex++);
                 departmentTotalRow.createCell(1).setCellValue("");
                 departmentTotalRow.createCell(2).setCellValue("Department Total:");
-                Cell departmentTotalCell = departmentTotalRow.createCell(3);
+                departmentTotalRow.createCell(3).setCellValue(getDepartmentCostTotalForConsumptionReport(departmentName));
+                departmentTotalRow.getCell(3).setCellStyle(amountStyle);
+                Cell departmentTotalCell = departmentTotalRow.createCell(4);
                 departmentTotalCell.setCellValue(getDepartmentTotalForConsumptionReport(departmentName));
                 departmentTotalCell.setCellStyle(amountStyle);
             }
 
             Row finalTotalRow = sheet.createRow(rowIndex++);
             finalTotalRow.createCell(0).setCellValue("Total");
-            finalTotalRow.createCell(3).setCellValue(String.format("%.2f", totalSaleValue));
+            finalTotalRow.createCell(3).setCellValue(String.format("%.2f", totalCostValue));
+            finalTotalRow.createCell(4).setCellValue(String.format("%.2f", totalSaleValue));
 
             for (int i = 0; i < 4; i++) {
                 sheet.autoSizeColumn(i);
@@ -2556,7 +2609,8 @@ public class PharmacyController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            e.getMessage();
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+
         }
     }
 
@@ -2586,11 +2640,11 @@ public class PharmacyController implements Serializable {
                 String departmentName = deptEntry.getKey();
                 document.add(new Paragraph("Department: " + departmentName, boldFont));
 
-                PdfPTable table = new PdfPTable(4);
+                PdfPTable table = new PdfPTable(5);
                 table.setWidthPercentage(100);
-                table.setWidths(new float[]{3, 2, 2, 2});
+                table.setWidths(new float[]{3, 2, 2, 2, 2});
 
-                String[] headers = {"Category", "Rate", "Quantity", "Value"};
+                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
                 for (String header : headers) {
                     PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                     cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -2603,7 +2657,7 @@ public class PharmacyController implements Serializable {
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
 
                     PdfPCell categoryCell = new PdfPCell(new Phrase(categoryName, boldFont));
-                    categoryCell.setColspan(4);
+                    categoryCell.setColspan(5);
                     categoryCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                     table.addCell(categoryCell);
 
@@ -2611,27 +2665,31 @@ public class PharmacyController implements Serializable {
                         table.addCell(new PdfPCell(new Phrase(item.getItem().getName(), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getPurchaseRate()), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getNetTotal()), normalFont)));
                     }
 
                     table.addCell(new PdfPCell(new Phrase("", normalFont)));
                     table.addCell(new PdfPCell(new Phrase("", normalFont)));
                     table.addCell(new PdfPCell(new Phrase("Category Total:", boldFont)));
+                    table.addCell(new PdfPCell(new Phrase(getCategoryCostTotalForConsumptionReport(departmentName, categoryName), boldFont)));
                     table.addCell(new PdfPCell(new Phrase(getCategoryTotalForConsumptionReport(departmentName, categoryName), boldFont)));
                 }
 
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("Department Total:", boldFont)));
+                table.addCell(new PdfPCell(new Phrase(getDepartmentCostTotalForConsumptionReport(departmentName), boldFont)));
                 table.addCell(new PdfPCell(new Phrase(getDepartmentTotalForConsumptionReport(departmentName), boldFont)));
 
                 document.add(table);
             }
 
-            PdfPTable table = new PdfPTable(2);
+            PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{7, 2});
+            table.setWidths(new float[]{7, 2, 2});
             table.addCell(new PdfPCell(new Phrase("Total", normalFont)));
+            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalCostValue), normalFont)));
             table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSaleValue), normalFont)));
 
             document.add(table);
@@ -2639,7 +2697,7 @@ public class PharmacyController implements Serializable {
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -2672,40 +2730,54 @@ public class PharmacyController implements Serializable {
             headerCell1.setCellStyle(headerStyle);
 
             Cell headerCell2 = headerRow.createCell(2);
-            headerCell2.setCellValue("Net Total");
+            headerCell2.setCellValue("Cost Total");
             headerCell2.setCellStyle(headerStyle);
 
-            for (Map.Entry<String, Map<String, Double>> departmentEntry : getDepartmentTotals().entrySet()) {
+            Cell headerCell3 = headerRow.createCell(3);
+            headerCell3.setCellValue("Net Total");
+            headerCell3.setCellStyle(headerStyle);
+
+            for (Map.Entry<String, Map<String, Double[]>> departmentEntry : getDepartmentTotals().entrySet()) {
                 String departmentName = departmentEntry.getKey();
-                Map<String, Double> consumptionMap = departmentEntry.getValue();
+                Map<String, Double[]> consumptionMap = departmentEntry.getValue();
 
                 Row departmentRow = sheet.createRow(rowIndex++);
                 Cell departmentCell = departmentRow.createCell(0);
                 departmentCell.setCellValue(departmentName);
                 departmentCell.setCellStyle(headerStyle);
 
-                for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                for (Map.Entry<String, Double[]> consumptionEntry : consumptionMap.entrySet()) {
                     String consumptionDepartment = consumptionEntry.getKey();
-                    Double netTotal = consumptionEntry.getValue();
+                    Double netTotal = consumptionEntry.getValue()[0];
+                    Double costTotal = consumptionEntry.getValue()[1];
 
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue("");
                     dataRow.createCell(1).setCellValue(consumptionDepartment);
-                    Cell totalCell = dataRow.createCell(2);
+                    Cell costCell = dataRow.createCell(2);
+                    costCell.setCellValue(costTotal);
+                    costCell.setCellStyle(amountStyle);
+                    Cell totalCell = dataRow.createCell(3);
                     totalCell.setCellValue(netTotal);
                     totalCell.setCellStyle(amountStyle);
                 }
 
                 Row totalRow = sheet.createRow(rowIndex++);
                 totalRow.createCell(1).setCellValue("Total:");
-                Cell totalAmountCell = totalRow.createCell(2);
-                totalAmountCell.setCellValue(getPharmacyTotals().get(departmentName));
+                Cell totalCostCell = totalRow.createCell(2);
+                totalCostCell.setCellValue(getPharmacyTotals().get(departmentName)[1]);
+                totalCostCell.setCellStyle(amountStyle);
+                Cell totalAmountCell = totalRow.createCell(3);
+                totalAmountCell.setCellValue(getPharmacyTotals().get(departmentName)[0]);
                 totalAmountCell.setCellStyle(amountStyle);
             }
 
             Row grandTotalRow = sheet.createRow(rowIndex++);
             grandTotalRow.createCell(1).setCellValue("Grand Total:");
-            Cell grandTotalCell = grandTotalRow.createCell(2);
+            Cell grandTotalCostCell = grandTotalRow.createCell(2);
+            grandTotalCostCell.setCellValue(getTotalCostValue());
+            grandTotalCostCell.setCellStyle(amountStyle);
+            Cell grandTotalCell = grandTotalRow.createCell(3);
             grandTotalCell.setCellValue(getTotalSaleValue());
             grandTotalCell.setCellStyle(amountStyle);
 
@@ -2717,7 +2789,7 @@ public class PharmacyController implements Serializable {
             context.responseComplete();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -2741,11 +2813,11 @@ public class PharmacyController implements Serializable {
 
             com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
             com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
-            PdfPTable table = new PdfPTable(3);
+            PdfPTable table = new PdfPTable(4);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{2.5f, 3.5f, 2.5f});
+            table.setWidths(new float[]{2.5f, 3.5f, 2.5f, 2.5f});
 
-            String[] headers = {"Department", "Consumption Department", "Net Total"};
+            String[] headers = {"Department", "Consumption Department", "Cost Total", "Net Total"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -2754,38 +2826,42 @@ public class PharmacyController implements Serializable {
 
             DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
 
-            for (Map.Entry<String, Map<String, Double>> departmentEntry : getDepartmentTotals().entrySet()) {
+            for (Map.Entry<String, Map<String, Double[]>> departmentEntry : getDepartmentTotals().entrySet()) {
                 String departmentName = departmentEntry.getKey();
-                Map<String, Double> consumptionMap = departmentEntry.getValue();
+                Map<String, Double[]> consumptionMap = departmentEntry.getValue();
 
                 PdfPCell departmentCell = new PdfPCell(new Phrase(departmentName, boldFont));
-                departmentCell.setColspan(3);
+                departmentCell.setColspan(4);
                 departmentCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                 table.addCell(departmentCell);
 
-                for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                for (Map.Entry<String, Double[]> consumptionEntry : consumptionMap.entrySet()) {
                     String consumptionDepartment = consumptionEntry.getKey();
-                    Double netTotal = consumptionEntry.getValue();
+                    Double netTotal = consumptionEntry.getValue()[0];
+                    Double costTotal = consumptionEntry.getValue()[1];
 
                     table.addCell(new PdfPCell(new Phrase("", normalFont)));
                     table.addCell(new PdfPCell(new Phrase(consumptionDepartment, normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(costTotal), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(decimalFormat.format(netTotal), normalFont)));
                 }
 
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("Total:", boldFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPharmacyTotals().get(departmentName)), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPharmacyTotals().get(departmentName)[1]), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPharmacyTotals().get(departmentName)[0]), boldFont)));
             }
 
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
             table.addCell(new PdfPCell(new Phrase("Grand Total:", boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getTotalCostValue()), boldFont)));
             table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getTotalSaleValue()), boldFont)));
 
             document.add(table);
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -6482,19 +6558,19 @@ public class PharmacyController implements Serializable {
         this.summaries = summaries;
     }
 
-    public Map<String, Map<String, Double>> getDepartmentTotals() {
+    public Map<String, Map<String, Double[]>> getDepartmentTotals() {
         return departmentTotals;
     }
 
-    public Map<String, Double> getPharmacyTotals() {
+    public Map<String, Double[]> getPharmacyTotals() {
         return pharmacyTotals;
     }
 
-    public void setDepartmentTotals(Map<String, Map<String, Double>> departmentTotals) {
+    public void setDepartmentTotals(Map<String, Map<String, Double[]>> departmentTotals) {
         this.departmentTotals = departmentTotals;
     }
 
-    public void setPharmacyTotals(Map<String, Double> pharmacyTotals) {
+    public void setPharmacyTotals(Map<String, Double[]> pharmacyTotals) {
         this.pharmacyTotals = pharmacyTotals;
     }
 
