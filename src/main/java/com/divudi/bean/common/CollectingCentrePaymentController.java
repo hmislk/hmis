@@ -96,7 +96,6 @@ public class CollectingCentrePaymentController implements Serializable {
     private String billNumber;
 
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchCCPaymentBills() {
         makeNull();
@@ -114,7 +113,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
@@ -263,6 +261,51 @@ public class CollectingCentrePaymentController implements Serializable {
         totalCCAmount = 0.0;
 
         for (BillLight bl : pandingCCpaymentBills) {
+            if (bl.getReferenceNumber() == null || bl.getReferenceNumber().isEmpty()) {
+
+                System.out.println(bl.getBillNo() + "Null");
+                System.out.println("Bill ID = " + bl.getId());
+                Map map = new HashMap();
+                String newJpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
+                        + " from Bill bill "
+                        + " where bill.collectingCentre=:cc "
+                        + " and bill.cancelledBill.id=:canBillId"
+                        + " and bill.retired=false ";
+
+                jpql += " order by bill.createdAt asc ";
+                map.put("cc", currentCollectingCentre);
+                map.put("canBillId", bl.getId());
+
+                System.out.println("Jpql = " + newJpql);
+                System.out.println("map = " + map);
+
+                List<BillLight> bills = billFacade.findLightsByJpql(newJpql, map, TemporalType.TIMESTAMP);
+
+                if (bills.isEmpty()) {
+                    Bill bill = billFacade.find(bl.getId());
+                    Bill originalBill = bill.getBilledBill();
+                    System.out.println("originalBill = " + originalBill.getDeptId());
+
+                    if (originalBill != null) {
+
+                        bl.setReferenceNumber(originalBill.getReferenceNumber());
+                        bl.setCcTotal(-originalBill.getTotalCenterFee());
+                        bl.setHospitalTotal(-originalBill.getTotalHospitalFee());
+                        System.out.println("Update Bill. from Empty");
+                    }
+                    
+                } else {
+                    BillLight bill = bills.get(0);
+
+                    bl.setReferenceNumber(bill.getReferenceNumber());
+                    bl.setCcTotal(-bill.getCcTotal());
+                    bl.setHospitalTotal(-bill.getHospitalTotal());
+
+                    System.out.println("Update Bill.");
+                }
+
+            }
+
             totalHospitalAmount += bl.getHospitalTotal();
             totalCCAmount += bl.getCcTotal();
         }
@@ -452,11 +495,11 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public void exportSelectedBillsToExcel() throws IOException {
-        if(selectedCCpaymentBills == null || selectedCCpaymentBills.isEmpty()){
+        if (selectedCCpaymentBills == null || selectedCCpaymentBills.isEmpty()) {
             JsfUtil.addErrorMessage("No Selected Bills");
             return;
         }
-        
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -471,7 +514,7 @@ public class CollectingCentrePaymentController implements Serializable {
             // Create styles
             XSSFFont boldFont = workbook.createFont();
             boldFont.setBold(true);
-            
+
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
 
             XSSFCellStyle boldStyle = workbook.createCellStyle();
@@ -504,7 +547,7 @@ public class CollectingCentrePaymentController implements Serializable {
                 // Date value - handle potential null
                 Cell dateCell = row.createCell(2);
                 dateCell.setCellValue(sdf.format(bl.getBillDate()));
-                
+
                 row.createCell(3).setCellValue(defaultIfNullOrEmpty(bl.getPatientName(), ""));
 
                 // Numeric values with formatting
@@ -560,7 +603,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Date getFromDate() {
         if (fromDate == null) {
@@ -713,5 +755,4 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
 // </editor-fold>
-
 }
