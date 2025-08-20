@@ -44,7 +44,8 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(git log:*)",
-      "Bash(gh issue view:*)"
+      "Bash(gh issue view:*)",
+      "Bash(javac:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
