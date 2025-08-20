@@ -237,6 +237,10 @@
                                                     <h:outputLabel id="lblReciv" value="#{collectingCentrePaymentController.totalCCReceiveAmount}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
+                                                    <h:outputLabel value="Transaction Amount" ></h:outputLabel>
+                                                    <h:outputLabel id="lblTrans" value="#{collectingCentrePaymentController.totalHospitalAmount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
                                                     <h:outputLabel value="Total Due to Collcting Centre" ></h:outputLabel>
                                                     <h:outputLabel id="lblDue" value="#{collectingCentrePaymentController.totalCCAmount}" >
                                                         <f:convertNumber pattern="#,##0.00" />
