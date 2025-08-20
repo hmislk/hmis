@@ -263,8 +263,6 @@ public class CollectingCentrePaymentController implements Serializable {
         for (BillLight bl : pandingCCpaymentBills) {
             if (bl.getReferenceNumber() == null || bl.getReferenceNumber().isEmpty()) {
 
-                System.out.println(bl.getBillNo() + "Null");
-                System.out.println("Bill ID = " + bl.getId());
                 Map map = new HashMap();
                 String newJpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
                         + " from Bill bill "
@@ -276,36 +274,28 @@ public class CollectingCentrePaymentController implements Serializable {
                 map.put("cc", currentCollectingCentre);
                 map.put("canBillId", bl.getId());
 
-                System.out.println("Jpql = " + newJpql);
-                System.out.println("map = " + map);
-
                 List<BillLight> bills = billFacade.findLightsByJpql(newJpql, map, TemporalType.TIMESTAMP);
 
                 if (bills.isEmpty()) {
                     Bill bill = billFacade.find(bl.getId());
                     Bill originalBill = bill.getBilledBill();
-                    System.out.println("originalBill = " + originalBill.getDeptId());
 
                     if (originalBill != null) {
 
                         bl.setReferenceNumber(originalBill.getReferenceNumber());
                         bl.setCcTotal(-originalBill.getTotalCenterFee());
                         bl.setHospitalTotal(-originalBill.getTotalHospitalFee());
-                        System.out.println("Update Bill. from Empty");
                     }
                     
                 } else {
                     BillLight bill = bills.get(0);
-
                     bl.setReferenceNumber(bill.getReferenceNumber());
                     bl.setCcTotal(-bill.getCcTotal());
                     bl.setHospitalTotal(-bill.getHospitalTotal());
 
-                    System.out.println("Update Bill.");
                 }
 
             }
-
             totalHospitalAmount += bl.getHospitalTotal();
             totalCCAmount += bl.getCcTotal();
         }
