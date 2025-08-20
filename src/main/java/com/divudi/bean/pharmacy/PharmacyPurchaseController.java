@@ -5,14 +5,16 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
-import com.divudi.core.data.dataStructure.PharmacyStockRow;
+import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -33,10 +35,15 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFeePaymentFacade;
@@ -69,6 +76,11 @@ import org.primefaces.event.SelectEvent;
 @SessionScoped
 public class PharmacyPurchaseController implements Serializable {
 
+    public enum ReportType {
+        BILL,
+        BILL_ITEM
+    }
+
     /**
      * EJBs
      */
@@ -94,6 +106,8 @@ public class PharmacyPurchaseController implements Serializable {
     BillEjb billEjb;
     @EJB
     PaymentService paymentService;
+    @EJB
+    private AmppFacade amppFacade;
 
     /**
      * Controllers
@@ -104,6 +118,8 @@ public class PharmacyPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ItemController itemController;
     /**
      * Properties
      */
@@ -121,7 +137,9 @@ public class PharmacyPurchaseController implements Serializable {
     Department department;
     Date fromDate;
     Date toDate;
-    List<PharmacyStockRow> rows;
+    Item selectedItem;
+    ReportType reportType = ReportType.BILL_ITEM;
+    List<PharmacyItemPurchaseDTO> rows;
 
     BillListWithTotals billListWithTotals;
     private double billItemsTotalQty;
@@ -192,46 +210,134 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void fillItemVicePurchaseAndGoodReceive() {
-        Date startTime = new Date();
+        Map<String, Object> m = new HashMap<>();
 
-        Map m = new HashMap();
-        String sql;
-        BillItem bi = new BillItem();
         List<BillType> bts = new ArrayList<>();
-
         bts.add(BillType.PharmacyGrnBill);
-        bts.add(BillType.PharmacyGrnReturn);
         bts.add(BillType.PharmacyPurchaseBill);
+        bts.add(BillType.PharmacyDonationBill);
+        bts.add(BillType.PharmacyGrnReturn);
+        bts.add(BillType.PurchaseReturn);
 
-        sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
-                + " (bi.item.name, "
-                + " sum(bi.qty), "
-                + " sum(bi.pharmaceuticalBillItem.freeQty)) "
-                + " from BillItem bi "
-                + " where bi.bill.billType in :bts "
-                + " and bi.bill.createdAt between :fd and :td ";
+        List<Class> bcs = new ArrayList<>();
+        bcs.add(BilledBill.class);
+        bcs.add(CancelledBill.class);
+        bcs.add(RefundBill.class);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(bi.bill, ");
+        if (reportType == ReportType.BILL_ITEM) {
+            jpql.append("bi.item, ");
+        } else {
+            jpql.append("null, ");
+        }
+        jpql.append("sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" where bi.bill.billType in :bts");
+        jpql.append(" and type(bi.bill) in :bcs");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
 
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bts", bts);
+        m.put("bcs", bcs);
 
         if (department != null) {
-            sql = sql + " and bi.bill.department=:dept ";
+            jpql.append(" and bi.bill.department=:dept");
             m.put("dept", department);
         }
 
         if (institution != null) {
-            sql = sql + " and bi.bill.institution=:ins ";
+            jpql.append(" and bi.bill.institution=:ins");
             m.put("ins", institution);
         }
 
-        sql = sql + "group by bi.item "
-                + "order by bi.item.name";
+        if (selectedItem != null) {
+            List<Item> items = resolveItemFamily(selectedItem);
+            if (!items.isEmpty()) {
+                jpql.append(" and bi.item in :items");
+                m.put("items", items);
+            }
+        }
 
-        List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m, TemporalType.TIMESTAMP);
+        if (reportType == ReportType.BILL) {
+            jpql.append(" group by bi.bill");
+        } else {
+            jpql.append(" group by bi.bill, bi.item");
+        }
 
-        rows = lsts;
+        jpql.append(" order by bi.bill.createdAt");
 
+        rows = billFacade.findObjects(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    public List<Item> completeItems(String qry) {
+        Class[] classes = new Class[]{Amp.class, Ampp.class, Vmp.class, Vmpp.class, Atm.class, Vtm.class};
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+        return itemController.completeItem(qry, classes, dts, 30);
+    }
+
+    private List<Item> resolveItemFamily(Item item) {
+        List<Item> items = new ArrayList<>();
+        if (item == null) {
+            return items;
+        }
+        if (item instanceof Ampp) {
+            items.add(item);
+        } else if (item instanceof Amp) {
+            items.add(item);
+            Map<String, Object> m = new HashMap<>();
+            m.put("amp", item);
+            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp=:amp", m));
+        } else if (item instanceof Vmpp) {
+            items.add(item);
+            Map<String, Object> m = new HashMap<>();
+            m.put("vmpp", item);
+            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.vmpp=:vmpp", m));
+        } else if (item instanceof Vmp) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("vmp", item);
+            items.addAll(ampFacade.findByJpql("select a from Amp a where a.vmp=:vmp", m));
+            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp.vmp=:vmp", m));
+        } else if (item instanceof Atm) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("atm", item);
+            items.addAll(ampFacade.findByJpql("select a from Amp a where a.atm=:atm", m));
+            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp.atm=:atm", m));
+        } else if (item instanceof Vtm) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("vtm", item);
+            items.addAll(ampFacade.findByJpql("select a from Amp a where a.atm.vtm=:vtm or a.vmp.vtm=:vtm", m));
+            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp.atm.vtm=:vtm or a.amp.vmp.vtm=:vtm", m));
+        }
+        return items;
+    }
+
+    public String viewBill(Bill b) {
+        if (b == null) {
+            return "";
+        }
+        String page;
+        switch (b.getBillType()) {
+            case PharmacyGrnBill:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+                break;
+            case PharmacyPurchaseBill:
+                page = "/pharmacy/pharmacy_purchase.xhtml";
+                break;
+            case PharmacyDonationBill:
+                page = "/pharmacy/pharmacy_donation_bill.xhtml";
+                break;
+            case PharmacyGrnReturn:
+                page = "/pharmacy/pharmacy_reprint_grn_return.xhtml";
+                break;
+            case PurchaseReturn:
+                page = "/pharmacy/pharmacy_return_purchase.xhtml";
+                break;
+            default:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+        }
+        return page + "?faces-redirect=true&billId=" + b.getId();
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
@@ -244,12 +350,28 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * wholesaleFactor);
     }
 
-    public List<PharmacyStockRow> getRows() {
+    public List<PharmacyItemPurchaseDTO> getRows() {
         return rows;
     }
 
-    public void setRows(List<PharmacyStockRow> rows) {
+    public void setRows(List<PharmacyItemPurchaseDTO> rows) {
         this.rows = rows;
+    }
+
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    public ReportType getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(ReportType reportType) {
+        this.reportType = reportType;
     }
 
     public Institution getInstitution() {
