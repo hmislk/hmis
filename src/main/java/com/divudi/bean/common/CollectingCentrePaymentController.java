@@ -711,6 +711,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setBillNumber(String billNumber) {
         this.billNumber = billNumber;
     }
-}
+
 // </editor-fold>
 
+}
