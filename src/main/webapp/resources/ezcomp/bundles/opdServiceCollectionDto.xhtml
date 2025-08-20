@@ -76,20 +76,21 @@
                         <tbody>
                             <ui:repeat value="#{cc.attrs.bundle.rows}" var="row" >
                                 <!-- Category rows (when itemName is empty) -->
-                                <tr class="#{empty row.itemName ? 'table-primary' : 'table-light'}">
-                                    <h:panelGroup rendered="#{empty row.itemName}">
-                                        <td colspan="2">
-                                            <h:outputText value="#{row.categoryName}" />
-                                        </td>
-                                    </h:panelGroup>
-                                    <!-- Item rows (when itemName is not empty) -->
-                                    <h:panelGroup rendered="#{not empty row.itemName}">
-                                        <td>
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{row.itemName}" />
-                                        </td>
-                                    </h:panelGroup>
+<tr class="#{empty row.itemName ? 'table-primary' : 'table-light'}">
+    <ui:fragment rendered="#{empty row.itemName}">
+        <td colspan="2">
+            <h:outputText value="#{row.categoryName}" />
+        </td>
+    </ui:fragment>
+    <!-- Item rows (when itemName is not empty) -->
+    <ui:fragment rendered="#{not empty row.itemName}">
+        <td>
+        </td>
+        <td>
+            <h:outputText value="#{row.itemName}" />
+        </td>
+    </ui:fragment>
+</tr>
                                     <td class="text-end">
                                         <h:outputText value="#{row.itemCount}">
                                             <f:convertNumber pattern="#,##0" />
