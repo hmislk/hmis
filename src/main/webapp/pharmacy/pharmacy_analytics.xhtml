@@ -305,8 +305,8 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch to Upload')}" class="w-100 ui-button-warning" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false"/>
                                             <p:commandButton
                                                 id="btnItemWiseProcurement"
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-wise Procurement')}"
-                                                styleClass="w-100 ui-button-info"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-wise Procurement', true)}"
+                                                styleClass="w-100 ui-button-success"
                                                 value="Item-wise Procurement"
                                                 icon="fa fa-clipboard-list"
                                                 action="#{pharmacyPurchaseController.navigateToItemWiseProcurementReport}"

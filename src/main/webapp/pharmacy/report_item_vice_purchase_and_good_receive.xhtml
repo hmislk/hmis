@@ -15,7 +15,7 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel header="Purchase/GRN Search Report">
-                    <h:panelGrid columns="8" class="w-100">
+                    <p:panelGrid columns="8" class="w-100" layout="tabular">
                         <h:outputLabel value="From Date"/>
                         <p:calendar 
                             class="w-100"
@@ -56,22 +56,31 @@
                             itemValue="#{dept}" itemLabel="#{dept.name}" 
                             forceSelection="true" rendered="true">
                         </p:autoComplete>
+                        <p:spacer></p:spacer>
 
                         <h:outputLabel  value="Supplier"  />
-                        <p:autoComplete  value="#{pharmacyPurchaseController.supplier}"  
-                                         completeMethod="#{institutionController.completeSuppliers}" var="supplier"
-                                         itemValue="#{supplier}" itemLabel="#{supplier.name}" 
-                                         forceSelection="true" rendered="true">
+                        <p:autoComplete  
+                            value="#{pharmacyPurchaseController.supplier}"  
+                            inputStyleClass="w-100"
+                            styleClass="w-100"
+                            completeMethod="#{institutionController.completeSuppliers}" var="supplier"
+                            itemValue="#{supplier}" itemLabel="#{supplier.name}" 
+                            forceSelection="true" rendered="true">
                         </p:autoComplete>
+                        <p:spacer></p:spacer>
 
                         <h:outputLabel  
                             value="Item"  />
                         <p:autoComplete  
                             value="#{pharmacyPurchaseController.selectedItem}"  
-                                         completeMethod="#{itemController.completeMedicine}" 
-                                         var="item"
-                                         itemValue="#{item}" itemLabel="#{item.name}" 
-                                         forceSelection="true" rendered="true">
+                            completeMethod="#{itemController.completeMedicine}" 
+                            var="item"
+                            itemValue="#{item}"
+                            itemLabel="#{item.name}" 
+                            inputStyleClass="w-100"
+                            styleClass="w-100"
+                            forceSelection="true"
+                            rendered="true">
                         </p:autoComplete>
 
                         <!-- Report View Type Filter -->
@@ -94,7 +103,7 @@
                         </p:selectOneMenu>
 
 
-                    </h:panelGrid>
+                    </p:panelGrid>
 
                     <h:panelGrid columns="3" class="my-2">
                         <p:commandButton 
@@ -192,10 +201,12 @@
                             </p:column>
 
                             <p:column headerText="Actions" style="text-align: center;">
-                                <p:commandButton value="View" 
-                                                 action="#{pharmacyPurchaseController.viewBillFromDto(row.billId, row.billType)}"
-                                                 class="ui-button-info"
-                                                 icon="fa-solid fa-eye"/>
+                                <p:commandButton
+                                    id="btnNavigateToBillByBillId"
+                                    value="View" 
+                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(row.billId)}"
+                                    class="ui-button-info"
+                                    icon="fa-solid fa-eye"/>
                             </p:column>
 
                         </p:dataTable>
@@ -285,10 +296,12 @@
                             </p:column>
 
                             <p:column headerText="Actions" style="text-align: center;">
-                                <p:commandButton value="View" 
-                                                 action="#{pharmacyPurchaseController.viewBillFromDto(row.billId, row.billType)}"
-                                                 class="ui-button-info"
-                                                 icon="fa-solid fa-eye"/>
+                                <p:commandButton 
+                                    id="btnNavigateToBillByBillItemId"
+                                    value="View" 
+                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillItemId(row.billId)}"
+                                    class="ui-button-info"
+                                    icon="fa-solid fa-eye"/>
                             </p:column>
 
                         </p:dataTable>
