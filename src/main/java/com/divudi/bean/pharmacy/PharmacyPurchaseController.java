@@ -268,7 +268,7 @@ public class PharmacyPurchaseController implements Serializable {
 
         jpql.append(" order by bi.bill.createdAt");
 
-        rows = billFacade.findObjects(jpql.toString(), m, TemporalType.TIMESTAMP);
+        rows = (List<PharmacyItemPurchaseDTO>) billFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public List<Item> completeItems(String qry) {
