@@ -104,7 +104,7 @@
                     </h:panelGrid>
 
 
-                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType eq 'BY_BILL'}">
+                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType.name() eq 'BY_BILL'}">
 
                         <p:commandButton ajax="false" value="Excel" 
                                          icon="fa-solid fa-file-excel"
@@ -129,7 +129,7 @@
                                      rowsPerPageTemplate="5,10,15,20,50">
 
                             <f:facet name="header">  
-                                <h:outputLabel value="Search Results - #{pharmacyPurchaseController.reportType == 'BILL_ITEM' ? 'By Bill Items' : 'By Bills'}"/>
+                                <h:outputLabel value="Search Results - #{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM' ? 'By Bill Items' : 'By Bills'}"/>
                             </f:facet>
 
                             <p:column headerText="Bill Number" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
@@ -161,34 +161,34 @@
                                 <h:outputLabel value="#{row.bill.billType}"/>
                             </p:column>
 
-                            <p:column headerText="Item" rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}" 
+                            <p:column headerText="Item" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}" 
                                       sortBy="#{row.item.name}" filterBy="#{row.item.name}">
                                 <h:outputLabel value="#{row.item.name}"/>
                             </p:column>
 
                             <p:column headerText="Quantity" style="text-align: right" 
-                                      sortBy="#{row.qty}" rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}">
+                                      sortBy="#{row.qty}" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}">
                                 <h:outputLabel value="#{row.qty}">
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Free Quantity" style="text-align: right" 
-                                      sortBy="#{row.freeQty}" rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}">
+                                      sortBy="#{row.freeQty}" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}">
                                 <h:outputLabel value="#{row.freeQty}">
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Total Quantity" style="text-align: right" 
-                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}">
+                                      rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}">
                                 <h:outputLabel value="#{row.qty + row.freeQty}">
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Bill Total" style="text-align: right" 
-                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL'}" 
+                                      rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
                                       sortBy="#{row.bill.total}">
                                 <h:outputLabel value="#{row.bill.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -196,7 +196,7 @@
                             </p:column>
 
                             <p:column headerText="Net Total" style="text-align: right" 
-                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL'}" 
+                                      rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
                                       sortBy="#{row.bill.netTotal}">
                                 <h:outputLabel value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -204,7 +204,7 @@
                             </p:column>
 
                             <p:column headerText="Discount" style="text-align: right" 
-                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL'}" 
+                                      rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
                                       sortBy="#{row.bill.discount}">
                                 <h:outputLabel value="#{row.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -225,7 +225,7 @@
 
 
 
-                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType eq 'BY_BILL_ITEM'}">
+                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType.name() eq 'BY_BILL_ITEM'}">
 
                         <p:commandButton ajax="false" value="Excel" 
                                          icon="fa-solid fa-file-excel"
