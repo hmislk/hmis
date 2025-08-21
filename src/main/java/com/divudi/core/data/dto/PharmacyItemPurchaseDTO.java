@@ -82,6 +82,23 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.freeQty = freeQty;
     }
 
+    // Constructor for BY_BILL report without qty and free qty
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt, 
+                                   String billInstitutionName, String billDepartmentName, 
+                                   String billFromInstitutionName, BillType billType,
+                                   Double billTotal, Double billNetTotal, Double billDiscount) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.billInstitutionName = billInstitutionName;
+        this.billDepartmentName = billDepartmentName;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billType = billType;
+        this.billTotal = billTotal;
+        this.billNetTotal = billNetTotal;
+        this.billDiscount = billDiscount;
+    }
+
     public Bill getBill() {
         return bill;
     }

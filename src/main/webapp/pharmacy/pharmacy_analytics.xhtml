@@ -305,9 +305,9 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch to Upload')}" class="w-100 ui-button-warning" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false"/>
                                             <p:commandButton
                                                 id="btnItemWiseProcurement"
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item - wise Purchase/Good Receive')}"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-wise Procurement')}"
                                                 styleClass="w-100 ui-button-info"
-                                                value="Item-wise Procurement / Goods Receipt"
+                                                value="Item-wise Procurement"
                                                 icon="fa fa-clipboard-list"
                                                 action="#{pharmacyPurchaseController.navigateToItemWiseProcurementReport}"
                                                 ajax="false"/>
@@ -339,9 +339,6 @@
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary By Supplier (Credit / Cash)')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Summary By Supplier (Credit / Cash)" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Bill Item')}" class="w-100 ui-button-warning" ajax="false"
-                                                             value="Purchase Bill Item" 
-                                                             action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseBillItem()}" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Payment Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary By Supplier')}" class="w-100 ui-button-warning" ajax="false"

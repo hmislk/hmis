@@ -216,10 +216,6 @@ public class PharmacyPurchaseController implements Serializable {
 
     }
 
-    public void searchBills() {
-
-    }
-
     private void processItemVicePurchaseAndGoodReceiveByBill() {
 
         Map<String, Object> m = new HashMap<>();
@@ -246,8 +242,7 @@ public class PharmacyPurchaseController implements Serializable {
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
         jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
         jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.fromInstitution.name, ");
-        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
-        jpql.append("sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
+        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount) ");
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
@@ -307,11 +302,11 @@ public class PharmacyPurchaseController implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
-        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.id, bi.bill.deptId, bi.bill.createdAt, ");
         jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.fromInstitution.name, ");
-        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
+        jpql.append("bi.bill.billType, bi.grossValue, bi.discount, bi.netValue, ");
         jpql.append("bi.item.id, bi.item.name, bi.item.code, ");
-        jpql.append("sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
+        jpql.append("bi.qty, bi.pharmaceuticalBillItem.freeQty) ");
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
@@ -347,8 +342,7 @@ public class PharmacyPurchaseController implements Serializable {
             jpql.append(" and bi.item in :items");
             m.put("items", itemsReferredByBillItem);
         }
-
-        jpql.append(" group by bi.bill, bi.item");
+       
         jpql.append(" order by bi.bill.createdAt, bi.item.name");
 
         rows = (List<PharmacyItemPurchaseDTO>) billFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);

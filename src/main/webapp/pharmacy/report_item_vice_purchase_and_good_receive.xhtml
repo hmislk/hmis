@@ -166,31 +166,6 @@
                                 <h:outputLabel value="#{row.billType}"/>
                             </p:column>
 
-                            <p:column headerText="Item" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}" 
-                                      sortBy="#{row.itemName}" filterBy="#{row.itemName}">
-                                <h:outputLabel value="#{row.itemName}"/>
-                            </p:column>
-
-                            <p:column headerText="Quantity" style="text-align: right" 
-                                      sortBy="#{row.qty}" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}">
-                                <h:outputLabel value="#{row.qty}">
-                                    <f:convertNumber pattern="#,##0"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Free Quantity" style="text-align: right" 
-                                      sortBy="#{row.freeQty}" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}">
-                                <h:outputLabel value="#{row.freeQty}">
-                                    <f:convertNumber pattern="#,##0"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Total Quantity" style="text-align: right" 
-                                      rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}">
-                                <h:outputLabel value="#{row.qty + row.freeQty}">
-                                    <f:convertNumber pattern="#,##0"/>
-                                </h:outputLabel>
-                            </p:column>
 
                             <p:column headerText="Bill Total" style="text-align: right" 
                                       rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
