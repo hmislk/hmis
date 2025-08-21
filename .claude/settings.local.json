@@ -46,7 +46,9 @@
       "Bash(git log:*)",
       "Bash(gh issue view:*)",
       "Bash(javac:*)",
-      "Bash(del /s /q wiki-temp)"
+      "Bash(del /s /q wiki-temp)",
+      "Bash(gh pr view:*)",
+      "Bash(gh issue comment:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
