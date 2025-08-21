@@ -489,14 +489,19 @@ public class PharmacyBean {
 
     public double getStockQty(ItemBatch batch, Institution institution) {
         String sql;
-        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = " + batch.getId() + " and s.department.institution.id = " + institution.getId();
-        return getStockFacade().findAggregateDbl(sql);
+        Map<String, Object> params = new HashMap<>();
+        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId and s.department.institution.id = :institutionId";
+        params.put("batchId", batch.getId());
+        params.put("institutionId", institution.getId());
+        return getStockFacade().findDoubleByJpql(sql, params);
     }
 
     public double getStockQty(ItemBatch batch) {
         String sql;
-        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = " + batch.getId();
-        return getStockFacade().findAggregateDbl(sql);
+        Map<String, Object> params = new HashMap<>();
+        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId";
+        params.put("batchId", batch.getId());
+        return getStockFacade().findDoubleByJpql(sql, params);
     }
 
     public double getStockQty(Item item, Department department) {
@@ -1523,7 +1528,9 @@ public class PharmacyBean {
         }
         name = name.trim();
         StoreItemCategory cat;
-        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where (c.name) = '" + name.toUpperCase() + "' ");
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", name.toUpperCase());
+        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where (c.name) = :name", params);
         if (cat == null && createNew) {
             cat = new StoreItemCategory();
             cat.setName(name);
@@ -1628,8 +1635,10 @@ public class PharmacyBean {
     }
 
     public Ampp getAmpp(Amp amp) {
-        String sql = "select a from Ampp a where a.retired=false and a.amp.id=" + amp.getId();
-        return getAmppFacade().findFirstByJpql(sql);
+        String sql = "select a from Ampp a where a.retired=false and a.amp.id=:ampId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ampId", amp.getId());
+        return getAmppFacade().findFirstByJpql(sql, params);
     }
 
     public Ampp getAmpp(Amp amp, double issueUnitsPerPack, MeasurementUnit unit) {

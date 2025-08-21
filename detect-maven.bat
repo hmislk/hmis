@@ -23,6 +23,12 @@ if /i "%COMPUTERNAME%"=="CARECODE-LAP" (
     exit /b %errorlevel%
 )
 
+if /i "%COMPUTERNAME%"=="DESKTOP-B7TA39C" (
+    echo Using installed Maven for DESKTOP-B7TA39C machine
+    "C:\Tools\apache-maven-3.9.8\bin\mvn.cmd" %*
+    exit /b %errorlevel%
+)
+
 REM Add other machines here as they are documented
 REM if /i "%COMPUTERNAME%"=="OTHER-MACHINE" (
 REM     echo Using Maven for other machine

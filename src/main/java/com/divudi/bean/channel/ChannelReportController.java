@@ -7,8 +7,10 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillClassType;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
@@ -2731,6 +2733,7 @@ public class ChannelReportController implements Serializable {
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
         HashMap hm = new HashMap();
+
         String sql = " select b from Bill b "
                 + " where b.retired=false "
                 + " and b.singleBillSession.absent=true "
@@ -2746,16 +2749,35 @@ public class ChannelReportController implements Serializable {
             hm.put("pm", pms);
         }
 
-        sql += " order by b.insId ";
+        sql += " order by b.createdAt desc ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
         List<Bill> b = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> billList = new ArrayList<>();
 
-        doctorFeeTotal = getStaffFeeTotal(b);
+        for (Bill bill : b) {
+            if (bill.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (bill.getPaidBill() != null) {
+                    billList.add(bill.getPaidBill());
+                    continue;
+                } else {
+                    billList.add(bill);
+                }
+            } else {
+                if (bill.getReferenceBill() != null && bill.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                    continue;
+                } else {
+                    billList.add(bill);
+                }
 
-        return b;
+            }
+        }
+
+        doctorFeeTotal = getStaffFeeTotal(billList);
+
+        return billList;
     }
 
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {

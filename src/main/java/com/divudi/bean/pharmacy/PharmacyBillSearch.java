@@ -3545,6 +3545,8 @@ public class PharmacyBillSearch implements Serializable {
                     return "pharmacy_reprint_purchase_return?faces-redirect=true";
                 case PharmacyAdjustment:
                     return "pharmacy_reprint_adjustment?faces-redirect=true";
+                case PharmacyDonationBill:
+                    return "pharmacy_reprint_donation?faces-redirect=true";
                 default:
                     return "pharmacy_reprint_bill_sale?faces-redirect=true";
             }
