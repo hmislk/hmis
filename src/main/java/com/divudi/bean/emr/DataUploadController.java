@@ -774,6 +774,7 @@ public class DataUploadController implements Serializable {
         }
     }
 
+    // Get String value
     private String getStringCellValue(Cell cell) {
         return (cell != null && cell.getCellType() == CellType.STRING) ? cell.getStringCellValue() : "";
     }
