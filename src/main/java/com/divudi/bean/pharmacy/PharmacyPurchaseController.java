@@ -12,6 +12,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
@@ -51,6 +52,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -75,11 +77,6 @@ import org.primefaces.event.SelectEvent;
 @Named
 @SessionScoped
 public class PharmacyPurchaseController implements Serializable {
-
-    public enum ReportType {
-        BILL,
-        BILL_ITEM
-    }
 
     /**
      * EJBs
@@ -108,7 +105,8 @@ public class PharmacyPurchaseController implements Serializable {
     PaymentService paymentService;
     @EJB
     private AmppFacade amppFacade;
-
+    @EJB
+    PharmacyService pharmacyService;
     /**
      * Controllers
      */
@@ -135,11 +133,15 @@ public class PharmacyPurchaseController implements Serializable {
 
     Institution institution;
     Department department;
+    Institution supplier;
     Date fromDate;
     Date toDate;
     Item selectedItem;
-    ReportType reportType = ReportType.BILL_ITEM;
+    ReportViewType reportType = ReportViewType.BY_BILL_ITEM;
     List<PharmacyItemPurchaseDTO> rows;
+    List<PharmacyItemPurchaseDTO> filteredRows;
+    String globalFilter;
+    PaymentMethod paymentMethodFilter;
 
     BillListWithTotals billListWithTotals;
     private double billItemsTotalQty;
@@ -157,6 +159,11 @@ public class PharmacyPurchaseController implements Serializable {
             billExpenses = new ArrayList<>();
         }
         return billExpenses;
+    }
+
+    public String navigateToItemWiseProcurementReport() {
+        reportType = ReportViewType.BY_BILL;
+        return "/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true";
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
@@ -209,15 +216,26 @@ public class PharmacyPurchaseController implements Serializable {
 
     }
 
-    public void fillItemVicePurchaseAndGoodReceive() {
+    public void searchBills() {
+
+    }
+
+    private void processItemVicePurchaseAndGoodReceiveByBill() {
+
         Map<String, Object> m = new HashMap<>();
 
-        List<BillType> bts = new ArrayList<>();
-        bts.add(BillType.PharmacyGrnBill);
-        bts.add(BillType.PharmacyPurchaseBill);
-        bts.add(BillType.PharmacyDonationBill);
-        bts.add(BillType.PharmacyGrnReturn);
-        bts.add(BillType.PurchaseReturn);
+        List<Item> itemsReferredByBillItem = new ArrayList<>();
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_GRN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND);
 
         List<Class> bcs = new ArrayList<>();
         bcs.add(BilledBill.class);
@@ -226,15 +244,9 @@ public class PharmacyPurchaseController implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(bi.bill, ");
-        if (reportType == ReportType.BILL_ITEM) {
-            jpql.append("bi.item, ");
-        } else {
-            jpql.append("null, ");
-        }
         jpql.append("sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
         jpql.append(" from BillItem bi");
-        jpql.append(" where bi.bill.billType in :bts");
-        jpql.append(" and type(bi.bill) in :bcs");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
 
         m.put("fd", fromDate);
@@ -252,23 +264,111 @@ public class PharmacyPurchaseController implements Serializable {
             m.put("ins", institution);
         }
 
-        if (selectedItem != null) {
-            List<Item> items = resolveItemFamily(selectedItem);
-            if (!items.isEmpty()) {
-                jpql.append(" and bi.item in :items");
-                m.put("items", items);
-            }
-        }
-
-        if (reportType == ReportType.BILL) {
-            jpql.append(" group by bi.bill");
+        if (selectedItem instanceof Ampp) {
+            itemsReferredByBillItem.add(selectedItem);
+        } else if (selectedItem instanceof Ampp) {
+            itemsReferredByBillItem.add(selectedItem);
+            itemsReferredByBillItem.addAll(pharmacyService.findRelatedItems((Amp) selectedItem));
         } else {
-            jpql.append(" group by bi.bill, bi.item");
+            JsfUtil.addErrorMessage("Not yet Supported");
+            return;
+        }
+        jpql.append(" and bi.bill.item in :items");
+        m.put("items", itemsReferredByBillItem);
+
+        if (supplier != null) {
+            jpql.append(" and bi.bill.fromInstitution=:supplier");
+            m.put("supplier", supplier);
         }
 
         jpql.append(" order by bi.bill.createdAt");
 
         rows = (List<PharmacyItemPurchaseDTO>) billFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    private void processItemVicePurchaseAndGoodReceiveByBillItem() {
+        Map<String, Object> m = new HashMap<>();
+
+        List<Item> itemsReferredByBillItem = new ArrayList<>();
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_GRN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(bi.bill, ");
+        jpql.append("bi.item, sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", bts);
+
+        if (department != null) {
+            jpql.append(" and bi.bill.department=:dept");
+            m.put("dept", department);
+        }
+
+        if (institution != null) {
+            jpql.append(" and bi.bill.institution=:ins");
+            m.put("ins", institution);
+        }
+
+        if (supplier != null) {
+            jpql.append(" and bi.bill.fromInstitution=:supplier");
+            m.put("supplier", supplier);
+        }
+
+        if (selectedItem != null) {
+            if (selectedItem instanceof Ampp) {
+                itemsReferredByBillItem.add(selectedItem);
+            } else if (selectedItem instanceof Amp) {
+                itemsReferredByBillItem.add(selectedItem);
+                itemsReferredByBillItem.addAll(pharmacyService.findRelatedItems((Amp) selectedItem));
+            } else {
+                itemsReferredByBillItem.add(selectedItem);
+            }
+            jpql.append(" and bi.item in :items");
+            m.put("items", itemsReferredByBillItem);
+        }
+
+        jpql.append(" group by bi.bill, bi.item");
+        jpql.append(" order by bi.bill.createdAt, bi.item.name");
+
+        rows = (List<PharmacyItemPurchaseDTO>) billFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    public void processItemVicePurchaseAndGoodReceive() {
+        if (reportType == null) {
+            JsfUtil.addErrorMessage("Please select a report view type.");
+            return;
+        }
+        if (selectedItem == null) {
+            JsfUtil.addErrorMessage("Please select an item.");
+            return;
+        }
+
+        switch (reportType) {
+            case BY_BILL:
+                processItemVicePurchaseAndGoodReceiveByBill();
+                break;
+            case BY_BILL_ITEM:
+                processItemVicePurchaseAndGoodReceiveByBillItem();
+                break;
+            default:
+                JsfUtil.addErrorMessage("Unsupported report view type: " + reportType.getLabel());
+                break;
+        }
+
     }
 
     public List<Item> completeItems(String qry) {
@@ -366,11 +466,11 @@ public class PharmacyPurchaseController implements Serializable {
         this.selectedItem = selectedItem;
     }
 
-    public ReportType getReportType() {
+    public ReportViewType getReportType() {
         return reportType;
     }
 
-    public void setReportType(ReportType reportType) {
+    public void setReportType(ReportViewType reportType) {
         this.reportType = reportType;
     }
 
@@ -1004,10 +1104,9 @@ public class PharmacyPurchaseController implements Serializable {
         return bill;
     }
 
-    public double findLastRetailRate(Amp amp){
+    public double findLastRetailRate(Amp amp) {
         return getPharmacyBean().getLastRetailRate(amp, getSessionController().getDepartment());
     }
-
 
     public void setBill(BilledBill bill) {
         this.bill = bill;
@@ -1199,6 +1298,38 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Institution getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Institution supplier) {
+        this.supplier = supplier;
+    }
+
+    public PaymentMethod getPaymentMethodFilter() {
+        return paymentMethodFilter;
+    }
+
+    public void setPaymentMethodFilter(PaymentMethod paymentMethodFilter) {
+        this.paymentMethodFilter = paymentMethodFilter;
+    }
+
+    public List<PharmacyItemPurchaseDTO> getFilteredRows() {
+        return filteredRows;
+    }
+
+    public void setFilteredRows(List<PharmacyItemPurchaseDTO> filteredRows) {
+        this.filteredRows = filteredRows;
+    }
+
+    public String getGlobalFilter() {
+        return globalFilter;
+    }
+
+    public void setGlobalFilter(String globalFilter) {
+        this.globalFilter = globalFilter;
     }
 
 }

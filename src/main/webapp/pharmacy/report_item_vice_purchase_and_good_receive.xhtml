@@ -1,162 +1,324 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      >
-
-    <h:body>
-
-        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
-
-            <ui:define name="subcontent">
-                <h:form>
-
-                    <p:panel header="Item - wise Purchase/Good Receive" >
-                        
-                        <div class="row">
-                            <div class="col-3">
-                                <h:outputLabel value="Department" />&nbsp;
-                                <p:autoComplete
-                                    completeMethod="#{departmentController.completeDept}"
-                                    var="dept"
-                                    itemLabel="#{dept.name}"
-                                    itemValue="#{dept}"
-                                    forceSelection="true"
-                                    value="#{pharmacyPurchaseController.department}"/>
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="From" />&nbsp;
-                                <p:calendar value="#{pharmacyPurchaseController.fromDate}"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="To" />&nbsp;
-                                <p:calendar value="#{pharmacyPurchaseController.toDate}"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="Item" />&nbsp;
-                                <p:autoComplete value="#{pharmacyPurchaseController.selectedItem}"
-                                                completeMethod="#{pharmacyPurchaseController.completeItems}"
-                                                var="it"
-                                                itemLabel="#{it.name}"
-                                                itemValue="#{it}"
-                                                forceSelection="true"
-                                                required="true"/>
-                            </div>
-                        </div>
-
-                        <div class="row my-2">
-                            <div class="col">
-                                <p:selectOneRadio value="#{pharmacyPurchaseController.reportType}" layout="responsive" columns="2">
-                                    <f:selectItem itemLabel="By Bill" itemValue="BILL"/>
-                                    <f:selectItem itemLabel="By Bill Item" itemValue="BILL_ITEM"/>
-                                </p:selectOneRadio>
-                            </div>
-                        </div>
-
-                        <h:panelGrid columns="4" class="my-2">
-                            <p:commandButton
-                                ajax="false"
-                                value="Process"
-                                icon="pi pi-refresh"
-                                class="ui-button-warning"
-                                action="#{pharmacyPurchaseController.fillItemVicePurchaseAndGoodReceive()}" />
-                            <p:commandButton
-                                ajax="false"
-                                value="Excel"
-                                icon="pi pi-file-excel"
-                                class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="item_wise_purchase" />
-                            </p:commandButton>
-                            <p:commandButton
-                                ajax="false"
-                                value="PDF"
-                                icon="pi pi-file-pdf"
-                                class="ui-button-danger mx-2">
-                                <p:dataExporter type="pdf" target="tbl" fileName="item_wise_purchase" />
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                icon="pi pi-print"
-                                class="ui-button-info"
-                                action="#" >
-                                <p:printer target="gpBillPreview" />
-                            </p:commandButton>
-                        </h:panelGrid>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                >
 
 
-                        <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         value="#{pharmacyPurchaseController.rows}"
-                                         var="r"
-                                         rowKey="#{r.bill.id}"
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorPosition="bottom"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks}{NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20,50,100">
+    <ui:define name="subcontent">
 
-                                <p:column headerText="Bill No"
-                                          sortBy="#{r.bill.deptId}"
-                                          filterBy="#{r.bill.deptId}"
-                                          filterMatchMode="contains">
-                                    <p:commandLink value="#{r.bill.deptId}"
-                                                   ajax="false"
-                                                   action="#{pharmacyPurchaseController.viewBill(r.bill)}"/>
-                                </p:column>
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel header="Purchase/GRN Search Report">
+                    <h:panelGrid columns="8" class="w-100">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar 
+                            class="w-100"
+                            id="frmDate" 
+                            inputStyleClass="w-100"
+                            value="#{pharmacyPurchaseController.fromDate}" 
+                            navigator="true"  
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                        <p:spacer width="10" ></p:spacer>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar 
+                            inputStyleClass="w-100"
+                            class="w-100"
+                            id="toDate" 
+                            value="#{pharmacyPurchaseController.toDate}" 
+                            navigator="true" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                        <p:spacer width="10" ></p:spacer>
+                        <h:outputLabel  value="Institution"  />
+                        <p:autoComplete  
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            value="#{pharmacyPurchaseController.institution}"  
+                            completeMethod="#{institutionController.completeInstitution}" 
+                            var="ins"
+                            itemValue="#{ins}" itemLabel="#{ins.name}" 
+                            forceSelection="true" rendered="true">
+                        </p:autoComplete>
 
-                                <p:column headerText="Date"
-                                          sortBy="#{r.bill.createdAt}"
-                                          filterBy="#{r.bill.createdAt}"
-                                          filterMatchMode="contains">
-                                    <h:outputText value="#{r.bill.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputText>
-                                </p:column>
+                        <h:outputLabel  value="Department"  />
+                        <p:autoComplete 
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            value="#{pharmacyPurchaseController.department}"  
+                            completeMethod="#{departmentController.completeDept}" var="dept"
+                            itemValue="#{dept}" itemLabel="#{dept.name}" 
+                            forceSelection="true" rendered="true">
+                        </p:autoComplete>
 
-                                <p:column headerText="Item"
-                                          rendered="#{pharmacyPurchaseController.reportType eq 'BILL_ITEM'}"
-                                          sortBy="#{r.item.name}"
-                                          filterBy="#{r.item.name}"
-                                          filterMatchMode="contains">
-                                    <h:outputText value="#{r.item.name}"/>
-                                </p:column>
+                        <h:outputLabel  value="Supplier"  />
+                        <p:autoComplete  value="#{pharmacyPurchaseController.supplier}"  
+                                         completeMethod="#{institutionController.completeSuppliers}" var="supplier"
+                                         itemValue="#{supplier}" itemLabel="#{supplier.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
 
-                                <p:column headerText="Quantity"
-                                          sortBy="#{r.qty}"
-                                          filterBy="#{r.qty}"
-                                          filterMatchMode="contains"
-                                          styleClass="text-end">
-                                    <h:outputText value="#{r.qty}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                        <h:outputLabel  value="Item"  />
+                        <p:autoComplete  value="#{pharmacyPurchaseController.selectedItem}"  
+                                         completeMethod="#{pharmacyPurchaseController.completeItems}" var="item"
+                                         itemValue="#{item}" itemLabel="#{item.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
 
-                                <p:column headerText="Free"
-                                          sortBy="#{r.freeQty}"
-                                          filterBy="#{r.freeQty}"
-                                          filterMatchMode="contains"
-                                          styleClass="text-end">
-                                    <h:outputText value="#{r.freeQty}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-
-                            </p:dataTable>
-</h:panelGroup>
-                    </p:panel>
-                </h:form>
-
-
-            </ui:define>
+                        <!-- Report View Type Filter -->
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf080;" styleClass="fa mr-2"/> <!-- FontAwesome chart bar icon -->
+                            <h:outputLabel value="Report View" for="reportViewType" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="reportViewType"
+                            filterMatchMode="contains"
+                            class="w-100 mt-1 form-control"
+                            value="#{pharmacyPurchaseController.reportType}">
+                            <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}"/>
+                            <f:selectItems value="#{enumController.pharmacyProcurementByBillItemViewTypes}"
+                                           var="rvt"
+                                           itemLabel="#{rvt.label}"
+                                           itemValue="#{rvt}"/>
+                        </p:selectOneMenu>
 
 
-        </ui:composition>
+                    </h:panelGrid>
 
-    </h:body>
-</html>
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" value="Search" 
+                            icon="fa-solid fa-search"
+                            class="ui-button-success"
+                            actionListener="#{pharmacyPurchaseController.processItemVicePurchaseAndGoodReceive()}"
+                            style="float: right;" /> 
+
+
+                    </h:panelGrid>
+
+
+                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType eq 'BY_BILL'}">
+
+                        <p:commandButton ajax="false" value="Excel" 
+                                         icon="fa-solid fa-file-excel"
+                                         class="ui-button-success mx-2" 
+                                         style="float: right;" >
+                            <p:dataExporter type="xlsx" target="searchResultBills" fileName="pharmacy_purchase_search_results"  />
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Print" 
+                                         icon="fa-solid fa-print"
+                                         class="ui-button-info"
+                                         style="float: right;" >
+                            <p:printer target="searchResultBills"/>
+                        </p:commandButton>
+
+                        <p:dataTable id="searchResultBills" value="#{pharmacyPurchaseController.rows}" var="row" 
+                                     rendered="#{pharmacyPurchaseController.rows.size() > 0}" 
+                                     filteredValue="#{pharmacyPurchaseController.filteredRows}"
+                                     globalFilter="#{pharmacyPurchaseController.globalFilter}"
+                                     paginator="true" rows="20" 
+                                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20,50">
+
+                            <f:facet name="header">  
+                                <h:outputLabel value="Search Results - #{pharmacyPurchaseController.reportType == 'BILL_ITEM' ? 'By Bill Items' : 'By Bills'}"/>
+                            </f:facet>
+
+                            <p:column headerText="Bill Number" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
+                                <h:outputLabel value="#{row.bill.deptId}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Date" sortBy="#{row.bill.createdAt}" filterBy="#{row.bill.createdAt}">
+                                <h:outputLabel value="#{row.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Institution" rendered="#{pharmacyPurchaseController.institution eq null}" 
+                                      sortBy="#{row.bill.institution.name}" filterBy="#{row.bill.institution.name}">
+                                <h:outputLabel value="#{row.bill.institution.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Department" rendered="#{pharmacyPurchaseController.department eq null}" 
+                                      sortBy="#{row.bill.department.name}" filterBy="#{row.bill.department.name}">
+                                <h:outputLabel value="#{row.bill.department.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Supplier" rendered="#{pharmacyPurchaseController.supplier eq null}" 
+                                      sortBy="#{row.bill.fromInstitution.name}" filterBy="#{row.bill.fromInstitution.name}">
+                                <h:outputLabel value="#{row.bill.fromInstitution.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type" sortBy="#{row.bill.billType}" filterBy="#{row.bill.billType}">
+                                <h:outputLabel value="#{row.bill.billType}"/>
+                            </p:column>
+
+                            <p:column headerText="Item" rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}" 
+                                      sortBy="#{row.item.name}" filterBy="#{row.item.name}">
+                                <h:outputLabel value="#{row.item.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Quantity" style="text-align: right" 
+                                      sortBy="#{row.qty}" rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}">
+                                <h:outputLabel value="#{row.qty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Free Quantity" style="text-align: right" 
+                                      sortBy="#{row.freeQty}" rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}">
+                                <h:outputLabel value="#{row.freeQty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Total Quantity" style="text-align: right" 
+                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL_ITEM'}">
+                                <h:outputLabel value="#{row.qty + row.freeQty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill Total" style="text-align: right" 
+                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL'}" 
+                                      sortBy="#{row.bill.total}">
+                                <h:outputLabel value="#{row.bill.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Net Total" style="text-align: right" 
+                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL'}" 
+                                      sortBy="#{row.bill.netTotal}">
+                                <h:outputLabel value="#{row.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Discount" style="text-align: right" 
+                                      rendered="#{pharmacyPurchaseController.reportType == 'BILL'}" 
+                                      sortBy="#{row.bill.discount}">
+                                <h:outputLabel value="#{row.bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="text-align: center;">
+                                <p:commandButton value="View" 
+                                                 action="#{pharmacyPurchaseController.viewBill(row.bill)}"
+                                                 class="ui-button-info"
+                                                 icon="fa-solid fa-eye"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:panelGroup>
+
+
+
+
+
+                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType eq 'BY_BILL_ITEM'}">
+
+                        <p:commandButton ajax="false" value="Excel" 
+                                         icon="fa-solid fa-file-excel"
+                                         class="ui-button-success mx-2" 
+                                         style="float: right;" >
+                            <p:dataExporter type="xlsx" target="searchResultBillItems" fileName="pharmacy_purchase_bill_items_search_results"  />
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Print" 
+                                         icon="fa-solid fa-print"
+                                         class="ui-button-info"
+                                         style="float: right;" >
+                            <p:printer target="searchResultBillItems"/>
+                        </p:commandButton>
+
+                        <p:dataTable id="searchResultBillItems" value="#{pharmacyPurchaseController.rows}" var="row" 
+                                     rendered="#{pharmacyPurchaseController.rows.size() > 0}" 
+                                     filteredValue="#{pharmacyPurchaseController.filteredRows}"
+                                     globalFilter="#{pharmacyPurchaseController.globalFilter}"
+                                     paginator="true" rows="20" 
+                                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20,50">
+
+                            <f:facet name="header">  
+                                <h:outputLabel value="Search Results - By Bill Items"/>
+                            </f:facet>
+
+                            <p:column headerText="Bill Number" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
+                                <h:outputLabel value="#{row.bill.deptId}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Date" sortBy="#{row.bill.createdAt}" filterBy="#{row.bill.createdAt}">
+                                <h:outputLabel value="#{row.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Institution" rendered="#{pharmacyPurchaseController.institution eq null}" 
+                                      sortBy="#{row.bill.institution.name}" filterBy="#{row.bill.institution.name}">
+                                <h:outputLabel value="#{row.bill.institution.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Department" rendered="#{pharmacyPurchaseController.department eq null}" 
+                                      sortBy="#{row.bill.department.name}" filterBy="#{row.bill.department.name}">
+                                <h:outputLabel value="#{row.bill.department.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Supplier" rendered="#{pharmacyPurchaseController.supplier eq null}" 
+                                      sortBy="#{row.bill.fromInstitution.name}" filterBy="#{row.bill.fromInstitution.name}">
+                                <h:outputLabel value="#{row.bill.fromInstitution.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type" sortBy="#{row.bill.billType}" filterBy="#{row.bill.billType}">
+                                <h:outputLabel value="#{row.bill.billType}"/>
+                            </p:column>
+
+                            <p:column headerText="Item" sortBy="#{row.item.name}" filterBy="#{row.item.name}">
+                                <h:outputLabel value="#{row.item.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Quantity" style="text-align: right" sortBy="#{row.qty}">
+                                <h:outputLabel value="#{row.qty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Free Quantity" style="text-align: right" sortBy="#{row.freeQty}">
+                                <h:outputLabel value="#{row.freeQty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Total Quantity" style="text-align: right">
+                                <h:outputLabel value="#{row.qty + row.freeQty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="text-align: center;">
+                                <p:commandButton value="View" 
+                                                 action="#{pharmacyPurchaseController.viewBill(row.bill)}"
+                                                 class="ui-button-info"
+                                                 icon="fa-solid fa-eye"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

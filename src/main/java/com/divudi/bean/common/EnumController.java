@@ -330,6 +330,13 @@ public class EnumController implements Serializable {
 //                ReportViewType.BY_ITEM
         );
     }
+    
+    public List<ReportViewType> getPharmacyProcurementByBillItemViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE
+        );
+    }
 
     public List<ReportViewType> getPharmacyIncomeCostReportViewTypes() {
         return Arrays.asList(
