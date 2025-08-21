@@ -64,15 +64,20 @@
                                          forceSelection="true" rendered="true">
                         </p:autoComplete>
 
-                        <h:outputLabel  value="Item"  />
-                        <p:autoComplete  value="#{pharmacyPurchaseController.selectedItem}"  
-                                         completeMethod="#{pharmacyPurchaseController.completeItems}" var="item"
+                        <h:outputLabel  
+                            value="Item"  />
+                        <p:autoComplete  
+                            value="#{pharmacyPurchaseController.selectedItem}"  
+                                         completeMethod="#{itemController.completeMedicine}" 
+                                         var="item"
                                          itemValue="#{item}" itemLabel="#{item.name}" 
                                          forceSelection="true" rendered="true">
                         </p:autoComplete>
 
                         <!-- Report View Type Filter -->
-                        <h:panelGroup layout="block" styleClass="form-group">
+                        <h:panelGroup 
+                            layout="block" 
+                            styleClass="form-group">
                             <h:outputText value="&#xf080;" styleClass="fa mr-2"/> <!-- FontAwesome chart bar icon -->
                             <h:outputLabel value="Report View" for="reportViewType" class="mx-3"/>
                         </h:panelGroup>
@@ -104,7 +109,7 @@
                     </h:panelGrid>
 
 
-                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType.name() eq 'BY_BILL'}">
+                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType eq 'BY_BILL'}">
 
                         <p:commandButton ajax="false" value="Excel" 
                                          icon="fa-solid fa-file-excel"
@@ -132,38 +137,38 @@
                                 <h:outputLabel value="Search Results - #{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM' ? 'By Bill Items' : 'By Bills'}"/>
                             </f:facet>
 
-                            <p:column headerText="Bill Number" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
-                                <h:outputLabel value="#{row.bill.deptId}"/>
+                            <p:column headerText="Bill Number" sortBy="#{row.billDeptId}" filterBy="#{row.billDeptId}">
+                                <h:outputLabel value="#{row.billDeptId}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Date" sortBy="#{row.bill.createdAt}" filterBy="#{row.bill.createdAt}">
-                                <h:outputLabel value="#{row.bill.createdAt}">
+                            <p:column headerText="Bill Date" sortBy="#{row.billCreatedAt}" filterBy="#{row.billCreatedAt}">
+                                <h:outputLabel value="#{row.billCreatedAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Institution" rendered="#{pharmacyPurchaseController.institution eq null}" 
-                                      sortBy="#{row.bill.institution.name}" filterBy="#{row.bill.institution.name}">
-                                <h:outputLabel value="#{row.bill.institution.name}"/>
+                                      sortBy="#{row.billInstitutionName}" filterBy="#{row.billInstitutionName}">
+                                <h:outputLabel value="#{row.billInstitutionName}"/>
                             </p:column>
 
                             <p:column headerText="Department" rendered="#{pharmacyPurchaseController.department eq null}" 
-                                      sortBy="#{row.bill.department.name}" filterBy="#{row.bill.department.name}">
-                                <h:outputLabel value="#{row.bill.department.name}"/>
+                                      sortBy="#{row.billDepartmentName}" filterBy="#{row.billDepartmentName}">
+                                <h:outputLabel value="#{row.billDepartmentName}"/>
                             </p:column>
 
                             <p:column headerText="Supplier" rendered="#{pharmacyPurchaseController.supplier eq null}" 
-                                      sortBy="#{row.bill.fromInstitution.name}" filterBy="#{row.bill.fromInstitution.name}">
-                                <h:outputLabel value="#{row.bill.fromInstitution.name}"/>
+                                      sortBy="#{row.billFromInstitutionName}" filterBy="#{row.billFromInstitutionName}">
+                                <h:outputLabel value="#{row.billFromInstitutionName}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Type" sortBy="#{row.bill.billType}" filterBy="#{row.bill.billType}">
-                                <h:outputLabel value="#{row.bill.billType}"/>
+                            <p:column headerText="Bill Type" sortBy="#{row.billType}" filterBy="#{row.billType}">
+                                <h:outputLabel value="#{row.billType}"/>
                             </p:column>
 
                             <p:column headerText="Item" rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL_ITEM'}" 
-                                      sortBy="#{row.item.name}" filterBy="#{row.item.name}">
-                                <h:outputLabel value="#{row.item.name}"/>
+                                      sortBy="#{row.itemName}" filterBy="#{row.itemName}">
+                                <h:outputLabel value="#{row.itemName}"/>
                             </p:column>
 
                             <p:column headerText="Quantity" style="text-align: right" 
@@ -189,31 +194,31 @@
 
                             <p:column headerText="Bill Total" style="text-align: right" 
                                       rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
-                                      sortBy="#{row.bill.total}">
-                                <h:outputLabel value="#{row.bill.total}">
+                                      sortBy="#{row.billTotal}">
+                                <h:outputLabel value="#{row.billTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Net Total" style="text-align: right" 
                                       rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
-                                      sortBy="#{row.bill.netTotal}">
-                                <h:outputLabel value="#{row.bill.netTotal}">
+                                      sortBy="#{row.billNetTotal}">
+                                <h:outputLabel value="#{row.billNetTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Discount" style="text-align: right" 
                                       rendered="#{pharmacyPurchaseController.reportType.name() == 'BY_BILL'}" 
-                                      sortBy="#{row.bill.discount}">
-                                <h:outputLabel value="#{row.bill.discount}">
+                                      sortBy="#{row.billDiscount}">
+                                <h:outputLabel value="#{row.billDiscount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Actions" style="text-align: center;">
                                 <p:commandButton value="View" 
-                                                 action="#{pharmacyPurchaseController.viewBill(row.bill)}"
+                                                 action="#{pharmacyPurchaseController.viewBillFromDto(row.billId, row.billType)}"
                                                  class="ui-button-info"
                                                  icon="fa-solid fa-eye"/>
                             </p:column>
@@ -225,7 +230,7 @@
 
 
 
-                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType.name() eq 'BY_BILL_ITEM'}">
+                    <h:panelGroup rendered="#{pharmacyPurchaseController.reportType eq 'BY_BILL_ITEM'}">
 
                         <p:commandButton ajax="false" value="Excel" 
                                          icon="fa-solid fa-file-excel"
@@ -253,37 +258,37 @@
                                 <h:outputLabel value="Search Results - By Bill Items"/>
                             </f:facet>
 
-                            <p:column headerText="Bill Number" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
-                                <h:outputLabel value="#{row.bill.deptId}"/>
+                            <p:column headerText="Bill Number" sortBy="#{row.billDeptId}" filterBy="#{row.billDeptId}">
+                                <h:outputLabel value="#{row.billDeptId}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Date" sortBy="#{row.bill.createdAt}" filterBy="#{row.bill.createdAt}">
-                                <h:outputLabel value="#{row.bill.createdAt}">
+                            <p:column headerText="Bill Date" sortBy="#{row.billCreatedAt}" filterBy="#{row.billCreatedAt}">
+                                <h:outputLabel value="#{row.billCreatedAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Institution" rendered="#{pharmacyPurchaseController.institution eq null}" 
-                                      sortBy="#{row.bill.institution.name}" filterBy="#{row.bill.institution.name}">
-                                <h:outputLabel value="#{row.bill.institution.name}"/>
+                                      sortBy="#{row.billInstitutionName}" filterBy="#{row.billInstitutionName}">
+                                <h:outputLabel value="#{row.billInstitutionName}"/>
                             </p:column>
 
                             <p:column headerText="Department" rendered="#{pharmacyPurchaseController.department eq null}" 
-                                      sortBy="#{row.bill.department.name}" filterBy="#{row.bill.department.name}">
-                                <h:outputLabel value="#{row.bill.department.name}"/>
+                                      sortBy="#{row.billDepartmentName}" filterBy="#{row.billDepartmentName}">
+                                <h:outputLabel value="#{row.billDepartmentName}"/>
                             </p:column>
 
                             <p:column headerText="Supplier" rendered="#{pharmacyPurchaseController.supplier eq null}" 
-                                      sortBy="#{row.bill.fromInstitution.name}" filterBy="#{row.bill.fromInstitution.name}">
-                                <h:outputLabel value="#{row.bill.fromInstitution.name}"/>
+                                      sortBy="#{row.billFromInstitutionName}" filterBy="#{row.billFromInstitutionName}">
+                                <h:outputLabel value="#{row.billFromInstitutionName}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Type" sortBy="#{row.bill.billType}" filterBy="#{row.bill.billType}">
-                                <h:outputLabel value="#{row.bill.billType}"/>
+                            <p:column headerText="Bill Type" sortBy="#{row.billType}" filterBy="#{row.billType}">
+                                <h:outputLabel value="#{row.billType}"/>
                             </p:column>
 
-                            <p:column headerText="Item" sortBy="#{row.item.name}" filterBy="#{row.item.name}">
-                                <h:outputLabel value="#{row.item.name}"/>
+                            <p:column headerText="Item" sortBy="#{row.itemName}" filterBy="#{row.itemName}">
+                                <h:outputLabel value="#{row.itemName}"/>
                             </p:column>
 
                             <p:column headerText="Quantity" style="text-align: right" sortBy="#{row.qty}">
@@ -306,7 +311,7 @@
 
                             <p:column headerText="Actions" style="text-align: center;">
                                 <p:commandButton value="View" 
-                                                 action="#{pharmacyPurchaseController.viewBill(row.bill)}"
+                                                 action="#{pharmacyPurchaseController.viewBillFromDto(row.billId, row.billType)}"
                                                  class="ui-button-info"
                                                  icon="fa-solid fa-eye"/>
                             </p:column>

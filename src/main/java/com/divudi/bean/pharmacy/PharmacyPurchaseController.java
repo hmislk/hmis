@@ -243,7 +243,10 @@ public class PharmacyPurchaseController implements Serializable {
         bcs.add(RefundBill.class);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(bi.bill, ");
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.fromInstitution.name, ");
+        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
         jpql.append("sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
@@ -266,7 +269,7 @@ public class PharmacyPurchaseController implements Serializable {
 
         if (selectedItem instanceof Ampp) {
             itemsReferredByBillItem.add(selectedItem);
-        } else if (selectedItem instanceof Ampp) {
+        } else if (selectedItem instanceof Amp) {
             itemsReferredByBillItem.add(selectedItem);
             itemsReferredByBillItem.addAll(pharmacyService.findRelatedItems((Amp) selectedItem));
         } else {
@@ -303,8 +306,12 @@ public class PharmacyPurchaseController implements Serializable {
         bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(bi.bill, ");
-        jpql.append("bi.item, sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.fromInstitution.name, ");
+        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
+        jpql.append("bi.item.id, bi.item.name, bi.item.code, ");
+        jpql.append("sum(bi.qty), sum(bi.pharmaceuticalBillItem.freeQty)) ");
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
@@ -356,7 +363,7 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please select an item.");
             return;
         }
-
+        System.out.println("reportType = " + reportType);
         switch (reportType) {
             case BY_BILL:
                 processItemVicePurchaseAndGoodReceiveByBill();
@@ -371,48 +378,8 @@ public class PharmacyPurchaseController implements Serializable {
 
     }
 
-    public List<Item> completeItems(String qry) {
-        Class[] classes = new Class[]{Amp.class, Ampp.class, Vmp.class, Vmpp.class, Atm.class, Vtm.class};
-        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-        return itemController.completeItem(qry, classes, dts, 30);
-    }
-
-    private List<Item> resolveItemFamily(Item item) {
-        List<Item> items = new ArrayList<>();
-        if (item == null) {
-            return items;
-        }
-        if (item instanceof Ampp) {
-            items.add(item);
-        } else if (item instanceof Amp) {
-            items.add(item);
-            Map<String, Object> m = new HashMap<>();
-            m.put("amp", item);
-            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp=:amp", m));
-        } else if (item instanceof Vmpp) {
-            items.add(item);
-            Map<String, Object> m = new HashMap<>();
-            m.put("vmpp", item);
-            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.vmpp=:vmpp", m));
-        } else if (item instanceof Vmp) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("vmp", item);
-            items.addAll(ampFacade.findByJpql("select a from Amp a where a.vmp=:vmp", m));
-            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp.vmp=:vmp", m));
-        } else if (item instanceof Atm) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("atm", item);
-            items.addAll(ampFacade.findByJpql("select a from Amp a where a.atm=:atm", m));
-            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp.atm=:atm", m));
-        } else if (item instanceof Vtm) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("vtm", item);
-            items.addAll(ampFacade.findByJpql("select a from Amp a where a.atm.vtm=:vtm or a.vmp.vtm=:vtm", m));
-            items.addAll(amppFacade.findByJpql("select a from Ampp a where a.amp.atm.vtm=:vtm or a.amp.vmp.vtm=:vtm", m));
-        }
-        return items;
-    }
-
+    
+    // Legacy method - keep for backward compatibility  
     public String viewBill(Bill b) {
         if (b == null) {
             return "";
@@ -438,6 +405,34 @@ public class PharmacyPurchaseController implements Serializable {
                 page = "/pharmacy/pharmacy_grn.xhtml";
         }
         return page + "?faces-redirect=true&billId=" + b.getId();
+    }
+
+    // New method for DTO-based navigation
+    public String viewBillFromDto(Long billId, BillType billType) {
+        if (billId == null || billType == null) {
+            return "";
+        }
+        String page;
+        switch (billType) {
+            case PharmacyGrnBill:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+                break;
+            case PharmacyPurchaseBill:
+                page = "/pharmacy/pharmacy_purchase.xhtml";
+                break;
+            case PharmacyDonationBill:
+                page = "/pharmacy/pharmacy_donation_bill.xhtml";
+                break;
+            case PharmacyGrnReturn:
+                page = "/pharmacy/pharmacy_reprint_grn_return.xhtml";
+                break;
+            case PurchaseReturn:
+                page = "/pharmacy/pharmacy_return_purchase.xhtml";
+                break;
+            default:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+        }
+        return page + "?faces-redirect=true&billId=" + billId;
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
