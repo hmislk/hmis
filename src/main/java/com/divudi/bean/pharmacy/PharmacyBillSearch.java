@@ -134,6 +134,8 @@ public class PharmacyBillSearch implements Serializable {
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
+    @Inject
+    GrnCostingController grnCostingController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private UploadedFile file;
@@ -1046,6 +1048,16 @@ public class PharmacyBillSearch implements Serializable {
         // Set the saved GRN bill to be edited in GrnController
         grnController.setCurrentGrnBillPre(bill);
         return grnController.navigateToEditGrn();
+    }
+
+    public String navigateToEditSavedGrnCosting() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billService.reloadBill(bill);
+        grnCostingController.setCurrentGrnBillPre(bill);
+        return grnCostingController.navigateToEditGrnCosting();
     }
 
     public String navigateToViewPurchaseOrder() {

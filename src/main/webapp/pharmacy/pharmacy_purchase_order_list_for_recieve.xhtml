@@ -148,9 +148,20 @@
                                             value="Save/Approve"
                                             class="ui-button-info"
                                             title="Receive with Save/Approve workflow"
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnController.navigateToResiveWithSaveApprove()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Save/Approve"
+                                            class="ui-button-info"
+                                            title="Receive with costing Save/Approve workflow"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                            action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                            <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
                                     <div class="col-md-12">
@@ -252,8 +263,17 @@
                                                 icon="fa fa-edit"
                                                 title="Edit Saved GRN" 
                                                 ajax="false"
-                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE'}"
+                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                                 action="#{pharmacyBillSearch.navigateToEditSavedGrn()}">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                            </p:commandButton>
+                                            <p:commandButton  
+                                                class="ui-button-warning"  
+                                                icon="fa fa-edit"
+                                                title="Edit Saved GRN with Costing" 
+                                                ajax="false"
+                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}">
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                             </p:commandButton>
                                         </h:panelGroup>
