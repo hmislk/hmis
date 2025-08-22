@@ -1527,11 +1527,12 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
         jpql.append("b.id, b.deptId, b.createdAt, ");
-        jpql.append("b.institution.name, b.department.name, b.toDepartment.name, ");
+        jpql.append("b.institution.name, b.department.name, b.fromDepartment.name, ");
         jpql.append("b.billType, b.total, b.netTotal, b.discount) ");
         jpql.append(" from Bill b");
         jpql.append(" where b.billTypeAtomic in :bts");
         jpql.append(" and b.createdAt between :fd and :td");
+        jpql.append(" and b.retired = false");
 
         m.put("bts", bts);
         m.put("fd", fromDate);
@@ -1864,6 +1865,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.bill.retired = false");
 
         m.put("bts", bts);
         m.put("fd", fromDate);
@@ -1960,6 +1962,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.bill.retired = false");
 
         m.put("bts", bts);
         m.put("fd", fromDate);

@@ -4727,9 +4727,9 @@ public class SearchController implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
-        jpql.append("bi.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
         jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.toDepartment.name, ");
-        jpql.append("bi.bill.billType, bi.grossValue, bi.discount, bi.netValue, ");
+        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
         jpql.append("bi.item.id, bi.item.name, bi.item.code, ");
         jpql.append("bi.qty, bi.pharmaceuticalBillItem.freeQty) ");
         jpql.append(" from BillItem bi");
