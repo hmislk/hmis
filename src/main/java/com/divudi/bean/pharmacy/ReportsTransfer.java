@@ -1858,14 +1858,20 @@ public class ReportsTransfer implements Serializable {
         jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
         jpql.append("bi.item.code, bi.item.name, bi.bill.fromDepartment.name, ");
         jpql.append("bi.bill.billType, bi.netValue, bi.qty, bi.grossValue, ");
-        jpql.append("bi.pharmaceuticalBillItem.itemBatch.batchNo, ");
-        jpql.append("bi.pharmaceuticalBillItem.itemBatch.purcahseRate, ");
-        jpql.append("bi.pharmaceuticalBillItem.itemBatch.retailsaleRate, ");
+        jpql.append("ib.batchNo, ");
+        jpql.append("ib.purchaseRate, ");
+        jpql.append("ib.retailsaleRate, ");
         jpql.append("bi.marginValue) ");
         jpql.append(" from BillItem bi");
+        jpql.append(" LEFT JOIN bi.pharmaceuticalBillItem pbi");
+        jpql.append(" LEFT JOIN pbi.itemBatch ib");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.retired = false");
         jpql.append(" and bi.bill.retired = false");
+        jpql.append(" and bi.item.retired = false");
+        jpql.append(" and (pbi.retired = false OR pbi IS NULL)");
+        jpql.append(" and (ib.retired = false OR ib IS NULL)");
 
         m.put("bts", bts);
         m.put("fd", fromDate);
@@ -1962,7 +1968,9 @@ public class ReportsTransfer implements Serializable {
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.retired = false");
         jpql.append(" and bi.bill.retired = false");
+        jpql.append(" and bi.item.retired = false");
 
         m.put("bts", bts);
         m.put("fd", fromDate);
