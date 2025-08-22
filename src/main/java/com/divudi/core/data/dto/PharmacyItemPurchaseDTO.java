@@ -142,6 +142,22 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.marginValue = marginValue;
     }
 
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt,
+                                   String itemCode, String itemName, BillType billType,
+                                   String billFromInstitutionName, Double billNetTotal,
+                                   Double qty, Double billTotal) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.itemCode = itemCode;
+        this.itemName = itemName;
+        this.billType = billType;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billNetTotal = billNetTotal;
+        this.qty = qty;
+        this.billTotal = billTotal;
+    }
+
     public Bill getBill() {
         return bill;
     }
