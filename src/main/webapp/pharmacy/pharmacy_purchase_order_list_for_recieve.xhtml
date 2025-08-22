@@ -124,11 +124,11 @@
                                 headerText="Actions"
                                 width="6em">
                                 <div class="row">
-                                    <div class="d-flex gap-2 mb-1">
+                                    <div class="d-flex gap-1 mb-1">
                                         <p:commandButton
                                             ajax="false"
                                             value="Receive"
-                                            class="w-100 ui-button-warning"
+                                            class="ui-button-warning"
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnController.navigateToResive()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
@@ -137,11 +137,20 @@
                                         <p:commandButton
                                             ajax="false"
                                             value="Receive"
-                                            class="w-100 ui-button-warning"
+                                            class="ui-button-warning"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnCostingController.navigateToResiveCosting()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Save/Approve"
+                                            class="ui-button-info"
+                                            title="Receive with Save/Approve workflow"
+                                            action="#{grnController.navigateToResiveWithSaveApprove()}"
+                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
                                     <div class="col-md-12">
@@ -226,15 +235,25 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Actions" width="3em">
-                                        <h:panelGroup layout="block" styleClass="btn-group">
+                                    <p:column headerText="Actions" width="5em">
+                                        <h:panelGroup layout="block" styleClass="d-flex gap-1">
                                             <p:commandButton  
-                                                class="m-1"  
+                                                class="ui-button-info"  
                                                 icon="fa fa-eye"
-                                                title="View GRN" 
+                                                title="View Finalized GRN" 
                                                 ajax="false"
+                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN'}"
                                                 action="#{pharmacyBillSearch.navigateToViewPharmacyGrn()}" 
                                                 actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                            </p:commandButton>
+                                            <p:commandButton  
+                                                class="ui-button-warning"  
+                                                icon="fa fa-edit"
+                                                title="Edit Saved GRN" 
+                                                ajax="false"
+                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE'}"
+                                                action="#{pharmacyBillSearch.navigateToEditSavedGrn()}">
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                             </p:commandButton>
                                         </h:panelGroup>
