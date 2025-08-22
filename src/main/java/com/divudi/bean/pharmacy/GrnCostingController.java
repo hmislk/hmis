@@ -2322,11 +2322,20 @@ public class GrnCostingController implements Serializable {
         // Allow saving with incomplete data - no validation required
         
         System.out.println("DEBUG: requestWithSaveApprove - Starting with " + (getBillItems() != null ? getBillItems().size() : 0) + " items to save");
+        System.out.println("DEBUG: requestWithSaveApprove - Bill ID at start: " + getCurrentGrnBillPre().getId());
+        System.out.println("DEBUG: requestWithSaveApprove - Bill reference bill: " + (getCurrentGrnBillPre().getReferenceBill() != null ? getCurrentGrnBillPre().getReferenceBill().getId() : "null"));
         
         // Set basic bill information
         getCurrentGrnBillPre().setBillDate(new Date());
         getCurrentGrnBillPre().setBillTime(new Date());
-        getCurrentGrnBillPre().setReferenceBill(getApproveBill());
+        
+        // Only set reference bill if not already set (for new GRNs, not edited ones)
+        if (getCurrentGrnBillPre().getReferenceBill() == null) {
+            getCurrentGrnBillPre().setReferenceBill(getApproveBill());
+            System.out.println("DEBUG: requestWithSaveApprove - Set reference bill to: " + getApproveBill().getId());
+        } else {
+            System.out.println("DEBUG: requestWithSaveApprove - Reference bill already set to: " + getCurrentGrnBillPre().getReferenceBill().getId());
+        }
         
         // Set invoice date if provided
         if (invoiceDate != null) {
