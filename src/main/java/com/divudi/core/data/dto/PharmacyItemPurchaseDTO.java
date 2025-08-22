@@ -29,6 +29,12 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     private Long itemId;
     private String itemName;
     private String itemCode;
+    
+    // Batch and pricing information
+    private String batchNo;
+    private Double purchaseRate;
+    private Double retailRate;
+    private Double marginValue;
 
     // LEGACY constructor - KEEP for backward compatibility
     public PharmacyItemPurchaseDTO(Bill bill, Item item, Double qty, Double freeQty) {
@@ -97,6 +103,27 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billTotal = billTotal;
         this.billNetTotal = billNetTotal;
         this.billDiscount = billDiscount;
+    }
+
+    // Constructor for disposal item reports with batch information
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt, 
+                                   String itemCode, String itemName, String billFromInstitutionName, 
+                                   BillType billType, Double billNetTotal, Double qty, Double billTotal,
+                                   String batchNo, Double purchaseRate, Double retailRate, Double marginValue) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.itemCode = itemCode;
+        this.itemName = itemName;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billType = billType;
+        this.billNetTotal = billNetTotal;
+        this.qty = qty;
+        this.billTotal = billTotal;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.marginValue = marginValue;
     }
 
     public Bill getBill() {
@@ -170,4 +197,17 @@ public class PharmacyItemPurchaseDTO implements Serializable {
 
     public String getItemCode() { return itemCode; }
     public void setItemCode(String itemCode) { this.itemCode = itemCode; }
+
+    // Getter and setter methods for batch information
+    public String getBatchNo() { return batchNo; }
+    public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
+
+    public Double getPurchaseRate() { return purchaseRate; }
+    public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
+
+    public Double getRetailRate() { return retailRate; }
+    public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
+
+    public Double getMarginValue() { return marginValue; }
+    public void setMarginValue(Double marginValue) { this.marginValue = marginValue; }
 }
