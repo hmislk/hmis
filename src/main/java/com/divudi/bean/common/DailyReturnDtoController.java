@@ -435,8 +435,8 @@ public class DailyReturnDtoController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
         dtoBundle.getBundles().add(netCashForTheDayBundle);
 
-        // 13. OPD Service Collection - Credit - typically empty, but needed for structure
-        DailyReturnBundleDTO opdServiceCollectionCredit = createEmptyDtoBundle("opdServiceCollectionCredit", "OPD Service Collection - Credit");
+        // 13. OPD Service Collection - Credit - contains only CREDIT payment types
+        DailyReturnBundleDTO opdServiceCollectionCredit = createOpdServiceCollectionCreditDto(isWithProfessionalFee());
         dtoBundle.getBundles().add(opdServiceCollectionCredit);
         netCollectionPlusCredits = netCashCollection + Math.abs(getSafeDtoTotal(opdServiceCollectionCredit)); // NOT deducted from net cash
 
@@ -445,6 +445,18 @@ public class DailyReturnDtoController implements Serializable {
         netCashForTheDayBundlePlusCredits.setName("Net Cash Plus Credits");
         netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
         netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
+        // Add one row to show the breakdown
+        DailyReturnRowDTO netCashPlusCreditsRow = new DailyReturnRowDTO();
+        netCashPlusCreditsRow.setCategoryName("Net Cash Plus Credits");
+        netCashPlusCreditsRow.setItemName("Total");
+        netCashPlusCreditsRow.setItemNetTotal(netCollectionPlusCredits);
+        netCashPlusCreditsRow.setItemHospitalFee(netCollectionPlusCredits);
+        netCashPlusCreditsRow.setItemProfessionalFee(0.0);
+        netCashPlusCreditsRow.setItemDiscountAmount(0.0);
+        netCashPlusCreditsRow.setItemCount(1L);
+        List<DailyReturnRowDTO> netCashPlusCreditsRows = new ArrayList<>();
+        netCashPlusCreditsRows.add(netCashPlusCreditsRow);
+        netCashForTheDayBundlePlusCredits.setRows(netCashPlusCreditsRows);
         dtoBundle.getBundles().add(netCashForTheDayBundlePlusCredits);
 
         dtoBundle.setTotal(collectionForTheDay);
@@ -559,8 +571,22 @@ public class DailyReturnDtoController implements Serializable {
                 double staffFee = bi.getProfessionalFee(); // This comes from actual staffFee in database
                 double netValue = bi.getNetValue();
                 
-                // Use actual quantity from BillItem
-                long quantity = bi.getQty().longValue();
+                // Apply bill class type modifier like the original entity-based system
+                long qtyModifier = (bi.getBillClassType() != null && 
+                        (bi.getBillClassType() == com.divudi.core.data.BillClassType.CancelledBill
+                        || bi.getBillClassType() == com.divudi.core.data.BillClassType.RefundBill)) ? -1 : 1;
+                
+                // Adjust financial values for cancelled/refunded items
+                if (qtyModifier == -1) {
+                    grossValue = -Math.abs(grossValue);
+                    hospitalFee = -Math.abs(hospitalFee);
+                    discount = -Math.abs(discount);
+                    staffFee = -Math.abs(staffFee);
+                    netValue = -Math.abs(netValue);
+                }
+                
+                // Use absolute quantity with modifier (like original getQtyAbsolute() * qtyModifier)
+                long quantity = (long) (Math.abs(bi.getQty()) * qtyModifier);
                 
                 // CRITICAL: Accumulate grand totals ONCE per BillItem
                 // Handle professional fee setting like the original
@@ -576,8 +602,15 @@ public class DailyReturnDtoController implements Serializable {
                 totalQuantity += quantity;
                 
                 // Update individual row totals (like the updateRow method)
-                updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
-                updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+                // Respect the withProfessionalFee setting for row display
+                if (withProfessionalFee) {
+                    updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+                    updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+                } else {
+                    // When professional fee is disabled, show 0.00 for professional fee in rows
+                    updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
+                    updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
+                }
             }
         }
         
@@ -611,6 +644,169 @@ public class DailyReturnDtoController implements Serializable {
         return opdBundle;
     }
     
+    private DailyReturnBundleDTO createOpdServiceCollectionCreditDto(boolean withProfessionalFee) {
+        DailyReturnBundleDTO opdCreditBundle = new DailyReturnBundleDTO();
+        opdCreditBundle.setName("OPD Service Collection - Credit");
+        opdCreditBundle.setBundleType("opdServiceCollectionCredit");
+        
+        // Credit payments respect the professional fee checkbox like normal OPD collection
+        Map<String, DailyReturnRowDTO> categoryMap = new java.util.TreeMap<>();
+        Map<String, DailyReturnRowDTO> itemMap = new java.util.TreeMap<>();
+        
+        // Grand totals - accumulated ONCE per BillItem (not per row)
+        double totalOpdServiceCollectionCredit = 0.0;
+        double totalGrossValue = 0.0;
+        double totalHospitalFee = 0.0;
+        double totalDiscount = 0.0;
+        double totalStaffFee = 0.0;
+        long totalQuantity = 0L;
+        
+        if (opdBillItemDtos != null) {
+            System.out.println("DEBUG Credit: Processing " + opdBillItemDtos.size() + " total OPD bill items");
+            
+            // First, let's see all the credit items for debugging
+            int creditItemCount = 0;
+            for (BillItemDetailDTO bi : opdBillItemDtos) {
+                if (bi.getPaymentMethod() != null && 
+                    bi.getPaymentMethod().getPaymentType() == com.divudi.core.data.PaymentType.CREDIT) {
+                    creditItemCount++;
+                    System.out.println("DEBUG Credit Item #" + creditItemCount + ": Category=" + bi.getCategoryName() + 
+                        ", Item=" + bi.getItemName() + ", Qty=" + bi.getQty() + 
+                        ", HospitalFee=" + bi.getHospitalFee() + ", ProfessionalFee=" + bi.getProfessionalFee() + 
+                        ", NetValue=" + bi.getNetValue() + ", BillClassType=" + bi.getBillClassType());
+                }
+            }
+            System.out.println("DEBUG Credit: Total CREDIT items found: " + creditItemCount);
+            for (BillItemDetailDTO bi : opdBillItemDtos) {
+                // Skip null payment method or NONE payment type
+                if (bi.getPaymentMethod() == null || 
+                    bi.getPaymentMethod().getPaymentType() == com.divudi.core.data.PaymentType.NONE) {
+                    continue;
+                }
+                
+                // Include ONLY credit payments (opposite of main OPD collection)
+                if (bi.getPaymentMethod().getPaymentType() != com.divudi.core.data.PaymentType.CREDIT) {
+                    continue;
+                }
+                
+                System.out.println("DEBUG Credit: Found CREDIT payment - Item: " + bi.getItemName() + 
+                    ", Qty: " + bi.getQty() + ", BillClassType: " + bi.getBillClassType() + 
+                    ", HospitalFee: " + bi.getHospitalFee() + ", ProfessionalFee: " + bi.getProfessionalFee());
+                
+                String categoryName = bi.getCategoryName();
+                String itemName = bi.getItemName();
+                String itemKey = categoryName + "->" + itemName;
+                
+                // Initialize category and item rows if not exists
+                categoryMap.putIfAbsent(categoryName, new DailyReturnRowDTO());
+                itemMap.putIfAbsent(itemKey, new DailyReturnRowDTO());
+                
+                DailyReturnRowDTO categoryRow = categoryMap.get(categoryName);
+                DailyReturnRowDTO itemRow = itemMap.get(itemKey);
+                
+                // Set row identifiers
+                categoryRow.setCategoryName(categoryName);
+                categoryRow.setItemName(""); // Categories have empty item names
+                itemRow.setCategoryName(categoryName);
+                itemRow.setItemName(itemName);
+                
+                // Get financial values from BillItem (use actual values, not artificial splits)
+                double grossValue = bi.getGrossValue();
+                double hospitalFee = bi.getHospitalFee();
+                double discount = bi.getDiscount();
+                double staffFee = bi.getProfessionalFee(); // Use actual professional fee from database
+                double netValue = bi.getNetValue(); // Use actual net value from database
+                
+                // Apply bill class type modifier like the original entity-based system
+                long qtyModifier = (bi.getBillClassType() != null && 
+                        (bi.getBillClassType() == com.divudi.core.data.BillClassType.CancelledBill
+                        || bi.getBillClassType() == com.divudi.core.data.BillClassType.RefundBill)) ? -1 : 1;
+                
+                // Adjust financial values for cancelled/refunded items
+                if (qtyModifier == -1) {
+                    grossValue = -Math.abs(grossValue);
+                    hospitalFee = -Math.abs(hospitalFee);
+                    discount = -Math.abs(discount);
+                    staffFee = -Math.abs(staffFee); // Will still be 0.0 for credit payments
+                    netValue = -Math.abs(netValue);
+                }
+                
+                // Use absolute quantity with modifier (like original getQtyAbsolute() * qtyModifier)
+                long quantity = (long) (Math.abs(bi.getQty()) * qtyModifier);
+                
+                System.out.println("DEBUG Credit: After processing - Item: " + bi.getItemName() + 
+                    ", OriginalQty: " + bi.getQty() + ", QtyModifier: " + qtyModifier + ", FinalQuantity: " + quantity +
+                    ", HospitalFee: " + hospitalFee + ", StaffFee: " + staffFee + ", NetValue: " + netValue);
+                
+                // Respect the professional fee checkbox like normal OPD collection
+                if (withProfessionalFee) {
+                    totalOpdServiceCollectionCredit += netValue; // Include staff fee
+                } else {
+                    totalOpdServiceCollectionCredit += hospitalFee - discount; // Exclude staff fee
+                }
+                totalGrossValue += grossValue;
+                totalHospitalFee += hospitalFee;
+                totalDiscount += discount;
+                totalStaffFee += staffFee;
+                totalQuantity += quantity;
+                
+                // Update individual row totals - respect the withProfessionalFee setting for row display
+                if (withProfessionalFee) {
+                    System.out.println("DEBUG Credit: With ProfFee - updating row with professionalFee = " + staffFee + ", netValue = " + netValue);
+                    updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+                    updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+                } else {
+                    // When professional fee is disabled, show 0.00 for professional fee in rows
+                    System.out.println("DEBUG Credit: Without ProfFee - updating row with professionalFee = 0.0, hospitalFee = " + hospitalFee);
+                    updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
+                    updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
+                }
+            }
+        }
+        
+        // Add category and item rows to the bundle in the correct order
+        List<DailyReturnRowDTO> allRows = new ArrayList<>();
+        for (String categoryName : categoryMap.keySet()) {
+            // Add category row first
+            allRows.add(categoryMap.get(categoryName));
+            
+            // Then add all items for this category
+            for (String itemKey : itemMap.keySet()) {
+                if (itemKey.startsWith(categoryName + "->")) {
+                    allRows.add(itemMap.get(itemKey));
+                }
+            }
+        }
+        
+        opdCreditBundle.setRows(allRows);
+        
+        // Debug: Print all final rows
+        System.out.println("DEBUG Credit Final Rows: " + allRows.size() + " total rows");
+        for (DailyReturnRowDTO row : allRows) {
+            System.out.println("DEBUG Credit Row: Category='" + row.getCategoryName() + "', Item='" + row.getItemName() + 
+                "', Count=" + row.getItemCount() + ", HospitalFee=" + row.getItemHospitalFee() + 
+                ", ProfessionalFee=" + row.getItemProfessionalFee() + ", NetTotal=" + row.getItemNetTotal());
+        }
+        
+        // Use the grand totals (not sum of row totals)
+        opdCreditBundle.setTotal(totalOpdServiceCollectionCredit);
+        opdCreditBundle.setHospitalTotal(totalHospitalFee);
+        // Set staff total based on professional fee setting
+        if (withProfessionalFee) {
+            opdCreditBundle.setStaffTotal(totalStaffFee);
+        } else {
+            opdCreditBundle.setStaffTotal(0.0); // Show 0.00 when professional fee is disabled
+        }
+        opdCreditBundle.setDiscount(totalDiscount);
+        opdCreditBundle.setCount(totalQuantity);
+        
+        System.out.println("DEBUG Credit Bundle Totals: Total=" + totalOpdServiceCollectionCredit + 
+            ", HospitalTotal=" + totalHospitalFee + ", StaffTotal=" + 
+            (withProfessionalFee ? totalStaffFee : 0.0) + ", Count=" + totalQuantity);
+        
+        return opdCreditBundle;
+    }
+    
     // Helper method to update individual row totals (mimics the original updateRow method)
     private void updateDtoRow(DailyReturnRowDTO row, long count, double total, double hospitalFee, 
                              double discount, double professionalFee, double netTotal) {
@@ -627,6 +823,11 @@ public class DailyReturnDtoController implements Serializable {
         row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
         row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
         row.setItemNetTotal(row.getItemNetTotal() + netTotal);
+        
+        // Debug logging
+        if (professionalFee != 0.0) {
+            System.out.println("DEBUG updateDtoRow: Adding professionalFee=" + professionalFee + " to row. New total: " + row.getItemProfessionalFee());
+        }
     }
     
     private DailyReturnBundleDTO createCcCollectionDto() {
@@ -977,6 +1178,25 @@ public class DailyReturnDtoController implements Serializable {
         StreamedContent pdfSc = null;
         try {
             pdfSc = pdfController.createPdfForBundle(bundle);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return pdfSc;
+    }
+    
+    public StreamedContent getDtoBundleAsExcel() {
+        try {
+            downloadingExcel = excelController.createExcelForDtoBundle(dtoBundle, fromDate, toDate);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return downloadingExcel;
+    }
+    
+    public StreamedContent getDtoBundleAsPdf() {
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createPdfForDtoBundle(dtoBundle);
         } catch (IOException e) {
             // Handle IOException
         }

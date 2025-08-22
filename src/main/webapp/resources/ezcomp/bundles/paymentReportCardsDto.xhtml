@@ -46,8 +46,8 @@
                         <th>Bill Type</th>
                         <th>Card Ref. Number</th>
                         <th>Bank</th>
+                        <th>From Department</th>
                         <th class="text-end">Fee</th>
-                        <th>Reference Bill</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,13 +70,13 @@
                             <td>
                                 <h:outputText value="#{row.paymentName}" />
                             </td>
+                            <td>
+                                <h:outputText value="#{row.fromDepartmentName}" />
+                            </td>
                             <td class="text-end">
                                 <h:outputText value="#{row.itemNetTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                            </td>
-                            <td>
-                                <h:outputText value="#{row.fromDepartmentName}" />
                             </td>
                         </tr>
                     </ui:repeat>

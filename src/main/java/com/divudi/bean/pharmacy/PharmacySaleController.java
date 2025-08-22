@@ -2038,7 +2038,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Pharmacy Sale", false)) {
             if (getPatient().getPerson().getDob() == null) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select patient date of birth.");
+                JsfUtil.addErrorMessage("Please enter patient date of birth.");
                 return;
             }
         }
@@ -2054,7 +2054,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Address to save Patient in Pharmacy Sale", false)) {
             if (getPatient().getPerson().getAddress() == null || getPatient().getPerson().getAddress().trim().isEmpty()) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select patient address.");
+                JsfUtil.addErrorMessage("Please enter patient address.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Mail to save Patient in Pharmacy Sale", false)) {
+            if (getPatient().getPerson().getEmail() == null || getPatient().getPerson().getEmail().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter patient email.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient NIC to save Patient in Pharmacy Sale", false)) {
+            if (getPatient().getPerson().getNic() == null || getPatient().getPerson().getNic().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter patient NIC.");
                 return;
             }
         }
@@ -2467,7 +2483,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Pharmacy Sale", false)) {
             if (getPatient().getPerson().getDob() == null) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select patient date of birth.");
+                JsfUtil.addErrorMessage("Please enter patient date of birth.");
                 return;
             }
         }
@@ -2483,7 +2499,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Address to save Patient in Pharmacy Sale", false)) {
             if (getPatient().getPerson().getAddress() == null || getPatient().getPerson().getAddress().trim().isEmpty()) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select patient address.");
+                JsfUtil.addErrorMessage("Please enter patient address.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Mail to save Patient in Pharmacy Sale", false)) {
+            if (getPatient().getPerson().getEmail() == null || getPatient().getPerson().getEmail().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter patient email.");
+                return;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient NIC to save Patient in Pharmacy Sale", false)) {
+            if (getPatient().getPerson().getNic() == null || getPatient().getPerson().getNic().trim().isEmpty()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter patient NIC.");
                 return;
             }
         }

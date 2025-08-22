@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import java.io.Serializable;
@@ -21,16 +22,19 @@ public class BillItemDetailDTO implements Serializable {
     private Double qty;
     private PaymentMethod paymentMethod;
     private BillTypeAtomic billTypeAtomic;
+    private BillClassType billClassType;
     private String departmentName;
     private Date createdAt;
 
     public BillItemDetailDTO() {
     }
 
+    // New constructor with BillClassType (preferred)
     public BillItemDetailDTO(String categoryName, String itemName, Long categoryId, Long itemId,
                             Double grossValue, Double hospitalFee, Double discount, Double staffFee,
                             Double netValue, Double qty, PaymentMethod paymentMethod, 
-                            BillTypeAtomic billTypeAtomic, String departmentName, Date createdAt) {
+                            BillTypeAtomic billTypeAtomic, BillClassType billClassType, 
+                            String departmentName, Date createdAt) {
         this.categoryName = categoryName;
         this.itemName = itemName;
         this.categoryId = categoryId;
@@ -43,8 +47,18 @@ public class BillItemDetailDTO implements Serializable {
         this.qty = qty;
         this.paymentMethod = paymentMethod;
         this.billTypeAtomic = billTypeAtomic;
+        this.billClassType = billClassType;
         this.departmentName = departmentName;
         this.createdAt = createdAt;
+    }
+
+    // Backward compatible constructor (without BillClassType) - defaults to null BillClassType
+    public BillItemDetailDTO(String categoryName, String itemName, Long categoryId, Long itemId,
+                            Double grossValue, Double hospitalFee, Double discount, Double staffFee,
+                            Double netValue, Double qty, PaymentMethod paymentMethod, 
+                            BillTypeAtomic billTypeAtomic, String departmentName, Date createdAt) {
+        this(categoryName, itemName, categoryId, itemId, grossValue, hospitalFee, discount, staffFee,
+             netValue, qty, paymentMethod, billTypeAtomic, null, departmentName, createdAt);
     }
 
     public String getCategoryName() {
@@ -157,5 +171,13 @@ public class BillItemDetailDTO implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public BillClassType getBillClassType() {
+        return billClassType;
+    }
+
+    public void setBillClassType(BillClassType billClassType) {
+        this.billClassType = billClassType;
     }
 }
