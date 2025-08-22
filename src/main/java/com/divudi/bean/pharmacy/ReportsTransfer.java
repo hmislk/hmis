@@ -1147,7 +1147,6 @@ public class ReportsTransfer implements Serializable {
                 + " where b.billTypeAtomic in :bts "
                 + " and b.createdAt between :fromDate and :toDate"
                 + " and b.retired = false";
-                + " and b.retired = false";
 
         m.put("bts", bts);
         m.put("fromDate", getFromDate());
@@ -2066,8 +2065,8 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
         jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
-        jpql.append("bi.item.code, bi.item.name, bi.bill.fromDepartment.name, ");
-        jpql.append("bi.bill.billType, bi.netValue, bi.qty, bi.grossValue) ");
+        jpql.append("bi.item.code, bi.item.name, bi.bill.billType, ");
+        jpql.append("bi.bill.fromDepartment.name, bi.netValue, bi.qty, bi.grossValue) ");
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");
