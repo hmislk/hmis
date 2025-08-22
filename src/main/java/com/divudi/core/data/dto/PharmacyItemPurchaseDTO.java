@@ -105,21 +105,21 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billDiscount = billDiscount;
     }
 
-    // Constructor for disposal item reports without batch information (10 parameters)
-    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt, 
-                                   String itemCode, String itemName, String billFromInstitutionName, 
-                                   BillType billType, Double billNetTotal, Double qty, Double billTotal) {
-        this.billId = billId;
-        this.billDeptId = billDeptId;
-        this.billCreatedAt = billCreatedAt;
-        this.itemCode = itemCode;
-        this.itemName = itemName;
-        this.billFromInstitutionName = billFromInstitutionName;
-        this.billType = billType;
-        this.billNetTotal = billNetTotal;
-        this.qty = qty;
-        this.billTotal = billTotal;
-    }
+//    // Constructor for disposal item reports without batch information (10 parameters)
+//    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt, 
+//                                   String itemCode, String itemName, String billFromInstitutionName, 
+//                                   BillType billType, Double billNetTotal, Double qty, Double billTotal) {
+//        this.billId = billId;
+//        this.billDeptId = billDeptId;
+//        this.billCreatedAt = billCreatedAt;
+//        this.itemCode = itemCode;
+//        this.itemName = itemName;
+//        this.billFromInstitutionName = billFromInstitutionName;
+//        this.billType = billType;
+//        this.billNetTotal = billNetTotal;
+//        this.qty = qty;
+//        this.billTotal = billTotal;
+//    }
 
     // Constructor for disposal item reports with batch information (14 parameters)
     public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt, 

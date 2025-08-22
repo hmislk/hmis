@@ -49,7 +49,8 @@
       "Bash(del /s /q wiki-temp)",
       "Bash(gh pr view:*)",
       "Bash(gh issue comment:*)",
-      "Bash(gh issue close:*)"
+      "Bash(gh issue close:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
