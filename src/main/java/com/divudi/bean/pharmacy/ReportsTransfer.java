@@ -1145,7 +1145,8 @@ public class ReportsTransfer implements Serializable {
         String jpql = "select b.toDepartment, sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.billTypeAtomic in :bts "
-                + " and b.createdAt between :fromDate and :toDate";
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired = false";
 
         m.put("bts", bts);
         m.put("fromDate", getFromDate());
