@@ -1142,10 +1142,11 @@ public class ReportsTransfer implements Serializable {
         bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
         bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
-        String jpql = "select b.toDepartment, sum(b.netTotal) "
+                String jpql = "select b.toDepartment, sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.billTypeAtomic in :bts "
                 + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired = false";
                 + " and b.retired = false";
 
         m.put("bts", bts);
