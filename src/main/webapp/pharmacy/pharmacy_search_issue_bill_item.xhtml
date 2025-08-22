@@ -63,8 +63,8 @@
                                 <p:dataTable 
                                     rowIndexVar="i" 
                                     id="tblBills" 
-                                    value="#{searchController.billItems}" 
-                                    var="pi" 
+                                    value="#{searchController.disposalIssueBillItemDtos}" 
+                                    var="row" 
                                     rows="10"
                                     paginator="true"
                                     paginatorPosition="bottom"
@@ -77,61 +77,39 @@
                                     <p:column headerText="Bill No" styleClass="alignTop"  width="10em">
                                         <p:commandLink 
                                             ajax="false" 
-                                            value="#{pi.bill.deptId}"
+                                            value="#{row.billDeptId}"
                                             action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{row.billId}" target="#{pharmacyBillSearch.billId}"/>
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Item Name"  styleClass="alignTop" width="20em">
-                                        <h:outputLabel value="#{pi.item.code}" ></h:outputLabel>
+                                        <h:outputLabel value="#{row.itemCode}" ></h:outputLabel>
                                         &nbsp;-&nbsp;
-                                        <h:outputLabel value="#{pi.item.name}" />   
+                                        <h:outputLabel value="#{row.itemName}" />   
 
                                     </p:column>
 
                                     <p:column headerText="Billed At"   width="15em">
-                                        <h:outputLabel value="#{pi.bill.createdAt}" >
+                                        <h:outputLabel value="#{row.billCreatedAt}" >
                                             <f:convertDateTime pattern="dd MMM yyyy - hh mm ss a"/>
                                         </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.cancelled}" 
-                                                           value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.refunded}" 
-                                                           value="#{pi.referanceBillItem.bill.createdAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>   
-
-                                    <p:column headerText="Billed By" width="10em" >
-                                        <h:outputLabel value="#{pi.bill.creater.name}" style="text-align: left;">
-                                        </h:outputLabel>                             
                                     </p:column>
 
 
                                     <p:column headerText="Qty" width="10em">
-                                        <h:outputLabel value="#{pi.qty}" >
+                                        <h:outputLabel value="#{row.qty}" >
                                             <f:convertNumber pattern="#0.00"/>
                                         </h:outputLabel>
                                     </p:column>   
 
-                                    <p:column headerText="Bill Retail Total" width="15em">
-                                        <h:outputLabel value="#{pi.netValue}" >
+                                    <p:column headerText="Item Value" width="15em">
+                                        <h:outputLabel value="#{row.billNetTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="To Department"  styleClass="alignTop" width="10em">
-                                        <h:outputLabel value="#{pi.bill.toDepartment.name}" style="text-align: left;">
+                                        <h:outputLabel value="#{row.billFromInstitutionName}" style="text-align: left;">
                                         </h:outputLabel>                             
                                     </p:column>
 
