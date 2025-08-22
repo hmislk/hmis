@@ -15,7 +15,7 @@
         <p:panel>
             <f:facet name="header">
                 <div class="d-flex justify-content-between">
-                    <h:outputText value="Pharmacy Purchase Bill Search" class="mt-2"/>
+                    <h:outputText value="Pharmacy Direct Purchase Bill Search" class="mt-2"/>
                     <p:commandButton 
                         class="ui-button-success"
                         ajax="false" 
@@ -27,64 +27,84 @@
                 </div>
             </f:facet>
 
-            <h:panelGrid columns="5">         
-                <h:outputText value="Bill No"/>
-                <h:outputText value="Net Total"/>
-                <h:outputText value="Item Name"/>
-                <h:outputText value="Item Code"/>
-                <h:outputText value="Supplier Name"/>
-                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
-                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}"/>
-            </h:panelGrid>
+            <p:panelGrid 
+                id="gridDirectPurchaseFilters" 
+                columns="5" 
+                layout="tabular"
+                styleClass="w-100">
+                <h:panelGroup>
+                    <h:outputLabel value="Bill No" styleClass="w-100"/>
+                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" styleClass="w-100"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="Net Total" styleClass="w-100"/>
+                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" styleClass="w-100"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="Item Name" styleClass="w-100"/>
+                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" styleClass="w-100"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="Item Code" styleClass="w-100"/>
+                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" styleClass="w-100"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="Supplier Name" styleClass="w-100"/>
+                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" styleClass="w-100"/>
+                </h:panelGroup>
+            </p:panelGrid>
 
             <p:dataTable 
                 rowIndexVar="i" 
                 id="tbl"  
+                widgetVar="tbl"
                 class="mt-3"
                 value="#{searchController.bills}" 
-                var="bill" >
+                var="bill" 
+                paginator="true"
+                rows="10"
+                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                rowsPerPageTemplate="10,20,50,100"
+                emptyMessage="No Bills Found"
+                filteredValue="#{searchController.filteredBills}">
                 <p:column headerText="#"  style="padding: 8px; width:2em;">
                     <h:outputText  value="#{i+1}" ></h:outputText>
                 </p:column>
 
-                <p:column headerText="Bill No" style="padding: 8px;">
-                    <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.deptId}">
-                        <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                    </h:commandLink>
+                <p:column headerText="Bill No" style="padding: 8px;" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
+                    <h:outputText value="#{bill.deptId}">
+                    </h:outputText>
                 </p:column> 
 
-                <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains"  style="padding: 8px; width:8em;">
+                <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains"  style="padding: 8px; width:8em;" sortBy="#{bill.invoiceNumber}">
                     <h:outputText  value="#{bill.invoiceNumber}" ></h:outputText>
                 </p:column>  
 
-                <p:column headerText="Invoice Date" style="padding: 8px;" width="10em;">
+                <p:column headerText="Invoice Date" style="padding: 8px;" width="10em;" sortBy="#{bill.invoiceDate}">
                     <h:outputText value="#{bill.invoiceDate}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                     </h:outputText>
                 </p:column>  
 
-                <p:column headerText="Billed At" style="padding: 8px;">
+                <p:column headerText="Billed At" style="padding: 8px;" sortBy="#{bill.createdAt}">
                     <h:outputText value="#{bill.createdAt}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                    
+
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;" value=" | Cancelled At " />
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;" value="#{bill.cancelledBill.createdAt}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                    
+
                     <h:outputText rendered="#{bill.refunded}" style="color: orange;" value=" | Refunded At " />
                     <h:outputText rendered="#{bill.refunded}" style="color: orange;" value="#{bill.refundedBill.createdAt}" >
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
                 </p:column>  
 
-                <p:column headerText="Billed By" style="padding: 8px;">
+                <p:column headerText="Billed By" style="padding: 8px;" sortBy="#{bill.creater.webUserPerson.name}" filterBy="#{bill.creater.webUserPerson.name}" filterMatchMode="contains">
                     <h:outputText value="#{bill.creater.webUserPerson.name}" ></h:outputText>
-                    
+
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;"  value=" | Cancelled By " />
                     <h:outputText rendered="#{bill.cancelled}" style="color: red;"  value="#{bill.cancelledBill.creater.webUserPerson.name}"></h:outputText>
 
@@ -92,21 +112,27 @@
                     <h:outputText rendered="#{bill.refunded}" style="color: orange;"  value="#{bill.refundedBill.creater.webUserPerson.name}"></h:outputText>
                 </p:column>
 
-                <p:column headerText="Payment Method" style="padding: 8px;" width="10em;">
+                <p:column headerText="Payment Method" style="padding: 8px;" width="10em;" sortBy="#{bill.paymentMethod}" filterBy="#{bill.paymentMethod}" filterMatchMode="exact">
+                    <f:facet name="filter">
+                        <p:selectOneMenu onchange="PF('tbl').filter()" styleClass="custom-filter">
+                            <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{enumController.paymentMethods}" />
+                        </p:selectOneMenu>
+                    </f:facet>
                     <h:outputText value="#{bill.paymentMethod}" ></h:outputText>
                 </p:column>   
 
-                <p:column headerText="Supplier" style="padding: 8px; width: 16em;">
+                <p:column headerText="Supplier" style="padding: 8px; width: 16em;" sortBy="#{bill.fromInstitution.name}" filterBy="#{bill.fromInstitution.name}" filterMatchMode="contains">
                     <h:outputText value="#{bill.fromInstitution.name}" ></h:outputText>
                 </p:column> 
 
-                <p:column headerText="Net Value" style="text-align: right; padding: 8px;" width="8em;">
+                <p:column headerText="Net Value" style="text-align: right; padding: 8px;" width="8em;" sortBy="#{bill.netTotal}">
                     <h:outputText value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputText>
                 </p:column>
 
-                <p:column headerText="Sale Value"  style="text-align: right; padding: 8px;" width="8em;">
+                <p:column headerText="Sale Value"  style="text-align: right; padding: 8px;" width="8em;" sortBy="#{bill.saleValue}">
                     <h:outputText value="#{bill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputText>
@@ -116,6 +142,18 @@
                     <h:outputText rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" ></h:outputText>
                     <h:outputText  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" ></h:outputText>
                 </p:column>
+
+                <p:column headerText="Actions" exportable="false" style="padding: 8px; text-align:center;">
+                    <p:commandButton 
+                        icon="fa fa-eye" 
+                        title="View" 
+                        action="/pharmacy/pharmacy_reprint_purchase?faces-redirect=true" 
+                        ajax="false"
+                        styleClass="ui-button-info">
+                        <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}" />
+                    </p:commandButton>
+                </p:column>
+
             </p:dataTable>
 
         </p:panel>

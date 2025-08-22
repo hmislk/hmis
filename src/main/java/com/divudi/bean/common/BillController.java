@@ -2122,6 +2122,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
+    public Bill getBillById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return billFacade.find(id);
+    }
+
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");

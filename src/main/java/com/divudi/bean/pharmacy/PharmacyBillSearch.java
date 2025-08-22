@@ -220,9 +220,31 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
+    /**
+     * @deprecated Use {@link #navigateToViewPharmacyTransferRequestById()} which
+     * works with DTO driven tables by accepting only the bill id.
+     */
+    @Deprecated
     public String navigateToViewPharmacyTransferReqest() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
+    /**
+     * Navigation helper when only the bill id is available (e.g. from DTO
+     * tables).
+     */
+    public String navigateToViewPharmacyTransferRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
@@ -285,6 +307,55 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
+    }
+    
+    public String navigateToReprintInpatientIssueForRequestsById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb= billService.reloadBill(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_transfer_issue_for_inpatient_requests?faces-redirect=true";
+    }
+
+    /**
+     * Used by DTO reports where only the bill id is available.
+     */
+    public String navigateToReprintPharmacyTransferReceiveById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true";
+    }
+
+    /**
+     * Used by DTO reports where the bill id is passed as a parameter.
+     * This avoids potential ViewExpiredException issues with f:setPropertyActionListener.
+     */
+    public String navigateToReprintPharmacyTransferIssueByIdWithParam(Long paramBillId) {
+        if (paramBillId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(paramBillId);
         if (tb == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -2767,6 +2838,41 @@ public class PharmacyBillSearch implements Serializable {
         }
     }
 
+    public void pharmacyTransferIssueInpatientCancel() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (pharmacyErrorCheck()) {
+                return;
+            }
+
+            if (checkDepartment(getBill())) {
+                return;
+            }
+
+            CancelledBill cb = pharmacyCreateCancelBill();
+            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
+            cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
+            cb.setReferenceBill(getBill());
+            cb.setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+            if (cb.getId() == null) {
+                getBillFacade().create(cb);
+            }
+
+            pharmacyCancelIssuedItems(cb);
+
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit(getBill());
+
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
     public void pharmacyTransferReceiveCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
@@ -3423,7 +3529,7 @@ public class PharmacyBillSearch implements Serializable {
                 case PharmacyIssue:
                     return "pharmacy_reprint_bill_unit_issue?faces-redirect=true";
                 case PharmacyTransferIssue:
-                    return "pharmacy_reprint_transfer_isssue?faces-redirect=true";
+                    return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
                 case PharmacyTransferReceive:
                     return "pharmacy_reprint_transfer_receive?faces-redirect=true";
                 case PharmacyPurchaseBill:
@@ -3439,6 +3545,8 @@ public class PharmacyBillSearch implements Serializable {
                     return "pharmacy_reprint_purchase_return?faces-redirect=true";
                 case PharmacyAdjustment:
                     return "pharmacy_reprint_adjustment?faces-redirect=true";
+                case PharmacyDonationBill:
+                    return "pharmacy_reprint_donation?faces-redirect=true";
                 default:
                     return "pharmacy_reprint_bill_sale?faces-redirect=true";
             }
@@ -3790,6 +3898,11 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setBillId(Long billId) {
         this.billId = billId;
+        if (billId != null) {
+            this.bill = billFacade.find(billId);
+        } else {
+            this.bill = null;
+        }
     }
 
 }

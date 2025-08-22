@@ -919,13 +919,20 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"  
-                            value="Direct Purchase" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
+                            value="Direct Purchase"
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
                         </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
+                            value="Pharmacy Donation"
+                            icon="fas fa-donate"
+                            rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" ></p:menuitem>
 
                         <p:menuitem
                             ajax="false"
@@ -1754,6 +1761,12 @@
                         rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
                         action="#{apiKeyController.toManageMyApiKeys()}" 
                         value="Manage My API Keys" icon="pi pi-key"  ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
+                        url="#{request.contextPath}/resources/swagger-ui/index.html"
+                        target="_blank"
+                        value="API Swagger Document" icon="fa fa-book"  ></p:menuitem>
                     <p:menuitem
                         ajax="false"
                         action="#{versionController.navigateToAboutSoftware()}"

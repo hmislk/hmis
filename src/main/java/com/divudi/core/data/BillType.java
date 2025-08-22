@@ -23,6 +23,7 @@ public enum BillType {
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
+    CollectingCentreAgentPayment,
     CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
@@ -65,6 +66,7 @@ public enum BillType {
     @Deprecated
     SandryGrn,
     PharmacyIssue,
+    PharmacyDisposalIssue,
     @Deprecated
     PharmacyBhtIssue,
     PharmacyBhtPre,
@@ -90,6 +92,7 @@ public enum BillType {
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
+    PharmacyDonationBill,
     PharmacyTransferRequest,
     PharmacyTransferIssue,
     PharmacyDirectIssue,
@@ -219,6 +222,8 @@ public enum BillType {
                 return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
+            case PharmacyDonationBill:
+                return "Pharmacy Donation Bill";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
@@ -273,7 +278,9 @@ public enum BillType {
             case StoreTransferIssue:
                 return "Store Transfer Issue";
             case PharmacyIssue:
-                return "Pharmacy Issue";
+                return "Pharmacy Transfer Issue";
+            case PharmacyDisposalIssue:
+                return "Pharmacy Disposal Issue";
             case PharmacyBhtPre:
                 return "Pharmacy BHT Issue (Pre)";
             case OpdPreBill:

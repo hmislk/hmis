@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDonation')}">
+            <h:outputText value="You are not authorized" styleClass="text-danger"/>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDonation')}">
+            <h:form id="bill">
+                <p:growl id="msg"/>
+                <h:panelGroup rendered="#{!pharmacyDonationController.printPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div>
+                                    <h:outputText styleClass="fas fa-gift"/>
+                                    <h:outputText class="mx-4" value="Pharmacy Donation" />
+                                </div>
+                                <div>
+                                    <p:commandButton value="Settle" icon="pi pi-check-circle"
+                                                     styleClass="ui-button-success" ajax="false"
+                                                     action="#{pharmacyDonationController.settleDonationBillFinally}"/>
+                                    <p:commandButton value="New Donation Bill" icon="pi pi-plus"
+                                                     styleClass="ui-button-warning" ajax="false"
+                                                     action="#{pharmacyDonationController.navigateToStartNewDonationBill()}"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-4">
+                                <h:outputLabel value="Donator"/><br/>
+                                <p:autoComplete class="w-100" inputStyleClass="w-100"
+                                                value="#{pharmacyDonationController.bill.fromInstitution}"
+                                                completeMethod="#{institutionController.completeSuppliers}"
+                                                forceSelection="true" var="vt"
+                                                itemLabel="#{vt.name}" itemValue="#{vt}"/>
+                            </div>
+                        </div>
+                        <p:panel id="itemselectgrid" class="m-1 w-100" header="Add New Item">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-circle-plus"/>
+                                <h:outputText class="mx-4" value="Add New Item" />
+                            </f:facet>
+                            <p:focus id="focusItem" for="acItem" />
+                            <div class="row w-100">
+                                <div class="col-4">
+                                    <h:outputLabel class="w-100 m-1" value="Select Item"/><br/>
+                                    <p:autoComplete class="w-100 m-1" inputStyleClass="w-100"
+                                                    id="acItem"
+                                                    value="#{pharmacyDonationController.currentBillItem.item}"
+                                                    forceSelection="true"
+                                                    completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
+                                                    var="it" maxResults="20"
+                                                    itemLabel="#{it.name}" itemValue="#{it}">
+                                        <p:column headerText="Item" style="padding:6px">
+                                            <h:outputText value="#{it.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code" style="padding:6px">
+                                            <h:outputText value="#{it.code}" />
+                                        </p:column>
+                                        <p:ajax event="itemSelect" process="acItem"
+                                                update="txtQty txtCostRate txtPrate txtRetailRate calDoe"/>
+                                    </p:autoComplete>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Quantity" class="w-100 m-1"/><br/>
+                                    <p:inputText id="txtQty" class="w-100 m-1 text-end" autocomplete="off"
+                                                 onfocus="this.select()"
+                                                 value="#{pharmacyDonationController.currentBillItem.billItemFinanceDetails.quantity}">
+                                        <p:ajax event="blur" process="@this"/>
+                                    </p:inputText>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Cost Rate" class="w-100 m-1"/><br/>
+                                    <p:inputText id="txtCostRate" class="w-100 m-1 text-end" autocomplete="off"
+                                                 onfocus="this.select()"
+                                                 value="#{pharmacyDonationController.currentBillItem.billItemFinanceDetails.lineCostRate}">
+                                        <p:ajax event="blur" process="@this"/>
+                                    </p:inputText>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Purchase Rate" class="w-100 m-1"/><br/>
+                                    <p:inputText id="txtPrate" class="w-100 m-1 text-end" autocomplete="off"
+                                                 onfocus="this.select()"
+                                                 value="#{pharmacyDonationController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
+                                        <p:ajax event="blur" process="@this"/>
+                                    </p:inputText>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Retail Rate" class="w-100 m-1"/><br/>
+                                    <p:inputText id="txtRetailRate" class="w-100 m-1 text-end" autocomplete="off"
+                                                 onfocus="this.select()"
+                                                 value="#{pharmacyDonationController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
+                                        <p:ajax event="blur" process="@this"/>
+                                    </p:inputText>
+                                </div>
+                                <div class="col-2">
+                                    <h:outputLabel value="DOE" class="w-100 m-1"/><br/>
+                                    <p:calendar id="calDoe" navigator="true" class="w-100 m-1 text-end"
+                                                inputStyleClass="w-100"
+                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                value="#{pharmacyDonationController.currentBillItem.pharmaceuticalBillItem.doe}">
+                                        <p:ajax event="dateSelect" process="@this"/>
+                                    </p:calendar>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="&nbsp;" class="w-100 m-1"/><br/>
+                                    <p:commandButton id="btnAdd" value="Add" icon="fas fa-plus"
+                                                     class="ui-button-success w-100"
+                                                     action="#{pharmacyDonationController.addItem}"
+                                                     update="itemList itemselectgrid msg focusItem"/>
+                                </div>
+                            </div>
+                        </p:panel>
+                        <p:dataTable id="itemList" value="#{pharmacyDonationController.billItems}" var="bi" styleClass="w-100">
+                            <p:column headerText="Item">
+                                <h:outputText value="#{bi.item.name}" />
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputText value="#{bi.billItemFinanceDetails.quantity}" />
+                            </p:column>
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{bi.billItemFinanceDetails.lineCostRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Purchase Rate">
+                                <h:outputText value="#{bi.billItemFinanceDetails.lineGrossRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Retail Rate">
+                                <h:outputText value="#{bi.billItemFinanceDetails.retailSaleRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="DOE">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.doe}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{pharmacyDonationController.printPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-gift" />
+                                    <h:outputLabel value="Donation Receipt" class="mx-4" />
+                                </div>
+                                <div>
+                                    <p:commandButton value="Print Receipt" ajax="false" class="ui-button-info mx-2" icon="fas fa-print">
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" class="ui-button-success" icon="fa fa-plus"
+                                                     action="#{pharmacyDonationController.navigateToStartNewDonationBill()}"
+                                                     value="New Bill"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <h:panelGroup id="gpBillPreview">
+                            <pharmacy:pharmacy_donation_receipt bill="#{pharmacyDonationController.bill}"/>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

@@ -2556,6 +2556,123 @@ public class ExcelController {
         return startRow;
     }
 
+    // New method for DTO-based bundles
+    public StreamedContent createExcelForDtoBundle(com.divudi.core.data.dto.DailyReturnBundleDTO rootBundle) throws IOException {
+        return createExcelForDtoBundle(rootBundle, new Date(), new Date());
+    }
+    
+    public StreamedContent createExcelForDtoBundle(com.divudi.core.data.dto.DailyReturnBundleDTO rootBundle, Date fromDate, Date toDate) throws IOException {
+        if (rootBundle == null) {
+            return null;
+        }
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+
+        CellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+
+        Row titleRow = dataSheet.createRow(0);
+        Cell headerCell = titleRow.createCell(0);
+        headerCell.setCellValue(rootBundle.getName() + "  -  " + CommonFunctions.getDateTimeFormat24(fromDate) + " to " + CommonFunctions.getDateTimeFormat24(toDate));
+        headerCell.setCellStyle(style);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+        // Add description row if available
+        if (rootBundle.getDescription() != null && !rootBundle.getDescription().trim().isEmpty()) {
+            Row descRow = dataSheet.createRow(1);
+            Cell descCell = descRow.createCell(0);
+            descCell.setCellValue(rootBundle.getDescription());
+            descCell.setCellStyle(style);
+            dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
+        }
+
+        int currentRow = 3;
+
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            currentRow = addDtoDataToExcel(dataSheet, currentRow, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (com.divudi.core.data.dto.DailyReturnBundleDTO childBundle : rootBundle.getBundles()) {
+                currentRow = addDtoDataToExcel(dataSheet, currentRow, childBundle, childBundle.getBundleType());
+                currentRow++;
+            }
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        // Create a ByteArrayInputStream from the byte array
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        // Create and return StreamedContent
+        excelSc = DefaultStreamedContent.builder()
+                .name("daily_return_dto_" + CommonFunctions.getDateTimeFormat24(fromDate) + "_to_" + CommonFunctions.getDateTimeFormat24(toDate) + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
+    }
+    
+    private int addDtoDataToExcel(XSSFSheet dataSheet, int startRow, com.divudi.core.data.dto.DailyReturnBundleDTO addingBundle, String type) {
+        if (addingBundle == null) {
+            return startRow;
+        }
+
+        // Create title row with bundle name and total
+        Row titleRow = dataSheet.createRow(startRow++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(addingBundle.getName());
+        Cell totalCell = titleRow.createCell(6); // Assuming 7th column is for total
+        totalCell.setCellValue(addingBundle.getTotal() != null ? addingBundle.getTotal() : 0.0);
+
+        // Merge title across all columns except the last (for total)
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Only add data rows if there are rows to display
+        if (addingBundle.getRows() != null && !addingBundle.getRows().isEmpty()) {
+            // Create header row for Excel
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {
+                "Category", "Item / Service", "Count", "Hospital Fee",
+                "Professional Fee", "Discount", "Net Amount"
+            };
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columnHeaders[i]);
+            }
+
+            // Iterate through each row of the DTO data and add to Excel
+            for (com.divudi.core.data.dto.DailyReturnRowDTO row : addingBundle.getRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // Create cells for each column
+                excelRow.createCell(0).setCellValue(row.getCategoryName() != null ? row.getCategoryName() : "");
+                excelRow.createCell(1).setCellValue(row.getItemName() != null ? row.getItemName() : "");
+                excelRow.createCell(2).setCellValue(row.getItemCount() != null ? row.getItemCount() : 0L);
+                excelRow.createCell(3).setCellValue(row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0);
+                excelRow.createCell(4).setCellValue(row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0);
+                excelRow.createCell(5).setCellValue(row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0);
+                excelRow.createCell(6).setCellValue(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0);
+            }
+        } else {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+        }
+
+        return startRow;
+    }
+
 
 
 

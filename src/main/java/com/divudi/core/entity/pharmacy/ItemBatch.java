@@ -39,7 +39,7 @@ public class ItemBatch implements Serializable, RetirableEntity {
     private String batchNo;
     @ManyToOne
     private Item item;
-    double purcahseRate;
+    double purcahseRate; // Typo, Can not correct it now as it has already propergated toall databases.
     double retailsaleRate;
     double wholesaleRate;
     private Double costRate;

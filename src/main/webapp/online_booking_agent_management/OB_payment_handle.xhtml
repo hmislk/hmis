@@ -78,10 +78,19 @@
 
                             <p:commandButton  
                                 value="Settle Payment" 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
                                 update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay txtNetTotal" 
                                 process="@this onlineBookings cmbPs"
                                 oncomplete="PF('payementSettle').show()"
                                 actionListener="#{onlineBookingAgentController.createTotalAmountToPay()}"
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
+                            
+                            <p:commandButton  
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
+                                value="Mark Complete" 
+                                ajax="false"
+                                action="#{onlineBookingAgentController.markCompletePaidToHospitalOnlineBookings}"
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
 

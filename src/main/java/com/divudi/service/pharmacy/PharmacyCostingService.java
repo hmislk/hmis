@@ -179,13 +179,39 @@ public class PharmacyCostingService {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
         
+        // Reset and recalculate expense totals from actual bill expense items
+        double expenseTotal = 0.0;
+        double expensesTotalConsideredForCosting = 0.0;
+        double expensesTotalNotConsideredForCosting = 0.0;
+        
+        if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
+            for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
+                double expenseValue = expense.getNetValue();
+                boolean isConsidered = expense.isConsideredForCosting();
+                
+                expenseTotal += expenseValue;
+                if (isConsidered) {
+                    expensesTotalConsideredForCosting += expenseValue;
+                } else {
+                    expensesTotalNotConsideredForCosting += expenseValue;
+                }
+            }
+        }
+        
+        // Set the recalculated expense totals
+        bill.setExpenseTotal(expenseTotal);
+        bill.setExpensesTotalConsideredForCosting(expensesTotalConsideredForCosting);
+        bill.setExpensesTotalNotConsideredForCosting(expensesTotalNotConsideredForCosting);
+        
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
         bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
-        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
+        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(expensesTotalConsideredForCosting));
 
         if (billItems == null || billItems.isEmpty()) {
             return;
         }
+
+        // Note: Reset logic moved to calculateBillTotalsFromItemsForPurchases() method
 
         BigDecimal totalBasis = BigDecimal.ZERO;
         Map<BillItem, BigDecimal> itemBases = new HashMap<>();
@@ -439,6 +465,29 @@ public class PharmacyCostingService {
         System.out.println("DEBUG: SERVICE - Bill.expenseTotal at start: " + bill.getExpenseTotal());
         System.out.println("DEBUG: SERVICE - Bill.expensesTotalConsideredForCosting: " + bill.getExpensesTotalConsideredForCosting());
         System.out.println("DEBUG: SERVICE - BillItems count: " + (billItems != null ? billItems.size() : 0));
+        
+        // Reset distributed bill-level values in all line items before calculating totals
+        // Note: We only reset the DISTRIBUTED portions, not user-entered line-level values
+        if (billItems != null && !billItems.isEmpty()) {
+            for (BillItem bi : billItems) {
+                BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+                if (f != null) {
+                    // Reset only the distributed bill-level values (not user input)
+                    f.setBillExpense(BigDecimal.ZERO);
+                    f.setBillDiscount(BigDecimal.ZERO);  // This will be recalculated from bill.getDiscount()
+                    f.setBillTax(BigDecimal.ZERO);       // This will be recalculated from bill.getTax()
+                    
+                    // Reset totals to only line-level values (preserving user inputs)
+                    f.setTotalExpense(BigDecimalUtil.valueOrZero(f.getLineExpense()));
+                    f.setTotalDiscount(BigDecimalUtil.valueOrZero(f.getLineDiscount()));
+                    f.setTotalTax(BigDecimalUtil.valueOrZero(f.getLineTax()));
+                    
+                    // Reset NetTotal to LineNetTotal (no bill-level distributions)
+                    f.setNetTotal(BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+                    f.setTotalCost(BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+                }
+            }
+        }
         
         int serialNo = 0;
 
@@ -815,6 +864,142 @@ public class PharmacyCostingService {
         bfd.setNetTotal(netTotal);
         bfd.setGrossTotal(grossTotal);
 
+    }
+
+    public void calculateBillTotalsFromItemsForDisposalIssue(Bill bill, List<BillItem> billItems) {
+        int serialNo = 0;
+
+        BigDecimal billDiscount = BigDecimal.valueOf(bill.getDiscount());
+        BigDecimal billExpense = BigDecimal.valueOf(bill.getExpenseTotal());
+        BigDecimal billTax = BigDecimal.valueOf(bill.getTax());
+        BigDecimal billCost = billDiscount.subtract(billExpense.add(billTax));
+
+        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
+        BigDecimal totalLineExpenses = BigDecimal.ZERO;
+        BigDecimal totalLineCosts = BigDecimal.ZERO;
+        BigDecimal totalTaxLines = BigDecimal.ZERO;
+        BigDecimal totalFreeItemValue = BigDecimal.ZERO;
+        BigDecimal totalPurchase = BigDecimal.ZERO;
+        BigDecimal totalRetail = BigDecimal.ZERO;
+        BigDecimal totalCost = BigDecimal.ZERO;
+        BigDecimal totalWholesale = BigDecimal.ZERO;
+        BigDecimal totalQty = BigDecimal.ZERO;
+        BigDecimal totalFreeQty = BigDecimal.ZERO;
+        BigDecimal totalQtyAtomic = BigDecimal.ZERO;
+        BigDecimal totalFreeQtyAtomic = BigDecimal.ZERO;
+        BigDecimal grossTotal = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal netTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+        BigDecimal totalDiscount = BigDecimal.ZERO;
+        BigDecimal totalExpense = BigDecimal.ZERO;
+        BigDecimal totalTax = BigDecimal.ZERO;
+
+        for (BillItem bi : billItems) {
+            if (bi == null) {
+                continue;
+            }
+
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+
+            if (pbi == null || f == null) {
+                continue;
+            }
+
+            bi.setSearialNo(serialNo++);
+            double netValue = bi.getQty() * bi.getRate();
+            bi.setNetValue(-netValue);
+
+            BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal grossRate = Optional.ofNullable(f.getLineGrossRate()).orElse(BigDecimal.ZERO);
+
+            // Fallback: calculate grossTotal if missing or 0
+            if (f.getGrossTotal() == null || f.getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setGrossTotal(grossRate.multiply(qty));
+            }
+
+            // Fallback net values
+            if (f.getNetTotal() == null || f.getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setNetTotal(f.getGrossTotal());
+            }
+            if (f.getLineNetTotal() == null || f.getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setLineNetTotal(f.getLineGrossTotal());
+            }
+
+            BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal qtyTotal = qty.add(freeQty);
+
+            BigDecimal costRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+            if (costRate.compareTo(BigDecimal.ZERO) == 0 && f.getValueAtCostRate() != null && qty.compareTo(BigDecimal.ZERO) > 0) {
+                costRate = f.getValueAtCostRate().divide(qty, 4, RoundingMode.HALF_UP);
+                f.setLineCostRate(costRate);
+            }
+            
+            BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO);
+            BigDecimal wholesaleRate = Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO);
+
+            BigDecimal retailValue = retailRate.multiply(qtyTotal);
+            BigDecimal costValue = costRate.multiply(qtyTotal);
+            BigDecimal wholesaleValue = wholesaleRate.multiply(qtyTotal);
+            BigDecimal freeItemValue = costRate.multiply(freeQty);
+
+            totalLineDiscounts = totalLineDiscounts.add(Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO));
+            totalLineExpenses = totalLineExpenses.add(Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO));
+            totalTaxLines = totalTaxLines.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
+            totalLineCosts = totalLineCosts.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
+            totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
+            totalPurchase = totalPurchase.add(Optional.ofNullable(f.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
+            totalRetail = totalRetail.add(retailValue);
+            totalCost = totalCost.add(costValue);
+            totalWholesale = totalWholesale.add(wholesaleValue);
+            totalQty = totalQty.add(qty);
+            totalFreeQty = totalFreeQty.add(freeQty);
+            totalQtyAtomic = totalQtyAtomic.add(Optional.ofNullable(f.getQuantityByUnits()).orElse(BigDecimal.ZERO));
+            totalFreeQtyAtomic = totalFreeQtyAtomic.add(Optional.ofNullable(f.getFreeQuantityByUnits()).orElse(BigDecimal.ZERO));
+            grossTotal = grossTotal.add(Optional.ofNullable(f.getLineNetTotal()).orElse(BigDecimal.ZERO));
+            lineGrossTotal = lineGrossTotal.add(Optional.ofNullable(f.getLineGrossTotal()).orElse(BigDecimal.ZERO));
+            netTotal = netTotal.add(Optional.ofNullable(f.getNetTotal()).orElse(BigDecimal.ZERO));
+            lineNetTotal = lineNetTotal.add(Optional.ofNullable(f.getLineNetTotal()).orElse(BigDecimal.ZERO));
+            totalDiscount = totalDiscount.add(Optional.ofNullable(f.getTotalDiscount()).orElse(BigDecimal.ZERO));
+            totalExpense = totalExpense.add(Optional.ofNullable(f.getTotalExpense()).orElse(BigDecimal.ZERO));
+            totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
+        }
+
+        bill.setTotal(grossTotal.doubleValue());
+        bill.setNetTotal(netTotal.doubleValue());
+        bill.setSaleValue(totalRetail.doubleValue());
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+
+        bfd.setBillDiscount(billDiscount);
+        bfd.setBillExpense(billExpense);
+        bfd.setBillTaxValue(billTax);
+        bfd.setBillCostValue(billCost);
+        bfd.setLineDiscount(totalLineDiscounts);
+        bfd.setLineExpense(totalLineExpenses);
+        bfd.setItemTaxValue(totalTaxLines);
+        bfd.setLineCostValue(totalLineCosts);
+        bfd.setTotalDiscount(totalDiscount);
+        bfd.setTotalExpense(totalExpense);
+        bfd.setTotalTaxValue(totalTax);
+        bfd.setTotalCostValue(totalCost);
+        bfd.setTotalOfFreeItemValues(totalFreeItemValue);
+        bfd.setTotalPurchaseValue(totalPurchase);
+        bfd.setTotalRetailSaleValue(totalRetail);
+        bfd.setTotalWholesaleValue(totalWholesale);
+        bfd.setTotalQuantity(totalQty);
+        bfd.setTotalFreeQuantity(totalFreeQty);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
+        bfd.setGrossTotal(grossTotal);
+        bfd.setLineGrossTotal(lineGrossTotal);
+        bfd.setNetTotal(netTotal);
+        bfd.setLineNetTotal(lineNetTotal);
     }
 
 }

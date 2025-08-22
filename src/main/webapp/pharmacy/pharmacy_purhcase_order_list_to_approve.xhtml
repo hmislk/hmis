@@ -93,6 +93,11 @@
                             <p:column headerText="Supplier" >
                                 <h:outputText value="#{b.paymentMethod}" ></h:outputText>
                             </p:column>
+                            <p:column headerText="Consignment"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                <h:outputText value="#{b.consignment ? 'Yes' : 'No'}" />
+                            </p:column>
+
 
                             <p:column headerText="Requested Deprtment" >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
@@ -123,17 +128,29 @@
                                 <h:outputLabel  value="#{b.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
+
+                            <p:column headerText="Status" width="8em">
+                                <h:panelGroup rendered="#{b.checkedBy ne null and b.referenceBill eq null}">
+                                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{b.referenceBill ne null and b.referenceBill.creater ne null}">
+                                    <span class="badge bg-success">Approved</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{b.checkedBy eq null}">
+                                    <span class="badge bg-secondary">Draft</span>
+                                </h:panelGroup>
+                            </p:column>
 
                             <p:column headerText="Actions" width="9em">
-                                <p:commandButton 
+                                <p:commandButton
                                     id="approve"
                                     ajax="false"
                                     icon="fas fa-check-circle"
                                     class="ui-button-success mx-2"
                                     title="To Approve Purchase Order"
                                     action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
-                                    disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
+                                    disabled="#{b.checkedBy eq null or (b.referenceBill ne null and b.referenceBill.creater ne null) or b.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
                                     <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
                                 </p:commandButton>
                                 <p:commandButton 
