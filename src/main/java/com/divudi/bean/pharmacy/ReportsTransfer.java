@@ -1859,7 +1859,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append("bi.item.code, bi.item.name, bi.bill.fromDepartment.name, ");
         jpql.append("bi.bill.billType, bi.netValue, bi.qty, bi.grossValue, ");
         jpql.append("ib.batchNo, ");
-        jpql.append("ib.purchaseRate, ");
+        jpql.append("ib.purcahseRate, ");
         jpql.append("ib.retailsaleRate, ");
         jpql.append("bi.marginValue) ");
         jpql.append(" from BillItem bi");
@@ -1964,7 +1964,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append("bi.item.code, bi.item.name, bi.bill.fromDepartment.name, ");
         jpql.append("bi.bill.billType, bi.netValue, bi.qty, bi.grossValue, ");
         jpql.append("ib.batchNo, ");
-        jpql.append("ib.purchaseRate, ");
+        jpql.append("ib.purcahseRate, ");
         jpql.append("ib.retailsaleRate, ");
         jpql.append("bi.marginValue) ");
         jpql.append(" from BillItem bi");
