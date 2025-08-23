@@ -51,7 +51,7 @@
                                 var="i"
                                 itemLabel="#{i.name}"
                                 itemValue="#{i}">
-                                <f:ajax event="itemSelect" execute="@this" render="gpDetail btnDelete"/>
+                                <p:ajax event="itemSelect" process="@this" update="gpDetail btnDelete"/>
                             </p:autoComplete>
 
 

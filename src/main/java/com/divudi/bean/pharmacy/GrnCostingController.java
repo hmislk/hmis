@@ -2468,6 +2468,13 @@ public class GrnCostingController implements Serializable {
         getBillFacade().edit(getCurrentGrnBillPre());
         System.out.println("DEBUG: Final bill update completed");
 
+        // Ensure bill discount distribution before saving
+        if (getGrnBill().getBillFinanceDetails() != null && getGrnBill().getDiscount() > 0) {
+            getGrnBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getGrnBill().getDiscount()));
+            pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+            System.out.println("DEBUG: requestWithSaveApprove - Distributed bill discount: " + getGrnBill().getDiscount());
+        }
+
         // Update totals - no copying needed since grnBill and currentGrnBillPre are the same object
         calculateBillTotalsFromItems();
         getBillFacade().edit(getCurrentGrnBillPre());
@@ -2554,6 +2561,13 @@ public class GrnCostingController implements Serializable {
 
         // Change bill type from PRE to final GRN
         getCurrentGrnBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+
+        // Ensure bill discount distribution before final calculations
+        if (getGrnBill().getBillFinanceDetails() != null && getGrnBill().getDiscount() > 0) {
+            getGrnBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getGrnBill().getDiscount()));
+            pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+            System.out.println("DEBUG: requestFinalizeWithSaveApprove - Distributed bill discount: " + getGrnBill().getDiscount());
+        }
 
         // Final calculations with costing - no copying needed since grnBill and currentGrnBillPre are the same object
         calculateBillTotalsFromItems();
