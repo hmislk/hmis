@@ -124,7 +124,7 @@ public class GrnCostingController implements Serializable {
 //    }
     /////////////////
     private Bill approveBill;
-    private Bill grnBill;
+    // private Bill grnBill; // Removed in favor of single accessor getGrnBill()
     private Bill currentGrnBillPre;
     private boolean printPreview;
     //////////////
@@ -155,7 +155,7 @@ public class GrnCostingController implements Serializable {
 
     public void clear() {
         billExpenses = null;
-        grnBill = null;
+        // grnBill = null; // Field removed
         currentGrnBillPre = null; // Clear both bills since they should be the same object
         invoiceDate = null;
         invoiceNumber = null;
@@ -1992,8 +1992,10 @@ public class GrnCostingController implements Serializable {
         return bill;
     }
 
+    @Deprecated // Use getCurrentGrnBillPre() directly if needed for setting
     public void setGrnBill(Bill grnBill) {
-        this.grnBill = grnBill;
+        // this.grnBill = grnBill; // Field removed
+        this.currentGrnBillPre = grnBill;
     }
 
     public SessionController getSessionController() {
