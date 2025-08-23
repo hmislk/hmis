@@ -113,25 +113,25 @@
                     <p:column 
                         width="2em"
                         selectionBox="true"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
+                        styleClass="#{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}"/>
                     <p:column 
                         headerText="Item Name" 
                         width="20em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
+                        styleClass="#{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}" > 
                         <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
                     </p:column>  
                     <p:column 
                         headerText="Code" 
                         width="4em"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used', true)}"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"> 
+                        styleClass="#{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}"> 
                         <h:outputText id="code" value="#{bi.item.code}" >                                   
                         </h:outputText>
                     </p:column> 
                     <p:column 
                         width="6em"
                         headerText="Ordered Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">  
                         <p:inputText
                             readonly="true"
                             class="w-100 text-end text-secondary"
@@ -141,7 +141,7 @@
                     <p:column 
                         width="6em"
                         headerText="Receiving Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}" >
                         <p:inputText 
                             onfocus="this.select();"
                             autocomplete="off" 
@@ -154,7 +154,7 @@
                     <p:column 
                         width="6em"
                         headerText="Ordered Free Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             readonly="true"
                             class="w-100 text-end text-secondary"
@@ -164,7 +164,7 @@
                     <p:column
                         width="6em"
                         headerText="Recieved Free Qty"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">   
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">   
                         <p:inputText
                             autocomplete="off" 
                             class="text-end text-primary w-100"
@@ -178,7 +178,7 @@
                     <p:column
                         width="8em"
                         headerText="Purchase Rate"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             disabled="#{!configOptionApplicationController.getBooleanValueByKey('GRN Purchase Rate is Editable', true)}"
                             autocomplete="off" 
@@ -192,7 +192,7 @@
                     <p:column 
                         headerText="Sale Price" 
                         width="8em"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"> 
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}"> 
                         <p:inputText 
                             autocomplete="off"
                             class="text-end text-primary w-100"
@@ -205,7 +205,7 @@
                     <p:column 
                         headerText="Total" 
                         width="8em"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">  
                         <h:panelGroup id="total">
                             <p:inputText 
                                 readonly="true"
@@ -219,7 +219,7 @@
                     <p:column 
                         headerText="Date Of Expiry" 
                         width="8em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >  
+                        styleClass="#{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}" >  
                         <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
                                      id="doeDateOnlyShort"
                                      class="text-center text-primary w-100"
@@ -233,7 +233,7 @@
                     <p:column 
                         width="9em"
                         headerText="Batch No"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="#{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             class="w-100"
                             autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}" id="batch">  
@@ -242,7 +242,7 @@
                     <p:column 
                         headerText="Comments"
                         width="5em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="#{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             class="w-100"
                             autocomplete="off"
@@ -252,12 +252,12 @@
                     <p:column
                         width="4em"
                         headerText="Profit %" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                    
+                        styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">                    
                         <p:inputText
                             id="profMargin"
                             readonly="true"
                             class="text-end w-100 text-secondary"
-                            value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
+                            value="#{grnController.getProfitMargin(bi)}" >
                             <f:convertNumber pattern="0.0"></f:convertNumber>
                         </p:inputText>
                     </p:column>
@@ -265,7 +265,7 @@
                     <p:column 
                         headerText="Actions"
                         width="7em"
-                        styleClass="text-center #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        styleClass="text-center #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}">
                         <p:commandButton 
                             process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
                             update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "

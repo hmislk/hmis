@@ -2036,4 +2036,25 @@ public class GrnController implements Serializable {
         printPreview = true;
     }
 
+    public double getProfitMargin(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return 0.0;
+        }
+        double purchaseRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+        double retailRate = bi.getPharmaceuticalBillItem().getRetailRate();
+        if (purchaseRate == 0.0) {
+            return 0.0;
+        }
+        return ((retailRate - purchaseRate) / purchaseRate * 100);
+    }
+
+    public boolean isProfitAboveThreshold(BillItem bi) {
+        if (bi == null) {
+            return false;
+        }
+        double profitMargin = getProfitMargin(bi);
+        double threshold = 20.0; // Example threshold
+        return profitMargin > threshold;
+    }
+
 }
