@@ -1863,11 +1863,24 @@ public class GrnController implements Serializable {
         getCurrentGrnBillPre().setCreater(getSessionController().getLoggedUser());
         getCurrentGrnBillPre().setCreatedAt(Calendar.getInstance().getTime());
 
+        // Replicate receiving context from approved bill, if missing
+        if (getCurrentGrnBillPre().getToInstitution() == null) {
+            getCurrentGrnBillPre().setToInstitution(getApproveBill().getFromInstitution());
+        }
+        if (getCurrentGrnBillPre().getToDepartment() == null) {
+            getCurrentGrnBillPre().setToDepartment(getApproveBill().getFromDepartment());
+        }
+
         // Create or update the main bill
         if (getCurrentGrnBillPre().getId() == null) {
             getBillFacade().create(getCurrentGrnBillPre());
         } else {
             getBillFacade().edit(getCurrentGrnBillPre());
+        }
+
+        // Ensure billItems collection is initialized to prevent NPE
+        if (getCurrentGrnBillPre().getBillItems() == null) {
+            getCurrentGrnBillPre().setBillItems(new ArrayList<>());
         }
 
         // Update existing bill items without clearing (to avoid foreign key constraint violations)
