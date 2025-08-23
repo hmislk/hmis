@@ -116,7 +116,11 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Consignment" width="5em">
+                            <p:column 
+                                headerText="Consignment" 
+                                width="2em" 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing',true)}"
+                                styleClass="text-enter">
                                 <h:outputText value="#{p.consignment ? 'Yes' : 'No'}" />
                             </p:column>
 
@@ -125,6 +129,11 @@
                                 width="6em">
                                 <div class="row">
                                     <div class="d-flex gap-1 mb-1">
+                                        <!--
+                                        These were the methods used earlier before the feature of adding the feature of Saving GRNs.
+                                        THey are not yet deleted just to detect errors by QA.
+                                        Once QA is completed. these buttons and relevant methods will be removed.
+                                        
                                         <p:commandButton
                                             ajax="false"
                                             value="Receive"
@@ -143,11 +152,15 @@
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
+                                        
+                                        -->
+
                                         <p:commandButton
                                             ajax="false"
-                                            value="Save/Approve"
+                                            value="Create GRN"
                                             class="ui-button-info"
-                                            title="Receive with Save/Approve workflow"
+                                            title="Create a GRN for Selected Approved PO with costing"
+                                            styleClass="w-100"
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnController.navigateToResiveWithSaveApprove()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
@@ -155,9 +168,9 @@
                                         </p:commandButton>
                                         <p:commandButton
                                             ajax="false"
-                                            value="Save/Approve"
-                                            class="ui-button-info"
-                                            title="Receive with costing Save/Approve workflow"
+                                            value="Create GRN"
+                                            styleClass="ui-button-info w-100"
+                                            title="Create a GRN for Selected Approved PO with costing"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
@@ -168,7 +181,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             class="w-100 ui-button-info"
-                                            value="Receive Wholesale" 
+                                            value="Create Wholesale GRN" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Pharmacy Wholesales', true)}"
                                             action="#{grnController.navigateToReceiveWholesale()}" 
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
