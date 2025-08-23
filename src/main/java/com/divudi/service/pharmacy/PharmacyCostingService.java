@@ -121,7 +121,8 @@ public class PharmacyCostingService {
         billItemFinanceDetails.setTotalQuantityByUnits(totalQtyInUnits);
 
         BigDecimal lineGrossTotal = lineGrossRate.multiply(qty);
-        BigDecimal lineDiscountValue = lineGrossTotal.multiply(lineDiscountRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        // lineDiscountRate is amount per unit, not percentage
+        BigDecimal lineDiscountValue = lineDiscountRate.multiply(qty);
         BigDecimal lineNetTotal = lineGrossTotal.subtract(lineDiscountValue);
         BigDecimal lineCostRate = BigDecimalUtil.isPositive(totalQtyInUnits)
                 ? lineNetTotal.divide(totalQtyInUnits, 4, RoundingMode.HALF_UP)
@@ -598,11 +599,11 @@ public class PharmacyCostingService {
         }
         System.out.println("DEBUG: SERVICE - currentBillExpensesTotal: " + currentBillExpensesTotal);
         
-        // Add bill-level expenses to the net total
-        BigDecimal finalNetTotal = netTotal.add(BigDecimal.valueOf(currentBillExpensesTotal));
-        System.out.println("DEBUG: SERVICE - finalNetTotal (netTotal + expenses): " + finalNetTotal);
+        // Use line-level aggregation only (no bill-level distribution)
+        BigDecimal finalNetTotal = lineNetTotal.add(BigDecimal.valueOf(currentBillExpensesTotal));
+        System.out.println("DEBUG: SERVICE - finalNetTotal (lineNetTotal + expenses): " + finalNetTotal);
         
-        bill.setTotal(grossTotal.doubleValue());
+        bill.setTotal(lineGrossTotal.doubleValue());
         bill.setNetTotal(finalNetTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
         
@@ -628,10 +629,10 @@ public class PharmacyCostingService {
         bfd.setItemTaxValue(totalTaxLines);
         bfd.setLineCostValue(totalLineCosts);
 
-        bfd.setTotalDiscount(totalDiscount);
-        bfd.setTotalExpense(totalExpense);
-        bfd.setTotalTaxValue(totalTax);
-        bfd.setTotalCostValue(totalCost);
+        bfd.setTotalDiscount(totalLineDiscounts);
+        bfd.setTotalExpense(totalLineExpenses);
+        bfd.setTotalTaxValue(totalTaxLines);
+        bfd.setTotalCostValue(totalLineCosts);
 
         bfd.setTotalOfFreeItemValues(totalFreeItemValue);
         bfd.setTotalPurchaseValue(totalPurchase);
@@ -651,7 +652,7 @@ public class PharmacyCostingService {
         bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
         bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
 
-        bfd.setGrossTotal(grossTotal);
+        bfd.setGrossTotal(lineGrossTotal);
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(finalNetTotal);
         bfd.setLineNetTotal(lineNetTotal);
