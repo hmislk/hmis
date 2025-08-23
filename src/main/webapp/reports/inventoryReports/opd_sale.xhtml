@@ -292,7 +292,11 @@
                             </p:column>
 
                             <p:column headerText="Payment Mode/Modes" sortBy="#{b.paymentMethod}" width="12em">
-                                <h:outputText value="#{b.paymentMethod}" rendered="#{b.paymentMethod ne 'MultiplePaymentMethods'}"/>
+                                <h:outputText value="Staff credit" rendered="#{b.paymentMethod eq 'Staff'}" />
+
+                                <h:panelGroup rendered="#{b.paymentMethod ne 'Staff' and b.paymentMethod ne 'MultiplePaymentMethods'}">
+                                    <h:outputText value="#{b.paymentMethod}" />
+                                </h:panelGroup>
                                 <h:panelGroup rendered="#{b.paymentMethod eq 'MultiplePaymentMethods'}" >
                                     <h:outputText value="#{b.paymentMethod}" rendered="#{b.paymentMethod eq 'MultiplePaymentMethods'}"/><br/>
                                     <ui:repeat value="#{searchController.getPaymentDetals(b.bill)}" var="payment">
