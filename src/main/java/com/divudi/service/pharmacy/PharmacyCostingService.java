@@ -121,7 +121,7 @@ public class PharmacyCostingService {
         billItemFinanceDetails.setTotalQuantityByUnits(totalQtyInUnits);
 
         BigDecimal lineGrossTotal = lineGrossRate.multiply(qty);
-        BigDecimal lineDiscountValue = lineDiscountRate.multiply(qty);
+        BigDecimal lineDiscountValue = lineGrossTotal.multiply(lineDiscountRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal lineNetTotal = lineGrossTotal.subtract(lineDiscountValue);
         BigDecimal lineCostRate = BigDecimalUtil.isPositive(totalQtyInUnits)
                 ? lineNetTotal.divide(totalQtyInUnits, 4, RoundingMode.HALF_UP)
