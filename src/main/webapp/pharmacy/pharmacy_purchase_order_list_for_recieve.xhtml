@@ -129,20 +129,23 @@
                                 width="6em">
                                 <div class="row">
                                     <div class="d-flex gap-1 mb-1">
-                                        <!--
-                                        These were the methods used earlier before the feature of adding the feature of Saving GRNs.
-                                        THey are not yet deleted just to detect errors by QA.
-                                        Once QA is completed. these buttons and relevant methods will be removed.
-                                        
+
                                         <p:commandButton
                                             ajax="false"
                                             value="Receive"
+                                            title="Goos Receive when Costing is not managed."
                                             class="ui-button-warning"
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnController.navigateToResive()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
+                                        <!--
+                                        These were the methods used earlier before the feature of adding the feature of Saving GRNs.
+                                        THey are not yet deleted just to detect errors by QA.
+                                        Once QA is completed. these buttons and relevant methods will be removed.
+                                        
+                                        
                                         <p:commandButton
                                             ajax="false"
                                             value="Receive"
@@ -153,19 +156,23 @@
                                             <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                         
-                                        -->
+                                        
 
                                         <p:commandButton
                                             ajax="false"
                                             value="Create GRN"
                                             class="ui-button-info"
-                                            title="Create a GRN for Selected Approved PO with costing"
+                                            title="Create a GRN for Selected Approved PO without costing"
                                             styleClass="w-100"
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                             action="#{grnController.navigateToResiveWithSaveApprove()}"
                                             disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
+                                        
+                                        -->
+
+
                                         <p:commandButton
                                             ajax="false"
                                             value="Create GRN"

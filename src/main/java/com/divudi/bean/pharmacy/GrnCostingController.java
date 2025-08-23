@@ -147,7 +147,7 @@ public class GrnCostingController implements Serializable {
 
     public String navigateToResiveCosting() {
         clear();
-        createGrn();
+        createGrn(); // This now includes discount copying and distribution
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
         return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
@@ -1309,6 +1309,19 @@ public class GrnCostingController implements Serializable {
         setFromInstitution(getApproveBill().getToInstitution());
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
+        
+        // Copy discount from the approved purchase order to GRN
+        if (getApproveBill() != null) {
+            getGrnBill().setDiscount(getApproveBill().getDiscount());
+            System.out.println("DEBUG: createGrn - Copied discount from PO: " + getApproveBill().getDiscount());
+        }
+        
+        // Ensure BillFinanceDetails has current bill discount value before distribution
+        if (getGrnBill().getBillFinanceDetails() != null) {
+            getGrnBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getGrnBill().getDiscount()));
+            System.out.println("DEBUG: createGrn - Set bill discount for distribution: " + getGrnBill().getDiscount());
+        }
+        
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
 //        calGrossTotal();
@@ -1688,8 +1701,22 @@ public class GrnCostingController implements Serializable {
     }
 
     public void discountChangedLitener() {
+        System.out.println("DEBUG: discountChangedLitener() - Bill discount: " + getGrnBill().getDiscount());
+        System.out.println("DEBUG: discountChangedLitener() - Bill tax: " + getGrnBill().getTax());
+        
+        // Ensure BillFinanceDetails has the current bill discount value before distribution
+        if (getGrnBill().getBillFinanceDetails() == null) {
+            getGrnBill().setBillFinanceDetails(new BillFinanceDetails(getGrnBill()));
+        }
+        getGrnBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getGrnBill().getDiscount()));
+        getGrnBill().getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(getGrnBill().getTax()));
+        
+        System.out.println("DEBUG: discountChangedLitener() - BillFinanceDetails discount set to: " + getGrnBill().getBillFinanceDetails().getBillDiscount());
+        System.out.println("DEBUG: discountChangedLitener() - Number of bill items: " + (getBillItems() != null ? getBillItems().size() : "null"));
+        
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-        calculateBillTotalsFromItems();
+        // Don't call calculateBillTotalsFromItems() after distribution as it resets the distributed values
+        // The distribution method should handle final bill totals
         calDifference();
     }
 
@@ -2262,8 +2289,20 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
         getCurrentGrnBillPre().setCreditDuration(getApproveBill().getCreditDuration());
         
+        // Copy discount from the approved purchase order to GRN
+        if (getApproveBill() != null) {
+            getCurrentGrnBillPre().setDiscount(getApproveBill().getDiscount());
+            System.out.println("DEBUG: navigateToResiveCostingWithSaveApprove - Copied discount from PO: " + getApproveBill().getDiscount());
+        }
+        
         // Ensure calculations are done after setup
         if (getBillItems() != null && !getBillItems().isEmpty()) {
+            // Ensure BillFinanceDetails has current bill discount value before distribution
+            if (getGrnBill().getBillFinanceDetails() != null) {
+                getGrnBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getGrnBill().getDiscount()));
+                System.out.println("DEBUG: navigateToResiveCostingWithSaveApprove - Set bill discount for distribution: " + getGrnBill().getDiscount());
+            }
+            
             pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
             calculateBillTotalsFromItems();
             calDifference();
@@ -2311,6 +2350,13 @@ public class GrnCostingController implements Serializable {
                     System.out.println("DEBUG: navigateToEditGrnCosting - After recalc - Item: " + bi.getItem().getName() + " - LineNetTotal: " + bi.getBillItemFinanceDetails().getLineNetTotal());
                 }
             }
+            
+            // Ensure BillFinanceDetails has current bill discount value before distribution
+            if (getGrnBill().getBillFinanceDetails() != null) {
+                getGrnBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getGrnBill().getDiscount()));
+                System.out.println("DEBUG: navigateToEditGrnCosting - Set bill discount for distribution: " + getGrnBill().getDiscount());
+            }
+            
             pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
             calculateBillTotalsFromItems();
             calDifference();

@@ -536,8 +536,13 @@
                                     value="#{grnCostingController.currentGrnBillPre.discount}" >
                                     <p:ajax
                                         process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                         event="keyup"
+                                        listener="#{grnCostingController.discountChangedLitener()}"/>
+                                    <p:ajax
+                                        process="@this"
+                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                        event="blur"
                                         listener="#{grnCostingController.discountChangedLitener()}"/>
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
