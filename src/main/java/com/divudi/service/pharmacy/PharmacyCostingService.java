@@ -370,10 +370,13 @@ public class PharmacyCostingService {
             }
         }
         
-        // Add bill expenses
+        // Add bill expenses not considered for costing (to avoid double-counting)
         if (bill.getBillExpenses() != null) {
             for (BillItem expense : bill.getBillExpenses()) {
-                totalNetTotal = totalNetTotal.add(BigDecimal.valueOf(expense.getNetValue()));
+                if (!expense.isConsideredForCosting()) {
+                    BigDecimal expenseNetValue = Optional.ofNullable(BigDecimal.valueOf(expense.getNetValue())).orElse(BigDecimal.ZERO);
+                    totalNetTotal = totalNetTotal.add(expenseNetValue);
+                }
             }
         }
         

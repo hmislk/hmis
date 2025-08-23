@@ -2496,16 +2496,16 @@ public class GrnCostingController implements Serializable {
                 continue;
             }
 
-            // Update pharmaceutical bill item quantities from finance details
-            i.getPharmaceuticalBillItem().setQty(i.getBillItemFinanceDetails().getQuantity().doubleValue());
-            i.getPharmaceuticalBillItem().setQtyInUnit(i.getBillItemFinanceDetails().getQuantity().doubleValue());
-            i.getPharmaceuticalBillItem().setFreeQty(i.getBillItemFinanceDetails().getFreeQuantity().doubleValue());
-            i.getPharmaceuticalBillItem().setFreeQtyInUnit(i.getBillItemFinanceDetails().getFreeQuantity().doubleValue());
-            i.getPharmaceuticalBillItem().setPurchaseRate(i.getBillItemFinanceDetails().getLineGrossRate().doubleValue());
-            i.getPharmaceuticalBillItem().setRetailRate(i.getBillItemFinanceDetails().getRetailSaleRate().doubleValue());
+            // Apply standardized finance details conversion
+            applyFinanceDetailsToPharmaceutical(i);
 
-            // Create/update item batch for stock management
-            ItemBatch itemBatch = getPharmacyCalculation().saveItemBatch(i);
+            // Create/update item batch for stock management with costing respect
+            ItemBatch itemBatch;
+            if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
+                itemBatch = getPharmacyCalculation().saveItemBatchWithCosting(i);
+            } else {
+                itemBatch = getPharmacyCalculation().saveItemBatch(i);
+            }
             i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
 
             // Create stock record
