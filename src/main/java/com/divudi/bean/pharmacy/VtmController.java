@@ -225,6 +225,10 @@ public class VtmController implements Serializable {
         return selectedItems;
     }
 
+    public void fillItems() {
+        items = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
+    }
+
     public void prepareAdd() {
         current = new Vtm();
         editable = true;
