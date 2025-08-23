@@ -5,29 +5,18 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
     <h:head>
     </h:head>
     <h:body>
-
         <ui:composition template="/admin/pricing/index.xhtml">
-
             <ui:define name="subcontent">
-
-
                 <p:growl id="msg"/>
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
                         <h:outputText value="Download &amp; Upload Fee List Items Fees" styleClass="m-2"></h:outputText>
-
-
-
-
                     </f:facet>
-
                     <p:panelGrid columns="3" >
-
                         <h:form id="fill" >
                             <p:panelGrid columns="2" >
                                 <h:panelGroup >
@@ -46,30 +35,23 @@
                                             itemValue="#{vt}" ></f:selectItems>
                                     </p:selectOneMenu>
                                 </h:panelGroup>
-
                                 <p:commandButton value="Fill" ajax="false" 
                                                  action="#{itemFeeManager.fillFeeListItemFees()}" 
                                                  icon="fa fa-file" 
                                                  styleClass="ui-button-primary m-2"></p:commandButton>
-                                
                                 <p:commandButton value="Update Fee Totals" ajax="false" 
                                                  action="#{itemFeeManager.updateFeesForListFees()}" 
                                                  icon="fa fa-file" 
                                                  styleClass="ui-button-primary m-2"></p:commandButton>
-                                
-                                
                             </p:panelGrid>
-
                         </h:form>
-
                         <h:form id="download" >
-                            <p:commandButton value="Download Base Item Fees as Excel" 
+                            <p:commandButton value="Download Item List Fees as Excel" 
                                              ajax="false" 
                                              icon="fa fa-download" 
                                              styleClass="ui-button-success m-2" 
                                              action="#{itemFeeManager.downloadBaseItemFeesAsExcel()}"/>
                         </h:form>
-
                         <h:form id="upload" enctype="multipart/form-data">
                             <p:fileUpload value="#{dataUploadController.file}"
                                           mode="simple"
