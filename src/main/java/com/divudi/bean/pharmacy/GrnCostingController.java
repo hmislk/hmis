@@ -502,16 +502,13 @@ public class GrnCostingController implements Serializable {
         double costFree = 0.0;
         double costNonFree = 0.0;
 
-        System.out.println("========= Start fillData for Bill ID: " + (inputBill != null ? inputBill.getId() : "null") + " =========");
 
         for (BillItem bi : getBillItems()) {
-            System.out.println("Processing BillItem ID: " + (bi != null ? bi.getId() : "null"));
 
             BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
 
             if (bifd == null) {
-                System.out.println("  -> Skipped: FinanceDetails is null");
                 continue;
             }
 
@@ -520,57 +517,39 @@ public class GrnCostingController implements Serializable {
             double wholesaleRate = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate().doubleValue() : 0.0;
             double costRate = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate().doubleValue() : 0.0;
 
-            System.out.println("  fd.getQuantity() = " + bifd.getQuantity());
-            System.out.println("  fd.getFreeQuantity() = " + bifd.getFreeQuantity());
-            System.out.println("  fd.getTotalQuantity() = " + bifd.getTotalQuantity());
-            System.out.println("  purchaseRate = " + purchaseRate);
-            System.out.println("  retailRate = " + retailRate);
-            System.out.println("  wholesaleRate = " + wholesaleRate);
-            System.out.println("  costRate = " + costRate);
 
             double totalCostValue = bifd.getTotalCost() != null ? bifd.getTotalCost().doubleValue() : 0.0;
             billTotalAtCostRate += totalCostValue;
-            System.out.println("  Added to billTotalAtCostRate: " + totalCostValue + " -> Current Total: " + billTotalAtCostRate);
 
             double freeQty = bifd.getFreeQuantityByUnits() != null ? bifd.getFreeQuantityByUnits().doubleValue() : 0.0;
             double paidQty = bifd.getQuantityByUnits() != null ? bifd.getQuantityByUnits().doubleValue() : 0.0;
 
-            System.out.println("  freeQty = " + freeQty);
-            System.out.println("  paidQty = " + paidQty);
 
             double tmp;
 
             tmp = freeQty * purchaseRate;
             purchaseFree += tmp;
-            System.out.println("  purchaseFree += " + tmp + " -> " + purchaseFree);
 
             tmp = paidQty * purchaseRate;
             purchaseNonFree += tmp;
-            System.out.println("  purchaseNonFree += " + tmp + " -> " + purchaseNonFree);
 
             tmp = freeQty * retailRate;
             retailFree += tmp;
-            System.out.println("  retailFree += " + tmp + " -> " + retailFree);
 
             tmp = paidQty * retailRate;
             retailNonFree += tmp;
-            System.out.println("  retailNonFree += " + tmp + " -> " + retailNonFree);
 
             tmp = freeQty * wholesaleRate;
             wholesaleFree += tmp;
-            System.out.println("  wholesaleFree += " + tmp + " -> " + wholesaleFree);
 
             tmp = paidQty * wholesaleRate;
             wholesaleNonFree += tmp;
-            System.out.println("  wholesaleNonFree += " + tmp + " -> " + wholesaleNonFree);
 
             tmp = freeQty * costRate;
             costFree += tmp;
-            System.out.println("  costFree += " + tmp + " -> " + costFree);
 
             tmp = paidQty * costRate;
             costNonFree += tmp;
-            System.out.println("  costNonFree += " + tmp + " -> " + costNonFree);
 
             BigDecimal grossTotal = bifd.getGrossTotal();
             if (grossTotal != null) {
@@ -601,15 +580,6 @@ public class GrnCostingController implements Serializable {
             
         }
 
-        System.out.println("========= Final Aggregated Totals =========");
-        System.out.println("costFree = " + costFree);
-        System.out.println("costNonFree = " + costNonFree);
-        System.out.println("purchaseFree = " + purchaseFree);
-        System.out.println("purchaseNonFree = " + purchaseNonFree);
-        System.out.println("retailFree = " + retailFree);
-        System.out.println("retailNonFree = " + retailNonFree);
-        System.out.println("wholesaleFree = " + wholesaleFree);
-        System.out.println("wholesaleNonFree = " + wholesaleNonFree);
 
         inputBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
         inputBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
@@ -630,10 +600,6 @@ public class GrnCostingController implements Serializable {
         inputBill.setSaleValue(retailFree + retailNonFree);
         inputBill.setFreeValue(retailFree);
 
-        System.out.println("inputBill.setSaleValue = " + inputBill.getSaleValue());
-        System.out.println("inputBill.setFreeValue = " + inputBill.getFreeValue());
-
-        System.out.println("========= End fillData =========");
     }
 
     private boolean validateInputs() {
@@ -739,15 +705,6 @@ public class GrnCostingController implements Serializable {
             getBillItemFacade().edit(i);
             updateStockAndBatches(i);
             getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
-            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
-            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
-
-            System.out.println("Retail Rate: " + pbi.getRetailRate());
-            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
-            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
-
-            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
-            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
@@ -1482,7 +1439,6 @@ public class GrnCostingController implements Serializable {
 
                 netTotal = netTotal.add(Optional.ofNullable(f.getNetTotal()).orElse(BigDecimal.ZERO));
                 BigDecimal itemLineNetTotal = Optional.ofNullable(f.getLineNetTotal()).orElse(BigDecimal.ZERO);
-                System.out.println("DEBUG: calculateBillTotals - Item: " + bi.getItem().getName() + " - LineNetTotal: " + itemLineNetTotal);
                 lineNetTotal = lineNetTotal.add(itemLineNetTotal);
             }
 
@@ -1531,7 +1487,6 @@ public class GrnCostingController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
-        System.out.println("DEBUG: calculateBillTotals - Final LineNetTotal: " + lineNetTotal);
     }
 
     public void createGrn(Bill importGrn) {
@@ -1913,9 +1868,7 @@ public class GrnCostingController implements Serializable {
         getCurrentExpense().setSearialNo(getGrnBill().getBillExpenses().size());
         
         // CRITICAL: Set the expenseBill reference for JPA relationship
-        System.out.println("DEBUG: Setting expenseBill reference. Bill ID: " + getGrnBill().getId());
         getCurrentExpense().setExpenseBill(getGrnBill());
-        System.out.println("DEBUG: ExpenseBill set. Expense ID: " + getCurrentExpense().getId() + ", ExpenseBill ID: " + getCurrentExpense().getExpenseBill().getId());
         
         getGrnBill().getBillExpenses().add(currentExpense);
         
@@ -2508,11 +2461,8 @@ public class GrnCostingController implements Serializable {
 
         // Create or update the main bill
         if (getCurrentGrnBillPre().getId() == null) {
-            System.out.println("DEBUG: Creating new bill");
             getBillFacade().create(getCurrentGrnBillPre());
-            System.out.println("DEBUG: Bill created with ID: " + getCurrentGrnBillPre().getId());
         } else {
-            System.out.println("DEBUG: Updating existing bill ID: " + getCurrentGrnBillPre().getId());
             getBillFacade().edit(getCurrentGrnBillPre());
         }
 
@@ -2526,7 +2476,6 @@ public class GrnCostingController implements Serializable {
                 continue;
             }
 
-            System.out.println("DEBUG: Processing bill item: " + i.getItem().getName() + " (ID: " + i.getId() + ")");
             
             i.setBill(getCurrentGrnBillPre());
             i.setCreatedAt(new Date());
@@ -2556,23 +2505,17 @@ public class GrnCostingController implements Serializable {
         
         // Save bill expenses - work directly with bill's expense collection
         if (getCurrentGrnBillPre().getBillExpenses() != null) {
-            System.out.println("DEBUG: Saving " + getCurrentGrnBillPre().getBillExpenses().size() + " bill expenses. Bill ID: " + getCurrentGrnBillPre().getId());
             for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
-                System.out.println("DEBUG: Processing bill expense: " + expense.getItem().getName() + " (ID: " + expense.getId() + ")");
                 
                 // Ensure expenseBill reference is set
                 expense.setExpenseBill(getCurrentGrnBillPre());
-                System.out.println("DEBUG: ExpenseBill reference set. Bill ID: " + getCurrentGrnBillPre().getId() + ", ExpenseBill: " + expense.getExpenseBill());
                 expense.setCreatedAt(new Date());
                 expense.setCreater(getSessionController().getLoggedUser());
                 
                 // Create or update expense BillItem (including retired ones to persist retirement status)
                 if (expense.getId() == null) {
-                    System.out.println("DEBUG: Creating new expense BillItem");
                     getBillItemFacade().create(expense);
-                    System.out.println("DEBUG: Expense created with ID: " + expense.getId());
                 } else {
-                    System.out.println("DEBUG: Updating existing expense BillItem with ID: " + expense.getId());
                     getBillItemFacade().edit(expense);
                 }
             }
