@@ -104,7 +104,7 @@ public class AgentAndCcApplicationController {
                 handleCcRePayment(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case RepaymentToCollectingCentreCancel:
-                handleCcRePaymentCancel(collectingCentre, collectingCentreFee, transactionValue, bill);
+                handleCcRePaymentCancel(collectingCentre, transactionValue, bill);
                 break;
             default:
                 Map<String, Object> errorInfo = new LinkedHashMap<>();
@@ -585,14 +585,12 @@ public class AgentAndCcApplicationController {
         }
     }
     
-    private void handleCcRePaymentCancel(Institution collectingCentre, double collectingCentreFee, double transactionValue, Bill bill) {
+    private void handleCcRePaymentCancel(Institution collectingCentre, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            System.out.println("handleCcRePaymentCancel ");
-            System.out.println("transactionValue = " + transactionValue);
-            
+
             collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
