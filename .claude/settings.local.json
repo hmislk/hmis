@@ -53,7 +53,8 @@
       "Bash(awk:*)",
       "Bash(gh workflow run:*)",
       "Bash(gh run list:*)",
-      "Bash(gh pr merge:*)"
+      "Bash(gh pr merge:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
