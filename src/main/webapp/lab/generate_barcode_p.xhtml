@@ -1448,6 +1448,12 @@
                                         class="w-100"
                                         value="#{patientInvestigationController.sampleRejectionComment}" >
                                     </p:inputText>
+                                    
+                                    <h:panelGrid columns="3" class="my-2">
+                                        <p:toggleSwitch value="#{patientInvestigationController.requestReCollected}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                                        <p:spacer width="20"/>
+                                        <h:outputLabel value="Request Re-Collect Sample" />
+                                    </h:panelGrid>
 
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
