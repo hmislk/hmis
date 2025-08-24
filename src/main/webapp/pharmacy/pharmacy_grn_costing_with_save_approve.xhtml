@@ -423,7 +423,7 @@
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     converter="deal" 
-                                    value="#{grnCostingController.fromInstitution}"
+                                    value="#{grnCostingController.currentGrnBillPre.fromInstitution}"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
                                     var="vt" 
@@ -433,7 +433,7 @@
                                 <p:autoComplete           
                                     class="w-100"
                                     inputStyleClass="w-100"
-                                    value="#{grnCostingController.referenceInstitution}"
+                                    value="#{grnCostingController.currentGrnBillPre.referenceInstitution}"
                                     completeMethod="#{institutionController.completeCompany}" 
                                     forceSelection="true"
                                     var="vt" 
