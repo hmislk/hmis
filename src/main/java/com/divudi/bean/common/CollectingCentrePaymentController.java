@@ -608,6 +608,11 @@ public class CollectingCentrePaymentController implements Serializable {
             JsfUtil.addErrorMessage("Payment Bill is Missing");
             return;
         }
+        if (currentPaymentBill.isCancelled()) {
+            ccPaymentSettlingStarted = false;
+            JsfUtil.addErrorMessage("Bill already cancelled.");
+            return;
+        }
 
         if (comment == null || comment.isEmpty()) {
             ccPaymentSettlingStarted = false;
@@ -616,8 +621,6 @@ public class CollectingCentrePaymentController implements Serializable {
         }
         Bill cancelBill = saveCancelBill();
         
-        System.out.println("Cancel Payment Bill");
-
         createPayment(cancelBill, cancelBill.getPaymentMethod());
 
         for (BillItem bi : currentPaymentBill.getBillItems()) {
@@ -673,19 +676,15 @@ public class CollectingCentrePaymentController implements Serializable {
 
         ccAgentPaymentCancelBill.invertValueOfThisBill();
         
-        System.out.println("ccAgentPaymentCancelBill = " + ccAgentPaymentCancelBill.getNetTotal());
-
         if (ccAgentPaymentCancelBill.getId() == null) {
             billFacade.create(ccAgentPaymentCancelBill);
         } else {
             billFacade.edit(ccAgentPaymentCancelBill);
         }
-        System.out.println("Update Cancel Bill");
 
         currentPaymentBill.setCancelled(true);
         currentPaymentBill.setCancelledBill(ccAgentPaymentCancelBill);
         billFacade.edit(currentPaymentBill);
-        System.out.println("Update Original Bill");
 
         return ccAgentPaymentCancelBill;
     }
@@ -841,8 +840,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setBillNumber(String billNumber) {
         this.billNumber = billNumber;
     }
-
-// </editor-fold>
+    
     public String getComment() {
         return comment;
     }
@@ -850,4 +848,5 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
+// </editor-fold>
 }
