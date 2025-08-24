@@ -547,6 +547,10 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_report_department_stock_by_batch_minus?faces-redirect=true";
     }
 
+    public String navigateToStockAdjustmentVariance() {
+        return "/pharmacy/reports/stock_adjustment_variance?faces-redirect=true";
+    }
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Methods - Data Maniulation">
     public void deleteSingleVtm() {
