@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head />
+    <h:body>
+        <ui:composition template="/forms/index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Pharmacy Stock Take</h2>
+                        </div>
+                        <div class="card-body">
+                            <h:form>
+                                <p:commandButton value="Take Snapshot" action="#{pharmacyStockTakeController.captureSnapshot}" update="@form" icon="fa fa-camera"/>
+                                <p:commandButton value="Download Guided Sheet" ajax="false" styleClass="ui-button-success" icon="fa fa-download" rendered="#{pharmacyStockTakeController.snapshotBill ne null}" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
+                                </p:commandButton>
+                                <p:commandButton value="Download Blind Sheet" ajax="false" styleClass="ui-button-secondary" icon="fa fa-download" rendered="#{pharmacyStockTakeController.snapshotBill ne null}" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
+                                </p:commandButton>
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -333,6 +333,10 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
     }
 
+    public String navigateToStockTake() {
+        return "/pharmacy/pharmacy_stock_take?faces-redirect=true";
+    }
+
     public String navigateToListPharmaceuticals() {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
