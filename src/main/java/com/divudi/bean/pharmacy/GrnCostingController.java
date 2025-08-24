@@ -1126,22 +1126,35 @@ public class GrnCostingController implements Serializable {
                 newlyCreatedBillItemForGrn.setSearialNo(getBillItems().size());
                 newlyCreatedBillItemForGrn.setItem(pbiInApprovedOrder.getBillItem().getItem());
                 newlyCreatedBillItemForGrn.setReferanceBillItem(pbiInApprovedOrder.getBillItem());
-                newlyCreatedBillItemForGrn.setQty(remains);
-                newlyCreatedBillItemForGrn.setTmpFreeQty(remainFreeQty);
+                
+                // Since pbis are always in units, we need to convert appropriately for BillItem
+                if (pbiInApprovedOrder.getBillItem().getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                    // For Ampp items, BillItem quantity should be in packs, so convert units to packs
+                    double unitsPerPack = pbiInApprovedOrder.getBillItem().getItem().getDblValue();
+                    unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
+                    newlyCreatedBillItemForGrn.setQty(remains / unitsPerPack); // Convert units to packs
+                    newlyCreatedBillItemForGrn.setTmpFreeQty(remainFreeQty / unitsPerPack);
+                } else {
+                    // For Amp items, BillItem quantity should also be in units
+                    newlyCreatedBillItemForGrn.setQty(remains);
+                    newlyCreatedBillItemForGrn.setTmpFreeQty(remainFreeQty);
+                }
 
                 PharmaceuticalBillItem newlyCreatedPbiForGrn = new PharmaceuticalBillItem();
                 newlyCreatedPbiForGrn.setBillItem(newlyCreatedBillItemForGrn);
                 double tmpQty = newlyCreatedBillItemForGrn.getQty();
-                double tmpFreeQty = remainFreeQty;
+                double tmpFreeQty = newlyCreatedBillItemForGrn.getTmpFreeQty();
 
-                newlyCreatedBillItemForGrn.setPreviousRecieveQtyInUnit(tmpQty);
-                newlyCreatedBillItemForGrn.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
+                // Previous received quantities should always be stored in units (for tracking)
+                newlyCreatedBillItemForGrn.setPreviousRecieveQtyInUnit(remains);
+                newlyCreatedBillItemForGrn.setPreviousRecieveFreeQtyInUnit(remainFreeQty);
 
-                newlyCreatedPbiForGrn.setQty(tmpQty);
-                newlyCreatedPbiForGrn.setFreeQty(tmpFreeQty);
+                // PharmaceuticalBillItem quantities are always in units
+                newlyCreatedPbiForGrn.setQty(remains);
+                newlyCreatedPbiForGrn.setFreeQty(remainFreeQty);
 
-                double pr = pbiInApprovedOrder.getPurchaseRate();
-                double rr = pbiInApprovedOrder.getRetailRate();
+                double pr = pbiInApprovedOrder.getPurchaseRate(); // This is per unit rate
+                double rr = pbiInApprovedOrder.getRetailRate(); // This is per unit rate
 
                 if (pr == 0.0) {
                     double fallbackPr = getPharmacyBean().getLastPurchaseRate(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
@@ -1157,19 +1170,33 @@ public class GrnCostingController implements Serializable {
                     }
                 }
 
+                // Set rates - for pbi they are always per unit rates
                 newlyCreatedPbiForGrn.setPurchaseRate(pr);
                 newlyCreatedPbiForGrn.setRetailRate(rr);
+                
+                // For BillItemFinanceDetails, we need the rate per BillItem unit
+                double lineGrossRateForBillItem = pr;
+                double retailRateForBillItem = rr;
+                
+                if (pbiInApprovedOrder.getBillItem().getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                    // For Ampp, BillItem is in packs, so we need pack rates
+                    double unitsPerPack = pbiInApprovedOrder.getBillItem().getItem().getDblValue();
+                    unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
+                    lineGrossRateForBillItem = pr * unitsPerPack; // Convert unit rate to pack rate
+                    retailRateForBillItem = rr * unitsPerPack;
+                }
 
                 newlyCreatedBillItemForGrn.setPharmaceuticalBillItem(newlyCreatedPbiForGrn);
 
                 BillItemFinanceDetails fd = new BillItemFinanceDetails(newlyCreatedBillItemForGrn);
-                fd.setQuantity(java.math.BigDecimal.valueOf(remains));
-                fd.setFreeQuantity(java.math.BigDecimal.valueOf(remainFreeQty));
-                fd.setLineGrossRate(java.math.BigDecimal.valueOf(pr));
+                
+                // Set quantities in BillItemFinanceDetails to match the BillItem quantities
+                fd.setQuantity(java.math.BigDecimal.valueOf(newlyCreatedBillItemForGrn.getQty()));
+                fd.setFreeQuantity(java.math.BigDecimal.valueOf(newlyCreatedBillItemForGrn.getTmpFreeQty()));
+                fd.setLineGrossRate(java.math.BigDecimal.valueOf(lineGrossRateForBillItem));
                 fd.setLineDiscountRate(java.math.BigDecimal.ZERO);
-                fd.setRetailSaleRate(java.math.BigDecimal.valueOf(rr));
-                fd.setLineGrossRate(BigDecimal.valueOf(pr));
-                fd.setLineNetRate(BigDecimal.valueOf(pr));
+                fd.setRetailSaleRate(java.math.BigDecimal.valueOf(retailRateForBillItem));
+                fd.setLineNetRate(BigDecimal.valueOf(lineGrossRateForBillItem));
 
                 newlyCreatedBillItemForGrn.setBillItemFinanceDetails(fd);
                 pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
@@ -1193,25 +1220,39 @@ public class GrnCostingController implements Serializable {
                 bi.setSearialNo(getBillItems().size());
                 bi.setItem(i.getBillItem().getItem());
                 bi.setReferanceBillItem(i.getBillItem());
-                bi.setQty(remains);
-                bi.setTmpQty(remains);
-                bi.setTmpFreeQty(remainFreeQty);
+                
+                // Since PBI quantities are always in units, convert appropriately for BillItem
+                if (i.getBillItem().getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                    // For Ampp items, BillItem quantity should be in packs
+                    double unitsPerPack = i.getBillItem().getItem().getDblValue();
+                    unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
+                    bi.setQty(remains / unitsPerPack);
+                    bi.setTmpQty(remains / unitsPerPack);
+                    bi.setTmpFreeQty(remainFreeQty / unitsPerPack);
+                } else {
+                    // For Amp items, quantities are already in units
+                    bi.setQty(remains);
+                    bi.setTmpQty(remains);
+                    bi.setTmpFreeQty(remainFreeQty);
+                }
                 //Set Suggession
 //                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
 
                 PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
-                double tmpFreeQty = remainFreeQty;
+                double tmpFreeQty = bi.getTmpFreeQty();
 
-                bi.setPreviousRecieveQtyInUnit(tmpQty);
-                bi.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
+                // Previous received quantities are always stored in units
+                bi.setPreviousRecieveQtyInUnit(remains);
+                bi.setPreviousRecieveFreeQtyInUnit(remainFreeQty);
 
-                ph.setQty(tmpQty);
-                ph.setQtyInUnit(tmpQty);
+                // PharmaceuticalBillItem quantities are always in units
+                ph.setQty(remains);
+                ph.setQtyInUnit(remains);
 
-                ph.setFreeQtyInUnit(tmpFreeQty);
-                ph.setFreeQty(tmpFreeQty);
+                ph.setFreeQtyInUnit(remainFreeQty);
+                ph.setFreeQty(remainFreeQty);
 
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
@@ -1228,14 +1269,22 @@ public class GrnCostingController implements Serializable {
                 bi.setPharmaceuticalBillItem(ph);
 
                 BillItemFinanceDetails fd = new BillItemFinanceDetails(bi);
-                fd.setQuantity(java.math.BigDecimal.valueOf(remains));
-                fd.setFreeQuantity(java.math.BigDecimal.valueOf(remainFreeQty));
-                fd.setLineGrossRate(java.math.BigDecimal.valueOf(ph.getPurchaseRate()));
-                double unitsPerPack = 1.0;
+                // Set quantities to match BillItem quantities (not PBI quantities)
+                fd.setQuantity(java.math.BigDecimal.valueOf(tmpQty));
+                fd.setFreeQuantity(java.math.BigDecimal.valueOf(tmpFreeQty));
+                
+                // Set rates appropriate for BillItem unit type
                 if (bi.getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
-                    unitsPerPack = bi.getItem().getDblValue();
+                    // For Ampp, BillItem is in packs, so use pack rates
+                    double unitsPerPack = bi.getItem().getDblValue();
+                    unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
+                    fd.setLineGrossRate(java.math.BigDecimal.valueOf(ph.getPurchaseRate() * unitsPerPack));
+                    fd.setRetailSaleRate(java.math.BigDecimal.valueOf(ph.getRetailRate() * unitsPerPack));
+                } else {
+                    // For Amp, BillItem is in units, so use unit rates
+                    fd.setLineGrossRate(java.math.BigDecimal.valueOf(ph.getPurchaseRate()));
+                    fd.setRetailSaleRate(java.math.BigDecimal.valueOf(ph.getRetailRate()));
                 }
-                fd.setRetailSaleRatePerUnit(java.math.BigDecimal.valueOf(ph.getRetailRate() / unitsPerPack));
                 fd.setWholesaleRate(BigDecimal.valueOf(wr));
                 bi.setBillItemFinanceDetails(fd);
                 pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
@@ -1256,8 +1305,19 @@ public class GrnCostingController implements Serializable {
             bi.setSearialNo(getBillItems().size());
             bi.setItem(i.getBillItem().getItem());
             bi.setReferanceBillItem(i.getBillItem());
-            bi.setQty(remains);
-            bi.setTmpQty(remains);
+            
+            // Since PBI quantities are always in units, convert appropriately for BillItem
+            if (i.getBillItem().getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                // For Ampp items, BillItem quantity should be in packs
+                double unitsPerPack = i.getBillItem().getItem().getDblValue();
+                unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
+                bi.setQty(remains / unitsPerPack);
+                bi.setTmpQty(remains / unitsPerPack);
+            } else {
+                // For Amp items, quantities are already in units
+                bi.setQty(remains);
+                bi.setTmpQty(remains);
+            }
             //Set Suggession
 //                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
 
@@ -1265,8 +1325,9 @@ public class GrnCostingController implements Serializable {
             ph.setBillItem(bi);
             double tmpQty = bi.getQty();
 
-            ph.setQty(tmpQty);
-            ph.setQtyInUnit(tmpQty);
+            // PharmaceuticalBillItem quantities are always in units
+            ph.setQty(remains);
+            ph.setQtyInUnit(remains);
 
             ph.setFreeQty(i.getFreeQty());
             ph.setFreeQtyInUnit(i.getFreeQty());
@@ -1284,14 +1345,22 @@ public class GrnCostingController implements Serializable {
             bi.setPharmaceuticalBillItem(ph);
 
             BillItemFinanceDetails fd = new BillItemFinanceDetails(bi);
-            fd.setQuantity(java.math.BigDecimal.valueOf(remains));
+            // Set quantities to match BillItem quantities (not PBI quantities)
+            fd.setQuantity(java.math.BigDecimal.valueOf(tmpQty));
             fd.setFreeQuantity(java.math.BigDecimal.valueOf(i.getFreeQty()));
-            fd.setLineGrossRate(java.math.BigDecimal.valueOf(ph.getPurchaseRate()));
-            double unitsPerPack = 1.0;
+            
+            // Set rates appropriate for BillItem unit type
             if (bi.getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
-                unitsPerPack = bi.getItem().getDblValue();
+                // For Ampp, BillItem is in packs, so use pack rates
+                double unitsPerPack = bi.getItem().getDblValue();
+                unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
+                fd.setLineGrossRate(java.math.BigDecimal.valueOf(ph.getPurchaseRate() * unitsPerPack));
+                fd.setRetailSaleRate(java.math.BigDecimal.valueOf(ph.getRetailRate() * unitsPerPack));
+            } else {
+                // For Amp, BillItem is in units, so use unit rates
+                fd.setLineGrossRate(java.math.BigDecimal.valueOf(ph.getPurchaseRate()));
+                fd.setRetailSaleRate(java.math.BigDecimal.valueOf(ph.getRetailRate()));
             }
-            fd.setRetailSaleRatePerUnit(java.math.BigDecimal.valueOf(ph.getRetailRate() / unitsPerPack));
             fd.setWholesaleRate(BigDecimal.valueOf(wr));
             bi.setBillItemFinanceDetails(fd);
             pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
