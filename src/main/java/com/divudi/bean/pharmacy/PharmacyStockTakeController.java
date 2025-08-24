@@ -1,6 +1,8 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -44,6 +46,8 @@ public class PharmacyStockTakeController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
 
     @EJB
     private StockFacade stockFacade;
@@ -284,6 +288,11 @@ public class PharmacyStockTakeController implements Serializable {
         String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyPhysicalCountBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
         physicalCountBill.setInsId(deptId);
         physicalCountBill.setDeptId(deptId);
+        physicalCountBill.setBackwardReferenceBill(snapshotBill);
+        if (snapshotBill != null) {
+            snapshotBill.setForwardReferenceBill(physicalCountBill);
+            billFacade.edit(snapshotBill);
+        }
         billFacade.create(physicalCountBill);
         for (BillItem bi : physicalCountBill.getBillItems()) {
             billItemFacade.create(bi);
@@ -292,7 +301,80 @@ public class PharmacyStockTakeController implements Serializable {
                 pharmaceuticalBillItemFacade.create(pbi);
             }
         }
+        billFacade.edit(physicalCountBill);
         JsfUtil.addSuccessMessage("Physical count saved");
+    }
+
+    public void approvePhysicalCount() {
+        if (physicalCountBill == null) {
+            JsfUtil.addErrorMessage("No physical count available");
+            return;
+        }
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockTakeApprove.toString())) {
+            JsfUtil.addErrorMessage("Not authorized");
+            return;
+        }
+        Department dept = sessionController.getLoggedUser().getDepartment();
+        Bill adjustmentBill = new Bill();
+        adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
+        adjustmentBill.setBillClassType(BillClassType.BilledBill);
+        adjustmentBill.setDepartment(dept);
+        adjustmentBill.setInstitution(dept.getInstitution());
+        adjustmentBill.setCreatedAt(new Date());
+        adjustmentBill.setCreater(sessionController.getLoggedUser());
+        String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyStockAdjustmentBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
+        adjustmentBill.setInsId(deptId);
+        adjustmentBill.setDeptId(deptId);
+        adjustmentBill.setBackwardReferenceBill(physicalCountBill);
+        physicalCountBill.setForwardReferenceBill(adjustmentBill);
+        billFacade.create(adjustmentBill);
+        for (BillItem bi : physicalCountBill.getBillItems()) {
+            double variance = bi.getAdjustedValue();
+            if (variance == 0) {
+                continue;
+            }
+            BillItem abi = new BillItem();
+            abi.setBill(adjustmentBill);
+            abi.setItem(bi.getItem());
+            abi.setQty(variance);
+            abi.setCreatedAt(new Date());
+            abi.setCreater(sessionController.getLoggedUser());
+            billItemFacade.create(abi);
+            PharmaceuticalBillItem apbi = new PharmaceuticalBillItem();
+            apbi.setBillItem(abi);
+            apbi.setItemBatch(bi.getPharmaceuticalBillItem().getItemBatch());
+            Stock stock = bi.getReferanceBillItem().getPharmaceuticalBillItem().getStock();
+            apbi.setStock(stock);
+            apbi.setQty(variance);
+            pharmaceuticalBillItemFacade.create(apbi);
+            abi.setPharmaceuticalBillItem(apbi);
+            adjustmentBill.getBillItems().add(abi);
+            if (stock != null) {
+                stock.setStock(stock.getStock() + variance);
+                stockFacade.edit(stock);
+            }
+        }
+        physicalCountBill.setApproveUser(sessionController.getLoggedUser());
+        physicalCountBill.setApproveAt(new Date());
+        billFacade.edit(physicalCountBill);
+        billFacade.edit(adjustmentBill);
+        JsfUtil.addSuccessMessage("Physical count approved");
+    }
+
+    public void rejectPhysicalCount() {
+        if (physicalCountBill == null) {
+            JsfUtil.addErrorMessage("No physical count available");
+            return;
+        }
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockTakeApprove.toString())) {
+            JsfUtil.addErrorMessage("Not authorized");
+            return;
+        }
+        physicalCountBill.setApproveUser(sessionController.getLoggedUser());
+        physicalCountBill.setApproveAt(new Date());
+        physicalCountBill.setCancelled(true);
+        billFacade.edit(physicalCountBill);
+        JsfUtil.addSuccessMessage("Physical count rejected");
     }
 
     public Bill getPhysicalCountBill() {
