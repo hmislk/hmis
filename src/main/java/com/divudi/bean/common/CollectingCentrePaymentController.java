@@ -395,9 +395,9 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setBillTime(new Date());
 
         ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
-        ccAgentPaymentBill.setNetTotal(payingTotalCCAmount);
-        ccAgentPaymentBill.setTotal(payingTotalCCAmount);
-        ccAgentPaymentBill.setPaidAmount(payingTotalCCAmount);
+        ccAgentPaymentBill.setNetTotal(payingBalanceAcodingToCCBalabce);
+        ccAgentPaymentBill.setTotal(payingBalanceAcodingToCCBalabce);
+        ccAgentPaymentBill.setPaidAmount(payingBalanceAcodingToCCBalabce);
 
         ccAgentPaymentBill.setPaymentMethod(paymentMethod);
         String billNumber = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_AGENT_PAYMENT);
