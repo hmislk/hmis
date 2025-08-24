@@ -138,7 +138,6 @@ public class GrnCostingController implements Serializable {
     private Date invoiceDate;
     private String invoiceNumber;
     BillItem currentExpense;
-    List<BillItem> billExpenses;
 
     public double calDifference() {
         difference = Math.abs(insTotal) - Math.abs(getGrnBill().getNetTotal());
@@ -154,7 +153,6 @@ public class GrnCostingController implements Serializable {
     }
 
     public void clear() {
-        billExpenses = null;
         // grnBill = null; // Field removed
         currentGrnBillPre = null; // Clear both bills since they should be the same object
         invoiceDate = null;
@@ -788,7 +786,6 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
-        getGrnBill().setBillExpenses(billExpenses);
         
         // Recalculate expense totals using the new categorization method
         recalculateExpenseTotals();
@@ -1652,6 +1649,7 @@ public class GrnCostingController implements Serializable {
         }
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         calculateBillTotalsFromItems();
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
     }
 
@@ -1843,10 +1841,13 @@ public class GrnCostingController implements Serializable {
         currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
         currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
 
-        getCurrentExpense().setSearialNo(getBillExpenses().size());
-        getBillExpenses().add(currentExpense);
+        getCurrentExpense().setSearialNo(getGrnBill().getBillExpenses().size());
         
-        // IMPORTANT: Also add to the GRN Bill entity's expense list
+        // CRITICAL: Set the expenseBill reference for JPA relationship
+        System.out.println("DEBUG: Setting expenseBill reference. Bill ID: " + getGrnBill().getId());
+        getCurrentExpense().setExpenseBill(getGrnBill());
+        System.out.println("DEBUG: ExpenseBill set. Expense ID: " + getCurrentExpense().getId() + ", ExpenseBill ID: " + getCurrentExpense().getExpenseBill().getId());
+        
         getGrnBill().getBillExpenses().add(currentExpense);
         
         // Recalculate expense totals after adding new expense
@@ -1872,8 +1873,12 @@ public class GrnCostingController implements Serializable {
         double expensesForCosting = 0.0;
         double expensesNotForCosting = 0.0;
         
-        if (getBillExpenses() != null) {
-            for (BillItem expense : getBillExpenses()) {
+        if (getGrnBill().getBillExpenses() != null) {
+            for (BillItem expense : getGrnBill().getBillExpenses()) {
+                // Skip retired expenses
+                if (expense.isRetired()) {
+                    continue;
+                }
                 double expenseValue = expense.getNetValue();
                 totalExpenses += expenseValue;
                 
@@ -1903,26 +1908,30 @@ public class GrnCostingController implements Serializable {
     
     // Method to get total bill expenses for display
     public double getBillExpensesTotal() {
-        if (getBillExpenses() == null || getBillExpenses().isEmpty()) {
+        if (getGrnBill() == null || getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
             return 0.0;
         }
         
         double total = 0.0;
-        for (BillItem expense : getBillExpenses()) {
-            total += expense.getNetValue();
+        for (BillItem expense : getGrnBill().getBillExpenses()) {
+            // Skip retired expenses
+            if (!expense.isRetired()) {
+                total += expense.getNetValue();
+            }
         }
         return total;
     }
     
     // Method to get expenses considered for costing total
     public double getExpensesTotalConsideredForCosting() {
-        if (getBillExpenses() == null || getBillExpenses().isEmpty()) {
+        if (getGrnBill() == null || getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
             return 0.0;
         }
         
         double total = 0.0;
-        for (BillItem expense : getBillExpenses()) {
-            if (expense.isConsideredForCosting()) {
+        for (BillItem expense : getGrnBill().getBillExpenses()) {
+            // Skip retired expenses
+            if (!expense.isRetired() && expense.isConsideredForCosting()) {
                 total += expense.getNetValue();
             }
         }
@@ -1931,13 +1940,14 @@ public class GrnCostingController implements Serializable {
     
     // Method to get expenses not considered for costing total
     public double getExpensesTotalNotConsideredForCosting() {
-        if (getBillExpenses() == null || getBillExpenses().isEmpty()) {
+        if (getGrnBill() == null || getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
             return 0.0;
         }
         
         double total = 0.0;
-        for (BillItem expense : getBillExpenses()) {
-            if (!expense.isConsideredForCosting()) {
+        for (BillItem expense : getGrnBill().getBillExpenses()) {
+            // Skip retired expenses
+            if (!expense.isRetired() && !expense.isConsideredForCosting()) {
                 total += expense.getNetValue();
             }
         }
@@ -1949,16 +1959,19 @@ public class GrnCostingController implements Serializable {
             return;
         }
 
-        if (billExpenses != null) {
-            billExpenses.remove(expense);
-            int index = 0;
-            for (BillItem be : billExpenses) {
-                be.setSearialNo(index++);
-            }
+        // Mark expense as retired instead of deleting
+        expense.setRetired(true);
+        expense.setRetiredAt(new Date());
+        expense.setRetirer(getSessionController().getLoggedUser());
+        
+        // If expense was already persisted, update it in database
+        if (expense.getId() != null) {
+            getBillItemFacade().edit(expense);
         }
-
-        if (getGrnBill().getBillExpenses() != null) {
-            getGrnBill().getBillExpenses().remove(expense);
+        
+        // Reload bill expenses to exclude retired ones
+        if (getGrnBill().getId() != null) {
+            reloadBillExpenses();
         }
 
         recalculateExpenseTotals();
@@ -1969,11 +1982,35 @@ public class GrnCostingController implements Serializable {
             billFacade.edit(getGrnBill());
         }
     }
+    
+    /**
+     * Reload bill expenses from database excluding retired ones
+     */
+    private void reloadBillExpenses() {
+        if (getGrnBill().getId() != null) {
+            String jpql = "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false ORDER BY be.searialNo";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billId", getGrnBill().getId());
+            List<BillItem> activeExpenses = getBillItemFacade().findByJpql(jpql, params);
+            getGrnBill().setBillExpenses(activeExpenses);
+            
+            // Reindex serial numbers for remaining expenses
+            int index = 0;
+            for (BillItem be : activeExpenses) {
+                be.setSearialNo(index++);
+            }
+        }
+    }
 
     public double calExpenses() {
         double tot = 0.0;
-        for (BillItem be : billExpenses) {
-            tot = tot + be.getNetValue();
+        if (getGrnBill().getBillExpenses() != null) {
+            for (BillItem be : getGrnBill().getBillExpenses()) {
+                // Skip retired expenses
+                if (!be.isRetired()) {
+                    tot = tot + be.getNetValue();
+                }
+            }
         }
         return tot;
     }
@@ -1994,10 +2031,13 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        for (BillItem e : getBillExpenses()) {
-            double nv = e.getNetRate() * e.getQty();
-            e.setNetValue(0 - nv);
-            exp += e.getNetValue();
+        for (BillItem e : getGrnBill().getBillExpenses()) {
+            // Skip retired expenses
+            if (!e.isRetired()) {
+                double nv = e.getNetRate() * e.getQty();
+                e.setNetValue(0 - nv);
+                exp += e.getNetValue();
+            }
         }
 
         getBill().setExpenseTotal(exp);
@@ -2266,16 +2306,6 @@ public class GrnCostingController implements Serializable {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public List<BillItem> getBillExpenses() {
-        if (billExpenses == null) {
-            billExpenses = new ArrayList<>();
-        }
-        return billExpenses;
-    }
-
-    public void setBillExpenses(List<BillItem> billExpenses) {
-        this.billExpenses = billExpenses;
-    }
 
     private void saveImportBill(Bill importGrn) {
         importGrn.setBillType(BillType.PharmacyGrnBillImport);
@@ -2340,6 +2370,11 @@ public class GrnCostingController implements Serializable {
             
             // Set the loaded items to the bill's collection directly
             getCurrentGrnBillPre().setBillItems(loadedItems);
+            
+            // Also load bill expenses to preserve them when editing (exclude retired ones)
+            String expenseJpql = "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false ORDER BY be.searialNo";
+            List<BillItem> loadedExpenses = getBillItemFacade().findByJpql(expenseJpql, params);
+            getCurrentGrnBillPre().setBillExpenses(loadedExpenses);
         }
         
         invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
@@ -2354,6 +2389,9 @@ public class GrnCostingController implements Serializable {
                     pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(bi.getBillItemFinanceDetails());
                 }
             }
+            
+            // Recalculate expense totals with loaded expenses
+            recalculateExpenseTotals();
             
             // Ensure bill discount synchronization before distribution
             ensureBillDiscountSynchronization();
@@ -2443,6 +2481,30 @@ public class GrnCostingController implements Serializable {
                     getPharmaceuticalBillItemFacade().create(i.getPharmaceuticalBillItem());
                 } else {
                     getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+                }
+            }
+        }
+        
+        // Save bill expenses - work directly with bill's expense collection
+        if (getCurrentGrnBillPre().getBillExpenses() != null) {
+            System.out.println("DEBUG: Saving " + getCurrentGrnBillPre().getBillExpenses().size() + " bill expenses. Bill ID: " + getCurrentGrnBillPre().getId());
+            for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
+                System.out.println("DEBUG: Processing bill expense: " + expense.getItem().getName() + " (ID: " + expense.getId() + ")");
+                
+                // Ensure expenseBill reference is set
+                expense.setExpenseBill(getCurrentGrnBillPre());
+                System.out.println("DEBUG: ExpenseBill reference set. Bill ID: " + getCurrentGrnBillPre().getId() + ", ExpenseBill: " + expense.getExpenseBill());
+                expense.setCreatedAt(new Date());
+                expense.setCreater(getSessionController().getLoggedUser());
+                
+                // Create or update expense BillItem (including retired ones to persist retirement status)
+                if (expense.getId() == null) {
+                    System.out.println("DEBUG: Creating new expense BillItem");
+                    getBillItemFacade().create(expense);
+                    System.out.println("DEBUG: Expense created with ID: " + expense.getId());
+                } else {
+                    System.out.println("DEBUG: Updating existing expense BillItem with ID: " + expense.getId());
+                    getBillItemFacade().edit(expense);
                 }
             }
         }

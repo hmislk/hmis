@@ -113,16 +113,25 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
+                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/> |
+                                    <h:outputLabel
+                                        class="w-100 text-end text-secondary"
+                                        value="#{bi.referanceBillItem.qty}"/> |
+                                    <h:outputLabel
+                                        class="w-100 text-end text-secondary"
+                                        value="#{bi.referanceBillItem.billItemFinanceDetails.quantity}"/>
                                 </p:column>  
 
                                 <p:column 
                                     width="4em"
                                     headerText="Ordered Free Qty" 
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
+<!--                                    <h:outputLabel 
+                                        class="w-100 text-end text-secondary"
+                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>-->
                                     <h:outputLabel 
                                         class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
+                                        value="#{bi.referanceBillItem.billItemFinanceDetails.freeQuantity}"/>
                                 </p:column> 
 
                                 <p:column 
@@ -374,7 +383,7 @@
                                 </h:panelGroup>
                                 <p:dataTable 
                                     id="tblExpenses"
-                                    value="#{grnCostingController.billExpenses}" 
+                                    value="#{grnCostingController.grnBill.billExpenses}" 
                                     var="be"
                                     class="w-100"
                                     emptyMessage="No Bill Expenses" >
@@ -404,7 +413,7 @@
                                             icon="pi pi-trash"
                                             action="#{grnCostingController.removeExpense(be)}"
                                             process="@this"
-                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId} :#{p:resolveFirstComponentWithId('txtBillExpenses',view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal',view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered',view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered',view).clientId}" />
 
                                     </p:column>
                                 </p:dataTable>
@@ -611,7 +620,9 @@
 
                             </p:panelGrid>
                             <p:panel  id="billFinanceDetails"  header="Financial Summary">
-                                <ph:bill_finance_details bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
+                                <ph:bill_finance_details
+                                    id="panelBillFinanceDetails"
+                                    bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
                             </p:panel>
                         </div>
                     </div>
