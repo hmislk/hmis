@@ -277,6 +277,7 @@ public class PatientInvestigationController implements Serializable {
     private Department outLabDepartment;
 
     private String sampleSearchStrategy;
+    private boolean requestReCollected;
 
     public int getNumber() {
         return number;
@@ -1996,12 +1997,13 @@ public class PatientInvestigationController implements Serializable {
         // Update sample rejection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleReceivedAtLabComments(sampleRejectionComment);
+            ps.setRequestReCollected(requestReCollected);
             ps.setSampleRejected(true);
             ps.setSampleRejectedAt(new Date());
+            ps.setSampleRejectionComment(sampleRejectionComment);
             ps.setSampleRejectedBy(sessionController.getLoggedUser());
             ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             patientSampleFacade.edit(ps);
-            sampleRejectionComment = "";
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
@@ -2022,7 +2024,7 @@ public class PatientInvestigationController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : selectedPatientSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                    labTestHistoryController.addSampleRejectHistory(pi, ps);
+                    labTestHistoryController.addSampleRejectHistory(pi, ps,sampleRejectionComment);
                 }
             }
         }
@@ -2032,8 +2034,11 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             billFacade.edit(tb);
         }
+        sampleRejectionComment = null;
+        requestReCollected = false;
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
+
     }
 
     private String testDetails;
@@ -5445,6 +5450,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSampleDTOList(List<SampleDTO> sampleDTOList) {
         this.sampleDTOList = sampleDTOList;
+    }
+
+    public boolean isRequestReCollected() {
+        return requestReCollected;
+    }
+
+    public void setRequestReCollected(boolean requestReCollected) {
+        this.requestReCollected = requestReCollected;
     }
 
     /**
