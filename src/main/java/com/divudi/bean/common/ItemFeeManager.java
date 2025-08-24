@@ -1363,5 +1363,9 @@ public class ItemFeeManager implements Serializable {
     public void setForDepartment(Department forDepartment) {
         this.forDepartment = forDepartment;
     }
+    
+    public void onFeeListChange() {
+        fillFeeListItemFees();
+    }
 
 }
