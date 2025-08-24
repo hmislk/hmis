@@ -185,6 +185,7 @@ public class CollectingCentrePaymentController implements Serializable {
         types.add(HistoryType.CollectingCentreDepositCancel);
         types.add(HistoryType.CollectingCentreCreditNote);
         types.add(HistoryType.RepaymentToCollectingCentre);
+        types.add(HistoryType.RepaymentToCollectingCentreCancel);
 
         String jpql = "select ah "
                 + " from AgentHistory ah "
@@ -216,6 +217,7 @@ public class CollectingCentrePaymentController implements Serializable {
         types.add(HistoryType.CollectingCentreDepositCancel);
         types.add(HistoryType.CollectingCentreCreditNote);
         types.add(HistoryType.RepaymentToCollectingCentre);
+        types.add(HistoryType.RepaymentToCollectingCentreCancel);
 
         String jpql = "select ah "
                 + " from AgentHistory ah "
