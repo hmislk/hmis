@@ -97,13 +97,13 @@
                                                         <th class="th-cell">Personnel</th>
                                                         <th class="th-cell">Transporter</th>
                                                         <th class="th-cell">Location</th>
+                                                        <th class="th-cell">Comment</th>
                                                         <th class="th-cell">Date</th>
                                                         <th class="th-cell">Time</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <ui:repeat value="#{enumController.getLabTestHistoryList()}" var="type">
-                                                        <ui:repeat value="#{labTestHistoryController.getLabTestHistoryByInvestigation(patientInvestigationController.current,type)}" var="history">
+                                                        <ui:repeat value="#{labTestHistoryController.getLabTestHistoryByInvestigation(patientInvestigationController.current)}" var="history">
                                                             <tr class="table-row row-white">
                                                                 <td class="td-cell">
                                                                     <span class="stage-name">#{history.historyType.label}</span>
@@ -116,6 +116,9 @@
                                                                 </td>
                                                                 <td class="td-cell">
                                                                     <span class="location-name">#{history.institutionName} - #{history.departmentName}</span>
+                                                                </td>
+                                                                <td class="td-cell">
+                                                                    <span class="ooment">#{history.comment}</span>
                                                                 </td>
                                                                 <td class="td-cell">
                                                                     <span class="date-text">
@@ -132,7 +135,7 @@
                                                                     </span>
                                                                 </td>
                                                             </tr>
-                                                        </ui:repeat>
+                                                        
 
                                                     </ui:repeat>
                                                 </tbody>
