@@ -2411,9 +2411,11 @@ public class GrnCostingController implements Serializable {
 
         // Save bill items - work directly with bill's collection
         for (BillItem i : getCurrentGrnBillPre().getBillItems()) {
-            if (i.getBillItemFinanceDetails() != null && 
-                i.getBillItemFinanceDetails().getQuantity().doubleValue() == 0.0 && 
-                i.getBillItemFinanceDetails().getFreeQuantity().doubleValue() == 0.0) {
+            BillItemFinanceDetails f = i.getBillItemFinanceDetails();
+            if (f == null || (
+                (f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) == 0) &&
+                (f.getFreeQuantity() == null || f.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0)
+            )) {
                 continue;
             }
 
@@ -2492,7 +2494,11 @@ public class GrnCostingController implements Serializable {
 
         // Process bill items for finalization with full stock management
         for (BillItem i : getBillItems()) {
-            if (i.getBillItemFinanceDetails().getQuantity().doubleValue() == 0.0 && i.getBillItemFinanceDetails().getFreeQuantity().doubleValue() == 0.0) {
+            BillItemFinanceDetails f = i.getBillItemFinanceDetails();
+            if (f == null || (
+                (f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) == 0) &&
+                (f.getFreeQuantity() == null || f.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0)
+            )) {
                 continue;
             }
 

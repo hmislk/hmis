@@ -59,7 +59,7 @@
                                 itemValue="#{i}"
                                 forceSelection="true"
                                 disabled="#{vtmController.editable}">
-                                <f:ajax event="itemSelect" execute="@this" render="gpDetail btnEdit btnDelete" />
+                                <p:ajax event="itemSelect" process="@this" update="gpDetail btnEdit btnDelete" />
                             </p:autoComplete>
 
 
