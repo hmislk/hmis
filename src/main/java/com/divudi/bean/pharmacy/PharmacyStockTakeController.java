@@ -33,6 +33,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  * Controller for capturing pharmacy stock snapshots and exporting them to Excel.
@@ -56,6 +57,8 @@ public class PharmacyStockTakeController implements Serializable {
     private BillNumberGenerator billNumberBean;
 
     private Bill snapshotBill;
+    private Bill physicalCountBill;
+    private UploadedFile file;
 
     /**
      * Capture current department stock into a snapshot bill.
@@ -161,6 +164,147 @@ public class PharmacyStockTakeController implements Serializable {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    /**
+     * Parse uploaded sheet and prepare physical count bill with variances.
+     */
+    public void parseUploadedSheet() {
+        if (snapshotBill == null) {
+            JsfUtil.addErrorMessage("No snapshot available");
+            return;
+        }
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file uploaded");
+            return;
+        }
+        try (InputStream in = file.getInputStream(); XSSFWorkbook wb = new XSSFWorkbook(in)) {
+            XSSFSheet sheet = wb.getSheetAt(0);
+            Department dept = sessionController.getLoggedUser().getDepartment();
+            physicalCountBill = new Bill();
+            physicalCountBill.setBillType(BillType.PharmacyPhysicalCountBill);
+            physicalCountBill.setBillClassType(BillClassType.BilledBill);
+            physicalCountBill.setDepartment(dept);
+            physicalCountBill.setInstitution(dept.getInstitution());
+            physicalCountBill.setCreatedAt(new Date());
+            physicalCountBill.setCreater(sessionController.getLoggedUser());
+            physicalCountBill.setReferenceBill(snapshotBill);
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+                String code = getString(row, 0);
+                String batch = getString(row, 2);
+                double physical = getDouble(row, row.getLastCellNum() - 1);
+                if (code == null || batch == null) {
+                    continue;
+                }
+                BillItem snapItem = findSnapshotBillItem(code, batch);
+                if (snapItem == null) {
+                    continue;
+                }
+                BillItem bi = new BillItem();
+                bi.setBill(physicalCountBill);
+                bi.setItem(snapItem.getItem());
+                bi.setQty(physical);
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
+                bi.setReferanceBillItem(snapItem);
+                bi.setAdjustedValue(physical - snapItem.getQty());
+                PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+                pbi.setBillItem(bi);
+                pbi.setItemBatch(snapItem.getPharmaceuticalBillItem().getItemBatch());
+                pbi.setQty(physical);
+                bi.setPharmaceuticalBillItem(pbi);
+                physicalCountBill.getBillItems().add(bi);
+            }
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e, "Error processing file");
+            physicalCountBill = null;
+        }
+    }
+
+    private String getString(Row row, int col) {
+        if (row.getCell(col) == null) {
+            return null;
+        }
+        try {
+            return row.getCell(col).getStringCellValue().trim();
+        } catch (Exception e) {
+            try {
+                return String.valueOf((long) row.getCell(col).getNumericCellValue());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    private double getDouble(Row row, int col) {
+        if (row.getCell(col) == null) {
+            return 0.0;
+        }
+        try {
+            return row.getCell(col).getNumericCellValue();
+        } catch (Exception e) {
+            try {
+                return Double.parseDouble(row.getCell(col).getStringCellValue());
+            } catch (Exception ex) {
+                return 0.0;
+            }
+        }
+    }
+
+    private BillItem findSnapshotBillItem(String code, String batch) {
+        if (snapshotBill == null) {
+            return null;
+        }
+        for (BillItem bi : snapshotBill.getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getItemBatch() == null) {
+                continue;
+            }
+            if (code.equalsIgnoreCase(pbi.getItemBatch().getItem().getCode())
+                    && batch.equalsIgnoreCase(pbi.getItemBatch().getBatchNo())) {
+                return bi;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Persist prepared physical count bill.
+     */
+    public void savePhysicalCount() {
+        if (physicalCountBill == null || physicalCountBill.getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No physical counts to save");
+            return;
+        }
+        Department dept = sessionController.getLoggedUser().getDepartment();
+        String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyPhysicalCountBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
+        physicalCountBill.setInsId(deptId);
+        physicalCountBill.setDeptId(deptId);
+        billFacade.create(physicalCountBill);
+        for (BillItem bi : physicalCountBill.getBillItems()) {
+            billItemFacade.create(bi);
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi != null) {
+                pharmaceuticalBillItemFacade.create(pbi);
+            }
+        }
+        JsfUtil.addSuccessMessage("Physical count saved");
+    }
+
+    public Bill getPhysicalCountBill() {
+        return physicalCountBill;
+    }
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
     }
 
     public Bill getSnapshotBill() {
