@@ -145,64 +145,66 @@
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Upload Fees">
+                                    <p:tab id="tblUpload" title="Upload Fees">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Upload to replace Site Fees by Item Code"
-                                                icon="fa fa-list" 
-                                                action="#{itemFeeManager.navigateToUploadToReplaceSiteFeesByItemCode()}">
-                                            </p:commandButton>
+
                                             <p:commandButton
-                                                class="w-100"
+                                                class="w-100 ui-button-success"
                                                 ajax="false"
-                                                value="Upload to add Site Fees by Item Code"
+                                                value="Add Site Fees"
                                                 icon="fa fa-list"
                                                 action="#{itemFeeManager.navigateToUploadToAddSiteFeesByItemCode()}">
                                             </p:commandButton>
                                             <p:commandButton
-                                                class="w-100"
+                                                class="w-100 ui-button-success"
                                                 ajax="false"
-                                                value="Upload to add Department Fees by Item Code"
+                                                value="Add Department Fees"
                                                 icon="fa fa-list"
                                                 action="#{itemFeeManager.navigateToUploadToAddDepartmentFeesByItemCode()}">
                                             </p:commandButton>
                                             <p:commandButton 
-                                                class="w-100"
+                                                class="w-100 ui-button-success"
                                                 ajax="false" 
-                                                value="Upload to add Collection Centre Fees by Item Code"
+                                                value="Add Collection Centre Fees"
                                                 icon="fa fa-list" 
                                                 action="#{itemFeeManager.navigateToUploadToAddCcFeesByItemCode()}">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 class="w-100"
+                                                class="w-100 ui-button-success"
                                                 ajax="false"
-                                                value="Upload Item Fees"
-                                                action="#{itemFeeManager.navigateToUploadItemFees()}">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false"
-                                                value="Upload fee list types"
-                                                action="#{itemFeeManager.navigateToUploadFeeListType()}">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false"
-                                                value="Upload Institution Item Fees"
+                                                value="Add Collection Centre Item Fees"
                                                 action="#{itemFeeManager.navigateToUploadCollectingCentreFeeList()}">
                                             </p:commandButton>
-
-
                                             <p:commandButton 
-                                                class="w-100"
+                                               class="w-100 ui-button-success"
                                                 ajax="false"
                                                 value="Upload fee list Item Fees"
                                                 action="#{itemFeeManager.navigateToUploadFeeListItemFees}">
                                             </p:commandButton>
+                                            <p:separator ></p:separator>
+                                            <p:commandButton 
+                                                class="w-100 ui-button-warning"
+                                                ajax="false"
+                                                value="Replace Item Fees"
+                                                action="#{itemFeeManager.navigateToUploadAndReplaceItemFees()}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                class="w-100 ui-button-warning"
+                                                ajax="false" 
+                                                value="Replace Site Fees"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToUploadToReplaceSiteFeesByItemCode()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100 ui-button-warning"
+                                                ajax="false"
+                                                value="Replace List Fees"
+                                                action="#{itemFeeManager.navigateToUploadAndReplaceListFees()}">
+                                            </p:commandButton>
+
+
 
                                             <p:commandButton 
                                                 class="w-100"
@@ -222,7 +224,7 @@
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Upload Collecting Centre Item Fees"
-                                                action="#{itemFeeManager.navigateToUploadItemFees()}">
+                                                action="#{itemFeeManager.navigateToUploadAndReplaceItemFees()}">
                                             </p:commandButton>
 
                                             <p:commandButton 
