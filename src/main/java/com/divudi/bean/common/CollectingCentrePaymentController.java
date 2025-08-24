@@ -620,21 +620,28 @@ public class CollectingCentrePaymentController implements Serializable {
             return;
         }
         Bill cancelBill = saveCancelBill();
-        
+
         createPayment(cancelBill, cancelBill.getPaymentMethod());
 
         for (BillItem bi : currentPaymentBill.getBillItems()) {
-            saveBillItemForPaymentBill(bi.getReferenceBill(), cancelBill);
 
-            bi.setGrossValue(0 - bi.getGrossValue());
-            bi.setNetValue(0 - bi.getNetValue());
-            billItemFacade.edit(bi);
+            BillItem reversal = new BillItem();
+            reversal.setReferenceBill(bi.getReferenceBill());
+            reversal.setBill(cancelBill);
+            reversal.setCreatedAt(new Date());
+            reversal.setCreater(sessionController.getLoggedUser());
+            reversal.setDiscount(0.0);
+            reversal.setGrossValue(0 - bi.getGrossValue());
+            reversal.setNetValue(0 - bi.getNetValue());
+            billItemFacade.create(reversal);
+
+            Bill ref = bi.getReferenceBill();
+            ref.setPaid(false);
+            ref.setPaidAmount(0.0);
+            ref.setPaidAt(null);
+            ref.setPaidBill(null);
+            billFacade.edit(ref);
             
-            bi.getReferenceBill().setPaid(false);
-            bi.getReferenceBill().setPaidAmount(0.0);
-            bi.getReferenceBill().setPaidAt(null);
-            bi.getReferenceBill().setPaidBill(null);
-            billFacade.edit(bi.getReferenceBill());
         }
 
 //        // Update CC Balance
@@ -646,8 +653,7 @@ public class CollectingCentrePaymentController implements Serializable {
                 cancelBill.getNetTotal(),
                 HistoryType.RepaymentToCollectingCentreCancel,
                 cancelBill);
-        
-        
+
         ccPaymentSettlingStarted = false;
         setCurrentPaymentBill(cancelBill);
         printPriview = true;
@@ -675,7 +681,7 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentCancelBill.setInsId(billNumber);
 
         ccAgentPaymentCancelBill.invertValueOfThisBill();
-        
+
         if (ccAgentPaymentCancelBill.getId() == null) {
             billFacade.create(ccAgentPaymentCancelBill);
         } else {
@@ -840,7 +846,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setBillNumber(String billNumber) {
         this.billNumber = billNumber;
     }
-    
+
     public String getComment() {
         return comment;
     }
