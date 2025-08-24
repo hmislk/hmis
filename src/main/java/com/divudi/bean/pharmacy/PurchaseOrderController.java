@@ -329,9 +329,11 @@ public class PurchaseOrderController implements Serializable {
             // Note: BillItemFinanceDetails may not have setCreater method, skip if not available
         }
 
-        // Set audit fields for PharmaceuticalBillItem
-        if (lineBillItem.getPharmaceuticalBillItem().getId() == null) {
+        // Set audit fields for PharmaceuticalBillItem (set if null, regardless of ID)
+        if (lineBillItem.getPharmaceuticalBillItem().getCreatedAt() == null) {
             lineBillItem.getPharmaceuticalBillItem().setCreatedAt(new Date());
+        }
+        if (lineBillItem.getPharmaceuticalBillItem().getCreater() == null) {
             lineBillItem.getPharmaceuticalBillItem().setCreater(sessionController.getLoggedUser());
         }
 
@@ -474,6 +476,10 @@ public class PurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
+            
+            // Set audit fields for the new PharmaceuticalBillItem
+            ph.setCreatedAt(new Date());
+            ph.setCreater(sessionController.getLoggedUser());
 
             ph.setFreeQty(i.getFreeQty());
             ph.setQty(i.getQty());
