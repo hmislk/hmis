@@ -24,6 +24,7 @@ public enum BillType {
     LabBill,
     CollectingCentreBill,
     CollectingCentreAgentPayment,
+    CollectingCentreAgentPaymentCancel,
     CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
