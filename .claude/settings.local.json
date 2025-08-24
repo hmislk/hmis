@@ -50,7 +50,10 @@
       "Bash(gh pr view:*)",
       "Bash(gh issue comment:*)",
       "Bash(gh issue close:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh pr merge:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

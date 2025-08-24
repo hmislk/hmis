@@ -110,8 +110,8 @@ public class ItemFeeManager implements Serializable {
         return "/dataAdmin/bulk_update_itemsFees?faces-redirect=true";
     }
 
-    public String navigateToUploadItemFees() {
-        return "/admin/pricing/item_fee_upload?faces-redirect=true";
+    public String navigateToUploadAndReplaceItemFees() {
+        return "/admin/pricing/item_fee_upload_to_replace?faces-redirect=true";
     }
 
     public String navigateToDownloadBaseItemFees() {
@@ -163,8 +163,8 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/upload_changed_item_fees?faces-redirect=true";
     }
 
-    public String navigateToUploadFeeListType() {
-        return "/admin/pricing/feelist_type_upload?faces-redirect=true";
+    public String navigateToUploadAndReplaceListFees() {
+        return "/admin/pricing/feelist_type_upload_to_replace?faces-redirect=true";
     }
 
     public String navigateToUploadInstitutionItemFees() {
