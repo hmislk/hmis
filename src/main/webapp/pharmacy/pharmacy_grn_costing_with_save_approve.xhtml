@@ -113,12 +113,6 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/> |
-                                    <h:outputLabel
-                                        class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.qty}"/> |
-                                    <h:outputLabel
-                                        class="w-100 text-end text-secondary"
                                         value="#{bi.referanceBillItem.billItemFinanceDetails.quantity}"/>
                                 </p:column>  
 
@@ -126,9 +120,6 @@
                                     width="4em"
                                     headerText="Ordered Free Qty" 
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
-<!--                                    <h:outputLabel 
-                                        class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>-->
                                     <h:outputLabel 
                                         class="w-100 text-end text-secondary"
                                         value="#{bi.referanceBillItem.billItemFinanceDetails.freeQuantity}"/>
