@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/forms/index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Pharmacy Stock Take</h2>
+                        </div>
+                        <div class="card-body">
+                            <h:form>
+                                <p:commandButton value="Take Snapshot" action="#{pharmacyStockTakeController.captureSnapshot}" update="@form" icon="fa fa-camera"/>
+                                <p:commandButton value="Download Guided Sheet" ajax="false" styleClass="ui-button-success" icon="fa fa-download" rendered="#{pharmacyStockTakeController.snapshotBill ne null}" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
+                                </p:commandButton>
+                                <p:commandButton value="Download Blind Sheet" ajax="false" styleClass="ui-button-secondary" icon="fa fa-download" rendered="#{pharmacyStockTakeController.snapshotBill ne null}" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
+                                </p:commandButton>
+                                <p:separator/> 
+                                <p:fileUpload value="#{pharmacyStockTakeController.file}" mode="simple" rendered="#{pharmacyStockTakeController.snapshotBill ne null}"/>
+                                <p:commandButton value="Upload Sheet" action="#{pharmacyStockTakeController.parseUploadedSheet}" update="@form" icon="fa fa-upload" rendered="#{pharmacyStockTakeController.snapshotBill ne null}"/>
+                                <p:commandButton value="Save Physical Count" action="#{pharmacyStockTakeController.savePhysicalCount}" update="@form" icon="fa fa-save" rendered="#{pharmacyStockTakeController.physicalCountBill ne null}"/>
+                                <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}" var="bi" rendered="#{pharmacyStockTakeController.physicalCountBill ne null}">
+                                    <p:column headerText="Item">
+                                        <h:outputText value="#{bi.item.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Snapshot Qty" style="text-align:right">
+                                        <h:outputText value="#{bi.referanceBillItem.qty}">
+                                            <f:convertNumber integerOnly="true"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Physical Qty" style="text-align:right">
+                                        <h:outputText value="#{bi.qty}">
+                                            <f:convertNumber integerOnly="true"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Variance" style="text-align:right">
+                                        <h:outputText value="#{bi.adjustedValue}">
+                                            <f:convertNumber integerOnly="true"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
