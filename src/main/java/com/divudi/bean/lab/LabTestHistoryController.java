@@ -65,74 +65,81 @@ public class LabTestHistoryController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Function">
+    
     // <editor-fold defaultstate="collapsed" desc="Billing">
     public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment) {
-        addNewHistory(TestHistoryType.ORDERED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.ORDERED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null,null);
     }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Sample History">
     public void addBarcodeGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null);
+        addNewHistory(TestHistoryType.BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
     }
 
     public void addSampleCollectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_COLLECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null);
+        addNewHistory(TestHistoryType.SAMPLE_COLLECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
+    }
+    
+    public void addSampleReGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
+        addNewHistory(TestHistoryType.BARCODE_REGENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
     }
 
     public void addSampleSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter) {
         if (sampleTransporter == null) {
-            addNewHistory(TestHistoryType.SAMPLE_SENT, null, null, patientInvestigation, null, patientSample, null, null, null, null, null);
+            addNewHistory(TestHistoryType.SAMPLE_SENT, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
         } else {
-            addNewHistory(TestHistoryType.SAMPLE_SENT, null, null, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null);
+            addNewHistory(TestHistoryType.SAMPLE_SENT, null, null, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null,null);
         }
     }
 
     public void addSampleOutLabSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter, Department fromDepartment, Department toDepartment) {
-        addNewHistory(TestHistoryType.SAMPLE_SENT_OUT_LAB, fromDepartment, toDepartment, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null);
+        addNewHistory(TestHistoryType.SAMPLE_SENT_OUT_LAB, fromDepartment, toDepartment, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null,null);
     }
 
     public void addSampleReceiveHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_RECEIVED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null);
+        addNewHistory(TestHistoryType.SAMPLE_RECEIVED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
     }
 
-    public void addSampleRejectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_REJECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null);
+    public void addSampleRejectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample,String comment) {
+        addNewHistory(TestHistoryType.SAMPLE_REJECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,comment);
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Report History">
     public void addCreateReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null,null);
     }
 
     public void addDataEnterHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.DATA_ENTERED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.DATA_ENTERED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null,null);
     }
 
     public void addCalculateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_CALCULATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.REPORT_CALCULATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null,null);
     }
 
     public void addApprovalHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_APPROVED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.REPORT_APPROVED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null,null);
     }
 
     public void addApprovalCancelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_APPROVED_CANCEL, null, null, patientInvestigation, patientReport, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.REPORT_APPROVED_CANCEL, null, null, patientInvestigation, patientReport, null, null, null, null, null, null,null);
     }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent">
     public void addReportSentSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null);
+        addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null,null);
     }
 
     public void addReportSentEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
-        addNewHistory(TestHistoryType.SENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null);
+        addNewHistory(TestHistoryType.SENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null,null);
     }
 
     // </editor-fold>
+    
     public void addNewHistory(
             TestHistoryType testHistoryType,
             Department fromDepartment,
@@ -144,7 +151,8 @@ public class LabTestHistoryController implements Serializable {
             Sms sms,
             AppEmail email,
             PatientSampleComponant sampleComponant,
-            Category analyzer
+            Category analyzer,
+            String comment
     ) {
         current = new LabTestHistory();
         current.setTestHistoryType(testHistoryType);
@@ -158,6 +166,7 @@ public class LabTestHistoryController implements Serializable {
         current.setEmail(email);
         current.setSampleComponant(sampleComponant);
         current.setAnalyzer(analyzer);
+        current.setComment(comment);
 
         save();
 
@@ -187,23 +196,18 @@ public class LabTestHistoryController implements Serializable {
     @Inject
     EnumController enumController;
 
-    public List<LabTestHistoryLight> getLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation, String labTestHistory) {
-        TestHistoryType historyType = enumController.getLabTestHistory(labTestHistory);
+    public List<LabTestHistoryLight> getLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
 
-        if (historyType == null) {
-            return null;
-        }
         if (patientInvestigation == null) {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
                 + " WHERE his.retired=:retired "
-                + " AND his.testHistoryType=:type"
-                + " AND his.patientInvestigation=:patientInvestigation";
+                + " AND his.patientInvestigation=:patientInvestigation"
+                + " order by his.createdAt asc";
         Map<String, Object> params = new HashMap<>();
-        params.put("type", historyType);
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
