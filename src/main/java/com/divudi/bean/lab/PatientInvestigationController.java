@@ -2165,15 +2165,12 @@ public class PatientInvestigationController implements Serializable {
         newlyGeneratedSample.setReferenceSample(pts);
         if (newlyGeneratedSample.getId() == null) {
             patientSampleFacade.create(newlyGeneratedSample);
-            System.out.println("Create New Sample = " + newlyGeneratedSample.getId());
         } else {
             patientSampleFacade.edit(newlyGeneratedSample);
-            System.out.println("Update Sample = " + newlyGeneratedSample.getId());
         }
 
         pts.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING);
         patientSampleFacade.edit(pts);
-        System.out.println("Update Old Sample = " + pts.getId());
 
         List<PatientSampleComponant> oldSamplePatientSampleComponant;
         String jpql = "select ps from PatientSampleComponant ps where ps.patientSample=:pts ";
@@ -2197,10 +2194,8 @@ public class PatientInvestigationController implements Serializable {
 
             if (newlyCreatedPatientSampleComponant.getId() == null) {
                 patientSampleComponantFacade.create(newlyCreatedPatientSampleComponant);
-                System.out.println("Create New Sample Componant = " + newlyCreatedPatientSampleComponant.getId());
             } else {
                 patientSampleComponantFacade.edit(newlyCreatedPatientSampleComponant);
-                System.out.println("Update Sample Componant = " + newlyGeneratedSample.getId());
             }
         }
         return newlyGeneratedSample;
