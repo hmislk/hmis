@@ -13,9 +13,11 @@ package com.divudi.core.data.lab;
 public enum TestHistoryType {
     ORDERED,
     BARCODE_GENERATED,
+    BARCODE_REGENERATED,
     BARCODE_PRINTED,
     BARCODE_PRINTED_INDIVIDUAL ,
     SAMPLE_COLLECTED,
+    SAMPLE_RECOLLECTED,
     SAMPLE_ACCEPTED,
     SAMPLE_SENT,
     SAMPLE_SENT_OUT_LAB,
@@ -43,6 +45,8 @@ public enum TestHistoryType {
                 return "Ordered";
             case BARCODE_GENERATED:
                 return "Barcode Generated";
+            case BARCODE_REGENERATED:
+                return "Barcode Regenerated";
             case BARCODE_PRINTED:
                 return "Barcode Printed";
             case BARCODE_PRINTED_INDIVIDUAL:

@@ -162,6 +162,8 @@ public class PatientInvestigationController implements Serializable {
     LaboratoryManagementController laboratoryManagementController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    LimsMiddlewareController limsMiddlewareController;
 
     /**
      * Class Variables
@@ -278,7 +280,9 @@ public class PatientInvestigationController implements Serializable {
 
     private String sampleSearchStrategy;
     private boolean requestReCollected;
-
+    
+    private String testDetails;
+    
     public int getNumber() {
         return number;
     }
@@ -972,7 +976,7 @@ public class PatientInvestigationController implements Serializable {
         if (sampleId == null || sampleId <= 0) {
             return Collections.emptyList();
         }
-        
+
         String j = "select psc from PatientSampleComponant psc where psc.patientSample.id = :id";
         Map m = new HashMap();
         m.put("id", sampleId);
@@ -2024,7 +2028,7 @@ public class PatientInvestigationController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : selectedPatientSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                    labTestHistoryController.addSampleRejectHistory(pi, ps,sampleRejectionComment);
+                    labTestHistoryController.addSampleRejectHistory(pi, ps, sampleRejectionComment);
                 }
             }
         }
@@ -2041,9 +2045,162 @@ public class PatientInvestigationController implements Serializable {
 
     }
 
-    private String testDetails;
-    @Inject
-    LimsMiddlewareController limsMiddlewareController;
+    public void reGenerateSampleForRejectSamples() {
+
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
+            return;
+        }
+
+        List<PatientSample> canReGenarateSamples = new ArrayList<>();
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                return;
+            }
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED) {
+                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not Rejected.");
+                return;
+            }
+            if (!ps.getRequestReCollected()) {
+                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not not Requesr to Recollect.");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED && ps.getRequestReCollected()) {
+                canReGenarateSamples.add(ps);
+            }
+        }
+
+        if (canReGenarateSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("There are no suitable samples to Re-Genarate from the selected samples.");
+            return;
+        }
+
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+        Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
+        Map<Long, Bill> collectedBills = new HashMap<>();
+
+        List<PatientSample> reGenarateSamples = new ArrayList<>();
+
+        // Update sample collection details and gather associated patient investigations
+        for (PatientSample ps : canReGenarateSamples) {
+            PatientSample newlySample = createNewPatientSampleFromAnotherSample(ps);
+
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(newlySample)) {
+                collectedPtixs.putIfAbsent(pi.getId(), pi);
+            }
+            reGenarateSamples.add(newlySample);
+        }
+
+        // Update patient investigations and collect associated bills
+        for (PatientInvestigation tptix : collectedPtixs.values()) {
+            tptix.setSampleCollected(true);
+            tptix.setSampleCollectedAt(new Date());
+            tptix.setSampleCollectedBy(sessionController.getLoggedUser());
+            tptix.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING);
+            getFacade().edit(tptix);
+            collectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+        }
+
+        // Update bills status
+        for (Bill tb : collectedBills.values()) {
+            tb.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING);
+            billFacade.edit(tb);
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+
+            // Create newly created Sample Lab Test History
+            for (PatientSample ps : reGenarateSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addBarcodeGenerateHistory(pi, ps);
+                }
+            }
+            // Create Old Sample Lab Test History
+            for (PatientSample ps : canReGenarateSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addSampleReGenerateHistory(pi, ps);
+                }
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Selected Samples Recreated");
+    }
+
+    public PatientSample createNewPatientSampleFromAnotherSample(PatientSample referringPatientSample) {
+        if (referringPatientSample == null) {
+            JsfUtil.addErrorMessage("Referring Sample is Empty");
+            return null;
+        }
+
+        //reload Sample
+        PatientSample pts = patientSampleFacade.find(referringPatientSample.getId());
+
+        //create a new Sample
+        PatientSample newlyGeneratedSample = new PatientSample();
+
+        newlyGeneratedSample.setCreater(sessionController.getWebUser());
+        newlyGeneratedSample.setCreatedAt(new Date());
+        newlyGeneratedSample.setTube(pts.getTube());
+        newlyGeneratedSample.setSample(pts.getSample());
+        newlyGeneratedSample.setInvestigationComponant(pts.getInvestigationComponant());
+        newlyGeneratedSample.setInstitution(sessionController.getInstitution());
+        newlyGeneratedSample.setDepartment(sessionController.getDepartment());
+        newlyGeneratedSample.setMachine(pts.getMachine());
+        newlyGeneratedSample.setPatient(pts.getPatient());
+        newlyGeneratedSample.setBill(pts.getBill());
+        newlyGeneratedSample.setBarcodeGenerated(true);
+        newlyGeneratedSample.setBarcodeGeneratedDepartment(sessionController.getDepartment());
+        newlyGeneratedSample.setBarcodeGeneratedInstitution(sessionController.getInstitution());
+        newlyGeneratedSample.setBarcodeGenerator(sessionController.getWebUser());
+        newlyGeneratedSample.setBarcodeGeneratedAt(new Date());
+        newlyGeneratedSample.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        newlyGeneratedSample.setSampleCollected(false);
+        newlyGeneratedSample.setSampleReceivedAtLab(false);
+        newlyGeneratedSample.setReadyTosentToAnalyzer(false);
+        newlyGeneratedSample.setSentToAnalyzer(false);
+        newlyGeneratedSample.setReceivedFromAnalyzer(false);
+        newlyGeneratedSample.setRetired(false);
+        newlyGeneratedSample.setReferenceSample(pts);
+        if (newlyGeneratedSample.getId() == null) {
+            patientSampleFacade.create(newlyGeneratedSample);
+        } else {
+            patientSampleFacade.edit(newlyGeneratedSample);
+        }
+
+        pts.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING);
+        patientSampleFacade.edit(pts);
+
+        List<PatientSampleComponant> oldSamplePatientSampleComponant;
+        String jpql = "select ps from PatientSampleComponant ps where ps.patientSample=:pts ";
+        Map params = new HashMap();
+        params.put("pts", pts);
+
+        oldSamplePatientSampleComponant = patientSampleComponantFacade.findByJpql(jpql, params);
+
+        for (PatientSampleComponant ptsc : oldSamplePatientSampleComponant) {
+
+            // Create new ampleComponant
+            PatientSampleComponant newlyCreatedPatientSampleComponant = new PatientSampleComponant();
+
+            newlyCreatedPatientSampleComponant.setPatientSample(newlyGeneratedSample);
+            newlyCreatedPatientSampleComponant.setBill(newlyGeneratedSample.getBill());
+            newlyCreatedPatientSampleComponant.setPatient(newlyGeneratedSample.getPatient());
+            newlyCreatedPatientSampleComponant.setPatientInvestigation(ptsc.getPatientInvestigation());
+            newlyCreatedPatientSampleComponant.setInvestigationComponant(ptsc.getInvestigationComponant());
+            newlyCreatedPatientSampleComponant.setCreatedAt(new Date());
+            newlyCreatedPatientSampleComponant.setCreater(sessionController.getWebUser());
+
+            if (newlyCreatedPatientSampleComponant.getId() == null) {
+                patientSampleComponantFacade.create(newlyCreatedPatientSampleComponant);
+            } else {
+                patientSampleComponantFacade.edit(newlyCreatedPatientSampleComponant);
+            }
+        }
+        return newlyGeneratedSample;
+        
+    }
 
     public void generateSampleCodesSamples() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
