@@ -308,6 +308,15 @@ public class PurchaseOrderRequestController implements Serializable {
         }
         lineBillItem.getBillItemFinanceDetails().setQuantityByUnits(quantityByUnits);
 
+        // Calculate free quantity by units (for AMPP items)
+        BigDecimal freeQuantityByUnits;
+        if (lineBillItem.getItem() instanceof Ampp) {
+            freeQuantityByUnits = bdFreeQty.multiply(bdUnitsPerPack);
+        } else {
+            freeQuantityByUnits = bdFreeQty;
+        }
+        lineBillItem.getBillItemFinanceDetails().setFreeQuantityByUnits(freeQuantityByUnits);
+
         lineBillItem.getBillItemFinanceDetails().setValueAtPurchaseRate(bdPurchaseValue);
         lineBillItem.getBillItemFinanceDetails().setValueAtRetailRate(bdRetailValue);
         
@@ -407,9 +416,9 @@ public class PurchaseOrderRequestController implements Serializable {
             getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
             getBillFacade().create(getCurrentBill());
         } else {
-            getBillFacade().edit(getCurrentBill());
             getCurrentBill().setEditedAt(Calendar.getInstance().getTime());
             getCurrentBill().setEditor(getSessionController().getLoggedUser());
+            getBillFacade().edit(getCurrentBill());
         }
     }
 
@@ -521,7 +530,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void saveRequest() {
         if (getCurrentBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please Select Paymntmethod");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return;
         }
         if (getBillItems() == null || getBillItems().isEmpty()) {
