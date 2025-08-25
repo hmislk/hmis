@@ -195,6 +195,8 @@ public class PatientSample implements Serializable, RetirableEntity {
     private WebUser sampleRejectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRejectedAt;
+    
+    private Boolean requestReCollected = false;
 
     //Retairing properties
     private boolean retired;
@@ -866,6 +868,14 @@ public class PatientSample implements Serializable, RetirableEntity {
     public void setSampleSentToInstitution(Institution sampleSentToInstitution) {
         this.sampleSentToInstitution = sampleSentToInstitution;
 
+    }
+
+    public Boolean getRequestReCollected() {
+        return requestReCollected;
+    }
+
+    public void setRequestReCollected(Boolean requestReCollected) {
+        this.requestReCollected = requestReCollected;
     }
 
 }
