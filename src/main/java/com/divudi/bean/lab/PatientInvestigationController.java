@@ -1748,11 +1748,11 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already colleted.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_REGENERATED) {
                 canCollectSamples.add(ps);
             }
         }
@@ -1857,7 +1857,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already Sent.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
                 canSentSamples.add(ps);
             }
         }
@@ -2183,7 +2183,7 @@ public class PatientInvestigationController implements Serializable {
         newlyGeneratedSample.setBarcodeGeneratedInstitution(sessionController.getInstitution());
         newlyGeneratedSample.setBarcodeGenerator(sessionController.getWebUser());
         newlyGeneratedSample.setBarcodeGeneratedAt(new Date());
-        newlyGeneratedSample.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        newlyGeneratedSample.setStatus(PatientInvestigationStatus.SAMPLE_REGENERATED);
         newlyGeneratedSample.setSampleCollected(false);
         newlyGeneratedSample.setSampleReceivedAtLab(false);
         newlyGeneratedSample.setReadyTosentToAnalyzer(false);

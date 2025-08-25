@@ -29,7 +29,8 @@ public enum PatientInvestigationStatus {
     SAMPLE_SENT_TO_OUTLAB("Sample Sent to OutLab"),
     SAMPLE_RECOLLECTION_REQUESTED("Sample Recollection Requested"),
     SAMPLE_RECOLLECTION_PENDING("Sample Recollection Pending"),
-    SAMPLE_RECOLLECTION_COMPLETE("Sample Recollection Completed");
+    SAMPLE_RECOLLECTION_COMPLETE("Sample Recollection Completed"),
+    SAMPLE_REGENERATED("Barcode Regenerated");
     
     private final String label;
 
