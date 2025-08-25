@@ -5805,6 +5805,7 @@ public class SearchController implements Serializable {
         billTypesToList.add(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         List<BillTypeAtomic> billTypesToAttachedToEachBillInTheList = new ArrayList<>();
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN);
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_PRE); // Include saved GRNs
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
 //        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
 //        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
