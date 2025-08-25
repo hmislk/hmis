@@ -1090,6 +1090,7 @@ public class GrnCostingController implements Serializable {
                     double unitsPerPack = pbiInApprovedOrder.getBillItem().getItem().getDblValue();
                     unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
                     newlyCreatedBillItemForGrn.setQty(remains / unitsPerPack); // Convert units to packs
+                    newlyCreatedBillItemForGrn.setTmpQty(remains / unitsPerPack);
                     newlyCreatedBillItemForGrn.setTmpFreeQty(remainFreeQty / unitsPerPack);
                 } else {
                     // For Amp items, BillItem quantity should also be in units
