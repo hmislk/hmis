@@ -1345,6 +1345,19 @@
                                 <h:panelGrid columns="1" class="w-100">
 
                                     <hr/>
+                                    
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                        id="btnCreateSamples"
+                                        value="Re-Generate Samples"
+                                        ajax="false"
+                                        action="#{patientInvestigationController.reGenerateSampleForRejectSamples()}"
+                                        title="Re-Generate Samples"
+                                        icon="pi pi-plus-circle"
+                                        styleClass="m-1  w-100 ui-button-success" >
+                                    </p:commandButton>
+                                    
+                                    <hr/>
 
                                     <p:commandButton 
                                         rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
