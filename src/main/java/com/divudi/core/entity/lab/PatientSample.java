@@ -205,6 +205,9 @@ public class PatientSample implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    
+    @ManyToOne
+    private PatientSample referenceSample;
 
     public Long getId() {
         return id;
@@ -876,6 +879,14 @@ public class PatientSample implements Serializable, RetirableEntity {
 
     public void setRequestReCollected(Boolean requestReCollected) {
         this.requestReCollected = requestReCollected;
+    }
+
+    public PatientSample getReferenceSample() {
+        return referenceSample;
+    }
+
+    public void setReferenceSample(PatientSample referenceSample) {
+        this.referenceSample = referenceSample;
     }
 
 }
