@@ -138,7 +138,8 @@ public class PharmacyStockTakeController implements Serializable {
             header.createCell(0).setCellValue("Code");
             header.createCell(1).setCellValue("Name");
             header.createCell(2).setCellValue("Batch");
-            int col = 3;
+            header.createCell(3).setCellValue("Expiry Date");
+            int col = 4;
             if (includeSystemQty) {
                 header.createCell(col++).setCellValue("System Qty");
             }
@@ -151,7 +152,8 @@ public class PharmacyStockTakeController implements Serializable {
                 row.createCell(0).setCellValue(ib.getItem().getCode());
                 row.createCell(1).setCellValue(ib.getItem().getName());
                 row.createCell(2).setCellValue(ib.getBatchNo());
-                int c = 3;
+                row.createCell(3).setCellValue(ib.getDateOfExpire() != null ? ib.getDateOfExpire().toString() : "");
+                int c = 4;
                 if (includeSystemQty) {
                     row.createCell(c++).setCellValue(pbi.getQty());
                 }
@@ -200,6 +202,7 @@ public class PharmacyStockTakeController implements Serializable {
                 }
                 String code = getString(row, 0);
                 String batch = getString(row, 2);
+                // Skip expiry date column (column 3) and get physical count from last column
                 double physical = getDouble(row, row.getLastCellNum() - 1);
                 if (code == null || batch == null) {
                     continue;
@@ -395,5 +398,15 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setSnapshotBill(Bill snapshotBill) {
         this.snapshotBill = snapshotBill;
+    }
+    
+    /**
+     * Reset the stock taking session to start a new one
+     */
+    public void resetStockTakingSession() {
+        this.snapshotBill = null;
+        this.physicalCountBill = null;
+        this.file = null;
+        JsfUtil.addSuccessMessage("Stock taking session reset");
     }
 }

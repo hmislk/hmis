@@ -6643,4 +6643,65 @@ public class PharmacyController implements Serializable {
         }
         return "background-color: #dff0d8";  // Light green for good expiry
     }
+    
+    /**
+     * Creates stock variance report from stock taking adjustments
+     * @param fromDate start date for the report
+     * @param toDate end date for the report
+     * @param department specific department (optional)
+     * @return list of stock variance data
+     */
+    public List<Map<String, Object>> createStockVarianceReport(Date fromDate, Date toDate, Department department) {
+        List<Map<String, Object>> varianceData = new ArrayList<>();
+        
+        try {
+            String jpql = "SELECT bi FROM BillItem bi "
+                    + "WHERE bi.bill.billType = :billType "
+                    + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                    + "AND bi.bill.retired = false ";
+            
+            Map<String, Object> params = new HashMap<>();
+            params.put("billType", BillType.PharmacyStockAdjustmentBill);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+            
+            if (department != null) {
+                jpql += " AND bi.bill.department = :dept";
+                params.put("dept", department);
+            }
+            
+            List<BillItem> adjustmentItems = billItemFacade.findByJpql(jpql, params);
+            
+            for (BillItem bi : adjustmentItems) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+                    Map<String, Object> variance = new HashMap<>();
+                    variance.put("itemName", bi.getItem().getName());
+                    variance.put("batchNo", bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
+                    variance.put("expiryDate", bi.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire());
+                    variance.put("adjustmentQty", bi.getQty());
+                    variance.put("adjustmentDate", bi.getBill().getCreatedAt());
+                    variance.put("adjustmentBy", bi.getBill().getCreater() != null ? bi.getBill().getCreater().getName() : "");
+                    variance.put("department", bi.getBill().getDepartment().getName());
+                    varianceData.add(variance);
+                }
+            }
+            
+        } catch (Exception e) {
+            // Handle exception appropriately
+            System.err.println("Error creating stock variance report: " + e.getMessage());
+        }
+        
+        return varianceData;
+    }
+    
+    /**
+     * Gets stock variance report data
+     * @param fromDate start date
+     * @param toDate end date
+     * @param department department filter
+     * @return variance report data
+     */
+    public List<Map<String, Object>> getStockVarianceReport(Date fromDate, Date toDate, Department department) {
+        return createStockVarianceReport(fromDate, toDate, department);
+    }
 }
