@@ -193,7 +193,11 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
 
         if (getCurrentBillItem().getItem() instanceof Ampp) {
-            getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue()));
+            BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
+            if (unitsPerPack == null || unitsPerPack.doubleValue() <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+            getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(unitsPerPack);
         } else {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
         }
