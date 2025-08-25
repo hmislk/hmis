@@ -496,7 +496,7 @@ public class PurchaseOrderController implements Serializable {
             // Create a new BillItemFinanceDetails instance and copy values from the original request
             if (i.getBillItem().getBillItemFinanceDetails() != null) {
                 BillItemFinanceDetails originalBifd = i.getBillItem().getBillItemFinanceDetails();
-                BillItemFinanceDetails newBifd = new BillItemFinanceDetails();
+                BillItemFinanceDetails newBifd = bi.getBillItemFinanceDetails();
                 
                 // Copy all values from original to new instance
                 newBifd.setUnitsPerPack(originalBifd.getUnitsPerPack());
