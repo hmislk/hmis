@@ -2199,6 +2199,7 @@ public class PatientInvestigationController implements Serializable {
             }
         }
         return newlyGeneratedSample;
+        
     }
 
     public void generateSampleCodesSamples() {
