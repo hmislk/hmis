@@ -53,7 +53,9 @@
       "Bash(awk:*)",
       "Bash(gh workflow run:*)",
       "Bash(gh run list:*)",
-      "Bash(gh pr merge:*)"
+      "Bash(gh pr merge:*)",
+      "Read(/D:\\tmp/**)",
+      "Read(/D:\\c/**)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
