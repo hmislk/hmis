@@ -17,6 +17,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -774,15 +775,21 @@ public class PurchaseOrderRequestController implements Serializable {
             return false;
         }
         for (BillItem bi : items) {
-            // Null‐check to avoid NPE when accessing pharmaceutical details
-            if (bi.getPharmaceuticalBillItem() == null) {
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
                 return false;
             }
-            if ((bi.getQty() + bi.getPharmaceuticalBillItem().getFreeQty()) < 1) {
+            BigDecimal qtyUnits = fd.getQuantityByUnits() != null
+                ? fd.getQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal freeUnits = fd.getFreeQuantityByUnits() != null
+                ? fd.getFreeQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal totalUnits = qtyUnits.add(freeUnits);
+            // Require at least one atomic unit (e.g., tablet)
+            if (totalUnits.compareTo(BigDecimal.ONE) < 0) {
                 return false;
             }
-            // Use named constant instead of hardcoded threshold
-            if (bi.getPharmaceuticalBillItem().getPurchaseRate() < MIN_PURCHASE_RATE) {
+            BigDecimal rate = fd.getLineGrossRate();
+            if (rate == null || rate.compareTo(BigDecimal.valueOf(MIN_PURCHASE_RATE)) < 0) {
                 return false;
             }
         }
