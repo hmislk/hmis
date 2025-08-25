@@ -280,9 +280,9 @@ public class PatientInvestigationController implements Serializable {
 
     private String sampleSearchStrategy;
     private boolean requestReCollected;
-    
+
     private String testDetails;
-    
+
     public int getNumber() {
         return number;
     }
@@ -1776,7 +1776,15 @@ public class PatientInvestigationController implements Serializable {
             ps.setSampleCollectedDepartment(sessionController.getDepartment());
             ps.setSampleCollectedInstitution(sessionController.getInstitution());
             ps.setSampleCollecter(sessionController.getLoggedUser());
-            ps.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+
+            if (ps.getReferenceSample() != null && ps.getReferenceSample().getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING) {
+                ps.getReferenceSample().setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE);
+                patientSampleFacade.edit(ps.getReferenceSample());
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTED);
+            } else {
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+            }
+
             patientSampleFacade.edit(ps);
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
@@ -1790,19 +1798,35 @@ public class PatientInvestigationController implements Serializable {
             tptix.setSampleCollected(true);
             tptix.setSampleCollectedAt(new Date());
             tptix.setSampleCollectedBy(sessionController.getLoggedUser());
-            tptix.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+
+            if (tptix.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING) {
+                tptix.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTED);
+            } else {
+                tptix.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+            }
+
             getFacade().edit(tptix);
             collectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
 
         // Update bills status
         for (Bill tb : collectedBills.values()) {
-            tb.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+            if (tb.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING) {
+                tb.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTED);
+            } else {
+                tb.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+            }
             billFacade.edit(tb);
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : canCollectSamples) {
+                if (ps.getReferenceSample() != null && ps.getReferenceSample().getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
+                    for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                        labTestHistoryController.addSampleReCollectHistory(pi, ps);
+                    }
+                }
+
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
                     labTestHistoryController.addSampleCollectHistory(pi, ps);
                 }
@@ -2199,7 +2223,7 @@ public class PatientInvestigationController implements Serializable {
             }
         }
         return newlyGeneratedSample;
-        
+
     }
 
     public void generateSampleCodesSamples() {
