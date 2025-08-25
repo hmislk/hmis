@@ -477,15 +477,18 @@ public class PurchaseOrderRequestController implements Serializable {
         getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
-            double qty;
-            qty = b.getQty() + b.getPharmaceuticalBillItem().getFreeQty();
-            if (qty <= 0.0) {
+            BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getFreeQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal totalUnits = qUnits.add(fqUnits);
+            if (totalUnits.compareTo(BigDecimal.ZERO) <= 0) {
                 b.setRetired(true);
                 b.setRetirer(sessionController.getLoggedUser());
                 b.setRetiredAt(new Date());
                 b.setRetireComments("Retired at Finalising PO");
             }
-            totalBillItemsCount = totalBillItemsCount + qty;
+            totalBillItemsCount += totalUnits.doubleValue();
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
