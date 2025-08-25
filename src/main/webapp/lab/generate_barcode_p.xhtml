@@ -1001,7 +1001,8 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{!ps.bill.cancelled}">
-                                                <h:outputLabel value=" #{ps.status}" />
+                                                <h:outputLabel value=" #{ps.status}" /><br/>
+                                                <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/>
                                             </h:panelGroup>
 
                                         </p:column>
