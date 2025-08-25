@@ -251,14 +251,18 @@ public class PurchaseOrderController implements Serializable {
         double freeQuantity = bdFreeQty.doubleValue();
 
         if (lineBillItem.getItem() instanceof Ampp) {
-            double unitsPerPack = lineBillItem.getItem().getDblValue();
+            BigDecimal unitsPerPackDecimal = lineBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            double unitsPerPack = (unitsPerPackDecimal == null || unitsPerPackDecimal.doubleValue() == 0) ? 1.0 : unitsPerPackDecimal.doubleValue();
+
             lineBillItem.getPharmaceuticalBillItem().setQty(quantity * unitsPerPack);
             lineBillItem.getPharmaceuticalBillItem().setFreeQty(freeQuantity * unitsPerPack);
             lineBillItem.getPharmaceuticalBillItem().setPurchaseRate(bdPurchaseRate.doubleValue() / unitsPerPack);
+            lineBillItem.getPharmaceuticalBillItem().setPurchaseRatePack(bdPurchaseRate.doubleValue());
         } else {
             lineBillItem.getPharmaceuticalBillItem().setQty(quantity);
             lineBillItem.getPharmaceuticalBillItem().setFreeQty(freeQuantity);
             lineBillItem.getPharmaceuticalBillItem().setPurchaseRate(bdPurchaseRate.doubleValue());
+            lineBillItem.getPharmaceuticalBillItem().setPurchaseRatePack(bdPurchaseRate.doubleValue());
         }
     }
 
@@ -283,7 +287,7 @@ public class PurchaseOrderController implements Serializable {
         if (bdRetailRate == null) {
             bdRetailRate = BigDecimal.ZERO;
         }
-        if (bdUnitsPerPack == null) {
+        if (bdUnitsPerPack == null || bdUnitsPerPack.doubleValue() == 0) {
             bdUnitsPerPack = BigDecimal.ONE;
         }
 
@@ -346,10 +350,10 @@ public class PurchaseOrderController implements Serializable {
         // Update pharmaceuticalBillItem quantities and rates
         double quantity = bdQty.doubleValue();
         double freeQuantity = bdFreeQty.doubleValue();
+        double unitsPerPack = bdUnitsPerPack.doubleValue();
 
         if (lineBillItem.getItem() instanceof Ampp) {
             // For AMPP items, billItemFinanceDetails stores packs, convert to units
-            double unitsPerPack = lineBillItem.getItem().getDblValue();
             lineBillItem.getPharmaceuticalBillItem().setQty(quantity * unitsPerPack);
             lineBillItem.getPharmaceuticalBillItem().setFreeQty(freeQuantity * unitsPerPack);
 
