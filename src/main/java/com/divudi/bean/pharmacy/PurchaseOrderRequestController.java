@@ -276,7 +276,7 @@ public class PurchaseOrderRequestController implements Serializable {
         if (bdRetailRate == null) {
             bdRetailRate = BigDecimal.ZERO;
         }
-        if (bdUnitsPerPack == null) {
+        if (bdUnitsPerPack == null || bdUnitsPerPack.doubleValue() <= 0) {
             bdUnitsPerPack = BigDecimal.ONE;
         }
 
@@ -328,7 +328,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         if (lineBillItem.getItem() instanceof Ampp) {
             // For AMPP items, billItemFinanceDetails stores packs, convert to units
-            double unitsPerPack = lineBillItem.getItem().getDblValue();
+            double unitsPerPack = bdUnitsPerPack.doubleValue();
             lineBillItem.getPharmaceuticalBillItem().setQty(quantity * unitsPerPack);
             lineBillItem.getPharmaceuticalBillItem().setFreeQty(freeQuantity * unitsPerPack);
 
