@@ -109,6 +109,10 @@ public class LabTestHistoryController implements Serializable {
     public void addSampleRejectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample,String comment) {
         addNewHistory(TestHistoryType.SAMPLE_REJECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,comment);
     }
+    
+    public void addSampleReCollectRequestHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
+        addNewHistory(TestHistoryType.SAMPLE_RECOLLECT_REQUEST, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
+    }
 
     // </editor-fold>
     

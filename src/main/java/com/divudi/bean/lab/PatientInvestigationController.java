@@ -2016,6 +2016,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Samples reject reason is Missing..");
             return;
         }
+        
 
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -2053,6 +2054,9 @@ public class PatientInvestigationController implements Serializable {
             for (PatientSample ps : selectedPatientSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
                     labTestHistoryController.addSampleRejectHistory(pi, ps, sampleRejectionComment);
+                }
+                if(ps.getRequestReCollected()){
+                    labTestHistoryController.addSampleReCollectRequestHistory(pi, ps);
                 }
             }
         }
