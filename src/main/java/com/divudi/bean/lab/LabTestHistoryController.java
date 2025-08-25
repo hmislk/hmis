@@ -64,6 +64,7 @@ public class LabTestHistoryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     
     // <editor-fold defaultstate="collapsed" desc="Billing">
@@ -77,12 +78,16 @@ public class LabTestHistoryController implements Serializable {
         addNewHistory(TestHistoryType.BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
     }
 
+    public void addSampleReGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
+        addNewHistory(TestHistoryType.BARCODE_REGENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
+    }
+    
     public void addSampleCollectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
         addNewHistory(TestHistoryType.SAMPLE_COLLECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
     }
     
-    public void addSampleReGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.BARCODE_REGENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
+    public void addSampleReCollectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
+        addNewHistory(TestHistoryType.SAMPLE_RECOLLECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null,null);
     }
 
     public void addSampleSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter) {
