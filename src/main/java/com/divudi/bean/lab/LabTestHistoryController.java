@@ -40,9 +40,7 @@ import javax.faces.convert.Converter;
 @SessionScoped
 public class LabTestHistoryController implements Serializable {
 
-    /**
-     * Creates a new instance of LabTestHistoryController
-     */
+
     public LabTestHistoryController() {
     }
 
