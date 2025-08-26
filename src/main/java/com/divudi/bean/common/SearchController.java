@@ -5800,7 +5800,7 @@ public class SearchController implements Serializable {
             jpql = "Select DISTINCT(bi.bill) From BillItem bi"
                     + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
                     + " and bi.bill.institution=:ins and bi.bill.completed = :completed "
-                    + " and bi.createdAt between :fromDate and :toDate "
+                    + " and bi.bill.createdAt between :fromDate and :toDate "
                     + " and bi.item=:item ";
             jpql += " order by bi.bill.createdAt desc  ";
             params.put("toDate", getToDate());
