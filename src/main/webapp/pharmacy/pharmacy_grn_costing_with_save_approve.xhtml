@@ -87,11 +87,13 @@
                                     selectionBox="true"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"/>
                                 <p:column
+                                    id="colItem"
                                     headerText="Item Name"
                                     width="20em"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
                                     <h:outputText id="item" value="#{bi.item.name}" />
                                     <p:commandLink
+                                        id="btnViewFinanceDetails"
                                         styleClass="mx-2"
                                         title="View Finance Details"
                                         oncomplete="PF('dialog#{i}').show()"
