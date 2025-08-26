@@ -565,12 +565,23 @@ public class PharmacyCostingService {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
 
-            if (bi.getItem() instanceof Ampp) {
-                bi.setQty(pbi.getQtyPacks());
-                bi.setRate(pbi.getPurchaseRatePack());
-            } else if (bi.getItem() instanceof Amp) {
-                bi.setQty(pbi.getQty());
-                bi.setRate(pbi.getPurchaseRate());
+            // Don't override user-entered quantities during GRN costing
+            // Only set quantities from PharmaceuticalBillItem if BillItem qty is not already set by user
+            if (bi.getQty() == null || bi.getQty() == 0.0) {
+                if (bi.getItem() instanceof Ampp) {
+                    bi.setQty(pbi.getQtyPacks());
+                    bi.setRate(pbi.getPurchaseRatePack());
+                } else if (bi.getItem() instanceof Amp) {
+                    bi.setQty(pbi.getQty());
+                    bi.setRate(pbi.getPurchaseRate());
+                }
+            } else {
+                // Preserve user-entered quantity but update rate if needed
+                if (bi.getItem() instanceof Ampp) {
+                    bi.setRate(pbi.getPurchaseRatePack());
+                } else if (bi.getItem() instanceof Amp) {
+                    bi.setRate(pbi.getPurchaseRate());
+                }
             }
 
             bi.setSearialNo(serialNo++);
@@ -662,7 +673,7 @@ public class PharmacyCostingService {
         bfd.setLineCostValue(totalLineCosts);
 
         bfd.setTotalDiscount(totalLineDiscounts);
-        bfd.setTotalExpense(totalLineExpenses);
+        bfd.setTotalExpense(totalLineExpenses.add(billExpense));
         bfd.setTotalTaxValue(totalTaxLines);
         bfd.setTotalCostValue(totalLineCosts);
 

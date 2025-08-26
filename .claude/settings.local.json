@@ -56,6 +56,7 @@
       "Bash(gh pr merge:*)",
       "Read(/D:\\tmp/**)",
       "Read(/D:\\c/**)"
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
