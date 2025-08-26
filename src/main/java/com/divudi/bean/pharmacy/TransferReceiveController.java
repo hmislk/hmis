@@ -10,6 +10,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.persistence.TemporalType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -361,7 +362,7 @@ public class TransferReceiveController implements Serializable {
             for (BillItem receiveItem : receiveItems) {
                 // Only count items that reference the same issued item
                 if (receiveItem.getReferanceBillItem() != null && 
-                    receiveItem.getReferanceBillItem().getId().equals(issuedItem.getId()) &&
+                    Objects.equals(receiveItem.getReferanceBillItem().getId(), issuedItem.getId()) &&
                     receiveItem.getPharmaceuticalBillItem() != null) {
                     totalReceivedQty += Math.abs(receiveItem.getPharmaceuticalBillItem().getQty());
                 }
