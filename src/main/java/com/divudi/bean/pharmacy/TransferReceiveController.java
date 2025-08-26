@@ -132,13 +132,11 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to received");
             return null;
         }
-        
         // Check if already fully received to prevent over-receiving
         if (isAlreadyReceived(issuedBill)) {
             JsfUtil.addErrorMessage("Already Received!");
             return null;
         }
-        
         printPreview=false;
         generateBillComponent();
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
