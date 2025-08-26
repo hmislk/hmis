@@ -707,10 +707,16 @@
                                                 autocomplete="off" 
                                                 value="#{pharmacyDirectPurchaseController.bill.discount}">
                                                 <p:ajax 
-                                                    process="@this" 
-                                                    update=":#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} net testBillDiscount" 
+                                                    process="dis" 
+                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    event="keyup"
+                                                    listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                                <p:ajax 
+                                                    process="dis" 
+                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
 
                                             <p:outputLabel value="Net Total" />
