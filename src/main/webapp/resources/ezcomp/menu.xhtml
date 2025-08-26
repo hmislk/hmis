@@ -941,13 +941,96 @@
                             value="PO Approval"
                             icon="fas fa-clipboard-check"
                             rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" ></p:menuitem>
+                                                <p:menuitem  
+                            ajax="false" 
+                            action="#{reorderController.autoOrderByDistributor()}"  
+                            value="Auto Ordering - P Model" 
+                            title="Auto Ordering - P Model"
+                            icon="fas fa-sync-alt"
+                            rendered="#{webUserController.hasPrivilege('AutoOrderPModel')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{reorderController.autoOrderByDistributor()}"  
+                            value="Auto Ordering - Q Model" 
+                            title="Auto Ordering - Q Model"
+                            icon="fas fa-retweet"
+                            rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
+                            value="Direct Purchase"
+                            title="Direct Purchase"
+                            icon="fas fa-hand-holding-usd"
+                            rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
+                            value="Pharmacy Donations"
+                            title="Pharmacy Donations"
+                            icon="fas fa-donate"
+                            rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToPurchaseOrderFinalize}"
+                            value="Finalize POs"
+                            title="Finalize Purchase Orders"
+                            icon="fas fa-tasks"
+                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToPurchaseOrderApprove}"
+                            value="PO Approval"
+                            title="Purchase Order Approval"
+                            icon="fas fa-clipboard-check"
+                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase?faces-redirect=true"  
                             value="Direct Purchase" 
+                            title="Direct Purchase"
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            value="Goods Receipt"
+                            title="Goods Receipt"
+                            icon="fas fa-dolly-flatbed"
+                            actionListener="#{searchController.makeListNull()}"
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"  
+                            value="Goods Receipt With Approval"  
+                            title="Goods Receipt With Approval"
+                            icon="fas fa-dolly-flatbed"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{searchController.navigateToReturnReceivedGoods()}"  
+                            value="Return Received Goods" 
+                            title="Return Received Goods"
+                            icon="fas fa-undo-alt"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" ></p:menuitem>  
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"  
+                            value="Return without Receipt" 
+                            title="Return without Receipt"
+                            icon="fas fa-exchange-alt"
+                            rendered="#{webUserController.hasPrivilege('ReturnWithoutRecipt')}" 
+                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{searchController.navigateToCancelPurchaseOrder()}"  
+                            value="Multiple Purchase Order Cancellation" 
+                            title="Multiple Purchase Order Cancellation"
+                            rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" 
+                            icon="fas fa-cancel"></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"

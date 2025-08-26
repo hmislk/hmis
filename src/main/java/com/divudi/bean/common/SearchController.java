@@ -5760,39 +5760,22 @@ public class SearchController implements Serializable {
 
     public void createGrnTableToFinalize() {
         bills = null;
-        String jpql;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution=:ins "
+                + " and b.completed = :completed "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        
         HashMap params = new HashMap();
-
-        if (getSearchKeyword().getItem() == null) {
-            jpql = "Select b From Bill b "
-                    + " where  b.retired=false "
-                    + " and b.billTypeAtomic = :bTp "
-                    + " and b.institution=:ins "
-                    + " and b.completed = :completed "
-                    + " and b.createdAt between :fromDate and :toDate ";
-            jpql += keysForGrnReturn(params);
-            jpql += " order by b.createdAt desc  ";
-            params.put("toDate", getToDate());
-            params.put("fromDate", getFromDate());
-            params.put("ins", getSessionController().getInstitution());
-            params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
-            params.put("completed", false);
-            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
-        } else {
-            jpql = "Select DISTINCT(bi.bill) From BillItem bi"
-                    + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
-                    + " and bi.bill.institution=:ins and bi.bill.completed = :completed "
-                    + " and bi.createdAt between :fromDate and :toDate "
-                    + " and bi.item=:item ";
-            jpql += " order by bi.bill.createdAt desc  ";
-            params.put("toDate", getToDate());
-            params.put("fromDate", getFromDate());
-            params.put("ins", getSessionController().getInstitution());
-            params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
-            params.put("completed", false);
-            params.put("item", getSearchKeyword().getItem());
-            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
-        }
+        params.put("ins", getSessionController().getInstitution());
+        params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
+        params.put("completed", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
     public void createGrnTableToApprove() {
