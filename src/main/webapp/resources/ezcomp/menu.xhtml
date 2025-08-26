@@ -1780,9 +1780,10 @@
                         rendered="#{webUserController.hasPrivilege('ChangeMyTheme')}" 
                         action="#{themeController.navigateToChangeOwnTheme()}"
                         value="Change My Theme" icon="pi pi-palette" ></p:menuitem>
+                    <!--Can not correct the spelling mistake as the enum values are already in production databases-->
                     <p:menuitem 
                         ajax="false" 
-                        rendered="#{webUserController.hasPrivilege('ChangePreference')}"
+                        rendered="#{webUserController.hasPrivilege('ChangePreferece')}" 
                         action="#{sessionController.navigateToManageOwnWebUserPreferences()}"
                         value="Change My Preferences" icon="pi pi-sliders-h"  ></p:menuitem>
                     <p:menuitem  
