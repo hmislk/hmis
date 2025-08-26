@@ -1823,7 +1823,7 @@ public class PatientInvestigationController implements Serializable {
             for (PatientSample ps : canCollectSamples) {
                 if (ps.getReferenceSample() != null && ps.getReferenceSample().getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
                     for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                        labTestHistoryController.addSampleReCollectHistory(pi, ps);
+                        labTestHistoryController.addSampleReCollectHistory(pi, ps.getReferenceSample());
                     }
                 }
 
