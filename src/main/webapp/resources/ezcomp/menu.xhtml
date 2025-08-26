@@ -930,22 +930,22 @@
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
-                            value="Pharmacy Donation"
+                            value="Pharmacy Donations"
                             icon="fas fa-donate"
                             rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" ></p:menuitem>
 
                         <p:menuitem
                             ajax="false"
                             action="#{searchController.navigateToPurchaseOrderFinalize}"
-                            value="To Finalize Purchase Orders"
+                            value="Finalize Purchase Orders"
                             icon="fas fa-tasks"
                             rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{searchController.navigateToPurchaseOrderApprove}"
-                            value="To Approve Purchase Orders"
+                            value="PO Approval"
                             icon="fas fa-clipboard-check"
-                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" ></p:menuitem>
 
                         <p:menuitem
                             ajax="false"
