@@ -964,6 +964,20 @@
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
+                            action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"  
+                            value="Finalize GRN"  
+                            icon="fas fa-clipboard-check"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"  
+                            value="Approve GRN"  
+                            icon="fas fa-check-circle"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
                             action="#{searchController.navigateToReturnReceivedGoods()}"  
                             value="Return Received Goods" 
                             icon="fas fa-undo-alt"
