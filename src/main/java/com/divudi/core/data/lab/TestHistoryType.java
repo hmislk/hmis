@@ -17,6 +17,7 @@ public enum TestHistoryType {
     BARCODE_PRINTED,
     BARCODE_PRINTED_INDIVIDUAL ,
     SAMPLE_COLLECTED,
+    SAMPLE_RECOLLECT_REQUEST,
     SAMPLE_RECOLLECTED,
     SAMPLE_ACCEPTED,
     SAMPLE_SENT,
@@ -53,6 +54,10 @@ public enum TestHistoryType {
                 return "Barcode Printed (Individual)";
             case SAMPLE_COLLECTED:
                 return "Sample Collected";
+            case SAMPLE_RECOLLECT_REQUEST:
+                return "Sample Recollect Request";
+            case SAMPLE_RECOLLECTED:
+                return "Sample Recollected";
             case SAMPLE_ACCEPTED:
                 return "Sample Accepted";
             case SAMPLE_SENT:
