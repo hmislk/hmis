@@ -5780,8 +5780,9 @@ public class SearchController implements Serializable {
         bills = null;
         String jpql;
         HashMap params = new HashMap();
-
-        if (getSearchKeyword().getItem() == null) {
+        
+        SearchKeyword sk = getSearchKeyword();
+        if (sk == null || sk.getItem() == null) {
             jpql = "Select b From Bill b "
                     + " where  b.retired=false "
                     + " and b.billTypeAtomic = :bTp "
@@ -5808,7 +5809,7 @@ public class SearchController implements Serializable {
             params.put("ins", getSessionController().getInstitution());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
             params.put("completed", true);
-            params.put("item", getSearchKeyword().getItem());
+            params.put("item", sk.getItem());
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         }
     }
