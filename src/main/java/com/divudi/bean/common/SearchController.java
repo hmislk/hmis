@@ -5763,13 +5763,11 @@ public class SearchController implements Serializable {
         String jpql = "Select b From Bill b "
                 + " where b.retired=false "
                 + " and b.billTypeAtomic = :bTp "
-                + " and b.institution=:ins "
                 + " and b.completed = :completed "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.createdAt desc";
         
         HashMap params = new HashMap();
-        params.put("ins", getSessionController().getInstitution());
         params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
         params.put("completed", false);
         params.put("fromDate", getFromDate());

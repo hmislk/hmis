@@ -59,13 +59,13 @@
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15">
-                            
+
                             <p:column headerText="Completed On" width="8em">
                                 <h:outputLabel value="#{g.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>
                             </p:column> 
-                            
+
                             <p:column headerText="Department" width="6em">
                                 <h:outputLabel value="#{g.fromDepartment.name}"/>
                             </p:column>
@@ -77,17 +77,17 @@
                             <p:column headerText="Distributor" width="12em">
                                 <h:outputLabel value="#{g.toInstitution.name}"/>
                             </p:column>
-                            
+
                             <p:column headerText="GRN Number" width="8em">                   
                                 <h:outputLabel value="#{g.deptId}"/>
                             </p:column>              
-                            
+
                             <p:column headerText="GRN Value" width="8em" class="text-end">
                                 <h:outputLabel value="#{g.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Related PO" width="8em">
                                 <h:outputLabel value="#{g.referenceBill.deptId}" rendered="#{g.referenceBill ne null}"/>
                             </p:column>
@@ -95,21 +95,24 @@
                             <p:column headerText="Actions" width="8em">
                                 <div class="d-flex gap-1">
                                     <p:commandButton  
-                                        class="ui-button-success"  
-                                        icon="fa fa-check"
-                                        title="Approve GRN" 
+                                        class="ui-button-warning"  
+                                        icon="fa fa-edit"
+                                        title="Edit and Finalize GRN" 
                                         ajax="false"
-                                        action="#{pharmacyBillSearch.navigateToApproveGrn()}">
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrn()}">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
                                     </p:commandButton>
                                     <p:commandButton  
-                                        class="ui-button-info"  
-                                        icon="fa fa-eye"
-                                        title="View GRN Details" 
+                                        class="ui-button-warning"  
+                                        icon="fa fa-edit"
+                                        title="Edit and Finalize GRN with Costing" 
                                         ajax="false"
-                                        action="#{pharmacyBillSearch.navigateToViewCompletedGrn()}">
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
                                     </p:commandButton>
+
                                 </div>
                             </p:column>
                         </p:dataTable>
