@@ -66,6 +66,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import com.divudi.ws.lims.LimsMiddlewareController;
 import java.io.Serializable;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -2016,6 +2017,42 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Samples reject reason is Missing..");
             return;
         }
+        
+        List<PatientSample> canRejectSamples = new ArrayList<>();
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED) {
+                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Rejected");
+                return;
+            }
+            
+            String jpql = "SELECT r "
+                + " FROM PatientReport r "
+                + " WHERE r.retired = :ret "
+                + " AND r.patientInvestigation in ( select ps.patientInvestigation from PatientSampleComponant ps where ps.patientSample=:pts and ps.retired=false ) ";
+            
+            Map<String, Object> params = new HashMap<>();
+            params.put("pts", ps);
+            params.put("ret", false);
+            
+            PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+            
+            if (pr != null) {
+                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") has Already Report Created");
+                return;
+            }
+            
+            canRejectSamples.add(ps);
+            
+        }
+
+        if (canRejectSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("There are no suitable samples to be Receive from the selected samples.");
+            return;
+        }
 
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -2023,7 +2060,7 @@ public class PatientInvestigationController implements Serializable {
         Map<Long, Bill> affectedBills = new HashMap<>();
 
         // Update sample rejection details and gather associated patient investigations
-        for (PatientSample ps : selectedPatientSamples) {
+        for (PatientSample ps : canRejectSamples) {
             ps.setSampleReceivedAtLabComments(sampleRejectionComment);
             ps.setRequestReCollected(requestReCollected);
             ps.setSampleRejected(true);
