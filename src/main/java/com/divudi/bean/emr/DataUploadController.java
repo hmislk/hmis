@@ -2271,19 +2271,19 @@ public class DataUploadController implements Serializable {
                 itemName = itemNameCell.getStringCellValue();
             }
 
-            // Column C: Fee (was column D)
+            // Column C
             Cell feeCell = row.getCell(2);
             if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
                 fee = feeCell.getNumericCellValue();
             }
 
-            // Column D: Foreign Fee (was column E)
+            // Column D
             Cell ffeeCell = row.getCell(3);
             if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
                 ffee = ffeeCell.getNumericCellValue();
             }
 
-            // Column E: Discount Allowed (was column F)
+            // Column E
             Cell discountAllowedCell = row.getCell(4);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
