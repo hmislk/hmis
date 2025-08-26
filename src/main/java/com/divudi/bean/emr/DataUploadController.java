@@ -237,6 +237,7 @@ public class DataUploadController implements Serializable {
     private String outputString;
     private List<Item> items;
     private List<ItemFee> itemFees;
+    private Category selectedFeeList;
     private List<Institution> collectingCentres;
     private List<Institution> agencies;
     private List<Institution> suppliers;
@@ -2165,15 +2166,23 @@ public class DataUploadController implements Serializable {
     }
 
     public void uploadFeeListItemFees() {
+        if (selectedFeeList == null) {
+            JsfUtil.addErrorMessage("Please select a Fee List before uploading.");
+            return;
+        }
+        
         itemFees = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                itemFees = readFeeListItemFeesFromExcel(inputStream);
+                itemFees = readFeeListItemFeesFromExcel(inputStream, selectedFeeList);
+                // Success/error messages are handled in readFeeListItemFeesFromExcel method
             } catch (IOException e) {
+                JsfUtil.addErrorMessage("Error reading Excel file: " + e.getMessage());
                 e.printStackTrace();
             }
+        } else {
+            JsfUtil.addErrorMessage("Please select a file to upload.");
         }
-
     }
 
     public List<Category> readFeeListTypesFromExcel(InputStream inputStream) throws IOException {
@@ -2218,11 +2227,17 @@ public class DataUploadController implements Serializable {
         return feeListTypes;
     }
 
-    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException {
+    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream, Category selectedFeeList) throws IOException {
         List<ItemFee> itemFees = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
+        
+        int successCount = 0;
+        int errorCount = 0;
+        int totalRows = sheet.getLastRowNum();
+        List<String> failedItems = new ArrayList<>();
+        StringBuilder summaryMessage = new StringBuilder();
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -2232,24 +2247,23 @@ public class DataUploadController implements Serializable {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             String itemCode = null;
-            String itemName = null;
-            String forCategoryName = null;
-            String institutionName = null;
+            String itemName = null; // Not used but kept for backward compatibility
             String discountAllowed = null;
-            String ffeeValue = null;
-            String fffeeValue = null;
 
             boolean disAllowd;
             double fee = 0.0;
             double ffee = 0.0;
 
             Item item;
-            Category category;
-            Institution institution;
+            Category category = selectedFeeList; // Use pre-selected fee list
 
             Cell itemCodeCell = row.getCell(0);
-            if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
-                itemCode = itemCodeCell.getStringCellValue();
+            if (itemCodeCell != null) {
+                if (itemCodeCell.getCellType() == CellType.STRING) {
+                    itemCode = itemCodeCell.getStringCellValue();
+                } else if (itemCodeCell.getCellType() == CellType.NUMERIC) {
+                    itemCode = String.valueOf((long) itemCodeCell.getNumericCellValue());
+                }
             }
 
             Cell itemNameCell = row.getCell(1);
@@ -2257,68 +2271,93 @@ public class DataUploadController implements Serializable {
                 itemName = itemNameCell.getStringCellValue();
             }
 
-            Cell forCategoryCell = row.getCell(2);
-            if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
-                forCategoryName = forCategoryCell.getStringCellValue();
-            }
-
-            Cell feeCell = row.getCell(3);
+            // Column C
+            Cell feeCell = row.getCell(2);
             if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
                 fee = feeCell.getNumericCellValue();
             }
 
-            Cell ffeeCell = row.getCell(4);
+            // Column D
+            Cell ffeeCell = row.getCell(3);
             if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
                 ffee = ffeeCell.getNumericCellValue();
             }
 
-            Cell discountAllowedCell = row.getCell(5);
+            // Column E
+            Cell discountAllowedCell = row.getCell(4);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
             }
-            if (discountAllowed != null || !discountAllowed.trim().equals("")) {
+            if (discountAllowed != null && !discountAllowed.trim().equals("") && 
+                (discountAllowed.equalsIgnoreCase("yes") || discountAllowed.equalsIgnoreCase("true") || discountAllowed.equals("1"))) {
                 disAllowd = true;
             } else {
                 disAllowd = false;
             }
 
-            if (itemName == null || itemCode == null) {
-                JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
-                return itemFees;
+            if (itemCode == null || itemCode.trim().equals("")) {
+                failedItems.add("Row " + (row.getRowNum() + 1) + ": Empty item code");
+                errorCount++;
+                continue; // Skip this row instead of returning empty list
             }
 
-            if (forCategoryName == null || forCategoryName.trim().equals("")) {
-                JsfUtil.addErrorMessage("Fee List types cannot be null.");
-                return itemFees;
-            }
-
-            category = categoryController.findCategoryByName(forCategoryName);
-            if (category == null) {
-                JsfUtil.addErrorMessage("Fee List type Not found.");
-                return itemFees;
-            }
+            // Fee List is pre-selected, no need to validate from Excel
 
             item = itemController.findItemByCode(itemCode);
             if (item == null) {
-                JsfUtil.addErrorMessage("Item cannot be null.");
-                return itemFees;
+                String itemNameForError = (itemName != null && !itemName.trim().isEmpty()) ? itemName : "N/A";
+                failedItems.add(itemCode + " | " + itemNameForError + " | Row " + (row.getRowNum() + 1));
+                errorCount++;
+                continue; // Skip this row instead of returning empty list
             }
-            ItemFee Itemfee = new ItemFee();
-            Itemfee.setCreatedAt(new Date());
-            Itemfee.setName(forCategoryName);
-            Itemfee.setCreater(sessionController.getLoggedUser());
-            Itemfee.setForInstitution(null);
-            Itemfee.setForCategory(category);
-            Itemfee.setItem(item);
-            Itemfee.setFeeType(FeeType.OwnInstitution);
-            Itemfee.setInstitution(item.getInstitution());
-            Itemfee.setFee(fee);
-            Itemfee.setFfee(ffee);
-            Itemfee.setDiscountAllowed(disAllowd);
-            itemFeeFacade.create(Itemfee);
+            ItemFee itemfee = new ItemFee();
+            itemfee.setCreatedAt(new Date());
+            itemfee.setName(selectedFeeList.getName());
+            itemfee.setCreater(sessionController.getLoggedUser());
+            itemfee.setForInstitution(null);
+            itemfee.setForCategory(selectedFeeList);
+            itemfee.setItem(item);
+            itemfee.setFeeType(FeeType.OwnInstitution);
+            itemfee.setInstitution(item.getInstitution());
+            itemfee.setFee(fee);
+            itemfee.setFfee(ffee);
+            itemfee.setDiscountAllowed(disAllowd);
+            itemFeeFacade.create(itemfee);
+            itemFees.add(itemfee);
+            successCount++;
 
         }
-        JsfUtil.addSuccessMessage("Upload Success");
+        
+        // Create detailed summary message
+        summaryMessage.append("=== UPLOAD SUMMARY ===\n");
+        summaryMessage.append("Fee List: ").append(selectedFeeList.getName()).append("\n");
+        summaryMessage.append("Total Rows Processed: ").append(totalRows).append("\n");
+        summaryMessage.append("Successfully Uploaded: ").append(successCount).append(" items\n");
+        summaryMessage.append("Failed: ").append(errorCount).append(" items\n\n");
+        
+        if (successCount > 0) {
+            JsfUtil.addSuccessMessage("✓ SUCCESS: " + successCount + " item fees uploaded to " + selectedFeeList.getName());
+        }
+        
+        if (errorCount > 0) {
+            summaryMessage.append("=== FAILED ITEMS (Copy & Paste Ready) ===\n");
+            summaryMessage.append("Format: Item Code | Item Name | Row Number\n");
+            summaryMessage.append("------------------------------------------\n");
+            for (String failedItem : failedItems) {
+                summaryMessage.append(failedItem).append("\n");
+            }
+            summaryMessage.append("------------------------------------------\n");
+            summaryMessage.append("Total Failed Items: ").append(errorCount).append("\n\n");
+            summaryMessage.append("INSTRUCTIONS:\n");
+            summaryMessage.append("1. Copy the failed items list above\n");
+            summaryMessage.append("2. Check if these item codes exist in your system\n");
+            summaryMessage.append("3. Update Excel file with correct item codes\n");
+            summaryMessage.append("4. Re-upload the corrected file\n");
+            
+            JsfUtil.addErrorMessage("⚠ " + errorCount + " items failed to upload. See detailed summary below:");
+            JsfUtil.addErrorMessage(summaryMessage.toString());
+        }
+        
         return itemFees;
 
     }
@@ -8550,6 +8589,14 @@ public class DataUploadController implements Serializable {
 
     public void setDefaultDepartmentType(DepartmentType defaultDepartmentType) {
         this.defaultDepartmentType = defaultDepartmentType;
+    }
+
+    public Category getSelectedFeeList() {
+        return selectedFeeList;
+    }
+
+    public void setSelectedFeeList(Category selectedFeeList) {
+        this.selectedFeeList = selectedFeeList;
     }
 
 }

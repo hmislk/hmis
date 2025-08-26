@@ -52,6 +52,7 @@
                                                         var="feeList" 
                                                         itemLabel="#{feeList.name}" 
                                                         itemValue="#{feeList}"/>
+                                                    <p:ajax event="change" process="@this" update=":dataForm" listener="#{itemFeeManager.onFeeListChange}"/>
                                                 </p:selectOneMenu>
                                                 <small class="text-muted">Choose the fee list to manage</small>
                                             </div>
@@ -188,6 +189,7 @@
                                                      widgetVar="listFeesTable"
                                                      scrollable="true"
                                                      scrollHeight="600px">
+                                            <p:autoUpdate />
                                             
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-between align-items-center p-2">
