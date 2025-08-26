@@ -2361,41 +2361,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
-//    public String searchFamilyByAddress() {
-//        if (searchNic == null) {
-//            JsfUtil.addErrorMessage("No Search Text");
-//            return null;
-//        }
-//        if (searchNic.trim().isEmpty()) {
-//            JsfUtil.addErrorMessage("No Search Text");
-//            return null;
-//        }
-//        if (searchNic.trim().length() < 10) {
-//            JsfUtil.addErrorMessage("Enter Complete NIC Number");
-//            return null;
-//        }
-//        families = null;
-//        String jpql = "Select f "
-//                + " from Family f "
-//                + " where f.retired=false "
-//                + " and f.address like :address "
-//                + " order by f.chiefHouseHolder.person.name";
-//        Map params = new HashMap();
-//        params.put("address", "%" + searchText + "%");
-//        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
-//        if (fs == null || fs.isEmpty()) {
-//            JsfUtil.addErrorMessage("No matching families found");
-//            return "";
-//        } else if (fs.size() == 1) {
-//            currentFamily = fs.get(0);
-//            searchText = "";
-//            return navigateToManageFamilyMembership();
-//        } else {
-//            families = fs;
-//            searchText = "";
-//            return null;
-//        }
-//    }
 
     public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (paramMembershipNumber == null) {
