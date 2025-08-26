@@ -55,7 +55,8 @@
       "Bash(gh run list:*)",
       "Bash(gh pr merge:*)",
       "Read(/D:\\tmp/**)",
-      "Read(/D:\\c/**)"
+      "Read(/D:\\c/**)",
+      "Bash(gh workflow:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

@@ -238,6 +238,8 @@ public class DataUploadController implements Serializable {
     private List<Item> items;
     private List<ItemFee> itemFees;
     private Category selectedFeeList;
+    private List<String> uploadErrors;
+    private String uploadErrorDetails;
     private List<Institution> collectingCentres;
     private List<Institution> agencies;
     private List<Institution> suppliers;
@@ -2229,34 +2231,39 @@ public class DataUploadController implements Serializable {
 
     private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream, Category selectedFeeList) throws IOException {
         List<ItemFee> itemFees = new ArrayList<>();
+        List<ItemFee> validatedItemFees = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
         
-        int successCount = 0;
-        int errorCount = 0;
         int totalRows = sheet.getLastRowNum();
-        List<String> failedItems = new ArrayList<>();
-        StringBuilder summaryMessage = new StringBuilder();
+        List<String> validationErrors = new ArrayList<>();
+        StringBuilder errorDetailsBuilder = new StringBuilder();
+
+        // Clear previous errors
+        this.uploadErrors = null;
+        this.uploadErrorDetails = null;
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
 
+        // PHASE 1: VALIDATION ONLY - No database saves
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             String itemCode = null;
-            String itemName = null; // Not used but kept for backward compatibility
+            String itemName = null;
             String discountAllowed = null;
 
-            boolean disAllowd;
+            boolean disAllowd = false;
             double fee = 0.0;
             double ffee = 0.0;
 
             Item item;
-            Category category = selectedFeeList; // Use pre-selected fee list
+            int rowNumber = row.getRowNum() + 1;
 
+            // Extract Item Code
             Cell itemCodeCell = row.getCell(0);
             if (itemCodeCell != null) {
                 if (itemCodeCell.getCellType() == CellType.STRING) {
@@ -2266,24 +2273,95 @@ public class DataUploadController implements Serializable {
                 }
             }
 
+            // Extract Item Name (for error reporting)
             Cell itemNameCell = row.getCell(1);
             if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
                 itemName = itemNameCell.getStringCellValue();
             }
 
-            // Column C
+            // Validate Item Code
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                validationErrors.add("Row " + rowNumber + ": Empty item code");
+                continue;
+            }
+
+            // Validate Item Exists
+            item = itemController.findItemByCode(itemCode);
+            if (item == null) {
+                String itemNameForError = (itemName != null && !itemName.trim().isEmpty()) ? itemName : "N/A";
+                validationErrors.add("Row " + rowNumber + ": Item not found - Code: '" + itemCode + "', Name: '" + itemNameForError + "'");
+                continue;
+            }
+
+            // Extract and Validate Fee Amount (Column C)
             Cell feeCell = row.getCell(2);
-            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
-                fee = feeCell.getNumericCellValue();
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.NUMERIC) {
+                    fee = feeCell.getNumericCellValue();
+                } else if (feeCell.getCellType() == CellType.STRING) {
+                    String feeStr = feeCell.getStringCellValue().trim();
+                    if (!feeStr.isEmpty()) {
+                        try {
+                            fee = Double.parseDouble(feeStr);
+                        } catch (NumberFormatException e) {
+                            validationErrors.add("Row " + rowNumber + ": Invalid fee format '" + feeStr + "' for item " + itemCode);
+                            continue;
+                        }
+                    }
+                } else if (feeCell.getCellType() == CellType.FORMULA) {
+                    FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(feeCell);
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        fee = cellValue.getNumberValue();
+                    } else if (cellValue.getCellType() == CellType.STRING) {
+                        String feeStr = cellValue.getStringValue().trim();
+                        if (!feeStr.isEmpty()) {
+                            try {
+                                fee = Double.parseDouble(feeStr);
+                            } catch (NumberFormatException e) {
+                                validationErrors.add("Row " + rowNumber + ": Invalid fee formula result '" + feeStr + "' for item " + itemCode);
+                                continue;
+                            }
+                        }
+                    }
+                }
             }
 
-            // Column D
+            // Extract and Validate Foreign Fee (Column D) 
             Cell ffeeCell = row.getCell(3);
-            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
-                ffee = ffeeCell.getNumericCellValue();
+            if (ffeeCell != null) {
+                if (ffeeCell.getCellType() == CellType.NUMERIC) {
+                    ffee = ffeeCell.getNumericCellValue();
+                } else if (ffeeCell.getCellType() == CellType.STRING) {
+                    String ffeeStr = ffeeCell.getStringCellValue().trim();
+                    if (!ffeeStr.isEmpty()) {
+                        try {
+                            ffee = Double.parseDouble(ffeeStr);
+                        } catch (NumberFormatException e) {
+                            validationErrors.add("Row " + rowNumber + ": Invalid foreign fee format '" + ffeeStr + "' for item " + itemCode);
+                            continue;
+                        }
+                    }
+                } else if (ffeeCell.getCellType() == CellType.FORMULA) {
+                    FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(ffeeCell);
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        ffee = cellValue.getNumberValue();
+                    } else if (cellValue.getCellType() == CellType.STRING) {
+                        String ffeeStr = cellValue.getStringValue().trim();
+                        if (!ffeeStr.isEmpty()) {
+                            try {
+                                ffee = Double.parseDouble(ffeeStr);
+                            } catch (NumberFormatException e) {
+                                validationErrors.add("Row " + rowNumber + ": Invalid foreign fee formula result '" + ffeeStr + "' for item " + itemCode);
+                                continue;
+                            }
+                        }
+                    }
+                }
             }
 
-            // Column E
+            // Extract Discount Allowed (Column E)
             Cell discountAllowedCell = row.getCell(4);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
@@ -2291,75 +2369,61 @@ public class DataUploadController implements Serializable {
             if (discountAllowed != null && !discountAllowed.trim().equals("") && 
                 (discountAllowed.equalsIgnoreCase("yes") || discountAllowed.equalsIgnoreCase("true") || discountAllowed.equals("1"))) {
                 disAllowd = true;
-            } else {
-                disAllowd = false;
             }
 
-            if (itemCode == null || itemCode.trim().equals("")) {
-                failedItems.add("Row " + (row.getRowNum() + 1) + ": Empty item code");
-                errorCount++;
-                continue; // Skip this row instead of returning empty list
-            }
-
-            // Fee List is pre-selected, no need to validate from Excel
-
-            item = itemController.findItemByCode(itemCode);
-            if (item == null) {
-                String itemNameForError = (itemName != null && !itemName.trim().isEmpty()) ? itemName : "N/A";
-                failedItems.add(itemCode + " | " + itemNameForError + " | Row " + (row.getRowNum() + 1));
-                errorCount++;
-                continue; // Skip this row instead of returning empty list
-            }
-            ItemFee itemfee = new ItemFee();
-            itemfee.setCreatedAt(new Date());
-            itemfee.setName(selectedFeeList.getName());
-            itemfee.setCreater(sessionController.getLoggedUser());
-            itemfee.setForInstitution(null);
-            itemfee.setForCategory(selectedFeeList);
-            itemfee.setItem(item);
-            itemfee.setFeeType(FeeType.OwnInstitution);
-            itemfee.setInstitution(item.getInstitution());
-            itemfee.setFee(fee);
-            itemfee.setFfee(ffee);
-            itemfee.setDiscountAllowed(disAllowd);
-            itemFeeFacade.create(itemfee);
-            itemFees.add(itemfee);
-            successCount++;
-
+            // If we reach here, validation passed - create ItemFee object but don't save yet
+            ItemFee itemFee = new ItemFee();
+            itemFee.setCreatedAt(new Date());
+            itemFee.setName(selectedFeeList.getName());
+            itemFee.setCreater(sessionController.getLoggedUser());
+            itemFee.setForInstitution(null);
+            itemFee.setForCategory(selectedFeeList);
+            itemFee.setItem(item);
+            itemFee.setFeeType(FeeType.OwnInstitution);
+            itemFee.setInstitution(item.getInstitution());
+            itemFee.setFee(fee);
+            itemFee.setFfee(ffee);
+            itemFee.setDiscountAllowed(disAllowd);
+            validatedItemFees.add(itemFee);
         }
-        
-        // Create detailed summary message
-        summaryMessage.append("=== UPLOAD SUMMARY ===\n");
-        summaryMessage.append("Fee List: ").append(selectedFeeList.getName()).append("\n");
-        summaryMessage.append("Total Rows Processed: ").append(totalRows).append("\n");
-        summaryMessage.append("Successfully Uploaded: ").append(successCount).append(" items\n");
-        summaryMessage.append("Failed: ").append(errorCount).append(" items\n\n");
-        
-        if (successCount > 0) {
-            JsfUtil.addSuccessMessage("✓ SUCCESS: " + successCount + " item fees uploaded to " + selectedFeeList.getName());
-        }
-        
-        if (errorCount > 0) {
-            summaryMessage.append("=== FAILED ITEMS (Copy & Paste Ready) ===\n");
-            summaryMessage.append("Format: Item Code | Item Name | Row Number\n");
-            summaryMessage.append("------------------------------------------\n");
-            for (String failedItem : failedItems) {
-                summaryMessage.append(failedItem).append("\n");
-            }
-            summaryMessage.append("------------------------------------------\n");
-            summaryMessage.append("Total Failed Items: ").append(errorCount).append("\n\n");
-            summaryMessage.append("INSTRUCTIONS:\n");
-            summaryMessage.append("1. Copy the failed items list above\n");
-            summaryMessage.append("2. Check if these item codes exist in your system\n");
-            summaryMessage.append("3. Update Excel file with correct item codes\n");
-            summaryMessage.append("4. Re-upload the corrected file\n");
+
+        // PHASE 2: HANDLE RESULTS
+        if (!validationErrors.isEmpty()) {
+            // Set errors for display
+            this.uploadErrors = validationErrors;
             
-            JsfUtil.addErrorMessage("⚠ " + errorCount + " items failed to upload. See detailed summary below:");
-            JsfUtil.addErrorMessage(summaryMessage.toString());
+            // Build detailed error message
+            errorDetailsBuilder.append("=== UPLOAD VALIDATION FAILED ===\n");
+            errorDetailsBuilder.append("Fee List: ").append(selectedFeeList.getName()).append("\n");
+            errorDetailsBuilder.append("Total Rows: ").append(totalRows).append("\n");
+            errorDetailsBuilder.append("Valid Items: ").append(validatedItemFees.size()).append("\n");
+            errorDetailsBuilder.append("Errors Found: ").append(validationErrors.size()).append("\n\n");
+            
+            errorDetailsBuilder.append("=== ERROR DETAILS ===\n");
+            for (int i = 0; i < validationErrors.size(); i++) {
+                errorDetailsBuilder.append((i + 1)).append(". ").append(validationErrors.get(i)).append("\n");
+            }
+            
+            errorDetailsBuilder.append("\n=== INSTRUCTIONS ===\n");
+            errorDetailsBuilder.append("1. Fix the errors listed above in your Excel file\n");
+            errorDetailsBuilder.append("2. Ensure all item codes exist in the system\n");
+            errorDetailsBuilder.append("3. Check that fee amounts are valid numbers\n");
+            errorDetailsBuilder.append("4. Re-upload the corrected file\n");
+            
+            this.uploadErrorDetails = errorDetailsBuilder.toString();
+            
+            JsfUtil.addErrorMessage(validationErrors.size() + " validation errors found. No data was saved. See error details below.");
+            return new ArrayList<>(); // Return empty list - no data saved
+        } else {
+            // No errors - proceed with saving all validated items
+            for (ItemFee itemFee : validatedItemFees) {
+                itemFeeFacade.create(itemFee);
+                itemFees.add(itemFee);
+            }
+            
+            JsfUtil.addSuccessMessage("✓ SUCCESS: " + validatedItemFees.size() + " item fees uploaded to " + selectedFeeList.getName());
+            return itemFees;
         }
-        
-        return itemFees;
-
     }
 
 //    public void uploadFeeListItemFees() {
@@ -8597,6 +8661,27 @@ public class DataUploadController implements Serializable {
 
     public void setSelectedFeeList(Category selectedFeeList) {
         this.selectedFeeList = selectedFeeList;
+    }
+
+    public List<String> getUploadErrors() {
+        return uploadErrors;
+    }
+
+    public void setUploadErrors(List<String> uploadErrors) {
+        this.uploadErrors = uploadErrors;
+    }
+
+    public String getUploadErrorDetails() {
+        return uploadErrorDetails;
+    }
+
+    public void setUploadErrorDetails(String uploadErrorDetails) {
+        this.uploadErrorDetails = uploadErrorDetails;
+    }
+
+    public void clearUploadErrors() {
+        this.uploadErrors = null;
+        this.uploadErrorDetails = null;
     }
 
 }
