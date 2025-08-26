@@ -249,7 +249,7 @@ body {
 
 .th-cell {
     text-align: left;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.7rem;
     font-weight: 600;
     color: #374151;
 }
@@ -272,7 +272,7 @@ body {
 }
 
 .td-cell {
-    padding: 1rem;
+    padding: 0.5rem;
 }
 
 .stage-name {
