@@ -2536,6 +2536,20 @@ public class GrnCostingController implements Serializable {
         JsfUtil.addSuccessMessage("GRN Saved");
     }
 
+    public void finalizeGrnWithSaveApprove() {
+        // First perform the save operation
+        requestWithSaveApprove();
+        
+        // Mark the bill as completed
+        getCurrentGrnBillPre().setCompleted(true);
+        getCurrentGrnBillPre().setCompletedBy(getSessionController().getLoggedUser());
+        getCurrentGrnBillPre().setCompletedAt(new Date());
+        
+        // Save the completed state
+        getBillFacade().edit(getCurrentGrnBillPre());
+        
+        JsfUtil.addSuccessMessage("GRN Finalized");
+    }
 
     public void requestFinalizeWithSaveApprove() {
         // Always use bill's invoice number, ignore controller reference
