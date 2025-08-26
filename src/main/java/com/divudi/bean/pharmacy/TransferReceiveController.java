@@ -336,37 +336,6 @@ public class TransferReceiveController implements Serializable {
         return true; // All items are fully received
     }
     
-    /**
-     * Checks if the original transfer request is fully completed by verifying
-     * all its related issue bills are fully received.
-     */
-    private boolean isOriginalRequestFullyCompleted(Bill originalRequestBill) {
-        if (originalRequestBill == null) {
-            return false;
-        }
-        
-        // Get all issue bills that reference this original request
-        String jpql = "SELECT b FROM Bill b WHERE b.backwardReferenceBill.id = :requestBillId AND b.billType = :issueType AND b.id IS NOT NULL";
-        Map<String, Object> params = new HashMap<>();
-        params.put("requestBillId", originalRequestBill.getId());
-        params.put("issueType", BillType.PharmacyTransferIssue);
-        
-        List<Bill> issueBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
-        // Check if all issue bills are fully received
-        for (Bill issueBill : issueBills) {
-            if (issueBill.getBillClassType() == BillClassType.CancelledBill) {
-                continue; // Skip cancelled issues
-            }
-            
-            if (!isAlreadyReceived(issueBill)) {
-                return false; // Found an issue bill that is not fully received
-            }
-        }
-        
-        return true; // All issue bills are fully received
-    }
-    
     private double calculateRemainingQtyWithFreshData(BillItem issuedItem) {
         double issuedQtyInUnits = 0.0;
         if (issuedItem != null && issuedItem.getPharmaceuticalBillItem() != null) {
@@ -374,7 +343,7 @@ public class TransferReceiveController implements Serializable {
         }
 
         // Get fresh receive data from database - only saved bills
-        String jpql = "SELECT b FROM Bill b WHERE b.referenceBill.id = :issueBillId AND b.billType = :receiveType AND b.id IS NOT NULL";
+        String jpql = "SELECT b FROM Bill b WHERE b.backwardReferenceBill.id = :issueBillId AND b.billType = :receiveType AND b.id IS NOT NULL";
         Map<String, Object> params = new HashMap<>();
         params.put("issueBillId", issuedItem.getBill().getId());
         params.put("receiveType", BillType.PharmacyTransferReceive);
@@ -387,11 +356,8 @@ public class TransferReceiveController implements Serializable {
                 continue; // Skip cancelled receives
             }
             
-            // Skip the current receive bill if it exists (to avoid counting it twice)
-            if (getReceivedBill() != null && receiveBill.getId() != null && 
-                receiveBill.getId().equals(getReceivedBill().getId())) {
-                continue;
-            }
+            // Include all receive bills including the current one being processed
+            // (We want to count all receives to determine if the issue is fully complete)
             
             List<BillItem> receiveItems = billService.fetchBillItems(receiveBill);
             for (BillItem receiveItem : receiveItems) {
@@ -515,18 +481,6 @@ public class TransferReceiveController implements Serializable {
                 getIssuedBill().setFullyIssuedAt(new Date());
                 getIssuedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
                 getBillFacade().edit(getIssuedBill());
-                
-                // ALSO update the original Request Bill completion status
-                Bill originalRequestBill = getIssuedBill().getBackwardReferenceBill();
-                if (originalRequestBill != null && !originalRequestBill.isFullyIssued()) {
-                    // Check if the original request is now fully completed by verifying all its issue bills are fully received
-                    if (isOriginalRequestFullyCompleted(originalRequestBill)) {
-                        originalRequestBill.setFullyIssued(true);
-                        originalRequestBill.setFullyIssuedAt(new Date());
-                        originalRequestBill.setFullyIssuedBy(getSessionController().getLoggedUser());
-                        getBillFacade().edit(originalRequestBill);
-                    }
-                }
             }
         }
         
@@ -872,18 +826,6 @@ public class TransferReceiveController implements Serializable {
                 getIssuedBill().setFullyIssuedAt(new Date());
                 getIssuedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
                 getBillFacade().edit(getIssuedBill());
-                
-                // ALSO update the original Request Bill completion status
-                Bill originalRequestBill = getIssuedBill().getBackwardReferenceBill();
-                if (originalRequestBill != null && !originalRequestBill.isFullyIssued()) {
-                    // Check if the original request is now fully completed by verifying all its issue bills are fully received
-                    if (isOriginalRequestFullyCompleted(originalRequestBill)) {
-                        originalRequestBill.setFullyIssued(true);
-                        originalRequestBill.setFullyIssuedAt(new Date());
-                        originalRequestBill.setFullyIssuedBy(getSessionController().getLoggedUser());
-                        getBillFacade().edit(originalRequestBill);
-                    }
-                }
             }
         }
 
