@@ -1280,6 +1280,7 @@ public class DataUploadController implements Serializable {
                 e.printStackTrace();
             }
         }
+        itemFeeManager.updateFeesForListFees();
     }
 
     public void uploadCollectingCentreItemsAndFees() {

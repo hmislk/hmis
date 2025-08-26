@@ -97,6 +97,8 @@ public class PharmacyController implements Serializable {
     VmpController vmpController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PharmacyErrorChecking pharmacyErrorChecking;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -283,8 +285,8 @@ public class PharmacyController implements Serializable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
     public String navigateToBinCard() {
-        if (department == null) {
-            department = getSessionController().getDepartment();
+        if (pharmacyErrorChecking.getDepartment() == null) {
+            pharmacyErrorChecking.setDepartment(getSessionController().getDepartment());
         }
         return "/pharmacy/bin_card_dto?faces-redirect=true";
     }

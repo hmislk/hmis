@@ -13,6 +13,8 @@ import com.divudi.core.data.reports.DisbursementReports;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.table.String1Value3;
@@ -132,6 +134,11 @@ public class ReportsTransfer implements Serializable {
     private List<PharmacyTransferReceiveDTO> transferReceiveDtos; // DTO for efficient display
     private List<PharmacyTransferIssueBillItemDTO> transferIssueBillItemDtos; // DTO for item level display
     private List<PharmacyTransferReceiveBillItemDTO> transferReceiveBillItemDtos; // DTO for receive item level display
+    
+    // DTO lists for disposal reports
+    private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
+    private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
+    
     private List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts;
 
     // Configuration for DTO vs Entity approach - true by default for better performance
@@ -1128,7 +1135,31 @@ public class ReportsTransfer implements Serializable {
 
         listz = new ArrayList<>();
 
-        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItem(getFromDate(), getToDate(), getFromDepartment());
+        // Create custom DTO-based query for disposal bill types
+        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+
+                String jpql = "select b.toDepartment, sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :bts "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired = false";
+
+        m.put("bts", bts);
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        if (getFromDepartment() != null) {
+            jpql += " and b.fromDepartment = :fromDept";
+            m.put("fromDept", getFromDepartment());
+        }
+
+        jpql += " group by b.toDepartment order by b.toDepartment.name";
+
+        List<Object[]> list = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
         if (list == null) {
             return;
         }
@@ -1137,7 +1168,6 @@ public class ReportsTransfer implements Serializable {
         for (Object[] obj : list) {
             Department item = (Department) obj[0];
             Double dbl = (Double) obj[1];
-            //double count = 0;
 
             String1Value3 newD = new String1Value3();
             newD.setString(item.getName());
@@ -1146,8 +1176,8 @@ public class ReportsTransfer implements Serializable {
             listz.add(newD);
 
             netTotalValues += dbl;
-
         }
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1489,38 +1519,52 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillDepartmentUnitIssueByBill()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        Map m = new HashMap();
-        String sql;
+        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
-        sql = "select b from Bill b where "
-                + " b.createdAt "
-                + " between :fd and :td  "
-                + " and b.billType=:bt ";
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("b.id, b.deptId, b.createdAt, ");
+        jpql.append("b.institution.name, b.department.name, b.fromDepartment.name, ");
+        jpql.append("b.billType, b.total, b.netTotal, b.discount) ");
+        jpql.append(" from Bill b");
+        jpql.append(" where b.billTypeAtomic in :bts");
+        jpql.append(" and b.createdAt between :fd and :td");
+        jpql.append(" and b.retired = false");
+
+        m.put("bts", bts);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyIssue);
 
         if (fromDepartment != null) {
-            sql += " and b.fromDepartment=:fdept ";
+            jpql.append(" and b.fromDepartment=:fdept");
             m.put("fdept", fromDepartment);
         }
 
         if (toDepartment != null) {
-            sql += " and b.toDepartment=:tdept ";
+            jpql.append(" and b.toDepartment=:tdept");
             m.put("tdept", toDepartment);
         }
 
-        sql += " order by b.id";
+        jpql.append(" order by b.id");
 
-        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        disposalIssueBillDtos = (List<PharmacyItemPurchaseDTO>) getBillFacade().findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        
+        // Calculate totals from DTO list
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
-        for (Bill b : transferBills) {
-            totalsValue = totalsValue + (b.getTotal());
-            discountsValue = discountsValue + b.getDiscount();
-            netTotalValues = netTotalValues + b.getNetTotal();
+        if (disposalIssueBillDtos != null) {
+            for (PharmacyItemPurchaseDTO dto : disposalIssueBillDtos) {
+                totalsValue += dto.getBillTotal() != null ? dto.getBillTotal() : 0.0;
+                discountsValue += dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0;
+                netTotalValues += dto.getBillNetTotal() != null ? dto.getBillNetTotal() : 0.0;
+            }
         }
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1803,42 +1847,71 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillItemCounts()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        List<Object[]> list = fetchBillItem(BillType.PharmacyIssue);
+        // Use DTO-based approach with BillTypeAtomic for disposal issues
+        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
-        if (list == null) {
-            return;
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.item.code, bi.item.name, bi.bill.billType, ");
+        jpql.append("bi.bill.fromDepartment.name, bi.netValue, bi.qty, bi.grossValue) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" LEFT JOIN bi.pharmaceuticalBillItem pbi");
+        jpql.append(" LEFT JOIN pbi.itemBatch ib");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.retired = false");
+        jpql.append(" and bi.bill.retired = false");
+        jpql.append(" and bi.item.retired = false");
+        jpql.append(" and (pbi.retired = false OR pbi IS NULL)");
+        jpql.append(" and (ib.retired = false OR ib IS NULL)");
+
+        m.put("bts", bts);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (fromDepartment != null) {
+            jpql.append(" and bi.bill.fromDepartment = :fdept");
+            m.put("fdept", fromDepartment);
         }
 
-        itemCounts = new ArrayList<>();
+        if (toDepartment != null) {
+            jpql.append(" and bi.bill.toDepartment = :tdept");
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            jpql.append(" and bi.item.category = :cat");
+            m.put("cat", category);
+        }
+
+        jpql.append(" order by bi.item.name");
+
+        disposalIssueBillItemDtos = (List<PharmacyItemPurchaseDTO>) getBillFacade().findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
+        // Calculate totals from DTO list
         totalsValue = 0;
         marginValue = 0;
         netTotalValues = 0;
         purchaseValue = 0;
         retailValue = 0;
-        for (Object[] obj : list) {
-            ItemCount row = new ItemCount();
-            row.setItemBatch((ItemBatch) obj[0]);
-            row.setGross((Double) obj[1]);
-            row.setMargin((Double) obj[2]);
-            row.setNet((Double) obj[4]);
-
-            Double pre = calCount(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
-            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
-            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
-
-            row.setCount(pre - (preCancel + returned));
-
-            totalsValue += row.getGross();
-            marginValue += row.getMargin();
-            netTotalValues += row.getNet();
-
-            itemCounts.add(row);
+        
+        if (disposalIssueBillItemDtos != null) {
+            for (PharmacyItemPurchaseDTO dto : disposalIssueBillItemDtos) {
+                totalsValue += dto.getBillTotal() != null ? dto.getBillTotal() : 0.0;
+                netTotalValues += dto.getBillNetTotal() != null ? dto.getBillNetTotal() : 0.0;
+            }
         }
 
-        billTotal = fetchBillTotal(BillType.PharmacyIssue);
-        billMargin = fetchBillMargin(BillType.PharmacyIssue);
-        billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
-        billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
+        // Set bill totals (calculated from DTO data)
+        billTotal = totalsValue;
+        billMargin = marginValue;
+        billDiscount = 0.0; // Not available in current DTO
+        billNetTotal = netTotalValues;
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -1846,6 +1919,111 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
+    }
+
+    public void fillDisposalIssueBillItemDtos() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillDisposalIssueBillItemDtos()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        // Use DTO-based approach with BillTypeAtomic for disposal issues
+        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.item.code, bi.item.name, bi.bill.billType, ");
+        jpql.append("bi.bill.fromDepartment.name, bi.netValue, bi.qty, bi.grossValue) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" LEFT JOIN bi.pharmaceuticalBillItem pbi");
+        jpql.append(" LEFT JOIN pbi.itemBatch ib");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.retired = false");
+        jpql.append(" and bi.bill.retired = false");
+        jpql.append(" and bi.item.retired = false");
+        jpql.append(" and (pbi.retired = false OR pbi IS NULL)");
+        jpql.append(" and (ib.retired = false OR ib IS NULL)");
+
+        m.put("bts", bts);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (fromDepartment != null) {
+            jpql.append(" and bi.bill.fromDepartment = :fdept");
+            m.put("fdept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            jpql.append(" and bi.bill.toDepartment = :tdept");
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            jpql.append(" and bi.item.category = :cat");
+            m.put("cat", category);
+        }
+
+        jpql.append(" order by bi.item.name");
+
+        disposalIssueBillItemDtos = (List<PharmacyItemPurchaseDTO>) getBillFacade().findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
+        // Calculate totals from DTO list
+        totalsValue = 0;
+        marginValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        
+        if (disposalIssueBillItemDtos != null) {
+            for (PharmacyItemPurchaseDTO dto : disposalIssueBillItemDtos) {
+                totalsValue += dto.getBillTotal() != null ? dto.getBillTotal() : 0.0;
+                netTotalValues += dto.getBillNetTotal() != null ? dto.getBillNetTotal() : 0.0;
+                marginValue += dto.getMarginValue() != null ? dto.getMarginValue() : 0.0;
+                purchaseValue += dto.getPurchaseRate() != null && dto.getQty() != null ? 
+                    dto.getPurchaseRate() * dto.getQty() : 0.0;
+                retailValue += dto.getRetailRate() != null && dto.getQty() != null ? 
+                    dto.getRetailRate() * dto.getQty() : 0.0;
+            }
+        }
+
+        // Set bill totals (calculated from DTO data)
+        billTotal = totalsValue;
+        billMargin = marginValue;
+        billDiscount = 0.0; // Not available in current DTO
+        billNetTotal = netTotalValues;
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     public void fillItemCountsWithOutMarginPharmacy() {
@@ -1877,7 +2055,56 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillItemCountsWithOutMarginPharmacy()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        fillItemCountsWithOutMargin(BillType.PharmacyIssue);
+        // Use DTO-based approach with BillTypeAtomic for disposal issues (without margin/batch details)
+        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.item.code, bi.item.name, bi.bill.billType, ");
+        jpql.append("bi.bill.fromDepartment.name, bi.netValue, bi.qty, bi.grossValue) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.retired = false");
+        jpql.append(" and bi.bill.retired = false");
+        jpql.append(" and bi.item.retired = false");
+
+        m.put("bts", bts);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (fromDepartment != null) {
+            jpql.append(" and bi.bill.fromDepartment = :fdept");
+            m.put("fdept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            jpql.append(" and bi.bill.toDepartment = :tdept");
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            jpql.append(" and bi.item.category = :cat");
+            m.put("cat", category);
+        }
+
+        jpql.append(" order by bi.item.name");
+
+        disposalIssueBillItemDtos = (List<PharmacyItemPurchaseDTO>) getBillFacade().findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
+        // Calculate totals from DTO list
+        netTotalValues = 0;
+        if (disposalIssueBillItemDtos != null) {
+            for (PharmacyItemPurchaseDTO dto : disposalIssueBillItemDtos) {
+                netTotalValues += dto.getBillNetTotal() != null ? dto.getBillNetTotal() : 0.0;
+            }
+        }
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -3212,6 +3439,23 @@ public class ReportsTransfer implements Serializable {
 
     public void setTotalBHTIssueValue(double totalBHTIssueValue) {
         this.totalBHTIssueValue = totalBHTIssueValue;
+    }
+
+    // Getter and setter methods for disposal DTO lists
+    public List<PharmacyItemPurchaseDTO> getDisposalIssueBillDtos() {
+        return disposalIssueBillDtos;
+    }
+
+    public void setDisposalIssueBillDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillDtos) {
+        this.disposalIssueBillDtos = disposalIssueBillDtos;
+    }
+
+    public List<PharmacyItemPurchaseDTO> getDisposalIssueBillItemDtos() {
+        return disposalIssueBillItemDtos;
+    }
+
+    public void setDisposalIssueBillItemDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos) {
+        this.disposalIssueBillItemDtos = disposalIssueBillItemDtos;
     }
 
 }

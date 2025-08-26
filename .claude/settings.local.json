@@ -45,9 +45,21 @@
       "Bash(find:*)",
       "Bash(git log:*)",
       "Bash(gh issue view:*)",
-      "Bash(javac:*)"
+      "Bash(javac:*)",
+      "Bash(del /s /q wiki-temp)",
+      "Bash(gh pr view:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh issue close:*)",
+      "Bash(awk:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "D:\\Development"
+    ]
   }
 }

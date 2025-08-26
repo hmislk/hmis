@@ -72,6 +72,7 @@ import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
+import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.entity.AgentHistory;
@@ -249,6 +250,9 @@ public class SearchController implements Serializable {
     private List<Bill> filteredBills;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
+    // DTO lists for disposal issue search results
+    private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
+    private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
     private List<Payment> payments;
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
@@ -3380,16 +3384,70 @@ public class SearchController implements Serializable {
     }
 
     public void listPharmacyIssue() {
-        Date startTime = new Date();
+        Map<String, Object> m = new HashMap<>();
 
-        listPharmacyBilledBills(BillType.PharmacyIssue);
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("b.id, b.deptId, b.createdAt, ");
+        jpql.append("b.institution.name, b.department.name, b.toDepartment.name, ");
+        jpql.append("b.billType, b.total, b.netTotal, b.discount) ");
+        jpql.append(" from Bill b");
+        jpql.append(" where b.billTypeAtomic in :bts");
+        jpql.append(" and b.createdAt between :fd and :td");
+        jpql.append(" and b.institution=:ins");
+
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("bts", bts);
+        m.put("ins", getSessionController().getInstitution());
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql.append(" and b.deptId like :billNo");
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            jpql.append(" and b.department.name like :fromDep");
+            m.put("fromDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql.append(" and b.toDepartment.name like :toDep");
+            m.put("toDep", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            try {
+                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
+                jpql.append(" and b.netTotal = :netTotal");
+                m.put("netTotal", netTotal);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            try {
+                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
+                jpql.append(" and b.total = :total");
+                m.put("total", total);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
+        }
+
+        jpql.append(" order by b.createdAt desc");
+
+        disposalIssueBillDtos = (List<PharmacyItemPurchaseDTO>) getBillFacade().findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public void listStoreIssue() {
-        Date startTime = new Date();
         listPharmacyPreBills(BillType.StoreIssue);
-
     }
 
     public void listPharmacyCancelled() {
@@ -4660,51 +4718,63 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyIssueBillItemTable() {
-        Date startTime = new Date();
-        //  searchBillItems = null;
-        String sql;
-        Map m = new HashMap();
-        m.put("toDate", toDate);
-        m.put("fromDate", fromDate);
-        m.put("bType", BillType.PharmacyIssue);
-        m.put("ins", getSessionController().getInstitution());
-        m.put("class", BilledBill.class);
+        Map<String, Object> m = new HashMap<>();
 
-        sql = "select bi from BillItem bi"
-                + " where  type(bi.bill)=:class "
-                + " and bi.bill.institution=:ins"
-                + " and bi.bill.billType=:bType "
-                + " and bi.createdAt between :fromDate and :toDate ";
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.bill.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.toDepartment.name, ");
+        jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
+        jpql.append("bi.item.id, bi.item.name, bi.item.code, ");
+        jpql.append("bi.qty, bi.pharmaceuticalBillItem.freeQty) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
+        jpql.append(" and bi.bill.institution=:ins");
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", bts);
+        m.put("ins", getSessionController().getInstitution());
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((bi.bill.toDepartment.name) like :deptName )";
+            jpql.append(" and bi.bill.toDepartment.name like :deptName");
             m.put("deptName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((bi.bill.deptId) like :billNo )";
+            jpql.append(" and bi.bill.deptId like :billNo");
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  ((bi.netValue) like :total )";
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            try {
+                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
+                jpql.append(" and bi.netValue = :total");
+                m.put("total", total);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((bi.item.name) like :itm )";
+            jpql.append(" and bi.item.name like :itm");
             m.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and  ((bi.item.code) like :cde )";
+            jpql.append(" and bi.item.code like :cde");
             m.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        sql += " order by bi.id desc  ";
+        jpql.append(" order by bi.bill.createdAt desc");
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-
+        disposalIssueBillItemDtos = (List<PharmacyItemPurchaseDTO>) getBillFacade().findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public void createStoreIssueBillItemTable() {
@@ -5735,6 +5805,7 @@ public class SearchController implements Serializable {
         billTypesToList.add(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         List<BillTypeAtomic> billTypesToAttachedToEachBillInTheList = new ArrayList<>();
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN);
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_PRE); // Include saved GRNs
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
 //        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
 //        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
@@ -18577,6 +18648,22 @@ public class SearchController implements Serializable {
 
     public void setTransferRequestDtos(List<PharmacyTransferRequestListDTO> transferRequestDtos) {
         this.transferRequestDtos = transferRequestDtos;
+    }
+
+    public List<PharmacyItemPurchaseDTO> getDisposalIssueBillDtos() {
+        return disposalIssueBillDtos;
+    }
+
+    public void setDisposalIssueBillDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillDtos) {
+        this.disposalIssueBillDtos = disposalIssueBillDtos;
+    }
+
+    public List<PharmacyItemPurchaseDTO> getDisposalIssueBillItemDtos() {
+        return disposalIssueBillItemDtos;
+    }
+
+    public void setDisposalIssueBillItemDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos) {
+        this.disposalIssueBillItemDtos = disposalIssueBillItemDtos;
     }
 
     public Long getSelectedRequestId() {
