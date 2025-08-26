@@ -2536,6 +2536,44 @@ public class GrnCostingController implements Serializable {
         JsfUtil.addSuccessMessage("GRN Saved");
     }
 
+    public void finalizeGrnWithSaveApprove() {
+        // Apply same validations as authorize button
+        if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please fill invoice number");
+            return;
+        }
+        
+        // Validate required fields for finalization
+        if (Math.abs(difference) > 1) {
+            JsfUtil.addErrorMessage("The invoice does not match..! Check again");
+            return;
+        }
+        
+        if (getCurrentGrnBillPre().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment method");
+            return;
+        }
+
+        // Validate batch details and sale prices for finalization
+        String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
+        if (!msg.isEmpty()) {
+            JsfUtil.addErrorMessage(msg);
+            return;
+        }
+        
+        // First perform the save operation
+        requestWithSaveApprove();
+        
+        // Mark the bill as completed
+        getCurrentGrnBillPre().setCompleted(true);
+        getCurrentGrnBillPre().setCompletedBy(getSessionController().getLoggedUser());
+        getCurrentGrnBillPre().setCompletedAt(new Date());
+        
+        // Save the completed state
+        getBillFacade().edit(getCurrentGrnBillPre());
+        
+        JsfUtil.addSuccessMessage("GRN Finalized");
+    }
 
     public void requestFinalizeWithSaveApprove() {
         // Always use bill's invoice number, ignore controller reference

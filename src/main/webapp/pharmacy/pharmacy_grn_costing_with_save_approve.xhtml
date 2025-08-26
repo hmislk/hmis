@@ -33,6 +33,16 @@
                             class="ui-button-success"
                             icon="fas fa-check"
                             ajax="false"
+                            rendered="#{grnCostingController.currentGrnBillPre.completed}"
+                            style="float: right; margin-right: 0.5em;">
+                        </p:commandButton>
+                        <p:commandButton
+                            value="Finalize"
+                            action="#{grnCostingController.finalizeGrnWithSaveApprove}"
+                            class="ui-button-warning"
+                            icon="fas fa-flag"
+                            ajax="false"
+                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                         <p:commandButton
@@ -41,6 +51,7 @@
                             class="ui-button-info"
                             icon="pi pi-save"
                             ajax="false"
+                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                     </f:facet>
@@ -76,11 +87,13 @@
                                     selectionBox="true"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"/>
                                 <p:column
+                                    id="colItem"
                                     headerText="Item Name"
                                     width="20em"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
                                     <h:outputText id="item" value="#{bi.item.name}" />
                                     <p:commandLink
+                                        id="btnViewFinanceDetails"
                                         styleClass="mx-2"
                                         title="View Finance Details"
                                         oncomplete="PF('dialog#{i}').show()"
