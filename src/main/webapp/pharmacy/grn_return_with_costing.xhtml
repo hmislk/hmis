@@ -89,7 +89,7 @@
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{grnReturnWithCostingController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue @form" listener="#{grnReturnWithCostingController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -108,8 +108,8 @@
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                         <p:ajax 
                                             event="keyup" 
-                                            process="txtReturningTotalQty"
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            process="@this"
+                                            update="txtLineReturnValue @form" 
                                             listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -128,7 +128,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="keyup" 
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="txtLineReturnValue @form" 
                                             listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -145,7 +145,7 @@
                                         <p:ajax
                                             event="keyup" 
                                             process="@this" 
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
+                                            update="txtLineReturnValue @form"
                                             listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
