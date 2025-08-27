@@ -137,7 +137,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
+                        <h:outputLabel value="#{0-bip.qty}"/>
                     </p:column>                    
 
                     <p:column style="text-align: right;"
@@ -145,7 +145,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Gross Price"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossValue}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
