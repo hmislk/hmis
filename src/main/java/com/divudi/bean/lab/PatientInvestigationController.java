@@ -2067,7 +2067,12 @@ public class PatientInvestigationController implements Serializable {
             ps.setSampleRejectedAt(new Date());
             ps.setSampleRejectionComment(sampleRejectionComment);
             ps.setSampleRejectedBy(sessionController.getLoggedUser());
-            ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            if(requestReCollected){
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED);
+            }else{
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            }
+            
             patientSampleFacade.edit(ps);
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
@@ -2123,15 +2128,19 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED) {
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED  && !ps.getRequestReCollected()) {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not Rejected.");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
+                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") has already been recreated for this sample.");
                 return;
             }
             if (!ps.getRequestReCollected()) {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not not Requesr to Recollect.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED && ps.getRequestReCollected()) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED && ps.getRequestReCollected()) {
                 canReGenarateSamples.add(ps);
             }
         }
@@ -2189,7 +2198,9 @@ public class PatientInvestigationController implements Serializable {
                 }
             }
         }
-
+        
+        patientSamples.addAll(0,reGenarateSamples);
+        
         JsfUtil.addSuccessMessage("Selected Samples Recreated");
     }
 
