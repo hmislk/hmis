@@ -1707,6 +1707,7 @@
 
                                     <p:inputText 
                                         class="w-100"
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         placeholder="Sample Reject Reason"
                                         value="#{patientInvestigationController.sampleRejectionComment}" >
                                     </p:inputText>
