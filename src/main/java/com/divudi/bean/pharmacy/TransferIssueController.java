@@ -857,7 +857,7 @@ public class TransferIssueController implements Serializable {
         BigDecimal rateBig = BigDecimal.valueOf(rate);
 
         // Set unitsPerPack from the PharmaceuticalBillItem/DTO before computing pack rates
-        if (f.getUnitsPerPack() == null || f.getUnitsPerPack() == BigDecimal.ZERO) {
+        if (f.getUnitsPerPack() == null || f.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
             if (b.getItem() instanceof Ampp) {
                 f.setUnitsPerPack(BigDecimal.valueOf(b.getItem().getDblValue()));
             } else {
@@ -925,7 +925,7 @@ public class TransferIssueController implements Serializable {
         BigDecimal rateBig = BigDecimal.valueOf(rate);
 
         // Set unitsPerPack from the PharmaceuticalBillItem/DTO before computing pack rates
-        if (f.getUnitsPerPack() == null || f.getUnitsPerPack() == BigDecimal.ZERO) {
+        if (f.getUnitsPerPack() == null || f.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
             if (b.getItem() instanceof Ampp) {
                 f.setUnitsPerPack(BigDecimal.valueOf(b.getItem().getDblValue()));
             } else {
