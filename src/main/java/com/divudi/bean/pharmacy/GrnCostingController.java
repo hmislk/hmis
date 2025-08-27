@@ -2353,6 +2353,11 @@ public class GrnCostingController implements Serializable {
         // Prepare bill and items without saving - like createGrn() but without persistence
         setFromInstitution(getApproveBill().getToInstitution());
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
+        
+        // Set the institution fields directly on the bill so they show up in the UI immediately
+        getCurrentGrnBillPre().setFromInstitution(getFromInstitution());
+        getCurrentGrnBillPre().setReferenceInstitution(getReferenceInstitution());
+        
         generateBillComponent(); // This creates bill items but doesn't save
         
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());

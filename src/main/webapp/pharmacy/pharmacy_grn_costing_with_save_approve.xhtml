@@ -33,7 +33,7 @@
                             class="ui-button-success"
                             icon="fas fa-check"
                             ajax="false"
-                            rendered="#{grnCostingController.currentGrnBillPre.completed}"
+                            rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                         <p:commandButton
@@ -42,7 +42,7 @@
                             class="ui-button-warning"
                             icon="fas fa-flag"
                             ajax="false"
-                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                            rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                         <p:commandButton
@@ -51,7 +51,7 @@
                             class="ui-button-info"
                             icon="pi pi-save"
                             ajax="false"
-                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                            rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                     </f:facet>

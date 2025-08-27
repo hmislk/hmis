@@ -109,7 +109,7 @@
                                         <p:ajax 
                                             event="keyup" 
                                             process="txtReturningTotalQty"
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId}" 
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -128,7 +128,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="keyup" 
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -143,8 +143,9 @@
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
                                         <p:ajax
-                                            event="blur" 
-                                            process="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            event="keyup" 
+                                            process="@this" 
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
