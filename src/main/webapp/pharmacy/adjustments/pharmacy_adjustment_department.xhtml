@@ -8,17 +8,83 @@
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
+        <style>
+            .modern-panel .ui-panel-content {
+                padding: 1.5rem;
+                background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            }
+            .modern-card .ui-panel-content {
+                padding: 0 !important;
+                border-radius: 0.5rem;
+            }
+            .modern-card .ui-panel-titlebar {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 0.5rem 0.5rem 0 0;
+                border: none;
+                padding: 0.75rem 1rem;
+            }
+            .modern-table .ui-datatable-header {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                font-weight: 600;
+                padding: 0.75rem;
+                border-radius: 0.375rem 0.375rem 0 0;
+            }
+            .modern-table .ui-datatable thead th {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+                font-weight: 600;
+                border: none;
+                padding: 0.75rem 0.5rem;
+            }
+            .table-row-hover:hover {
+                background-color: #e3f2fd !important;
+                cursor: pointer;
+            }
+            .detail-item {
+                transition: all 0.2s ease;
+                border: 1px solid transparent;
+            }
+            .detail-item:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-color: #dee2e6;
+            }
+            .details-section {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .form-control-lg {
+                font-size: 1.1rem;
+                padding: 0.75rem 1rem;
+                border: 2px solid #e9ecef;
+                transition: all 0.2s ease;
+            }
+            .form-control-lg:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            }
+        </style>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Department Stock Adjustment : Quantity" rendered="#{!pharmacyAdjustmentController.printPreview}">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p:panel class="w-100">
+                    <p:panel header="" rendered="#{!pharmacyAdjustmentController.printPreview}" styleClass="modern-panel">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-adjust text-primary fs-5"></i>
+                                <h4 class="mb-0 text-primary fw-bold">Department Stock Adjustment - Quantity</h4>
+                            </div>
+                        </f:facet>
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <p:panel class="h-100 shadow-sm border-0" styleClass="modern-card">
                                     <f:facet name="header">
-                                        <h:outputText styleClass="fa-solid fa-syringe"/>
-                                        <h:outputLabel value="Select Item" class="mx-4"/>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-search text-success"></i>
+                                            <span class="fw-semibold text-dark">Item Selection &amp; Stock Management</span>
+                                        </div>
                                     </f:facet>
                                     <p:panelGrid columns="1" class="w-100">
                                         <h:outputLabel value="Item" />
@@ -70,10 +136,15 @@
                                             id="tblStocks"
                                             value="#{pharmacyAdjustmentController.ampStock}"
                                             var="i"
-                                            rows="10"
+                                            rows="8"
+                                            paginator="true"
+                                            paginatorAlwaysVisible="false"
                                             selectionMode="single"
                                             rowKey="#{i.id}"
-                                            selection="#{pharmacyAdjustmentController.selectedStockDto}">
+                                            selection="#{pharmacyAdjustmentController.selectedStockDto}"
+                                            emptyMessage="📦 No stock batches found. Select an item and click 'List All Batches' or 'List Current Stock'."
+                                            styleClass="modern-table"
+                                            rowStyleClass="table-row-hover">
                                             <p:column
                                                 headerText="Batch Number"
                                                 sortBy="#{i.batchNo}"
