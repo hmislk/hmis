@@ -437,6 +437,22 @@ public class PharmacyBillSearch implements Serializable {
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
     }
+    
+    public String navigateToDirectPurchaseBillFromId(Long id){
+        if(id == null){
+            return "";
+        }
+        
+        Bill bill = billFacade.find(id);
+        
+        if(bill == null){
+            return "";
+        }
+        
+        this.bill = bill;
+        
+        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
+    }
 
     public String cancelInwardPharmacyRequestBillFromInward() {
         if (bill == null) {
