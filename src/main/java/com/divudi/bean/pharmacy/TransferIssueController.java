@@ -659,9 +659,10 @@ public class TransferIssueController implements Serializable {
                 }
             }
 
-            double alreadyIssued = bi.getReferanceBillItem().getIssuedPhamaceuticalItemQty();
-            if (bi.getReferanceBillItem().getQty() < (bi.getQty() + alreadyIssued)) {
-                JsfUtil.addErrorMessage("Issued quantity is higher than requested quantity in " + bi.getItem().getName());
+            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
+            double issuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
+            if (issuingQty > remainingQty) {
+                JsfUtil.addErrorMessage("Issued quantity (" + issuingQty + ") is higher than remaining requested quantity (" + remainingQty + ") for " + bi.getItem().getName());
                 return;
             }
         }
@@ -1098,6 +1099,17 @@ public class TransferIssueController implements Serializable {
 
         BigDecimal qty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
 
+        // Validate quantity doesn't exceed remaining requested quantity
+        if (bi.getReferanceBillItem() != null) {
+            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
+            
+            if (qty.doubleValue() > remainingQty) {
+                // Cap the quantity to the maximum allowed
+                qty = BigDecimal.valueOf(remainingQty);
+                fd.setQuantity(qty);
+            }
+        }
+
         BigDecimal unitsPerPack = BigDecimal.ONE;
         if (item instanceof Ampp || item instanceof Vmpp) {
             unitsPerPack = item.getDblValue() > 0 ? BigDecimal.valueOf(item.getDblValue()) : BigDecimal.ONE;
@@ -1149,6 +1161,19 @@ public class TransferIssueController implements Serializable {
         if (bi == null) {
             return;
         }
+        
+        // Validate quantity doesn't exceed remaining requested quantity
+        if (bi.getReferanceBillItem() != null) {
+            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
+            double currentIssuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
+            
+            if (currentIssuingQty > remainingQty) {
+                JsfUtil.addErrorMessage("Cannot issue " + currentIssuingQty + " units of " + bi.getItem().getName() + ". Only " + remainingQty + " units remaining to be issued.");
+                // Reset to maximum allowed quantity
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(remainingQty));
+            }
+        }
+        
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
@@ -1468,6 +1493,20 @@ public class TransferIssueController implements Serializable {
         }
 
         return "";
+    }
+
+    /**
+     * Gets the remaining quantity that can still be issued for a given requested item.
+     * @param referenceItem The original requested bill item
+     * @return The remaining quantity that can be issued
+     */
+    public double getRemainingQuantityForItem(BillItem referenceItem) {
+        if (referenceItem == null) {
+            return 0.0;
+        }
+        double requestedQty = referenceItem.getQty();
+        double alreadyIssued = referenceItem.getIssuedPhamaceuticalItemQty();
+        return Math.max(0.0, requestedQty - alreadyIssued);
     }
 
     // ------------------------------------------------------------------
