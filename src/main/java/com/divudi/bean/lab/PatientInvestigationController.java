@@ -2193,7 +2193,9 @@ public class PatientInvestigationController implements Serializable {
                 }
             }
         }
-
+        
+        patientSamples.addAll(reGenarateSamples);
+        
         JsfUtil.addSuccessMessage("Selected Samples Recreated");
     }
 
