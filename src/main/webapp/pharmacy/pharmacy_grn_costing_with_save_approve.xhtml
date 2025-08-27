@@ -33,6 +33,16 @@
                             class="ui-button-success"
                             icon="fas fa-check"
                             ajax="false"
+                            rendered="#{grnCostingController.currentGrnBillPre.completed}"
+                            style="float: right; margin-right: 0.5em;">
+                        </p:commandButton>
+                        <p:commandButton
+                            value="Finalize"
+                            action="#{grnCostingController.finalizeGrnWithSaveApprove}"
+                            class="ui-button-warning"
+                            icon="fas fa-flag"
+                            ajax="false"
+                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                         <p:commandButton
@@ -41,6 +51,7 @@
                             class="ui-button-info"
                             icon="pi pi-save"
                             ajax="false"
+                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
                             style="float: right; margin-right: 0.5em;">
                         </p:commandButton>
                     </f:facet>
@@ -76,11 +87,13 @@
                                     selectionBox="true"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"/>
                                 <p:column
+                                    id="colItem"
                                     headerText="Item Name"
                                     width="20em"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
                                     <h:outputText id="item" value="#{bi.item.name}" />
                                     <p:commandLink
+                                        id="btnViewFinanceDetails"
                                         styleClass="mx-2"
                                         title="View Finance Details"
                                         oncomplete="PF('dialog#{i}').show()"
@@ -113,7 +126,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
+                                        value="#{bi.referanceBillItem.billItemFinanceDetails.quantity}"/>
                                 </p:column>  
 
                                 <p:column 
@@ -122,7 +135,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:outputLabel 
                                         class="w-100 text-end text-secondary"
-                                        value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
+                                        value="#{bi.referanceBillItem.billItemFinanceDetails.freeQuantity}"/>
                                 </p:column> 
 
                                 <p:column 
@@ -374,7 +387,7 @@
                                 </h:panelGroup>
                                 <p:dataTable 
                                     id="tblExpenses"
-                                    value="#{grnCostingController.billExpenses}" 
+                                    value="#{grnCostingController.grnBill.billExpenses}" 
                                     var="be"
                                     class="w-100"
                                     emptyMessage="No Bill Expenses" >
@@ -404,7 +417,7 @@
                                             icon="pi pi-trash"
                                             action="#{grnCostingController.removeExpense(be)}"
                                             process="@this"
-                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId} :#{p:resolveFirstComponentWithId('txtBillExpenses',view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal',view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered',view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered',view).clientId}" />
 
                                     </p:column>
                                 </p:dataTable>
@@ -423,7 +436,7 @@
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     converter="deal" 
-                                    value="#{grnCostingController.fromInstitution}"
+                                    value="#{grnCostingController.currentGrnBillPre.fromInstitution}"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
                                     var="vt" 
@@ -433,7 +446,7 @@
                                 <p:autoComplete           
                                     class="w-100"
                                     inputStyleClass="w-100"
-                                    value="#{grnCostingController.referenceInstitution}"
+                                    value="#{grnCostingController.currentGrnBillPre.referenceInstitution}"
                                     completeMethod="#{institutionController.completeCompany}" 
                                     forceSelection="true"
                                     var="vt" 
@@ -611,7 +624,9 @@
 
                             </p:panelGrid>
                             <p:panel  id="billFinanceDetails"  header="Financial Summary">
-                                <ph:bill_finance_details bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
+                                <ph:bill_finance_details
+                                    id="panelBillFinanceDetails"
+                                    bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
                             </p:panel>
                         </div>
                     </div>
