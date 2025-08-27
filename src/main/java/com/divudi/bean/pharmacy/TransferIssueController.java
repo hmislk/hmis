@@ -404,12 +404,14 @@ public class TransferIssueController implements Serializable {
 
             if (stockItem instanceof Ampp) {
                 Ampp ampp = (Ampp) stockItem;
+                packSize = ampp.getDblValue();  // Get pack size from AMPP before changing stockItem
                 stockItem = ampp.getAmp();
-                packSize = stockItem.getDblValue();
             }
             if (stockItem instanceof Vmpp) {
-                packSize = stockItem.getDblValue();
-                //TODO: Add Support to VMPP as a new issue
+                Vmpp vmpp = (Vmpp) stockItem;
+                packSize = vmpp.getDblValue();  // Get pack size from VMPP
+                // For now, skip VMPP items as mentioned in TODO
+                // Future enhancement: stockItem = vmpp.getVmp();
                 continue;
             }
 
@@ -440,6 +442,23 @@ public class TransferIssueController implements Serializable {
 
                 if (thisTimeIssuingQtyInUnits <= 0) {
                     break;
+                }
+
+                // For AMPP items, ensure we only issue complete packs
+                if (packSize > 1.0) {
+                    // Check if we have enough units for at least one complete pack
+                    if (thisTimeIssuingQtyInUnits < packSize) {
+                        // Skip this stock as it doesn't have enough for a complete pack
+                        continue;
+                    }
+                    // Round down to the nearest complete pack
+                    double completePacksOnly = Math.floor(thisTimeIssuingQtyInUnits / packSize) * packSize;
+                    thisTimeIssuingQtyInUnits = completePacksOnly;
+                    
+                    // Check if after rounding we still have something to issue
+                    if (thisTimeIssuingQtyInUnits <= 0) {
+                        continue;
+                    }
                 }
 
                 // Create minimal Stock entity from DTO for user stock validation only
