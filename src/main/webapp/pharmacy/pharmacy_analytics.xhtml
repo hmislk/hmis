@@ -133,6 +133,12 @@
                                                              value="Stock Report by Item"
                                                              action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
                                                              ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
+                                                             class="w-100"
+                                                             style="background-color:green;border-color: green"
+                                                             value="Stock Report by Item - DTO"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
+                                                             ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item - Order by VMP')}" 
                                                              class="w-100"
                                                              value="Stock Report by Item - Order by VMP"
