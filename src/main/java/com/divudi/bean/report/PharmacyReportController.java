@@ -2944,6 +2944,200 @@ public class PharmacyReportController implements Serializable {
                 })
                 .collect(Collectors.toList());
     }
+    
+    private List<DirectPurchaseReportDto> dtoList;
+    
+    public String navigateToDirectPurchaseSummeryReport(){
+        dtoList = null;
+        return "/pharmacy/direct_purchase_summery_report?faces-redirect=true";
+    }
+
+    public void processDirectPurchaseSummeryReport(){
+                                                               
+        StringBuilder jpql = new StringBuilder("select new com.divudi.bean.report.PharmacyReportController.DirectPurchaseReportDto("
+                + "bill.id, bill.createdAt, "
+                + "pbi.doe, "
+                + "bill.deptId, "
+                + "bi.item.name, "
+                + "pbi.qty, "
+                + "pbi.freeQty, "
+                + "pbi.purchaseRate, "
+                + "pbi.purchaseRate * pbi.qty, "
+                + "pbi.retailRate, "
+                + "pbi.qty * pbi.retailRate) "
+                + "from Bill bill "
+                + "JOIN bill.billItems bi "
+                + "JOIN bi.pharmaceuticalBillItem pbi "
+                + "where bill.billTypeAtomic = :bta "
+                + "and bill.billType = :bt "
+                + "and bill.createdAt between :fromDate and :toDate "
+                + "and bill.retired = :ret "
+                + "and bill.cancelled = :ret "
+                + "and bi.retired = :ret ");
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        params.put("bt", BillType.PharmacyPurchaseBill);
+        params.put("ret", false);
+        
+        if(institution != null){
+            jpql.append("and bill.referenceInstitution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if(department != null){
+            jpql.append("and bill.department = :dept ");
+            params.put("dept", department);
+            
+            if(site != null){
+                jpql.append("and bill.department.site = :site ");
+                params.put("site", site);
+            }
+        }
+        
+        if(amp != null){
+            jpql.append("and bi.item = :item ");
+            params.put("item", amp);
+        }
+        
+        if(fromInstitution != null){
+            jpql.append("and bill.fromInstitution = :fromIns ");
+            params.put("fromIns", fromInstitution);
+        }
+        
+        dtoList = (List<DirectPurchaseReportDto>)billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+    }
+
+    public List<DirectPurchaseReportDto> getDtoList() {
+        return dtoList;
+    }
+
+    public void setDtoList(List<DirectPurchaseReportDto> dtoList) {
+        this.dtoList = dtoList;
+    }
+
+    
+    public static class DirectPurchaseReportDto{
+        private Long billId;
+        private Date billDate;
+        private Date doe;
+        private String billNo;
+        private String itemName;
+        private double quantity;
+        private double freeQuantity;
+        private double purchaseRate;
+        private double purchaseValue;
+        private double saleRate;
+        private double saleValue;
+
+        public DirectPurchaseReportDto(Long billId, Date billDate, Date doe, String billNo, String itemName, double quantity, double freeQuantity, double purchaseRate, double purchaseValue, double saleRate, double saleValue) {
+            this.billId = billId;
+            this.billDate = billDate;
+            this.doe = doe;
+            this.billNo = billNo;
+            this.itemName = itemName;
+            this.quantity = quantity;
+            this.freeQuantity = freeQuantity;
+            this.purchaseRate = purchaseRate;
+            this.purchaseValue = purchaseValue;
+            this.saleRate = saleRate;
+            this.saleValue = saleValue;
+        }
+
+        public double getFreeQuantity() {
+            return freeQuantity;
+        }
+
+        public void setFreeQuantity(double freeQuantity) {
+            this.freeQuantity = freeQuantity;
+        }
+
+        public Long getBillId() {
+            return billId;
+        }
+
+        public void setBillId(Long billId) {
+            this.billId = billId;
+        }
+
+        public Date getBillDate() {
+            return billDate;
+        }
+
+        public void setBillDate(Date billDate) {
+            this.billDate = billDate;
+        }
+
+        public Date getDoe() {
+            return doe;
+        }
+
+        public void setDoe(Date doe) {
+            this.doe = doe;
+        }
+
+        public String getBillNo() {
+            return billNo;
+        }
+
+        public void setBillNo(String billNo) {
+            this.billNo = billNo;
+        }
+
+        public String getItemName() {
+            return itemName;
+        }
+
+        public void setItemName(String itemName) {
+            this.itemName = itemName;
+        }
+
+        public double getPurchaseRate() {
+            return purchaseRate;
+        }
+
+        public void setPurchaseRate(double purchaseRate) {
+            this.purchaseRate = purchaseRate;
+        }
+
+        public double getPurchaseValue() {
+            return purchaseValue;
+        }
+
+        public void setPurchaseValue(double purchaseValue) {
+            this.purchaseValue = purchaseValue;
+        }
+
+        public double getSaleRate() {
+            return saleRate;
+        }
+
+        public void setSaleRate(double saleRate) {
+            this.saleRate = saleRate;
+        }
+
+        public double getSaleValue() {
+            return saleValue;
+        }
+
+        public void setSaleValue(double saleValue) {
+            this.saleValue = saleValue;
+        }
+
+        public double getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(double quantity) {
+            this.quantity = quantity;
+        }
+        
+        
+        
+    }
 
     public void processStockLedgerReport() {
         reportTimerController.trackReportExecution(() -> {
