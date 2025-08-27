@@ -569,9 +569,11 @@ public class GrnCostingController implements Serializable {
             BigDecimal wholesaleRateBD = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
             BigDecimal totalQuantityBD = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
             BigDecimal unitsPerPackBD = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
+            BigDecimal retailSaleRatePerUnitBD = bifd.getRetailSaleRatePerUnit() != null ? bifd.getRetailSaleRatePerUnit() : BigDecimal.ZERO;
+            BigDecimal totalQuantityByUnitsBD = bifd.getTotalQuantityByUnits() != null ? bifd.getTotalQuantityByUnits() : BigDecimal.ZERO;
 
             bifd.setValueAtPurchaseRate(lineGrossRateBD.multiply(totalQuantityBD));
-            bifd.setValueAtRetailRate(retailSaleRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtRetailRate(retailSaleRatePerUnitBD.multiply(totalQuantityByUnitsBD));
             bifd.setValueAtCostRate(totalCostRateBD.multiply(totalQuantityBD).multiply(unitsPerPackBD));
             bifd.setValueAtWholesaleRate(wholesaleRateBD.multiply(totalQuantityBD));
 
