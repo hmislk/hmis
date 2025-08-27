@@ -1194,11 +1194,14 @@ public class PharmacyCalculation implements Serializable {
             "  AND issued.bill.billType = :billType " +
             "  AND issued.creater IS NOT NULL " +
             "  AND TYPE(issued.bill) = " + com.divudi.core.entity.BilledBill.class.getSimpleName() + " " +
+            "  AND issued.retired = false " +
             "LEFT JOIN BillItem cancelled ON cancelled.referanceBillItem.referanceBillItem = bi " +
             "  AND cancelled.bill.billType = :billType " +
             "  AND cancelled.creater IS NOT NULL " +
             "  AND TYPE(cancelled.bill) = " + com.divudi.core.entity.CancelledBill.class.getSimpleName() + " " +
+            "  AND cancelled.retired = false " +
             "WHERE bi.id IN :billItemIds " +
+            "  AND bi.retired = false " +
             "GROUP BY bi.id, bi.qty";
         
         java.util.Map<String, Object> params = new java.util.HashMap<>();
@@ -1206,7 +1209,7 @@ public class PharmacyCalculation implements Serializable {
         params.put("billType", billType);
         
         try {
-            java.util.List<Object[]> results = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+            java.util.List<Object[]> results = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, params, javax.persistence.TemporalType.TIMESTAMP);
             
             return results.stream()
                 .collect(java.util.stream.Collectors.toMap(

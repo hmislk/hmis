@@ -364,13 +364,18 @@ public class TransferIssueController implements Serializable {
             // Get calculations from pre-fetched data instead of individual queries
             com.divudi.core.data.dto.BillItemCalculationDTO calculations = calculationsMap.get(billItemInRequest.getId());
             if (calculations == null) {
-                // Create default calculation if not found
+                // Create default calculation if not found - use remaining quantity from database if available
+                Double remainingFromDb = billItemInRequest.getRemainingQty();
+                Double issuedQtyFromDb = billItemInRequest.getIssuedPhamaceuticalItemQty();
+                double alreadyIssuedFromDb = (issuedQtyFromDb != null) ? issuedQtyFromDb : 0.0;
                 calculations = new com.divudi.core.data.dto.BillItemCalculationDTO(
-                    billItemInRequest.getId(), billItemInRequest.getQty(), 0.0, 0.0);
+                    billItemInRequest.getId(), billItemInRequest.getQty(), alreadyIssuedFromDb, 0.0);
             }
 
             billItemInRequest.setIssuedPhamaceuticalItemQty(calculations.getNetIssuedQty());
-            double quantityToIssue = calculations.getRemainingQty();
+            // Update remaining quantity for consistency
+            billItemInRequest.setRemainingQty(calculations.getRemainingQty());
+            double quantityToIssue = getRemainingQuantityForItem(billItemInRequest);
 
             if (quantityToIssue <= 0.001) { // Use small tolerance for floating point precision
                 continue; // Skip if nothing left to issue
