@@ -280,7 +280,7 @@ public class PatientInvestigationController implements Serializable {
     private Department outLabDepartment;
 
     private String sampleSearchStrategy;
-    private boolean requestReCollected;
+    private boolean requestReCollected = true;
 
     private String testDetails;
 
@@ -2104,7 +2104,7 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
         sampleRejectionComment = null;
-        requestReCollected = false;
+        requestReCollected = true;
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
         
