@@ -1395,8 +1395,8 @@
                                                             value="Print All">
                                                             <p:printer target="batchBarcodeIndividual"></p:printer>
                                                         </p:commandButton>
-
-                                                        <!--                                                        <h:outputLabel value="Print Individual Barcodes"/>
+<!--
+                                                                                                              <h:outputLabel value="Print Individual Barcodes"/>
                                                                                                                 <p:selectBooleanButton id="cheindbarIndividual" onIcon="pi pi-check" offIcon="pi pi-times" value="#{patientInvestigationController.printIndividualBarcodes}">
                                                                                                                     <p:ajax process="cheindbarIndividual" update="allBatchBarcodeIndividual individualBarcodeSingle batchBarcodeIndividual" event="change"></p:ajax>
                                                                                                                 </p:selectBooleanButton>-->
@@ -1415,7 +1415,7 @@
 
                                         <h:panelGroup id="batchBarcodeIndividual">
 
-                                            <h:panelGroup id="allBatchBarcodeIndividual" rendered="#{patientInvestigationController.printIndividualBarcodes eq false}">
+                                            <h:panelGroup id="allBatchBarcodeIndividual">
                                                 <ui:repeat value="#{patientInvestigationController.regeneratedPatientSamples}" var="ps">
                                                     <div class="sticker">
                                                         <div class="patient-info">
@@ -1441,7 +1441,7 @@
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
                                                                 <span class="patient-id">
-                                                                    #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
+                                                                    #{ps.bill.ipOpOrCc}&nbsp;&nbsp;
                                                                 </span>
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
