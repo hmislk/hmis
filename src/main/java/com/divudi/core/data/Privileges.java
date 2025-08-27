@@ -567,6 +567,9 @@ public enum Privileges {
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
     ReturnWithoutRecipt("Return without Receipt"),
+    PharmacyGrnSave("Pharmacy GRN Save"),
+    PharmacyGrnFinalize("Pharmacy GRN Finalize"),
+    PharmacyGrnApprove("Pharmacy GRN Approve"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
@@ -896,6 +899,9 @@ public enum Privileges {
             case PharmacyItemSearch:
             case PharmacyGenarateReports:
             case PharmacySummaryViews:
+            case PharmacyGrnSave:
+            case PharmacyGrnFinalize:
+            case PharmacyGrnApprove:
 
                 return "Pharmacy";
 
