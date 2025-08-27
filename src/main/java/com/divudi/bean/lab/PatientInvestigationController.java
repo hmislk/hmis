@@ -2123,8 +2123,12 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED) {
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED  && !ps.getRequestReCollected()) {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not Rejected.");
+                return;
+            }
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING || ps.getStatus() != PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
+                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") has already been recreated for this sample.");
                 return;
             }
             if (!ps.getRequestReCollected()) {
