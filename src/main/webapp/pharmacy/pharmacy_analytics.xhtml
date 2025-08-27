@@ -133,6 +133,12 @@
                                                              value="Stock Report by Item"
                                                              action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
                                                              ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
+                                                             class="w-100"
+                                                             style="background-color:green;border-color: green"
+                                                             value="Stock Report by Item - DTO"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
+                                                             ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item - Order by VMP')}" 
                                                              class="w-100"
                                                              value="Stock Report by Item - Order by VMP"
@@ -300,6 +306,13 @@
                                                              style="text-align: left" 
                                                              value="Pharmacy Procurement Report"
                                                              action="#{pharmacySummaryReportController.navigateToPharmacyProcurementReport()}"/>
+                                            
+                                            <p:commandButton 
+                                                             class="w-100 ui-button-warning"
+                                                             ajax="false" 
+                                                             style="text-align: left" 
+                                                             value="Pharmacy Direct purchase Report"
+                                                             action="#{pharmacyReportController.navigateToDirectPurchaseSummeryReport()}"/>
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Summary')}" class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch')}" class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
