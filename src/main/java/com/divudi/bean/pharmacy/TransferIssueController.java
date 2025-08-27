@@ -338,7 +338,9 @@ public class TransferIssueController implements Serializable {
 
         // OPTIMIZATION 1: Bulk fetch all calculations for all bill items (replaces 2N individual queries)
         java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> calculationsMap = 
-            getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillType.PharmacyTransferIssue);
+            getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillTypeAtomic.PHARMACY_ISSUE);
+        
+        System.out.println("DEBUG: Processing transfer issue for request ID " + getRequestedBill().getId() + " with " + billItemsOfRequest.size() + " items");
 
         // OPTIMIZATION 2: Extract unique items and bulk fetch stock availability (replaces N individual queries)
         java.util.List<Item> uniqueItems = billItemsOfRequest.stream()
@@ -361,21 +363,37 @@ public class TransferIssueController implements Serializable {
         for (BillItem billItemInRequest : billItemsOfRequest) {
             boolean flagStockFound = false;
 
+            System.out.println("\n--- Processing item: " + billItemInRequest.getItem().getName() + " (ID: " + billItemInRequest.getId() + ") ---");
+            System.out.println("Original requested qty: " + billItemInRequest.getQty());
+            System.out.println("Current issuedPhamaceuticalItemQty: " + billItemInRequest.getIssuedPhamaceuticalItemQty());
+            System.out.println("Current remainingQty field: " + billItemInRequest.getRemainingQty());
+
             // Get calculations from pre-fetched data instead of individual queries
             com.divudi.core.data.dto.BillItemCalculationDTO calculations = calculationsMap.get(billItemInRequest.getId());
             if (calculations == null) {
+                System.out.println("No bulk calculation found, creating fallback...");
                 // Create default calculation if not found - use remaining quantity from database if available
                 Double remainingFromDb = billItemInRequest.getRemainingQty();
                 Double issuedQtyFromDb = billItemInRequest.getIssuedPhamaceuticalItemQty();
                 double alreadyIssuedFromDb = (issuedQtyFromDb != null) ? issuedQtyFromDb : 0.0;
                 calculations = new com.divudi.core.data.dto.BillItemCalculationDTO(
                     billItemInRequest.getId(), billItemInRequest.getQty(), alreadyIssuedFromDb, 0.0);
+                System.out.println("Fallback calculation - already issued: " + alreadyIssuedFromDb);
+            } else {
+                System.out.println("Bulk calculation found:");
+                System.out.println("  - Original qty: " + calculations.getOriginalQty());
+                System.out.println("  - Billed issued: " + calculations.getBilledIssuedQty());
+                System.out.println("  - Cancelled issued: " + calculations.getCancelledIssuedQty());
+                System.out.println("  - Net issued: " + calculations.getNetIssuedQty());
+                System.out.println("  - Remaining qty: " + calculations.getRemainingQty());
             }
 
             billItemInRequest.setIssuedPhamaceuticalItemQty(calculations.getNetIssuedQty());
             // Update remaining quantity for consistency
             billItemInRequest.setRemainingQty(calculations.getRemainingQty());
             double quantityToIssue = getRemainingQuantityForItem(billItemInRequest);
+            
+            System.out.println("Final quantity to issue: " + quantityToIssue);
 
             if (quantityToIssue <= 0.001) { // Use small tolerance for floating point precision
                 continue; // Skip if nothing left to issue
@@ -737,11 +755,20 @@ public class TransferIssueController implements Serializable {
                 billItemsInIssue.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
                 originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
+                
+                System.out.println("=== DEBUG: Updating Original Order Item ===");
+                System.out.println("Item: " + originalOrderItem.getItem().getName() + " (ID: " + originalOrderItem.getId() + ")");
+                System.out.println("Before update - IssuedQty: " + originalOrderItem.getIssuedPhamaceuticalItemQty() + ", RemainingQty: " + originalOrderItem.getRemainingQty());
+                System.out.println("Adding issued qty: " + billItemsInIssue.getQty());
+                
                 originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
                 originalOrderItem.setRemainingQty(currentRemaining - billItemsInIssue.getQty());
+                
+                System.out.println("After update - IssuedQty: " + originalOrderItem.getIssuedPhamaceuticalItemQty() + ", RemainingQty: " + originalOrderItem.getRemainingQty());
+                
                 billItemFacade.editAndCommit(originalOrderItem);
 
                 getBillItemFacade().edit(billItemsInIssue);
