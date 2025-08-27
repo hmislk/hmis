@@ -18,42 +18,44 @@
                     class="w-100">
                     <f:facet name="header">
                         <h:outputLabel value="Goods Receive with Save/Approve" />
-                        <p:commandButton
-                            ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
-                            actionListener="#{searchController.makeListNull()}"
-                            class="ui-button-warning"
-                            icon="fa fa-arrow-left"
-                            style="float: right; margin-right: 0.5em;"
-                            value="Back to PO List">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Approve"
-                            action="#{grnCostingController.requestFinalizeWithSaveApprove}"
-                            class="ui-button-success"
-                            icon="fas fa-check"
-                            ajax="false"
-                            rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}"
-                            style="float: right; margin-right: 0.5em;">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Finalize"
-                            action="#{grnCostingController.finalizeGrnWithSaveApprove}"
-                            class="ui-button-warning"
-                            icon="fas fa-flag"
-                            ajax="false"
-                            rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}"
-                            style="float: right; margin-right: 0.5em;">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Save"
-                            action="#{grnCostingController.requestWithSaveApprove}"
-                            class="ui-button-info"
-                            icon="pi pi-save"
-                            ajax="false"
-                            rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}"
-                            style="float: right; margin-right: 0.5em;">
-                        </p:commandButton>
+                        <div class="text-end" >
+                            <p:commandButton
+                                ajax="false"
+                                action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                actionListener="#{searchController.makeListNull()}"
+                                class="ui-button-warning mx-1"
+                                icon="fa fa-arrow-left"
+                                style="float: right; margin-right: 0.5em;"
+                                value="Back to PO List">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Save"
+                                action="#{grnCostingController.requestWithSaveApprove}"
+                                class="ui-button-info mx-1"
+                                icon="pi pi-save"
+                                ajax="false"
+                                rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}"
+                                style="float: right; margin-right: 0.5em;">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Approve"
+                                action="#{grnCostingController.requestFinalizeWithSaveApprove}"
+                                class="ui-button-success mx-1"
+                                icon="fas fa-check"
+                                ajax="false"
+                                rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Finalize"
+                                action="#{grnCostingController.finalizeGrnWithSaveApprove}"
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-flag"
+                                ajax="false"
+                                rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                            </p:commandButton>
+                        </div>
+
+
                     </f:facet>
 
 
