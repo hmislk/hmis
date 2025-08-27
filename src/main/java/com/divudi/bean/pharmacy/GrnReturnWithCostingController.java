@@ -592,6 +592,7 @@ public class GrnReturnWithCostingController implements Serializable {
 // ChatGPT contributed
     private void saveBillItems() {
         List<BillItem> failedItems = new ArrayList<>();
+        List<BillItem> zeroQuantityItems = new ArrayList<>();
 
         for (Iterator<BillItem> iterator = getBillItems().iterator(); iterator.hasNext();) {
             BillItem i = iterator.next();
@@ -602,6 +603,25 @@ public class GrnReturnWithCostingController implements Serializable {
 
             if (fd == null || refFd == null) {
                 continue; // Skip if finance details are missing
+            }
+
+            // Check if item has zero return quantities
+            BigDecimal returnQty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal returnFreeQty = Optional.ofNullable(fd.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            boolean hasZeroQuantities = returnQty.compareTo(BigDecimal.ZERO) == 0 && returnFreeQty.compareTo(BigDecimal.ZERO) == 0;
+
+            if (hasZeroQuantities) {
+                // If item already exists in database, retire it
+                if (i.getId() != null) {
+                    i.setRetired(true);
+                    i.setRetiredAt(new Date());
+                    i.setRetirer(sessionController.getLoggedUser());
+                    billItemFacade.edit(i);
+                    zeroQuantityItems.add(i);
+                }
+                // Remove from current list
+                iterator.remove();
+                continue;
             }
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
@@ -638,6 +658,17 @@ public class GrnReturnWithCostingController implements Serializable {
                 }
                 failedItems.add(i); // Collect for logging or notification
             }
+        }
+
+        // Log information about zero quantity items that were retired
+        if (!zeroQuantityItems.isEmpty()) {
+            StringBuilder infoMessage = new StringBuilder("Items with zero return quantities were excluded from the return:<br/>");
+            for (BillItem zeroItem : zeroQuantityItems) {
+                if (zeroItem != null && zeroItem.getItem() != null) {
+                    infoMessage.append("- ").append(zeroItem.getItem().getName()).append("<br/>");
+                }
+            }
+            JsfUtil.addSuccessMessage(infoMessage.toString());
         }
 
         if (!failedItems.isEmpty()) {
@@ -710,6 +741,15 @@ public class GrnReturnWithCostingController implements Serializable {
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             if (fd == null || pbi == null) {
+                continue;
+            }
+
+            // Skip items with zero return quantities
+            BigDecimal returnQty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal returnFreeQty = Optional.ofNullable(fd.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            boolean hasZeroQuantities = returnQty.compareTo(BigDecimal.ZERO) == 0 && returnFreeQty.compareTo(BigDecimal.ZERO) == 0;
+            
+            if (hasZeroQuantities) {
                 continue;
             }
 
