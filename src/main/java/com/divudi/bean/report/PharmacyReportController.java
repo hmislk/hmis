@@ -2946,6 +2946,11 @@ public class PharmacyReportController implements Serializable {
     }
     
     private List<DirectPurchaseReportDto> dtoList;
+    
+    public String navigateToDirectPurchaseSummeryReport(){
+        dtoList = null;
+        return "/pharmacy/direct_purchase_summery_report?faces-redirect=true";
+    }
 
     public void processDirectPurchaseSummeryReport(){
                                                                
@@ -2967,7 +2972,8 @@ public class PharmacyReportController implements Serializable {
                 + "and bill.billType = :bt "
                 + "and bill.createdAt between :fromDate and :toDate "
                 + "and bill.retired = :ret "
-                + "and bill.cancelled = :ret ");
+                + "and bill.cancelled = :ret "
+                + "and bi.retired = :ret ");
         
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);

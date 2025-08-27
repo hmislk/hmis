@@ -311,8 +311,8 @@
                                                              class="w-100 ui-button-warning"
                                                              ajax="false" 
                                                              style="text-align: left" 
-                                                             value="Pharmacy Disbursement Report"
-                                                             action="/pharmacy/direct_purchase_summery_report?faces-redirect=true"/>
+                                                             value="Pharmacy Direct purchase Report"
+                                                             action="#{pharmacyReportController.navigateToDirectPurchaseSummeryReport()}"/>
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Summary')}" class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch')}" class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
