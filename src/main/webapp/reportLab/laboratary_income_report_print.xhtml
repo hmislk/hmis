@@ -310,11 +310,10 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td style="width: 8mm;" />
-                                                <td style="width: 25mm; text-align: left;"/>
-                                                <td style="width: 59mm; text-align: left;"/>
-                                                <td style="width: 18mm; text-align: left;"/>
-                                                <td style="width: 16mm; text-align: left;"/>
+                                                <td colspan="5" style="width: 8mm; text-align: center" >
+                                                    <h:outputText value="Totals" />
+                                                </td>
+
                                                 <td style="width: 16mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
