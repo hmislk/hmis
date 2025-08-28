@@ -521,6 +521,8 @@ public enum Privileges {
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
+    PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
+    PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -565,6 +567,9 @@ public enum Privileges {
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
     ReturnWithoutRecipt("Return without Receipt"),
+    PharmacyGrnSave("Pharmacy GRN Save"),
+    PharmacyGrnFinalize("Pharmacy GRN Finalize"),
+    PharmacyGrnApprove("Pharmacy GRN Approve"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
@@ -880,6 +885,8 @@ public enum Privileges {
             case PharmacyAdjustmentExpiryDate:
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
+            case PharmacyPhysicalCountApprove:
+            case PharmacyStockTakeApprove:
 
             // Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
@@ -892,6 +899,9 @@ public enum Privileges {
             case PharmacyItemSearch:
             case PharmacyGenarateReports:
             case PharmacySummaryViews:
+            case PharmacyGrnSave:
+            case PharmacyGrnFinalize:
+            case PharmacyGrnApprove:
 
                 return "Pharmacy";
 

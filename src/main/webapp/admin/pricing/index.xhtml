@@ -146,6 +146,24 @@
                                                 action="#{itemFeeManager.navigateToCollectingCentreItemFeeList}">
                                             </p:commandButton>
 
+                                            <p:separator></p:separator>
+
+                                            <p:commandButton 
+                                                class="w-100 ui-button-danger"
+                                                ajax="false"
+                                                value="Retire ALL Collecting Centre Item Fees"
+                                                icon="fa fa-times-circle"
+                                                action="#{itemFeeManager.navigateToRetireAllCollectingCentreItemFees}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100 ui-button-info"
+                                                ajax="false"
+                                                value="Assign Fee Lists to Collecting Centres"
+                                                icon="fa fa-list-check"
+                                                action="#{itemFeeManager.navigateToAssignFeeListsToCollectingCentres}">
+                                            </p:commandButton>
+
 
                                             <!--                                            
                                                                                         Need to Fix or Remove this in a separate issue
