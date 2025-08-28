@@ -12,49 +12,164 @@
         </h:panelGroup>
         <h:panelGroup id="gpOrderApprove" rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
         <h:form>
-            <p:panel >
+            <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
-                    <p:outputLabel value="Approve Purchase Orders"/>
-                </f:facet>
-                <div class="row">
-                    <div class="col-2">
-                        <h:panelGrid columns="1" class="w-100">
-                            <h:outputLabel value="From"/>
-                            <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                            </p:calendar>
-                            <h:outputLabel value="To"/>
-                            <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                            </p:calendar>
-                            <h:outputLabel value="Supplier"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" />
-                            <h:outputLabel value="Requested User"/>
-                            <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.creator}" />
-                            <h:outputLabel value="Requested Department"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.department}" />
-                            <h:outputLabel value="PO Number"/>
-                            <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
-                            <h:outputLabel value="Requsted Value"/>  
-                            <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                            <h:outputLabel value="Approved Value"/>
-                            <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                            <h:outputLabel value="Max Result"/>
-                            <p:inputText class="w-100" autocomplete="off" value="#{searchController.maxResult}"/>
-                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search"  value="Search All Requests" action="#{searchController.createPoRequestedAndApprovedPharmacy()}" ajax="false" ></p:commandButton>
-                            <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" value="Search Approved Requests" action="#{searchController.createApprovedPharmacy()}" ajax="false" ></p:commandButton>
-                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search" value="Search To Approve Requests" action="#{searchController.fillOnlyFinalizedPharmacyPo()}" ajax="false" ></p:commandButton>
-                        </h:panelGrid>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <h4 class="mb-0 text-success">Approve Purchase Orders</h4>
                     </div>
-                    <div class="col-10">
-                        <p:dataTable 
-                            id="tbl" 
-                            value="#{searchController.bills}" 
-                            var="b"
-                            rows="15"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,15"
-                            >
+                </f:facet>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>From Date
+                                </label>
+                                <p:calendar 
+                                    class="w-100" 
+                                    inputStyleClass="form-control" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">      
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>To Date
+                                </label>
+                                <p:calendar 
+                                    class="w-100" 
+                                    inputStyleClass="form-control" 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">                                                                              
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-building me-1"></i>Supplier
+                                </label>
+                                <p:inputText 
+                                    class="form-control" 
+                                    autocomplete="off" 
+                                    value="#{searchController.searchKeyword.toInstitution}" 
+                                    placeholder="Enter supplier name" />
+                            </div>
+                            
+                            <!-- Search Buttons positioned for better visibility -->
+                            <div class="mb-4">
+                                <p:commandButton 
+                                    class="ui-button-info w-100 mb-2" 
+                                    icon="fas fa-search" 
+                                    value="Search All Requests" 
+                                    action="#{searchController.createPoRequestedAndApprovedPharmacy()}" 
+                                    ajax="false"
+                                    style="min-height: 40px;">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-success w-100 mb-2" 
+                                    icon="fas fa-check" 
+                                    value="Search Approved Requests" 
+                                    action="#{searchController.createApprovedPharmacy()}" 
+                                    ajax="false"
+                                    style="min-height: 40px;">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-warning w-100" 
+                                    icon="fas fa-clock" 
+                                    value="Search To Approve Requests" 
+                                    action="#{searchController.fillOnlyFinalizedPharmacyPo()}" 
+                                    ajax="false"
+                                    style="min-height: 40px;">
+                                </p:commandButton>
+                            </div>
+
+                            <!-- Collapsible Advanced Filters -->
+                            <p:panel header="Advanced Filters" toggleable="true" collapsed="true" styleClass="mb-3">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-user me-1"></i>Requested User
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.creator}" 
+                                        placeholder="Enter user name" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hospital me-1"></i>Department
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.department}" 
+                                        placeholder="Enter department" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hashtag me-1"></i>PO Number
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.refBillNo}" 
+                                        placeholder="Enter PO number" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-coins me-1"></i>Requested Value
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.total}" 
+                                        placeholder="Enter amount" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-coins me-1"></i>Approved Value
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.netTotal}" 
+                                        placeholder="Enter approved amount" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-list-ol me-1"></i>Max Results
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.maxResult}" 
+                                        placeholder="Max number of results" />
+                                </div>
+                            </p:panel>
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <p:panel header="Purchase Orders for Approval" styleClass="shadow-sm">
+                            <p:dataTable 
+                                id="tbl" 
+                                value="#{searchController.bills}" 
+                                var="b"
+                                rows="15"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="table-striped"
+                                emptyMessage="No purchase orders found matching your criteria"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
                             <p:column headerText="Requested At"  >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
                                     <h:outputLabel value="#{b.createdAt}" >
@@ -110,10 +225,15 @@
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column headerText="Requested Value" >
-                                <h:outputLabel  value="#{b.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                            <p:column headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-success me-2"></i>
+                                    <span class="fw-bold text-success fs-6">
+                                        <h:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
                             </p:column>
 
                             <p:column headerText="Approved Person"  >
@@ -128,10 +248,15 @@
                             <p:column headerText="PO Number" >                       
                                 <h:outputLabel  value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill.cancelled eq false}"/>                         
                             </p:column>
-                            <p:column headerText="Approved Value" >
-                                <h:outputLabel  value="#{b.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                            <p:column headerText="Approved Value" sortBy="#{b.referenceBill.netTotal}" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-info me-2"></i>
+                                    <span class="fw-bold text-info fs-6">
+                                        <h:outputLabel value="#{b.referenceBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
                             </p:column>
 
                             <p:column headerText="Status" width="8em">
@@ -146,28 +271,36 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Actions" width="9em">
-                                <p:commandButton
-                                    id="approve"
-                                    ajax="false"
-                                    icon="fas fa-check-circle"
-                                    class="ui-button-success mx-2"
-                                    title="To Approve Purchase Order"
-                                    action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
-                                    disabled="#{b.checkedBy eq null or (b.referenceBill ne null and b.referenceBill.creater ne null) or b.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
-                                    <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    id="view"
-                                    ajax="false"
-                                    icon="fas fa-eye"
-                                    title="To View Approved Purchase Order"
-                                    action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrder}" 
-                                    disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
-                                </p:commandButton>
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="150">
+                                <div class="d-flex justify-content-center align-items-center gap-1">
+                                    <p:commandButton
+                                        id="approve"
+                                        ajax="false"
+                                        icon="fas fa-check-circle"
+                                        class="ui-button-success"
+                                        value="Approve"
+                                        title="To Approve Purchase Order"
+                                        action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
+                                        disabled="#{b.checkedBy eq null or (b.referenceBill ne null and b.referenceBill.creater ne null) or b.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                        style="min-width: 70px;">
+                                        <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        id="view"
+                                        ajax="false"
+                                        icon="fas fa-eye"
+                                        class="ui-button-info"
+                                        value="View"
+                                        title="To View Approved Purchase Order"
+                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrder}" 
+                                        disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}"
+                                        style="min-width: 60px;">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
+                                    </p:commandButton>
+                                </div>
                             </p:column>
                         </p:dataTable>
+                        </p:panel>
                     </div>
                 </div>
             </p:panel>            
