@@ -7,6 +7,10 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup id="gpOrderApprove" rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
         <h:form>
             <p:panel >
                 <f:facet name="header">
@@ -168,6 +172,7 @@
                 </div>
             </p:panel>            
         </h:form>
+        </h:panelGroup>
     </ui:define>  
 
 </ui:composition>

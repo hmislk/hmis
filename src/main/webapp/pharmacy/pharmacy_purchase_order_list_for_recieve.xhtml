@@ -7,6 +7,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('GoodsRecipt')}">You are NOT authorized</h:panelGroup>
+        <h:panelGroup id="gpPOListForReceive" rendered="#{webUserController.hasPrivilege('GoodsRecipt')}">
         <h:form>
             <p:panel  style="min-width: 100%;">  
                 <f:facet name="header">
@@ -310,6 +312,7 @@
             <h:outputLabel/><h:outputLabel/>
 
         </h:form>
+        </h:panelGroup>
     </ui:define>  
 
 </ui:composition>
