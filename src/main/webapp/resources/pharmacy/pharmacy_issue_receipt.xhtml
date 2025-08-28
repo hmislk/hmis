@@ -186,55 +186,55 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                                <td class="item-rate">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Retail Rate',true)}">
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Retail Rate',true)}">
+                                    <td class="item-rate">
                                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
-                                <td class="item-rate">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Purchase Rate',true)}">
+                                    </td>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Purchase Rate',true)}">
+                                    <td class="item-rate">
                                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
-                                <td class="item-rate">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Cost Rate',true)}">
+                                    </td>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Cost Rate',true)}">
+                                    <td class="item-rate">
                                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.costRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
-                                <td class="item-value">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Issue Value',true)}">
+                                    </td>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Issue Value',true)}">
+                                    <td class="item-value">
                                         <h:outputLabel value="#{bip.billItemFinanceDetails.lineNetTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
-                                <td class="item-value">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Retail Value',true)}">
+                                    </td>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Retail Value',true)}">
+                                    <td class="item-value">
                                         <h:outputLabel value="#{bip.billItemFinanceDetails.valueAtRetailRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
-                                <td class="item-value">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Purchase Value',true)}">
+                                    </td>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Purchase Value',true)}">
+                                    <td class="item-value">
                                         <h:outputLabel value="#{bip.billItemFinanceDetails.valueAtPurchaseRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
-                                <td class="item-value">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Cost Value',true)}">
+                                    </td>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposals - Display Cost Value',true)}">
+                                    <td class="item-value">
                                         <h:outputLabel value="#{bip.billItemFinanceDetails.valueAtCostRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </h:panelGroup>
-                                </td>
+                                    </td>
+                                </ui:fragment>
                             </tr>
 
                         </ui:repeat>
