@@ -1589,13 +1589,34 @@ public class PatientReportController implements Serializable {
         }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
+        String smsBody = "";
         String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
         String url = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
-        String b = "Your "
-                + r.getPatientInvestigation().getInvestigation().getName()
-                + " is ready. "
-                + url;
-        return b;
+
+        String template = configOptionApplicationController.getLongTextValueByKey("Custom SMS Body Massage for Lab Report");
+        if (!template.equalsIgnoreCase("")) {
+            smsBody = replaceReporSMSBody(template,r,url);
+        } else {
+            smsBody = "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready. " + url;
+        }
+        return smsBody;
+    }
+    
+    public String replaceReporSMSBody(String template, PatientReport patientReport, String url) {
+        String output;
+        String processedTemplate = template.replace("\\n", "\n");
+        String location = "";
+        if("CC".equalsIgnoreCase(patientReport.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc())){
+            location = patientReport.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getName();
+        }else{
+            location = patientReport.getPatientInvestigation().getBillItem().getBill().getDepartment().getPrintingName();
+        }
+        output = processedTemplate
+                .replace("{patient_name}", patientReport.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle())
+                .replace("{patient_report}", patientReport.getPatientInvestigation().getInvestigation().getName())
+                .replace("{report_url}", url)
+                .replace("{collecting_location}",location );
+        return output;
     }
 
     public String emailBody(PatientReport r) {
@@ -3253,6 +3274,7 @@ public class PatientReportController implements Serializable {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+
     }
 
     @FacesConverter(forClass = PatientReport.class)
