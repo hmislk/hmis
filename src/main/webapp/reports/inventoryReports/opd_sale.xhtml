@@ -228,10 +228,10 @@
                                     <p:column headerText="COST VALUE" width="6em"/>
                                     <p:column headerText="RATE" width="6em"/>
                                     <p:column headerText="VALUE" width="6em"/>
-                                    <p:column headerText="Net Total" width="6em"/>
-                                    <p:column headerText="Payment Mode/Modes" width="12em"/>
                                     <p:column headerText="MRP" width="6em"/>
                                     <p:column headerText="MRP Value" width="6em"/>
+                                    <p:column headerText="Net Total" width="6em"/>
+                                    <p:column headerText="Payment Mode/Modes" width="12em"/>
                                     <p:column headerText="Discount" width="6em"/>
                                 </p:row>
                             </p:columnGroup>
@@ -266,12 +266,23 @@
                                     <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="RATE">
+                            <p:column headerText="PURCHASE RATE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
+                                </ui:repeat>
+                            </p:column>
+                            <p:column headerText="PURCHASE VALUE">
+                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                    <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
+                                </ui:repeat>
+                            </p:column>
+                            
+                            <p:column headerText="MRP" width="8em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="VALUE">
+                            <p:column headerText="MRP Value" width="8em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
@@ -307,16 +318,7 @@
                                     </ui:repeat>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column headerText="MRP" width="8em">
-                                <h:outputText value="">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="MRP Value" width="8em">
-                                <h:outputText value="">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
+                            
                             <p:column headerText="Discount" width="8em">
                                 <h:outputText value="#{b.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
