@@ -47,9 +47,9 @@
                             <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                         </div>
                         <div class="d-flex gap-2 justify-content-center">
-                            <h:outputLabel value="#{cc.attrs.bill.department.telephone1}"/>
-                            <h:outputLabel value="/" rendered="#{!cc.attrs.bill.department.telephone2.blank}"/>
-                            <h:outputLabel value=" #{cc.attrs.bill.department.telephone2}"/>
+                            <h:outputText value="#{cc.attrs.bill.department.telephone1}" rendered="#{not empty cc.attrs.bill.department.telephone1}"/>
+                            <h:outputText value=" / " rendered="#{not empty cc.attrs.bill.department.telephone1 and not empty cc.attrs.bill.department.telephone2}"/>
+                            <h:outputText value="#{cc.attrs.bill.department.telephone2}" rendered="#{not empty cc.attrs.bill.department.telephone2}"/>
                         </div>
                         <div >
                             <h:outputLabel value="#{cc.attrs.bill.department.email}" />
