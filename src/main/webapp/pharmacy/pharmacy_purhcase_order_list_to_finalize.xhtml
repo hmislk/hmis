@@ -100,19 +100,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Approved Person"  >
-                                 <h:outputLabel value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}" >                                      
-                                </h:outputLabel>
-                            </p:column> 
-
-                            <p:column headerText="PO Number" >                       
-                                <h:outputLabel  value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill.cancelled eq false}"/>                         
-                            </p:column>
-                            <p:column headerText="Approved Value" >
-                                <h:outputLabel  value="#{b.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column> 
+                            
 
                             <p:column headerText="Actions" width="9em">
                                 <p:commandButton
