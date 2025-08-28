@@ -280,9 +280,11 @@ public class PatientInvestigationController implements Serializable {
     private Department outLabDepartment;
 
     private String sampleSearchStrategy;
-    private boolean requestReCollected;
+    private boolean requestReCollected = true;
 
     private String testDetails;
+
+    private List<PatientSample> regeneratedPatientSamples;
 
     public int getNumber() {
         return number;
@@ -2028,25 +2030,25 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Rejected");
                 return;
             }
-            
+
             String jpql = "SELECT r "
-                + " FROM PatientReport r "
-                + " WHERE r.retired = :ret "
-                + " AND r.patientInvestigation in ( select ps.patientInvestigation from PatientSampleComponant ps where ps.patientSample=:pts and ps.retired=false ) ";
-            
+                    + " FROM PatientReport r "
+                    + " WHERE r.retired = :ret "
+                    + " AND r.patientInvestigation in ( select ps.patientInvestigation from PatientSampleComponant ps where ps.patientSample=:pts and ps.retired=false ) ";
+
             Map<String, Object> params = new HashMap<>();
             params.put("pts", ps);
             params.put("ret", false);
-            
+
             PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
-            
+
             if (pr != null) {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") has Already Report Created");
                 return;
             }
-            
+
             canRejectSamples.add(ps);
-            
+
         }
 
         if (canRejectSamples.isEmpty()) {
@@ -2067,7 +2069,12 @@ public class PatientInvestigationController implements Serializable {
             ps.setSampleRejectedAt(new Date());
             ps.setSampleRejectionComment(sampleRejectionComment);
             ps.setSampleRejectedBy(sessionController.getLoggedUser());
-            ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            if (requestReCollected) {
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED);
+            } else {
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            }
+
             patientSampleFacade.edit(ps);
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
@@ -2104,10 +2111,10 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
         sampleRejectionComment = null;
-        requestReCollected = false;
+        requestReCollected = true;
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
-        
+
     }
 
     public void reGenerateSampleForRejectSamples() {
@@ -2123,15 +2130,19 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED) {
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED && !ps.getRequestReCollected()) {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not Rejected.");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
+                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") has already been recreated for this sample.");
                 return;
             }
             if (!ps.getRequestReCollected()) {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not not Requesr to Recollect.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED && ps.getRequestReCollected()) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED && ps.getRequestReCollected()) {
                 canReGenarateSamples.add(ps);
             }
         }
@@ -2140,8 +2151,6 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("There are no suitable samples to Re-Genarate from the selected samples.");
             return;
         }
-
-        listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
         Map<Long, Bill> collectedBills = new HashMap<>();
@@ -2190,7 +2199,27 @@ public class PatientInvestigationController implements Serializable {
             }
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Show barcode on Regenerated Patient Samples", false)) {
+            regeneratedPatientSamples = new ArrayList<>();
+            regeneratedPatientSamples.addAll(reGenarateSamples);
+            listingEntity = ListingEntity.PATIENT_SAMPLES_INDIVIDUAL;
+        } else {
+            patientSamples.addAll(0, reGenarateSamples);
+            listingEntity = ListingEntity.PATIENT_SAMPLES;
+        }
+
         JsfUtil.addSuccessMessage("Selected Samples Recreated");
+    }
+
+    public void navigateToThePatientSample(PatientSample patientSample) {
+        listingEntity = ListingEntity.PATIENT_SAMPLES_INDIVIDUAL;
+        regeneratedPatientSamples = new ArrayList<>();
+        regeneratedPatientSamples.add(patientSample);
+    }
+    
+    public void navigateToThePatientSampleList() {
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+        searchPatientSamples();
     }
 
     public PatientSample createNewPatientSampleFromAnotherSample(PatientSample referringPatientSample) {
@@ -5680,6 +5709,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setRequestReCollected(boolean requestReCollected) {
         this.requestReCollected = requestReCollected;
+    }
+
+    public List<PatientSample> getRegeneratedPatientSamples() {
+        return regeneratedPatientSamples;
+    }
+
+    public void setRegeneratedPatientSamples(List<PatientSample> regeneratedPatientSamples) {
+        this.regeneratedPatientSamples = regeneratedPatientSamples;
     }
 
     /**

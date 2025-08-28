@@ -959,25 +959,25 @@
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
-                            value="Goods Receipt"
-                            title="Goods Receipt"
+                            value="GRN"
+                            title="Goods Receipt (GRN)"
                             icon="fas fa-dolly-flatbed"
                             actionListener="#{searchController.makeListNull()}"
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"  
-                            value="Finalize GRN"  
+                            value="GRN Finalize"  
                             icon="fas fa-clipboard-check"
                             actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"  
-                            value="Approve GRN"  
+                            value="GRN Approval"  
                             icon="fas fa-check-circle"
                             actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" ></p:menuitem>
 
                         <p:menuitem  
                             ajax="false" 
@@ -1780,9 +1780,10 @@
                         rendered="#{webUserController.hasPrivilege('ChangeMyTheme')}" 
                         action="#{themeController.navigateToChangeOwnTheme()}"
                         value="Change My Theme" icon="pi pi-palette" ></p:menuitem>
+                    <!--Can not correct the spelling mistake as the enum values are already in production databases-->
                     <p:menuitem 
                         ajax="false" 
-                        rendered="#{webUserController.hasPrivilege('ChangePreference')}"
+                        rendered="#{webUserController.hasPrivilege('ChangePreferece')}" 
                         action="#{sessionController.navigateToManageOwnWebUserPreferences()}"
                         value="Change My Preferences" icon="pi pi-sliders-h"  ></p:menuitem>
                     <p:menuitem  

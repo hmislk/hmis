@@ -120,6 +120,12 @@ public class GrnReturnWithCostingController implements Serializable {
             returnBill = new BilledBill();
             returnBill.setBillType(BillType.PharmacyGrnReturn);
             returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            
+            // Initialize BillFinanceDetails
+            if (returnBill.getBillFinanceDetails() == null) {
+                returnBill.setBillFinanceDetails(new BillFinanceDetails());
+                returnBill.getBillFinanceDetails().setBill(returnBill);
+            }
         }
         return returnBill;
     }
@@ -255,7 +261,6 @@ public class GrnReturnWithCostingController implements Serializable {
         params.put("obi", originalBillItem);
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
 
-
         Object result = getBillItemFacade().findSingleScalar(sql, params);
         BigDecimal returnValue = BigDecimal.ZERO;
 
@@ -294,7 +299,6 @@ public class GrnReturnWithCostingController implements Serializable {
 
     public boolean isReturnQuantityValid() {
         boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
-
 
         for (BillItem returningBillItem : getBillItems()) {
             if (returningBillItem == null) {
@@ -389,48 +393,60 @@ public class GrnReturnWithCostingController implements Serializable {
     }
 
     public void onEdit(BillItem editingBillItem) {
+        System.out.println("=== onEdit START ===");
         if (editingBillItem == null || editingBillItem.getBillItemFinanceDetails() == null) {
+            System.out.println("onEdit: editingBillItem or finance details is null");
             return;
         }
 
+        BillItemFinanceDetails fd = editingBillItem.getBillItemFinanceDetails();
+        System.out.println("onEdit: Input qty=" + fd.getQuantity() + ", freeQty=" + fd.getFreeQuantity() + ", rate=" + fd.getLineGrossRate());
+        
+        // Validate quantities against remaining balance
         double remainngTotalQty = getRemainingTotalQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
         double remainngQty = getRemainingQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
         double remainngFreeQty = getRemainingFreeQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
 
-        pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(editingBillItem.getPharmaceuticalBillItem(), editingBillItem.getBillItemFinanceDetails());
-        editingBillItem.setQty(editingBillItem.getBillItemFinanceDetails().getQuantity().doubleValue());
-
         boolean returnByTotalQty = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
+        System.out.println("onEdit: returnByTotalQty=" + returnByTotalQty);
+        
         if (returnByTotalQty) {
-            if (editingBillItem.getQty() > remainngTotalQty) {
-                editingBillItem.setQty(remainngTotalQty);
-                editingBillItem.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(remainngTotalQty));
-                editingBillItem.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
+            double currentTotalQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+            if (currentTotalQty > remainngTotalQty) {
+                fd.setQuantity(BigDecimal.valueOf(remainngTotalQty));
+                fd.setFreeQuantity(BigDecimal.ZERO);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
             }
         } else {
-            PharmaceuticalBillItem pbi = editingBillItem.getPharmaceuticalBillItem();
-            if (pbi.getFreeQty() > remainngFreeQty && pbi.getQty() > remainngQty) {
-                pbi.setFreeQty(remainngFreeQty);
-                pbi.setQty(remainngQty);
-                JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
-            } else if (pbi.getQty() > remainngQty) {
-                pbi.setQty(remainngQty);
-                JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
-            } else if (pbi.getFreeQty() > remainngFreeQty) {
-                pbi.setFreeQty(remainngFreeQty);
+            double currentQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+            double currentFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            
+            if (currentQty > remainngQty) {
+                fd.setQuantity(BigDecimal.valueOf(remainngQty));
+                JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+            }
+            if (currentFreeQty > remainngFreeQty) {
+                fd.setFreeQuantity(BigDecimal.valueOf(remainngFreeQty));
                 JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
             }
         }
 
-        pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(editingBillItem.getPharmaceuticalBillItem(), editingBillItem.getBillItemFinanceDetails());
-        editingBillItem.setQty(editingBillItem.getBillItemFinanceDetails().getQuantity().doubleValue());
+        System.out.println("onEdit: After validation qty=" + fd.getQuantity() + ", freeQty=" + fd.getFreeQuantity());
 
-        calculateBillItemDetails(editingBillItem);
-        callculateBillDetails();
-        calTotal();
+        // Sync pharmaceutical bill item quantities with finance details (without resetting user input)
+        pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(editingBillItem.getPharmaceuticalBillItem(), fd);
+        
+        // Calculate line total based on user input quantities and rate
+        calculateLineTotalByLineGrossRate(editingBillItem);
+        System.out.println("onEdit: After line calc, lineGrossTotal=" + fd.getLineGrossTotal());
+        
+        // Update bill-level totals
         calculateTotalReturnByLineNetTotals();
+        System.out.println("onEdit: Bill total=" + (returnBill != null && returnBill.getBillFinanceDetails() != null ? returnBill.getBillFinanceDetails().getNetTotal() : "null"));
+        
+        // Set pharmacy item context
         getPharmacyController().setPharmacyItem(editingBillItem.getPharmaceuticalBillItem().getBillItem().getItem());
+        System.out.println("=== onEdit END ===");
     }
 
     public void resetValuesForReturn() {
@@ -592,6 +608,7 @@ public class GrnReturnWithCostingController implements Serializable {
 // ChatGPT contributed
     private void saveBillItems() {
         List<BillItem> failedItems = new ArrayList<>();
+        List<BillItem> zeroQuantityItems = new ArrayList<>();
 
         for (Iterator<BillItem> iterator = getBillItems().iterator(); iterator.hasNext();) {
             BillItem i = iterator.next();
@@ -604,6 +621,25 @@ public class GrnReturnWithCostingController implements Serializable {
                 continue; // Skip if finance details are missing
             }
 
+            // Check if item has zero return quantities
+            BigDecimal returnQty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal returnFreeQty = Optional.ofNullable(fd.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            boolean hasZeroQuantities = returnQty.compareTo(BigDecimal.ZERO) == 0 && returnFreeQty.compareTo(BigDecimal.ZERO) == 0;
+
+            if (hasZeroQuantities) {
+                // If item already exists in database, retire it
+                if (i.getId() != null) {
+                    i.setRetired(true);
+                    i.setRetiredAt(new Date());
+                    i.setRetirer(sessionController.getLoggedUser());
+                    billItemFacade.edit(i);
+                    zeroQuantityItems.add(i);
+                }
+                // Remove from current list
+                iterator.remove();
+                continue;
+            }
+
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             pharmacyCostingService.makeAllQuantityValuesNegative(pbi);
             if (i.getId() == null) {
@@ -613,7 +649,6 @@ public class GrnReturnWithCostingController implements Serializable {
             } else {
                 billItemFacade.edit(i);
             }
-
 
             boolean stockUpdatedSuccessfully = getPharmacyBean().deductFromStock(
                     pbi.getStock(),
@@ -638,6 +673,17 @@ public class GrnReturnWithCostingController implements Serializable {
                 }
                 failedItems.add(i); // Collect for logging or notification
             }
+        }
+
+        // Log information about zero quantity items that were retired
+        if (!zeroQuantityItems.isEmpty()) {
+            StringBuilder infoMessage = new StringBuilder("Items with zero return quantities were excluded from the return:<br/>");
+            for (BillItem zeroItem : zeroQuantityItems) {
+                if (zeroItem != null && zeroItem.getItem() != null) {
+                    infoMessage.append("- ").append(zeroItem.getItem().getName()).append("<br/>");
+                }
+            }
+            JsfUtil.addSuccessMessage(infoMessage.toString());
         }
 
         if (!failedItems.isEmpty()) {
@@ -710,6 +756,15 @@ public class GrnReturnWithCostingController implements Serializable {
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             if (fd == null || pbi == null) {
+                continue;
+            }
+
+            // Skip items with zero return quantities
+            BigDecimal returnQty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal returnFreeQty = Optional.ofNullable(fd.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            boolean hasZeroQuantities = returnQty.compareTo(BigDecimal.ZERO) == 0 && returnFreeQty.compareTo(BigDecimal.ZERO) == 0;
+
+            if (hasZeroQuantities) {
                 continue;
             }
 
@@ -966,7 +1021,6 @@ public class GrnReturnWithCostingController implements Serializable {
             return;
         }
 
-
         // Validate return quantities before processing
         if (!isReturnQuantityValid()) {
             return;
@@ -1123,10 +1177,7 @@ public class GrnReturnWithCostingController implements Serializable {
             return;
         }
 
-        if (pharmacyCostingService != null) {
-            pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
-        } else {
-        }
+        pharmacyCostingService.recalculateFinancialsForBillItemForGrnReturn(f);
 
         BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
         BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -1187,57 +1238,59 @@ public class GrnReturnWithCostingController implements Serializable {
         if (returnBill == null) {
             return;
         }
-
         if (billItems != null) {
             for (BillItem bi : billItems) {
                 calculateBillItemDetails(bi);
             }
         }
-
-        if (pharmacyCostingService != null) {
-            pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getReturnBill());
-            pharmacyCostingService.calculateBillTotalsFromItemsForPurchases(getReturnBill(), getBillItems());
-        }
-
-        if (pharmacyCalculation != null) {
-            pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
-        }
+        pharmacyCostingService.calculateBillTotalsFromItemsForGrnReturns(getReturnBill(), getBillItems());
     }
 
     public void onReturnRateChange(BillItem bi) {
         calculateBillItemDetails(bi);
+        calculateLineTotalByLineGrossRate(bi);
         callculateBillDetails();
+        calculateTotalReturnByLineNetTotals();
     }
 
     public void onReturningTotalQtyChange(BillItem editingBillItem) {
+        System.out.println("onReturningTotalQtyChange: CALLED");
         onEdit(editingBillItem);
     }
 
     private void calculateLineTotalByLineGrossRate(BillItem inputBillItem) {
 
         if (inputBillItem == null) {
+            System.out.println("calculateLineTotalByLineGrossRate: inputBillItem is null");
             return;
         }
 
         BillItemFinanceDetails f = inputBillItem.getBillItemFinanceDetails();
         if (f == null) {
+            System.out.println("calculateLineTotalByLineGrossRate: finance details is null");
             return;
         }
 
-        BigDecimal qty = f.getQuantity();
+        BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
+        BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
+        BigDecimal totalQty = qty.add(freeQty);
         BigDecimal grossRate = f.getLineGrossRate();
 
-        if (qty == null || grossRate == null) {
-            return;
+        if (grossRate == null) {
+            grossRate = BigDecimal.ZERO;
         }
 
-        BigDecimal grossTotal = qty.multiply(grossRate);
+        // For GRN returns, line total = total quantity (qty + free qty) × rate
+        BigDecimal grossTotal = totalQty.multiply(grossRate);
+        System.out.println("calculateLineTotalByLineGrossRate: qty=" + qty + ", freeQty=" + freeQty + ", totalQty=" + totalQty + ", rate=" + grossRate + ", lineTotal=" + grossTotal);
         f.setLineGrossTotal(grossTotal);
     }
 
     private void calculateTotalReturnByLineNetTotals() {
+        System.out.println("calculateTotalReturnByLineNetTotals: START");
 
         BigDecimal returnTotal = BigDecimal.ZERO;
+        int itemCount = 0;
         for (BillItem bi : billItems) {
             if (bi == null) {
                 continue;
@@ -1252,14 +1305,24 @@ public class GrnReturnWithCostingController implements Serializable {
 
             if (lineGrossTotal != null) {
                 returnTotal = returnTotal.add(lineGrossTotal);
+                itemCount++;
+                System.out.println("calculateTotalReturnByLineNetTotals: Item " + itemCount + " lineTotal=" + lineGrossTotal + ", runningTotal=" + returnTotal);
             }
         }
 
-        if (returnBill == null || returnBill.getBillFinanceDetails() == null) {
+        if (returnBill == null) {
+            System.out.println("calculateTotalReturnByLineNetTotals: returnBill is null");
             return;
+        }
+        
+        if (returnBill.getBillFinanceDetails() == null) {
+            System.out.println("calculateTotalReturnByLineNetTotals: billFinanceDetails is null, creating new one");
+            returnBill.setBillFinanceDetails(new BillFinanceDetails());
+            returnBill.getBillFinanceDetails().setBill(returnBill);
         }
 
         returnBill.getBillFinanceDetails().setNetTotal(returnTotal);
+        System.out.println("calculateTotalReturnByLineNetTotals: FINAL total=" + returnTotal + ", set to billFinanceDetails.netTotal=" + returnBill.getBillFinanceDetails().getNetTotal());
     }
 
     public void onReturningQtyChange(BillItem bi) {

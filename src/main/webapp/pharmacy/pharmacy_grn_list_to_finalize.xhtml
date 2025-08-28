@@ -7,50 +7,73 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyGrnFinalize')}">You are NOT authorized</h:panelGroup>
+        <h:panelGroup id="gpGrnFinalize" rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}">
         <h:form>
-            <p:panel style="min-width: 100%;">
+            <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
-                    <h:outputText styleClass="fas fa-clipboard-check"/>
-                    <h:outputLabel class="mx-4" value="GRN List - To Finalize"/>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clipboard-check text-warning me-2"></i>
+                        <h4 class="mb-0 text-warning">GRN List - To Finalize</h4>
+                    </div>
                 </f:facet>
 
-                <div class="row">
-                    <div class="col-2">
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar 
-                            id="fromDate" 
-                            class="w-100"
-                            inputStyleClass="form-control"
-                            value="#{searchController.fromDate}" 
-                            navigator="false" 
-                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}">      
-                        </p:calendar>
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar 
-                            id="toDate"
-                            class="w-100"
-                            inputStyleClass="form-control"
-                            value="#{searchController.toDate}" 
-                            navigator="false" 
-                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}">                                                                              
-                        </p:calendar>
-                        <p:commandButton 
-                            class="w-100 mt-3 ui-button-warning" 
-                            icon="fas fa-search"
-                            id="btnSearch" 
-                            ajax="false" 
-                            value="Search" 
-                            action="#{searchController.createGrnTableToFinalize}"/>  
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>From Date
+                                </label>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">      
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>To Date
+                                </label>
+                                <p:calendar 
+                                    id="toDate"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">                                                                              
+                                </p:calendar>
+                            </div>
+                            <p:commandButton 
+                                class="ui-button-warning w-100" 
+                                icon="fas fa-search"
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Search GRNs" 
+                                action="#{searchController.createGrnTableToFinalize}"
+                                style="min-height: 45px;"/>  
+                        </p:panel>
                     </div>
-                    <div class="col-10">
-                        <p:dataTable 
-                            value="#{searchController.bills}" 
-                            var="g"
-                            paginator="true"
-                            rows="10"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,15">
+                    <div class="col-lg-9 col-md-8">
+                        <p:panel header="GRNs Pending Finalization" styleClass="shadow-sm">
+                            <p:dataTable 
+                                value="#{searchController.bills}" 
+                                var="g"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="table-striped"
+                                emptyMessage="No GRNs found matching your criteria"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
                             
                             <p:column headerText="Created On" width="8em">
                                 <h:outputLabel value="#{g.createdAt}">
@@ -74,43 +97,54 @@
                                 <h:outputLabel value="#{g.deptId}"/>
                             </p:column>              
                             
-                            <p:column headerText="GRN Value" width="8em" class="text-end">
-                                <h:outputLabel value="#{g.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                            <p:column headerText="GRN Value" width="8em" styleClass="text-end" sortBy="#{g.netTotal}">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-success me-2"></i>
+                                    <span class="fw-bold text-success fs-6">
+                                        <h:outputLabel value="#{g.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
                             </p:column>
                             
                             <p:column headerText="Related PO" width="8em">
                                 <h:outputLabel value="#{g.referenceBill.deptId}" rendered="#{g.referenceBill ne null}"/>
                             </p:column>
 
-                            <p:column headerText="Actions" width="8em">
-                                <div class="d-flex gap-1">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                                <div class="d-flex justify-content-center align-items-center gap-1">
                                     <p:commandButton  
                                         class="ui-button-warning"  
-                                        icon="fa fa-edit"
+                                        icon="fas fa-edit"
+                                        value="Finalize"
                                         title="Edit and Finalize GRN" 
                                         ajax="false"
                                         rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                        action="#{pharmacyBillSearch.navigateToEditSavedGrn()}">
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrn()}"
+                                        style="min-width: 80px;">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-warning"  
-                                        icon="fa fa-edit"
+                                        icon="fas fa-edit"
+                                        value="Finalize"
                                         title="Edit and Finalize GRN with Costing" 
                                         ajax="false"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                        action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}">
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}"
+                                        style="min-width: 80px;">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
                                     </p:commandButton>
                                 </div>
                             </p:column>
                         </p:dataTable>
+                        </p:panel>
                     </div>
                 </div>
             </p:panel>
         </h:form>
+        </h:panelGroup>
     </ui:define>  
 
 </ui:composition>

@@ -2513,13 +2513,13 @@ public class BillSearch implements Serializable {
                     return;
                 }
             } else {
-                if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
                     JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                     return;
                 }
             }
         } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+            if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
                 JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                 return;
             }
