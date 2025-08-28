@@ -46,8 +46,10 @@
                         <div>
                             <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                         </div>
-                        <div >
-                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2} / #{cc.attrs.bill.department.telephone2}"/>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone1}"/>
+                            <h:outputLabel value="/" rendered="#{!cc.attrs.bill.department.telephone2.blank}"/>
+                            <h:outputLabel value=" #{cc.attrs.bill.department.telephone2}"/>
                         </div>
                         <div >
                             <h:outputLabel value="#{cc.attrs.bill.department.email}" />
