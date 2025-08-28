@@ -1,0 +1,326 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form id="form">
+
+            <h:panelGroup rendered="#{!grnReturnWorkflowController.printPreview}">
+                <p:panel>
+                    <f:facet name="header">
+                        <p:outputLabel value="GRN Return Request Approval"/>
+                        <div style="float:right;">
+                            <p:commandButton ajax="false"  
+                                             value="Approve" 
+                                             class="ui-button-success m-1" 
+                                             icon="fas fa-check" 
+                                             disabled="#{!webUserController.hasPrivilege('ApproveGrnReturn')}"
+                                             action="#{grnReturnWorkflowController.approve}">
+                            </p:commandButton>
+                            <p:commandButton ajax="false"  
+                                             value="Back To Return List" 
+                                             class="ui-button-warning" 
+                                             icon="fas fa-arrow-left" 
+                                             action="pharmacy_grn_return_list_to_approve">
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+                    <p:panel class="mb-2" id="grnReturn">
+                        <div class="row">
+
+                            <div class="col-10">
+                                <p:panel>
+                                    <f:facet name="header">  
+                                        <div class="d-flex justify-content-between">
+                                            <h:outputLabel value="GRN Return Items"/>
+                                            <p:commandButton process="itemList @this" update=":#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('grnReturn',view).clientId}" value="Remove All" class="ui-button-Danger" style="float: right" action="#{grnReturnWorkflowController.removeSelected()}"/>                            
+                                        </div>
+                                    </f:facet>
+                                    <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
+                                                 var="bi" value="#{grnReturnWorkflowController.billItems}"
+                                                 id="itemList" sortBy="#{bi.searialNo}" rowKey="#{bi.searialNo}"
+                                                 paginator="true" 
+                                                 rows="10" 
+                                                 selectionMode="multiple"
+                                                 paginatorPosition="bottom"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="5,10,15"
+                                                 selection="#{grnReturnWorkflowController.selectedItems}">  
+
+                                        <p:column selectionBox="true" style="width: 30px;"></p:column>
+
+                                        <p:column headerText="No" style="width: 50px;">
+                                            <p:outputLabel value="#{bi.searialNo + 1}"></p:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Item Name">  
+                                            <h:outputText value="#{bi.item.name}"></h:outputText>
+                                        </p:column>  
+
+                                        <p:column headerText="Code" styleClass="shortNumericColumn">  
+                                            <h:outputText value="#{bi.item.code}"></h:outputText>
+                                        </p:column>  
+
+                                        <p:column 
+                                            headerText="Return Qty"  
+                                            class="text-end px-1" 
+                                            width="6em">                         
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="qty"
+                                                value="#{bi.pharmaceuticalBillItem.qty}" 
+                                                class="w-100 text-end"
+                                                label="Return Qty" onfocus="this.select()">
+                                                <f:convertNumber pattern="#,#00"/>
+                                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{grnReturnWorkflowController.onEdit(bi)}" ></f:ajax>
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{grnReturnWorkflowController.onFocus(bi)}" />
+                                            </p:inputText>
+                                        </p:column>  
+                                        <p:column 
+                                            width="6em"
+                                            headerText="Free Return Qty"
+                                            class="text-end px-1">                         
+                                            <p:inputText 
+                                                autocomplete="off"
+                                                id="freeQty" 
+                                                value="#{bi.pharmaceuticalBillItem.freeQty}" 
+                                                class="w-100 text-end"
+                                                onfocus="this.select()">
+                                                <f:convertNumber pattern="#,#00"/>
+                                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{grnReturnWorkflowController.onEdit(bi)}" ></f:ajax>
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{grnReturnWorkflowController.onFocus(bi)}" />
+                                            </p:inputText>
+                                        </p:column> 
+                                        <p:column 
+                                            width="6em"
+                                            headerText="Purchase Rate"   
+                                            class="text-end px-1">  
+                                            <p:inputText
+                                                id="price"
+                                                class="w-100 text-end"
+                                                style="margin: 0px;"
+                                                autocomplete="off"
+                                                value="#{bi.pharmaceuticalBillItem.purchaseRateInUnit}" onfocus="this.select()">   
+                                                <f:convertNumber pattern="#00.00"/>
+                                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{grnReturnWorkflowController.onEdit(bi)}" ></f:ajax>
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{grnReturnWorkflowController.onFocus(bi)}" />
+                                            </p:inputText>
+                                        </p:column>  
+
+                                        <p:column 
+                                            headerText="Original Purchase Rate" 
+                                            width="6em"
+                                            class="text-end px-1">  
+                                            <h:panelGroup>
+                                                <h:outputText value="#{grnReturnWorkflowController.getOriginalPurchaseRate(bi.item)}">
+                                                    <f:convertNumber pattern="#00.00"/>
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </p:column>  
+
+                                        <p:column headerText="Return Value" width="6em" class="text-end px-1">  
+                                            <h:outputText id="total" value="#{bi.netValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                        <p:column class="text-end px-1" width="4em">
+                                            <p:commandButton process="itemList" update="itemList :#{p:resolveFirstComponentWithId('grnReturn',view).clientId}" icon="fas fa-trash"  class="ui-button-Danger" action="#{grnReturnWorkflowController.removeItem(bi)}"/>
+                                        </p:column>
+                                    </p:dataTable> 
+                                </p:panel>
+                            </div>
+
+                            <div class="col-2">
+
+                                <p:panel header="Approved GRN Return" id="panelGrnReturn">
+
+                                    <p:outputLabel value="Supplier"
+                                                   class="form-label"
+                                                   for="lblSupplier" />
+                                    <p:outputLabel id="lblSupplier"
+                                                   value="#{grnReturnWorkflowController.approvedBill.toInstitution.name}"
+                                                   class="form-control w-100 mb-2" 
+                                                   style="font-weight: bold;" />
+
+                                    <p:outputLabel value="Original GRN"
+                                                   class="form-label"
+                                                   for="lblGrn" />
+                                    <p:outputLabel id="lblGrn"
+                                                   value="#{grnReturnWorkflowController.approvedBill.referenceBill.deptId}"
+                                                   class="form-control w-100 mb-2" 
+                                                   style="font-weight: bold;" />
+
+                                    <p:outputLabel value="Return Reason"
+                                                   class="form-label"
+                                                   for="txtApprovalComments" />
+                                    <p:inputTextarea id="txtApprovalComments"
+                                                     value="#{grnReturnWorkflowController.approvedBill.comments}"
+                                                     class="w-100 mb-2"
+                                                     rows="3" />
+
+                                    <p:outputLabel value="Total Return Value"
+                                                   class="form-label w-100"
+                                                   for="tot" />
+                                    <p:outputLabel id="tot"
+                                                   value="#{grnReturnWorkflowController.approvedBill.netTotal}"
+                                                   class="m-1 w-100"
+                                                   style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+
+                                </p:panel>
+
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                    <p:spacer height="50"/>
+                    <ph:history/>
+                </p:panel>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{grnReturnWorkflowController.printPreview}">
+                <p:panel>
+                    <p:commandButton ajax="false" value="Back To Return List" action="pharmacy_grn_return_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
+                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info m-1" icon="fas fa-print">
+                        <p:printer target=":form:gpBillPreview"></p:printer>
+                    </p:commandButton>
+
+                    <p:panel id="gpBillPreview" class="my-2">
+
+                        <div class="d-flex justify-content-center">
+                            <div style="width: 212mm;">
+                                <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css"></h:outputStylesheet>
+
+                                <div class="institutionName">
+                                    <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.creater.institution.name}"/>
+                                </div>
+                                <div class="institutionContact">
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.creater.institution.address}" rendered="#{!empty grnReturnWorkflowController.approvedBill.creater.institution.address}"/>
+                                        <h:outputLabel value="Telephone : " rendered="#{!empty grnReturnWorkflowController.approvedBill.creater.institution.phone}"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.creater.institution.phone}" rendered="#{!empty grnReturnWorkflowController.approvedBill.creater.institution.phone}"/>
+                                    </div>
+                                </div>
+
+                                <div class="headingBill">
+                                    <h:outputLabel value="GRN Return Approval" style="text-decoration: underline;"/>
+                                </div>
+
+                                <div class="grn-return">
+                                    <h:panelGrid columns="6" class="my-2 w-100">
+                                        <h:outputLabel value="Return No" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.deptId}" />
+                                        <h:outputLabel value="Return Department" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.department.name}" />
+                                        <h:outputLabel value="Supplier" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.toInstitution.name}" />
+                                        <h:outputLabel value="Original GRN" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.referenceBill.deptId}" />
+                                    </h:panelGrid>
+                                </div>
+
+                                <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
+                                    <thead>
+                                        <tr style="border: 1px solid black;">
+                                            <th style="border: 1px solid black;">Item Code</th>
+                                            <th style="border: 1px solid black;">Item Name</th>
+                                            <th style="border: 1px solid black;">Return Qty</th>
+                                            <th style="border: 1px solid black;">Free Return Qty</th>
+                                            <th style="border: 1px solid black;">Approved Rate</th>
+                                            <th style="border: 1px solid black;">Approved Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{grnReturnWorkflowController.billItems}" var="bi">
+                                            <h:panelGroup rendered="#{not bi.retired}">
+                                                <tr style="border: 1px solid black;">
+                                                    <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.code}"/></td>
+                                                    <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.name}"/></td>
+                                                    <td style="text-align: right; border: 1px solid black;">
+                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}">
+                                                            <f:convertNumber pattern="#,##0"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="text-align: right; border: 1px solid black;">
+                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}">
+                                                            <f:convertNumber pattern="#,##0"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="text-align: right; border: 1px solid black;">
+                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRateInUnit}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="text-align: right; border: 1px solid black;">
+                                                        <h:outputLabel value="#{bi.netValue}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                        </ui:repeat>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="border: 1px solid black; font-weight: bold;">
+                                            <td colspan="5" style="text-align: right; border: 1px solid black;">Net Total &nbsp;</td>
+                                            <td style="text-align: right; border: 1px solid black;">
+                                                <h:outputText value="#{grnReturnWorkflowController.approvedBill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                                <br/>
+
+                                <div class="grn-return">
+                                    <div>
+                                        <h:outputLabel value="Return Requested By"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.requestedBill.creater.webUserPerson.name}"/>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Return Approved By"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.checkedBy.name}"/>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Return Approved At"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.checkeAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{grnReturnWorkflowController.approvedBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+                </p:panel>
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>  
+
+</ui:composition>

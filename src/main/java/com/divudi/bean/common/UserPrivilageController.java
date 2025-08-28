@@ -665,6 +665,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyGrnFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnFinalize, "Pharmacy GRN Finalize"), ProcumentNode);
         TreeNode pharmacyGrnApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnApprove, "Pharmacy GRN Approve"), ProcumentNode);
         TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), ProcumentNode);
+        TreeNode pharmacyCreateGrnReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreateGrnReturn, "Create GRN Return"), ProcumentNode);
+        TreeNode pharmacyFinalizeGrnReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.FinalizeGrnReturn, "Finalize GRN Return"), ProcumentNode);
+        TreeNode pharmacyApproveGrnReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.ApproveGrnReturn, "Approve GRN Return"), ProcumentNode);
         TreeNode pharmacyReturnWithoutRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnWithoutRecipt, "Pharmacy Return WIthout Recipt"), ProcumentNode);
         TreeNode pharmacyOrderCancellation = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Pharmacy Order Cancellation"), ProcumentNode);
 
