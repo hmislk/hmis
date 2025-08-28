@@ -47,6 +47,7 @@ public enum Privileges {
     OpdBillItemSearch("OPD Bill Item Search"),
     OpdReprint("OPD Reprint"),
     OpdCancel("OPD Cancel"),
+    OpdIndividualCancel("OPD Individual Cancel"),
     OpdReturn("OPD Return"),
     OpdReactivate("OPD Reactivate"),
     OpdBillSearchEdit("OPD Bill Search Edit"),
