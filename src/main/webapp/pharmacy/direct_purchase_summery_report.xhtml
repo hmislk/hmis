@@ -31,7 +31,7 @@
                 }
             </style>
             <h:form>
-                <p:panel header="Direct Purchase Summery Report">
+                <p:panel header="Direct Purchase Summary Report">
 
                     <h:panelGrid columns="8" class="w-100">
 
@@ -323,7 +323,9 @@
                         </p:column>
 
                         <p:column headerText="Order Date" width="10em">
-                            <h:outputText value="#{item.billDate}"/>
+                            <h:outputText value="#{item.billDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
 
                             <f:facet name="footer">
                                 <h:outputLabel value="Total Values : ">
