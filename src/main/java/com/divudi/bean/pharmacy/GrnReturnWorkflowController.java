@@ -595,6 +595,84 @@ public class GrnReturnWorkflowController implements Serializable {
         generateItemsFromGrn();
     }
 
+    // GRN Return specific methods (matching legacy pattern)
+    public double getAlreadyReturnedQuantity(BillItem referanceBillItem) {
+        // Calculate total already returned quantity for this item
+        if (referanceBillItem == null) return 0.0;
+        
+        String sql = "SELECT SUM(bi.pharmaceuticalBillItem.qty) FROM BillItem bi "
+                   + "WHERE bi.referanceBillItem = :refBi "
+                   + "AND bi.bill.billType = :bt "
+                   + "AND bi.bill.cancelled = :can "
+                   + "AND bi.retired = :ret";
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("refBi", referanceBillItem);
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("can", false);
+        params.put("ret", false);
+        
+        Double result = (Double) billItemFacade.findSingleValueByJpql(sql, params);
+        return result != null ? result : 0.0;
+    }
+
+    public double getAlreadyReturnedFreeQuantity(BillItem referanceBillItem) {
+        // Calculate total already returned free quantity for this item
+        if (referanceBillItem == null) return 0.0;
+        
+        String sql = "SELECT SUM(bi.pharmaceuticalBillItem.freeQty) FROM BillItem bi "
+                   + "WHERE bi.referanceBillItem = :refBi "
+                   + "AND bi.bill.billType = :bt "
+                   + "AND bi.bill.cancelled = :can "
+                   + "AND bi.retired = :ret";
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("refBi", referanceBillItem);
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("can", false);
+        params.put("ret", false);
+        
+        Double result = (Double) billItemFacade.findSingleValueByJpql(sql, params);
+        return result != null ? result : 0.0;
+    }
+
+    public String getReturnRateLabel() {
+        return "per Unit";
+    }
+
+    // Event handlers for quantity changes
+    public void onReturnRateChange(BillItem bi) {
+        calculateLineTotal(bi);
+        calculateTotal();
+    }
+
+    public void onReturningTotalQtyChange(BillItem bi) {
+        calculateLineTotal(bi);
+        calculateTotal();
+    }
+
+    public void onReturningQtyChange(BillItem bi) {
+        calculateLineTotal(bi);
+        calculateTotal();
+    }
+
+    public void onReturningFreeQtyChange(BillItem bi) {
+        calculateLineTotal(bi);
+        calculateTotal();
+    }
+
+    private void calculateLineTotal(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) return;
+        
+        double qty = bi.getBillItemFinanceDetails().getQuantity();
+        double freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+        double rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        
+        double total = (qty + freeQty) * rate;
+        bi.getBillItemFinanceDetails().setLineGrossTotal(total);
+        bi.setNetValue(total);
+    }
+
     // Utility methods
     public void displayItemDetails(BillItem bi) {
         // Implementation for displaying item details
