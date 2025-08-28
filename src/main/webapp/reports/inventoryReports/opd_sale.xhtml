@@ -181,11 +181,8 @@
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="OPD Sale Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportBillsToExcel('Pharmacy Sales',pharmacyReportController.cogsBillDtos)}">
                             </p:commandButton>
 
                             <p:commandButton 
