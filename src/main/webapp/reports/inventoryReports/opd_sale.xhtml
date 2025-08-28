@@ -46,9 +46,20 @@
 
 
                             <p:spacer width="20"></p:spacer>  
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
-
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2" />
+                                <p:outputLabel value="Payment Method" for="phmIns" class="m-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="pM"
+                                class="w-100"
+                                value="#{pharmacyReportController.paymentMethod}"
+                                filter="true">
+                                <f:selectItem itemLabel="All" />
+                                <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
+                            </p:selectOneMenu>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">

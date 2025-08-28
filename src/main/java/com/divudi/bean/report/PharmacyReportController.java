@@ -2016,6 +2016,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(billJpql, billParams, "b.institution", "ins", institution);
             addFilter(billJpql, billParams, "b.department.site", "sit", site);
             addFilter(billJpql, billParams, "b.department", "dep", department);
+            addFilter(billJpql, billParams, "b.paymentMethod", "pmFilter", this.paymentMethod);
 
             cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
 
