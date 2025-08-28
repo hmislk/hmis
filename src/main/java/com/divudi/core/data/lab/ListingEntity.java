@@ -10,6 +10,7 @@ public enum ListingEntity {
     BILL_ITEMS("Bill Items"),
     PATIENT_INVESTIGATIONS("Patient Investigations"),
     PATIENT_SAMPLES("Patient Samples"),
+    PATIENT_SAMPLES_INDIVIDUAL("IndividualPatient Samples"),
     PATIENT_REPORTS("Patient Reports"),
     VIEW_BARCODE("View Barcodes"),
     BILL_BARCODES("Bill Barcodes"),

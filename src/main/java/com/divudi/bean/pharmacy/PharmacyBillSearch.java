@@ -437,6 +437,22 @@ public class PharmacyBillSearch implements Serializable {
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
     }
+    
+    public String navigateToDirectPurchaseBillFromId(Long id){
+        if(id == null){
+            return "";
+        }
+        
+        Bill bill = billFacade.find(id);
+        
+        if(bill == null){
+            return "";
+        }
+        
+        this.bill = bill;
+        
+        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
+    }
 
     public String cancelInwardPharmacyRequestBillFromInward() {
         if (bill == null) {
@@ -1067,6 +1083,27 @@ public class PharmacyBillSearch implements Serializable {
         grnCostingController.setCurrentGrnBillPre(bill);
         return grnCostingController.navigateToEditGrnCosting();
     }
+
+//    public String navigateToApproveGrn() {
+//        if (bill == null) {
+//            JsfUtil.addErrorMessage("No Bill Selected");
+//            return null;
+//        }
+//        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN_PRE) {
+//            JsfUtil.addErrorMessage("Invalid Bill Type");
+//            return null;
+//        }
+//        grnController.setCurrentGrnBillPre(bill);
+//        return grnController.navigateToApproveRecieveGrnPreBill();
+//    }
+
+//    public String navigateToViewCompletedGrn() {
+//        if (bill == null) {
+//            JsfUtil.addErrorMessage("No Bill Selected");
+//            return null;
+//        }
+//        return navigateToViewPharmacyGrn();
+//    }
 
     public String navigateToViewPurchaseOrder() {
         if (bill == null) {

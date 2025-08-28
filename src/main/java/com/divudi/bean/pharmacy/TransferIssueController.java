@@ -338,7 +338,8 @@ public class TransferIssueController implements Serializable {
 
         // OPTIMIZATION 1: Bulk fetch all calculations for all bill items (replaces 2N individual queries)
         java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> calculationsMap = 
-            getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillType.PharmacyTransferIssue);
+            getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillTypeAtomic.PHARMACY_ISSUE);
+        
 
         // OPTIMIZATION 2: Extract unique items and bulk fetch stock availability (replaces N individual queries)
         java.util.List<Item> uniqueItems = billItemsOfRequest.stream()
@@ -361,16 +362,24 @@ public class TransferIssueController implements Serializable {
         for (BillItem billItemInRequest : billItemsOfRequest) {
             boolean flagStockFound = false;
 
+
             // Get calculations from pre-fetched data instead of individual queries
             com.divudi.core.data.dto.BillItemCalculationDTO calculations = calculationsMap.get(billItemInRequest.getId());
             if (calculations == null) {
-                // Create default calculation if not found
+                // Create default calculation if not found - use remaining quantity from database if available
+                Double remainingFromDb = billItemInRequest.getRemainingQty();
+                Double issuedQtyFromDb = billItemInRequest.getIssuedPhamaceuticalItemQty();
+                double alreadyIssuedFromDb = (issuedQtyFromDb != null) ? issuedQtyFromDb : 0.0;
                 calculations = new com.divudi.core.data.dto.BillItemCalculationDTO(
-                    billItemInRequest.getId(), billItemInRequest.getQty(), 0.0, 0.0);
+                    billItemInRequest.getId(), billItemInRequest.getQty(), alreadyIssuedFromDb, 0.0);
+            } else {
             }
 
             billItemInRequest.setIssuedPhamaceuticalItemQty(calculations.getNetIssuedQty());
-            double quantityToIssue = calculations.getRemainingQty();
+            // Update remaining quantity for consistency
+            billItemInRequest.setRemainingQty(calculations.getRemainingQty());
+            double quantityToIssue = getRemainingQuantityForItem(billItemInRequest);
+            
 
             if (quantityToIssue <= 0.001) { // Use small tolerance for floating point precision
                 continue; // Skip if nothing left to issue
@@ -381,12 +390,14 @@ public class TransferIssueController implements Serializable {
 
             if (stockItem instanceof Ampp) {
                 Ampp ampp = (Ampp) stockItem;
+                packSize = ampp.getDblValue();  // Get pack size from AMPP before changing stockItem
                 stockItem = ampp.getAmp();
-                packSize = stockItem.getDblValue();
             }
             if (stockItem instanceof Vmpp) {
-                packSize = stockItem.getDblValue();
-                //TODO: Add Support to VMPP as a new issue
+                Vmpp vmpp = (Vmpp) stockItem;
+                packSize = vmpp.getDblValue();  // Get pack size from VMPP
+                // For now, skip VMPP items as mentioned in TODO
+                // Future enhancement: stockItem = vmpp.getVmp();
                 continue;
             }
 
@@ -417,6 +428,23 @@ public class TransferIssueController implements Serializable {
 
                 if (thisTimeIssuingQtyInUnits <= 0) {
                     break;
+                }
+
+                // For AMPP items, ensure we only issue complete packs
+                if (packSize > 1.0) {
+                    // Check if we have enough units for at least one complete pack
+                    if (thisTimeIssuingQtyInUnits < packSize) {
+                        // Skip this stock as it doesn't have enough for a complete pack
+                        continue;
+                    }
+                    // Round down to the nearest complete pack
+                    double completePacksOnly = Math.floor(thisTimeIssuingQtyInUnits / packSize) * packSize;
+                    thisTimeIssuingQtyInUnits = completePacksOnly;
+                    
+                    // Check if after rounding we still have something to issue
+                    if (thisTimeIssuingQtyInUnits <= 0) {
+                        continue;
+                    }
                 }
 
                 // Create minimal Stock entity from DTO for user stock validation only
@@ -659,9 +687,10 @@ public class TransferIssueController implements Serializable {
                 }
             }
 
-            double alreadyIssued = bi.getReferanceBillItem().getIssuedPhamaceuticalItemQty();
-            if (bi.getReferanceBillItem().getQty() < (bi.getQty() + alreadyIssued)) {
-                JsfUtil.addErrorMessage("Issued quantity is higher than requested quantity in " + bi.getItem().getName());
+            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
+            double issuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
+            if (issuingQty > remainingQty) {
+                JsfUtil.addErrorMessage("Issued quantity (" + issuingQty + ") is higher than remaining requested quantity (" + remainingQty + ") for " + bi.getItem().getName());
                 return;
             }
         }
@@ -731,11 +760,15 @@ public class TransferIssueController implements Serializable {
                 billItemsInIssue.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
                 originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
+                
+                
                 originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
                 originalOrderItem.setRemainingQty(currentRemaining - billItemsInIssue.getQty());
+                
+                
                 billItemFacade.editAndCommit(originalOrderItem);
 
                 getBillItemFacade().edit(billItemsInIssue);
@@ -819,24 +852,35 @@ public class TransferIssueController implements Serializable {
         b.setNetValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
         b.setGrossValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
 
-        BigDecimal qty = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
+        BigDecimal qtyInUnits = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
+        BigDecimal qtyInPacks = BigDecimal.valueOf(b.getQty());
         BigDecimal rateBig = BigDecimal.valueOf(rate);
-        BigDecimal total = rateBig.multiply(qty);
 
-        f.setQuantity(qty);
-        f.setTotalQuantity(qty);
+        // Set unitsPerPack from the PharmaceuticalBillItem/DTO before computing pack rates
+        if (f.getUnitsPerPack() == null || f.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
+            if (b.getItem() instanceof Ampp) {
+                f.setUnitsPerPack(BigDecimal.valueOf(b.getItem().getDblValue()));
+            } else {
+                f.setUnitsPerPack(BigDecimal.ONE);
+            }
+        }
+
+        // BillItemFinanceDetails quantities should be in packs, not units
+        f.setQuantity(qtyInPacks);
+        f.setTotalQuantity(qtyInPacks);
         f.setLineGrossRate(rateBig);
         f.setLineNetRate(rateBig);
-        f.setLineGrossTotal(total);
-        f.setLineNetTotal(total);
+        // Calculate totals using pack quantities and pack rates
+        f.setLineGrossTotal(rateBig.multiply(qtyInPacks));
+        f.setLineNetTotal(rateBig.multiply(qtyInPacks));
 
         // Fix: Set LINECOSTRATE to actual cost rate from ItemBatch
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
             BigDecimal costRate = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getItemBatch().getCostRate());
             f.setLineCostRate(costRate);
-            f.setLineCost(costRate.multiply(qty));
+            f.setLineCost(costRate.multiply(qtyInUnits));
         } else {
-            f.setLineCost(total);
+            f.setLineCost(rateBig.multiply(qtyInPacks));
             f.setLineCostRate(rateBig);
         }
 
@@ -844,23 +888,22 @@ public class TransferIssueController implements Serializable {
         f.setGrossRate(rateBig); // GROSSRATE
 
         // Calculate quantity by units (quantity * units per pack)
-        BigDecimal unitsPerPack = f.getUnitsPerPack() != null ? f.getUnitsPerPack() : BigDecimal.ONE;
-        f.setQuantityByUnits(qty.multiply(unitsPerPack)); // QUANTITYBYUNITS
+        f.setQuantityByUnits(qtyInUnits); // QUANTITYBYUNITS - should be in units
 
-        // Calculate value at different rates
+        // Calculate value at different rates - these should use unit quantities for per-unit rates
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
             ItemBatch batch = b.getPharmaceuticalBillItem().getItemBatch();
             PharmaceuticalBillItem phItem = b.getPharmaceuticalBillItem();
 
-            f.setValueAtCostRate(BigDecimal.valueOf(batch.getCostRate()).multiply(qty)); // VALUEATCOSTRATE
-            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qty)); // VALUEATPURCHASERATE
-            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qty)); // VALUEATRETAILRATE
+            f.setValueAtCostRate(BigDecimal.valueOf(batch.getCostRate()).multiply(qtyInUnits)); // VALUEATCOSTRATE
+            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits)); // VALUEATPURCHASERATE
+            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits)); // VALUEATRETAILRATE
 
             // Fix: Add missing PharmaceuticalBillItem fields
             BigDecimal packQty = BigDecimal.valueOf(b.getQty()); // Quantity in packs
 
-            phItem.setPurchaseRatePack(batch.getPurcahseRate() * unitsPerPack.doubleValue()); // PURCHASERATEPACK
-            phItem.setRetailRatePack(batch.getRetailsaleRate() * unitsPerPack.doubleValue()); // RETAILRATEPACK
+            phItem.setPurchaseRatePack(batch.getPurcahseRate() * f.getUnitsPerPack().doubleValue()); // PURCHASERATEPACK
+            phItem.setRetailRatePack(batch.getRetailsaleRate() * f.getUnitsPerPack().doubleValue()); // RETAILRATEPACK
             phItem.setPurchaseValue(batch.getPurcahseRate() * phItem.getQty()); // PURCHASEVALUE (rate * qty in units)
             phItem.setRetailValue(batch.getRetailsaleRate() * phItem.getQty()); // RETAILVALUE (rate * qty in units)
         }
@@ -877,24 +920,35 @@ public class TransferIssueController implements Serializable {
         b.setNetValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
         b.setGrossValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
 
-        BigDecimal qty = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
+        BigDecimal qtyInUnits = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
+        BigDecimal qtyInPacks = BigDecimal.valueOf(b.getQty());
         BigDecimal rateBig = BigDecimal.valueOf(rate);
-        BigDecimal total = rateBig.multiply(qty);
 
-        f.setQuantity(qty);
-        f.setTotalQuantity(qty);
+        // Set unitsPerPack from the PharmaceuticalBillItem/DTO before computing pack rates
+        if (f.getUnitsPerPack() == null || f.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
+            if (b.getItem() instanceof Ampp) {
+                f.setUnitsPerPack(BigDecimal.valueOf(b.getItem().getDblValue()));
+            } else {
+                f.setUnitsPerPack(BigDecimal.ONE);
+            }
+        }
+
+        // BillItemFinanceDetails quantities should be in packs, not units
+        f.setQuantity(qtyInPacks);
+        f.setTotalQuantity(qtyInPacks);
         f.setLineGrossRate(rateBig);
         f.setLineNetRate(rateBig);
-        f.setLineGrossTotal(total);
-        f.setLineNetTotal(total);
+        // Calculate totals using pack quantities and pack rates
+        f.setLineGrossTotal(rateBig.multiply(qtyInPacks));
+        f.setLineNetTotal(rateBig.multiply(qtyInPacks));
 
         // Fix: Set LINECOSTRATE to actual cost rate from ItemBatch
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
             BigDecimal costRate = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getItemBatch().getCostRate());
             f.setLineCostRate(costRate);
-            f.setLineCost(costRate.multiply(qty));
+            f.setLineCost(costRate.multiply(qtyInUnits));
         } else {
-            f.setLineCost(total);
+            f.setLineCost(rateBig.multiply(qtyInPacks));
             f.setLineCostRate(rateBig);
         }
 
@@ -902,24 +956,23 @@ public class TransferIssueController implements Serializable {
         f.setGrossRate(rateBig); // GROSSRATE
 
         // Calculate quantity by units (quantity * units per pack)
-        BigDecimal unitsPerPack = f.getUnitsPerPack() != null ? f.getUnitsPerPack() : BigDecimal.ONE;
-        f.setQuantityByUnits(qty.multiply(unitsPerPack)); // QUANTITYBYUNITS
+        f.setQuantityByUnits(qtyInUnits); // QUANTITYBYUNITS - should be in units
 
-        // Calculate value at different rates
+        // Calculate value at different rates - these should use unit quantities for per-unit rates
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
             ItemBatch batch = b.getPharmaceuticalBillItem().getItemBatch();
             PharmaceuticalBillItem phItem = b.getPharmaceuticalBillItem();
 
-            f.setValueAtCostRate(BigDecimal.valueOf(batch.getCostRate()).multiply(qty)); // VALUEATCOSTRATE
-            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qty)); // VALUEATPURCHASERATE
-            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qty)); // VALUEATRETAILRATE
+            f.setValueAtCostRate(BigDecimal.valueOf(batch.getCostRate()).multiply(qtyInUnits)); // VALUEATCOSTRATE
+            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits)); // VALUEATPURCHASERATE
+            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits)); // VALUEATRETAILRATE
 
             // Fix: Add missing PharmaceuticalBillItem fields
             BigDecimal packQty = BigDecimal.valueOf(b.getQty()); // Quantity in packs
 
-            phItem.setPurchaseRatePack(batch.getPurcahseRate() * unitsPerPack.doubleValue()); // PURCHASERATEPACK
-            phItem.setRetailRatePack(batch.getRetailsaleRate() * unitsPerPack.doubleValue()); // RETAILRATEPACK
-            phItem.setCostRatePack(batch.getCostRate() * unitsPerPack.doubleValue()); // COSTRATEPACK
+            phItem.setPurchaseRatePack(batch.getPurcahseRate() * f.getUnitsPerPack().doubleValue()); // PURCHASERATEPACK
+            phItem.setRetailRatePack(batch.getRetailsaleRate() * f.getUnitsPerPack().doubleValue()); // RETAILRATEPACK
+            phItem.setCostRatePack(batch.getCostRate() * f.getUnitsPerPack().doubleValue()); // COSTRATEPACK
             phItem.setPurchaseValue(batch.getPurcahseRate() * phItem.getQty()); // PURCHASEVALUE (rate * qty in units)
             phItem.setRetailValue(batch.getRetailsaleRate() * phItem.getQty()); // RETAILVALUE (rate * qty in units)
             phItem.setCostValue(batch.getCostRate() * phItem.getQty()); // COSTVALUE (rate * qty in units)
@@ -1098,6 +1151,17 @@ public class TransferIssueController implements Serializable {
 
         BigDecimal qty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
 
+        // Validate quantity doesn't exceed remaining requested quantity
+        if (bi.getReferanceBillItem() != null) {
+            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
+            
+            if (qty.doubleValue() > remainingQty) {
+                // Cap the quantity to the maximum allowed
+                qty = BigDecimal.valueOf(remainingQty);
+                fd.setQuantity(qty);
+            }
+        }
+
         BigDecimal unitsPerPack = BigDecimal.ONE;
         if (item instanceof Ampp || item instanceof Vmpp) {
             unitsPerPack = item.getDblValue() > 0 ? BigDecimal.valueOf(item.getDblValue()) : BigDecimal.ONE;
@@ -1149,6 +1213,19 @@ public class TransferIssueController implements Serializable {
         if (bi == null) {
             return;
         }
+        
+        // Validate quantity doesn't exceed remaining requested quantity
+        if (bi.getReferanceBillItem() != null) {
+            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
+            double currentIssuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
+            
+            if (currentIssuingQty > remainingQty) {
+                JsfUtil.addErrorMessage("Cannot issue " + currentIssuingQty + " units of " + bi.getItem().getName() + ". Only " + remainingQty + " units remaining to be issued.");
+                // Reset to maximum allowed quantity
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(remainingQty));
+            }
+        }
+        
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
@@ -1470,6 +1547,20 @@ public class TransferIssueController implements Serializable {
         return "";
     }
 
+    /**
+     * Gets the remaining quantity that can still be issued for a given requested item.
+     * @param referenceItem The original requested bill item
+     * @return The remaining quantity that can be issued
+     */
+    public double getRemainingQuantityForItem(BillItem referenceItem) {
+        if (referenceItem == null) {
+            return 0.0;
+        }
+        double requestedQty = referenceItem.getQty();
+        double alreadyIssued = referenceItem.getIssuedPhamaceuticalItemQty();
+        return Math.max(0.0, requestedQty - alreadyIssued);
+    }
+
     // ------------------------------------------------------------------
     // Helper Methods for DTO-based Optimization
     // ------------------------------------------------------------------
@@ -1561,30 +1652,39 @@ public class TransferIssueController implements Serializable {
         
         BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
 
+        // Set unitsPerPack from the packSize parameter before computing pack rates
+        financeDetails.setUnitsPerPack(packSizeBD);
+
+        // Calculate unit quantities for consistency
+        BigDecimal qtyInUnits = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getQty());
+
         // Quantities
         financeDetails.setQuantity(qty);
         financeDetails.setTotalQuantity(qty);
+        financeDetails.setQuantityByUnits(qtyInUnits);
 
         // Transfer rates and values (net values - what the transfer is priced at)
-        financeDetails.setLineGrossRate(transferRate.multiply(packSizeBD));
-        financeDetails.setLineNetRate(transferRate.multiply(packSizeBD));
-        financeDetails.setLineGrossTotal(transferRate.multiply(qty).multiply(packSizeBD));
-        financeDetails.setLineNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
-        financeDetails.setNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
+        BigDecimal packRate = transferRate.multiply(packSizeBD);
+        financeDetails.setLineGrossRate(packRate);
+        financeDetails.setLineNetRate(packRate);
+        // Calculate totals using pack quantities and pack rates (not unit quantities)
+        financeDetails.setLineGrossTotal(packRate.multiply(qty));
+        financeDetails.setLineNetTotal(packRate.multiply(qty));
+        financeDetails.setNetTotal(packRate.multiply(qty));
 
-        // Purchase rate and value (for purchase value reporting)
-        financeDetails.setValueAtPurchaseRate(purchaseRate.multiply(qty).multiply(packSizeBD));
+        // Purchase rate and value (for purchase value reporting) - use unit quantities
+        financeDetails.setValueAtPurchaseRate(purchaseRate.multiply(qtyInUnits));
 
-        // Retail rate and value (for sale value reporting)
-        financeDetails.setRetailSaleRate(retailRate.multiply(packSizeBD));
-        financeDetails.setValueAtRetailRate(retailRate.multiply(qty).multiply(packSizeBD));
+        // Retail rate and value (for sale value reporting) - use unit quantities  
+        financeDetails.setRetailSaleRate(retailRate);
+        financeDetails.setValueAtRetailRate(retailRate.multiply(qtyInUnits));
 
-        // Cost rate and value
+        // Cost rate and value - use unit quantities for per-unit cost rates
         financeDetails.setLineCostRate(costRate);
-        financeDetails.setLineCost(costRate.multiply(qty).multiply(packSizeBD));
-        financeDetails.setTotalCost(costRate.multiply(qty).multiply(packSizeBD));
+        financeDetails.setLineCost(costRate.multiply(qtyInUnits));
+        financeDetails.setTotalCost(costRate.multiply(qtyInUnits));
         financeDetails.setTotalCostRate(costRate);
-        financeDetails.setValueAtCostRate(costRate.multiply(qty).multiply(packSizeBD));
+        financeDetails.setValueAtCostRate(costRate.multiply(qtyInUnits));
     }
 
     /**
