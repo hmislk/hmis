@@ -2408,6 +2408,9 @@ public class GrnCostingController implements Serializable {
 
         // Recalculate totals when loading saved bill
         if (getBillItems() != null && !getBillItems().isEmpty()) {
+            // Defensive: de-duplicate any repeated expense rows after loading
+            deduplicateBillExpensesInMemory();
+
             // Ensure each bill item's finance details are properly calculated
             for (BillItem bi : getBillItems()) {
                 if (bi.getBillItemFinanceDetails() != null) {
@@ -2427,6 +2430,63 @@ public class GrnCostingController implements Serializable {
         }
 
         return "/pharmacy/pharmacy_grn_costing_with_save_approve?faces-redirect=true";
+    }
+
+    /**
+     * Remove duplicate expense entries from the in-memory list before persist.
+     * Two expenses are considered duplicates if they share the same:
+     * - Item id (or both null),
+     * - Net rate,
+     * - Considered-for-costing flag,
+     * - Description (trimmed, case-insensitive), and
+     * - Quantity.
+     * Keeps the first occurrence and retires subsequent ones if already persisted;
+     * otherwise removes from the list.
+     */
+    private void deduplicateBillExpensesInMemory() {
+        if (getCurrentGrnBillPre() == null) {
+            return;
+        }
+        List<BillItem> expenses = getCurrentGrnBillPre().getBillExpenses();
+        if (expenses == null || expenses.isEmpty()) {
+            return;
+        }
+
+        Map<String, BillItem> seen = new HashMap<>();
+        List<BillItem> toRemove = new ArrayList<>();
+
+        for (BillItem e : expenses) {
+            if (e == null || e.isRetired()) {
+                continue;
+            }
+            Long itemId = e.getItem() != null ? e.getItem().getId() : null;
+            String desc = e.getDescreption() != null ? e.getDescreption().trim().toLowerCase() : "";
+            String key = (itemId == null ? "_null" : itemId.toString())
+                    + "|" + String.format(java.util.Locale.ROOT, "%.6f", e.getNetRate())
+                    + "|" + (e.isConsideredForCosting() ? "1" : "0")
+                    + "|" + desc
+                    + "|" + String.format(java.util.Locale.ROOT, "%.6f", e.getQty() == null ? 0.0 : e.getQty());
+
+            if (!seen.containsKey(key)) {
+                seen.put(key, e);
+            } else {
+                // duplicate
+                if (e.getId() != null) {
+                    // Persisted duplicate: retire it so it won't load next time
+                    e.setRetired(true);
+                    e.setRetiredAt(new Date());
+                    e.setRetirer(getSessionController().getLoggedUser());
+                    getBillItemFacade().edit(e);
+                } else {
+                    // Not persisted yet: just drop it from the list
+                    toRemove.add(e);
+                }
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            expenses.removeAll(toRemove);
+        }
     }
 
     public void requestWithSaveApprove() {
@@ -2468,6 +2528,10 @@ public class GrnCostingController implements Serializable {
         } else {
             getBillFacade().edit(getCurrentGrnBillPre());
         }
+
+        // Defensive: de-duplicate any repeated expense rows before persisting
+        // This prevents automatic duplication across save/edit cycles
+        deduplicateBillExpensesInMemory();
 
         // Save bill items - work directly with bill's collection
         for (BillItem i : getCurrentGrnBillPre().getBillItems()) {
