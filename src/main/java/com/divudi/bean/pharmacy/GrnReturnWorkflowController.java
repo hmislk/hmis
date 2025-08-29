@@ -185,7 +185,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Bill management methods
     private void saveBill(boolean finalize) {
-        if (currentBill.getId() == null) {
+        boolean isNewBill = (currentBill.getId() == null);
+        
+        if (isNewBill) {
             currentBill.setBillType(BillType.PharmacyGrnReturn);
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
             currentBill.setInstitution(sessionController.getInstitution());
@@ -206,11 +208,20 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         calculateTotal();
-        billFacade.edit(currentBill);
+        
+        // Use create() for new bills, edit() for existing bills
+        if (isNewBill) {
+            billFacade.create(currentBill);
+        } else {
+            billFacade.edit(currentBill);
+        }
+        
         saveBillItems();
     }
 
     private void saveApprovedBill() {
+        boolean isNewBill = (approvedBill.getId() == null);
+        
         approvedBill.setInstitution(sessionController.getInstitution());
         approvedBill.setDepartment(sessionController.getDepartment());
         approvedBill.setCreater(sessionController.getLoggedUser());
@@ -225,7 +236,14 @@ public class GrnReturnWorkflowController implements Serializable {
         approvedBill.setInsId(billNumber);
 
         calculateApprovedTotal();
-        billFacade.edit(approvedBill);
+        
+        // Use create() for new bills, edit() for existing bills
+        if (isNewBill) {
+            billFacade.create(approvedBill);
+        } else {
+            billFacade.edit(approvedBill);
+        }
+        
         saveApprovedBillItems();
 
         // Link the approved bill to the requested bill
@@ -235,18 +253,28 @@ public class GrnReturnWorkflowController implements Serializable {
 
     private void saveBillItems() {
         for (BillItem bi : billItems) {
-            if (bi.getPharmaceuticalBillItem().getQty() == 0
-                    && bi.getPharmaceuticalBillItem().getFreeQty() == 0) {
+            // Allow items with zero quantities - they may be intentionally set to zero
+            // Skip only if item is retired or invalid
+            if (bi.isRetired()) {
                 continue;
             }
 
+            // Ensure bill reference is set
             bi.setBill(currentBill);
             bi.setCreatedAt(new Date());
             bi.setCreater(sessionController.getLoggedUser());
 
+            // Set up pharmaceutical bill item relationship
             PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
             phi.setBillItem(bi);
 
+            // Set up finance details relationship
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd != null) {
+                fd.setBillItem(bi);
+            }
+
+            // Save entities in correct order
             if (bi.getId() == null) {
                 billItemFacade.create(bi);
             } else {
@@ -263,8 +291,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
     private void saveApprovedBillItems() {
         for (BillItem bi : billItems) {
-            if (bi.getPharmaceuticalBillItem().getQty() == 0
-                    && bi.getPharmaceuticalBillItem().getFreeQty() == 0) {
+            // Allow items with zero quantities - they represent approved zero returns
+            // Skip only if item is retired
+            if (bi.isRetired()) {
                 continue;
             }
 
@@ -286,13 +315,18 @@ public class GrnReturnWorkflowController implements Serializable {
     // Stock handling - only at approval stage
     private void updateStock() {
         for (BillItem bi : billItems) {
-            if (bi.getPharmaceuticalBillItem().getQty() == 0
-                    && bi.getPharmaceuticalBillItem().getFreeQty() == 0) {
+            // Skip only retired items or items with truly zero quantities
+            if (bi.isRetired()) {
                 continue;
             }
 
             PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
             double totalQty = phi.getQty() + phi.getFreeQty();
+
+            // Skip stock processing for zero quantity items (no stock impact)
+            if (totalQty == 0) {
+                continue;
+            }
 
             // Deduct from stock for return
             boolean returnFlag = pharmacyBean.deductFromStock(
@@ -809,6 +843,8 @@ public class GrnReturnWorkflowController implements Serializable {
 
         boolean isValid = true;
 
+        boolean hasItemsWithQuantities = false;
+
         // Validate each item
         for (BillItem bi : billItems) {
             if (bi.isRetired()) {
@@ -819,17 +855,22 @@ public class GrnReturnWorkflowController implements Serializable {
                 isValid = false;
             }
 
-            // Check if item has positive return quantity
+            // Check if at least one item has some return quantity
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             if (fd != null) {
                 double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
                 double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
                 
-                if (qty <= 0 && freeQty <= 0) {
-                    JsfUtil.addErrorMessage("Item " + bi.getItem().getName() + " must have return quantity greater than zero");
-                    isValid = false;
+                if (qty > 0 || freeQty > 0) {
+                    hasItemsWithQuantities = true;
                 }
             }
+        }
+
+        // At least one item should have return quantities (prevent completely empty returns)
+        if (!hasItemsWithQuantities) {
+            JsfUtil.addErrorMessage("At least one item must have return quantities greater than zero");
+            isValid = false;
         }
 
         // Validate return reason is provided
@@ -981,17 +1022,20 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Methods to populate bill lists for workflow steps
     public void fillGrnReturnsToFinalize() {
+        // Find draft/saved bills that need to be finalized
+        // Draft = no checkedBy (not yet finalized)
+        // Need finalization = ready to be checked and finalized
         String jpql = "SELECT b FROM RefundBill b "
                 + "WHERE b.billType = :bt "
                 + "AND b.billTypeAtomic = :bta "
-                + "AND b.billedBill IS NULL "
+                + "AND b.checkedBy IS NULL "
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
-        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN_REQUEST);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
 
         grnReturnsToFinalize = billFacade.findByJpql(jpql, params);
         if (grnReturnsToFinalize == null) {
@@ -1000,17 +1044,21 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public void fillGrnReturnsToApprove() {
+        // Find finalized bills that are ready for approval
+        // Finalized = has checkedBy (finalized by someone)
+        // Ready for approval = no referenceBill (not yet approved)
         String jpql = "SELECT b FROM RefundBill b "
                 + "WHERE b.billType = :bt "
                 + "AND b.billTypeAtomic = :bta "
-                + "AND b.billedBill IS NULL "
+                + "AND b.checkedBy IS NOT NULL "
+                + "AND b.referenceBill IS NULL "
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
-        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN_FINALIZED);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
 
         grnReturnsToApprove = billFacade.findByJpql(jpql, params);
         if (grnReturnsToApprove == null) {
