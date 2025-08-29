@@ -90,6 +90,12 @@ public class GrnReturnWorkflowController implements Serializable {
     private Bill selectedGrn;
     private Bill originalGrn;
     private List<Item> dealorItems;
+    
+    // Bill lists for workflow steps
+    private List<Bill> grnReturnsToFinalize;
+    private List<Bill> grnReturnsToApprove;
+    private List<Bill> filteredGrnReturnsToFinalize;
+    private List<Bill> filteredGrnReturnsToApprove;
 
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -97,6 +103,7 @@ public class GrnReturnWorkflowController implements Serializable {
     // Navigation methods
     public String navigateToCreateGrnReturn() {
         resetBillValues();
+        makeListNull();
         return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
     }
 
@@ -612,8 +619,7 @@ public class GrnReturnWorkflowController implements Serializable {
         params.put("can", false);
         params.put("ret", false);
         
-        Double result = (Double) billItemFacade.findSingleValueByJpql(sql, params);
-        return result != null ? result : 0.0;
+        return billItemFacade.findDoubleByJpql(sql, params);
     }
 
     public double getAlreadyReturnedFreeQuantity(BillItem referanceBillItem) {
@@ -632,8 +638,7 @@ public class GrnReturnWorkflowController implements Serializable {
         params.put("can", false);
         params.put("ret", false);
         
-        Double result = (Double) billItemFacade.findSingleValueByJpql(sql, params);
-        return result != null ? result : 0.0;
+        return billItemFacade.findDoubleByJpql(sql, params);
     }
 
     public String getReturnRateLabel() {
@@ -664,13 +669,17 @@ public class GrnReturnWorkflowController implements Serializable {
     private void calculateLineTotal(BillItem bi) {
         if (bi == null || bi.getBillItemFinanceDetails() == null) return;
         
-        double qty = bi.getBillItemFinanceDetails().getQuantity();
-        double freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
-        double rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+        BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+        BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
         
-        double total = (qty + freeQty) * rate;
+        if (qty == null) qty = BigDecimal.ZERO;
+        if (freeQty == null) freeQty = BigDecimal.ZERO;
+        if (rate == null) rate = BigDecimal.ZERO;
+        
+        BigDecimal total = qty.add(freeQty).multiply(rate);
         bi.getBillItemFinanceDetails().setLineGrossTotal(total);
-        bi.setNetValue(total);
+        bi.setNetValue(total.doubleValue());
     }
 
     // Utility methods
@@ -683,6 +692,45 @@ public class GrnReturnWorkflowController implements Serializable {
         
         PharmaceuticalBillItem originalPhi = findItemInGrn(item, originalGrn);
         return originalPhi != null ? originalPhi.getPurchaseRateInUnit() : 0.0;
+    }
+
+    // Methods to populate bill lists for workflow steps
+    public void fillGrnReturnsToFinalize() {
+        String jpql = "SELECT b FROM RefundBill b "
+                   + "WHERE b.billType = :bt "
+                   + "AND b.billTypeAtomic = :bta "
+                   + "AND b.billedBill IS NULL "
+                   + "AND b.cancelled = false "
+                   + "AND b.retired = false "
+                   + "ORDER BY b.createdAt DESC";
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN_REQUEST);
+        
+        grnReturnsToFinalize = billFacade.findByJpql(jpql, params);
+        if (grnReturnsToFinalize == null) {
+            grnReturnsToFinalize = new ArrayList<>();
+        }
+    }
+    
+    public void fillGrnReturnsToApprove() {
+        String jpql = "SELECT b FROM RefundBill b "
+                   + "WHERE b.billType = :bt "
+                   + "AND b.billTypeAtomic = :bta "
+                   + "AND b.billedBill IS NULL "
+                   + "AND b.cancelled = false "
+                   + "AND b.retired = false "
+                   + "ORDER BY b.createdAt DESC";
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN_FINALIZED);
+        
+        grnReturnsToApprove = billFacade.findByJpql(jpql, params);
+        if (grnReturnsToApprove == null) {
+            grnReturnsToApprove = new ArrayList<>();
+        }
     }
 
     public void resetBillValues() {
@@ -807,5 +855,43 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public void setDealorItems(List<Item> dealorItems) {
         this.dealorItems = dealorItems;
+    }
+
+    public List<Bill> getGrnReturnsToFinalize() {
+        if (grnReturnsToFinalize == null) {
+            grnReturnsToFinalize = new ArrayList<>();
+        }
+        return grnReturnsToFinalize;
+    }
+
+    public void setGrnReturnsToFinalize(List<Bill> grnReturnsToFinalize) {
+        this.grnReturnsToFinalize = grnReturnsToFinalize;
+    }
+
+    public List<Bill> getGrnReturnsToApprove() {
+        if (grnReturnsToApprove == null) {
+            grnReturnsToApprove = new ArrayList<>();
+        }
+        return grnReturnsToApprove;
+    }
+
+    public void setGrnReturnsToApprove(List<Bill> grnReturnsToApprove) {
+        this.grnReturnsToApprove = grnReturnsToApprove;
+    }
+
+    public List<Bill> getFilteredGrnReturnsToFinalize() {
+        return filteredGrnReturnsToFinalize;
+    }
+
+    public void setFilteredGrnReturnsToFinalize(List<Bill> filteredGrnReturnsToFinalize) {
+        this.filteredGrnReturnsToFinalize = filteredGrnReturnsToFinalize;
+    }
+
+    public List<Bill> getFilteredGrnReturnsToApprove() {
+        return filteredGrnReturnsToApprove;
+    }
+
+    public void setFilteredGrnReturnsToApprove(List<Bill> filteredGrnReturnsToApprove) {
+        this.filteredGrnReturnsToApprove = filteredGrnReturnsToApprove;
     }
 }

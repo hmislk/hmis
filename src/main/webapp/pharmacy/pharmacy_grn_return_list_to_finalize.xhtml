@@ -67,7 +67,7 @@
                                     class="ui-button-warning w-100" 
                                     icon="fas fa-search" 
                                     value="Search GRN Return Requests" 
-                                    action="#{searchController.fillOnlySavedGrnReturns()}" 
+                                    action="#{grnReturnWorkflowController.fillGrnReturnsToFinalize()}" 
                                     ajax="false"
                                     style="min-height: 45px;">
                                 </p:commandButton>
@@ -132,7 +132,7 @@
                         <p:panel header="GRN Return Requests to Finalize" styleClass="shadow-sm">
                             <p:dataTable 
                                 id="tbl" 
-                                value="#{searchController.bills}" 
+                                value="#{grnReturnWorkflowController.grnReturnsToFinalize}" 
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -141,7 +141,7 @@
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
                                 emptyMessage="No GRN return requests found matching your criteria"
-                                filteredValue="#{searchController.filteredBills}"
+                                filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToFinalize}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">

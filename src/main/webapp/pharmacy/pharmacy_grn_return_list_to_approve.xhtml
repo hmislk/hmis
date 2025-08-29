@@ -67,7 +67,7 @@
                                     class="ui-button-info w-100 mb-2" 
                                     icon="fas fa-search" 
                                     value="Search All Requests" 
-                                    action="#{searchController.createGrnReturnRequestedAndApproved()}" 
+                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
@@ -75,7 +75,7 @@
                                     class="ui-button-success w-100 mb-2" 
                                     icon="fas fa-check" 
                                     value="Search Approved Requests" 
-                                    action="#{searchController.createApprovedGrnReturns()}" 
+                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
@@ -158,7 +158,7 @@
                         <p:panel header="GRN Return Requests for Approval" styleClass="shadow-sm">
                             <p:dataTable 
                                 id="tbl" 
-                                value="#{searchController.bills}" 
+                                value="#{grnReturnWorkflowController.grnReturnsToApprove}" 
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -167,6 +167,7 @@
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
                                 emptyMessage="No GRN return requests found matching your criteria"
+                                filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToApprove}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
