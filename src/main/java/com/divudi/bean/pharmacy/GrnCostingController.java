@@ -2469,6 +2469,8 @@ public class GrnCostingController implements Serializable {
                 if (e.getId() != null) {
                     // Persisted duplicate: retire it so it won't load next time
                     e.setRetired(true);
+                    e.setBill(null);
+                    e.setExpenseBill(null);
                     e.setRetiredAt(new Date());
                     e.setRetirer(getSessionController().getLoggedUser());
                     getBillItemFacade().edit(e);
