@@ -7,7 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head />
     <h:body>
-        <ui:composition template="/forms/index.xhtml">
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
                 <div class="container-fluid">
                     <div class="card">
@@ -36,13 +36,13 @@
                                 </h:panelGroup>
                                 
                                 <h:panelGroup rendered="#{pharmacyStockTakeController.physicalCountBill ne null and pharmacyStockTakeController.physicalCountBill.approveUser ne null}">
-                                    <p:outputText value="Status: " style="font-weight:bold"/>
-                                    <p:outputText value="#{pharmacyStockTakeController.physicalCountBill.cancelled ? 'Rejected' : 'Approved'}" 
+                                    <h:outputText value="Status: " style="font-weight:bold"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.cancelled ? 'Rejected' : 'Approved'}" 
                                                   style="color:#{pharmacyStockTakeController.physicalCountBill.cancelled ? 'red' : 'green'}; font-weight:bold"/>
-                                    <p:outputText value=" by #{pharmacyStockTakeController.physicalCountBill.approveUser.webUserPerson.name}" style="font-weight:bold"/>
-                                    <p:outputText value=" on #{pharmacyStockTakeController.physicalCountBill.approveAt}">
+                                    <h:outputText value=" by #{pharmacyStockTakeController.physicalCountBill.approveUser.webUserPerson.name}" style="font-weight:bold"/>
+                                    <h:outputText value=" on #{pharmacyStockTakeController.physicalCountBill.approveAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </p:outputText>
+                                    </h:outputText>
                                 </h:panelGroup>
                                 
                                 <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}" var="bi" rendered="#{pharmacyStockTakeController.physicalCountBill ne null}">
