@@ -270,7 +270,7 @@
                                                 ajax="false"
                                                 icon="pi pi-save" 
                                                 class="ui-button-success mx-1"
-                                                rendered="#{grnReturnWorkflowController.currentBill.completed ne true}">
+                                                rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Finalize" 

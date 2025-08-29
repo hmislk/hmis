@@ -31,6 +31,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -73,6 +74,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
+    @EJB
+    BillService billService;
 
     @Inject
     private SessionController sessionController;
@@ -155,9 +158,33 @@ public class GrnReturnWorkflowController implements Serializable {
         // Load the bill items for approval review
         generateBillItemsForUpdate();
         printPreview = false;  // Ensure no print preview when navigating
-        
+
         // Use the same form page for approval - no need for separate page
         return "/pharmacy/pharmacy_grn_return_form?faces-redirect=true";
+    }
+
+    public String navigateToViewGrnReturn() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No GRN Return selected for viewing");
+            return "";
+        }
+
+        // Load the bill with all its items using billService
+        try {
+            currentBill = billService.reloadBill(currentBill);
+            if (currentBill != null && currentBill.getBillItems() != null) {
+                // Ensure bill items are loaded for preview
+                ensureBillItemsForPreview();
+                printPreview = true;
+                return "/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Could not load GRN Return details");
+                return "";
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading GRN Return: " + e.getMessage());
+            return "";
+        }
     }
 
     // Core workflow methods
@@ -174,7 +201,7 @@ public class GrnReturnWorkflowController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a reason for return to finalize");
             return;
         }
-        
+
         if (validateGrnReturn()) {
             saveBill(true);
             // Ensure the bill items are properly associated with the current bill for print preview
@@ -190,12 +217,12 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCompleted(true);
             currentBill.setCompletedBy(sessionController.getLoggedUser());
             currentBill.setCompletedAt(new Date());
-            
+
             // Save the bill with completed status
             billFacade.edit(currentBill);
-            
+
             updateStock();  // Stock handling happens only at approval stage
-            
+
             // Ensure bill items are properly associated for print preview
             ensureBillItemsForPreview();
             printPreview = true;
@@ -206,7 +233,7 @@ public class GrnReturnWorkflowController implements Serializable {
     // Bill management methods
     private void saveBill(boolean finalize) {
         boolean isNewBill = (currentBill.getId() == null);
-        
+
         if (isNewBill) {
             currentBill.setBillType(BillType.PharmacyGrnReturn);
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
@@ -228,17 +255,16 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         calculateTotal();
-        
+
         // Use create() for new bills, edit() for existing bills
         if (isNewBill) {
             billFacade.create(currentBill);
         } else {
             billFacade.edit(currentBill);
         }
-        
+
         saveBillItems();
     }
-
 
     private void saveBillItems() {
         for (BillItem bi : billItems) {
@@ -277,7 +303,6 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
     }
-
 
     // Stock handling - only at approval stage
     private void updateStock() {
@@ -411,10 +436,10 @@ public class GrnReturnWorkflowController implements Serializable {
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
                 bi.setBill(null); // Set bill as null as requested
-                
+
                 // Update the bill item in database
                 billItemFacade.edit(bi);
-                
+
                 // Also retire the pharmaceutical bill item
                 if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getId() != null) {
                     PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
@@ -423,15 +448,15 @@ public class GrnReturnWorkflowController implements Serializable {
                     phi.setRetiredAt(new Date());
                     pharmaceuticalBillItemFacade.edit(phi);
                 }
-                
+
                 // Remove from current list to refresh the display
                 billItems.remove(bi);
                 JsfUtil.addSuccessMessage("Item retired and removed from return");
             }
-            
+
             // Recalculate total after removal
             calculateTotal();
-            
+
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error removing item: " + e.getMessage());
         }
@@ -446,10 +471,10 @@ public class GrnReturnWorkflowController implements Serializable {
                     // Initialize the collection if it's null
                     currentBill.setBillItems(new ArrayList<>());
                 }
-                
+
                 // Clear and repopulate with current bill items
                 currentBill.getBillItems().clear();
-                
+
                 // Add all current bill items that are not retired
                 for (BillItem bi : billItems) {
                     if (bi != null && !bi.isRetired()) {
@@ -462,7 +487,6 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
     }
-
 
     // Calculation methods
     private void calculateTotal() {
@@ -481,7 +505,6 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-
 
     // Event handlers (with comprehensive validation)
     public void onEdit(BillItem bi) {
@@ -505,6 +528,9 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private void generateItemsFromGrn() {
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
         billItems.clear();
 
         if (originalGrn == null) {
@@ -540,7 +566,7 @@ public class GrnReturnWorkflowController implements Serializable {
             returnPhi.setBillItem(returnBillItem);
             returnPhi.setItemBatch(grnPhi.getItemBatch());
             returnPhi.setStock(grnPhi.getStock());
-            
+
             // Copy rate properties from original GRN
             returnPhi.setPurchaseRate(grnPhi.getPurchaseRate());
             returnPhi.setPurchaseRatePack(grnPhi.getPurchaseRatePack());
@@ -617,7 +643,7 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
-        
+
         // Return the purchase rate per unit
         if (originalFd.getLineGrossRate() != null && originalFd.getUnitsPerPack() != null) {
             return originalFd.getLineGrossRate().divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
@@ -629,6 +655,9 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private void generateBillItemsForUpdate() {
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
         billItems.clear();
 
         if (currentBill == null) {
@@ -655,6 +684,9 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private void generateBillItemsForApproval() {
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
         billItems.clear();
 
         if (requestedBill == null) {
@@ -808,7 +840,7 @@ public class GrnReturnWorkflowController implements Serializable {
         BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
         boolean isValid = true;
 
-        // Get remaining quantities
+        // Get remaining quantities (excluding current transaction to avoid double counting)
         double remainingTotalQty = getRemainingTotalQtyToReturn(billItem.getReferanceBillItem());
         double remainingQty = getRemainingQtyToReturn(billItem.getReferanceBillItem());
         double remainingFreeQty = getRemainingFreeQtyToReturn(billItem.getReferanceBillItem());
@@ -820,6 +852,7 @@ public class GrnReturnWorkflowController implements Serializable {
         if (returnByTotalQty) {
             // Total quantity mode - qty + free qty combined
             double currentTotalQty = (fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0);
+            // Allow exact match (>=) instead of just (>)
             if (currentTotalQty > remainingTotalQty) {
                 fd.setQuantity(BigDecimal.valueOf(Math.max(0, remainingTotalQty)));
                 fd.setFreeQuantity(BigDecimal.ZERO);
@@ -831,6 +864,7 @@ public class GrnReturnWorkflowController implements Serializable {
             double currentQty = (fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0);
             double currentFreeQty = (fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0);
 
+            // Allow exact match (>=) instead of just (>)
             if (currentQty > remainingQty) {
                 fd.setQuantity(BigDecimal.valueOf(Math.max(0, remainingQty)));
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: " + remainingQty);
@@ -862,7 +896,6 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         boolean isValid = true;
-
         boolean hasItemsWithQuantities = false;
 
         // Validate each item
@@ -871,6 +904,7 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
+            // Validate return quantities
             if (!validateReturnQuantities(bi)) {
                 isValid = false;
             }
@@ -880,7 +914,8 @@ public class GrnReturnWorkflowController implements Serializable {
             if (fd != null) {
                 double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
                 double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
-                
+
+                // Accept any positive return quantities (including exact remaining quantities)
                 if (qty > 0 || freeQty > 0) {
                     hasItemsWithQuantities = true;
                 }
@@ -904,21 +939,21 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Comprehensive approval validation
     public boolean validateApproval() {
-        if (requestedBill == null || billItems == null || billItems.isEmpty()) {
-            JsfUtil.addErrorMessage("No return request found for approval");
+        if (currentBill == null || billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No return items found for approval");
             return false;
         }
 
         boolean isValid = true;
 
         // Check if request is already finalized
-        if (requestedBill.getCheckedBy() == null) {
+        if (currentBill.getCheckedBy() == null) {
             JsfUtil.addErrorMessage("Return request must be finalized before approval");
             return false;
         }
 
         // Check if already approved
-        if (requestedBill.getReferenceBill() != null && requestedBill.getReferenceBill().getCreater() != null) {
+        if (currentBill.isCompleted()) {
             JsfUtil.addErrorMessage("Return request is already approved");
             return false;
         }
@@ -938,13 +973,13 @@ public class GrnReturnWorkflowController implements Serializable {
             if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getStock() != null) {
                 double currentStock = bi.getPharmaceuticalBillItem().getStock().getStock();
                 double returningQty = bi.getPharmaceuticalBillItem().getQty();
-                
+
                 // Stock should be adjusted, but we need to ensure we don't go into impossible negative values
                 // This is a business rule check - some institutions may want to prevent returns that would cause negative stock
                 boolean allowNegativeStock = configOptionApplicationController.getBooleanValueByKey("Allow Negative Stock in Returns", true);
                 if (!allowNegativeStock && (currentStock + returningQty < 0)) {
-                    JsfUtil.addErrorMessage("Insufficient stock for item: " + bi.getItem().getName() + 
-                                          ". Current: " + currentStock + ", Returning: " + returningQty);
+                    JsfUtil.addErrorMessage("Insufficient stock for item: " + bi.getItem().getName()
+                            + ". Current: " + currentStock + ", Returning: " + returningQty);
                     isValid = false;
                 }
             }
@@ -962,7 +997,7 @@ public class GrnReturnWorkflowController implements Serializable {
         // Sync pharmaceutical quantities with finance details
         if (bi.getBillItemFinanceDetails() != null && bi.getPharmaceuticalBillItem() != null) {
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(
-                bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
+                    bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
         }
         validateReturnQuantities(bi);
         calculateLineTotal(bi);
@@ -973,7 +1008,7 @@ public class GrnReturnWorkflowController implements Serializable {
         // Sync pharmaceutical quantities with finance details
         if (bi.getBillItemFinanceDetails() != null && bi.getPharmaceuticalBillItem() != null) {
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(
-                bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
+                    bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
         }
         validateReturnQuantities(bi);
         calculateLineTotal(bi);
@@ -984,7 +1019,7 @@ public class GrnReturnWorkflowController implements Serializable {
         // Sync pharmaceutical quantities with finance details
         if (bi.getBillItemFinanceDetails() != null && bi.getPharmaceuticalBillItem() != null) {
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(
-                bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
+                    bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
         }
         validateReturnQuantities(bi);
         calculateLineTotal(bi);
@@ -995,7 +1030,7 @@ public class GrnReturnWorkflowController implements Serializable {
         // Sync pharmaceutical quantities with finance details
         if (bi.getBillItemFinanceDetails() != null && bi.getPharmaceuticalBillItem() != null) {
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(
-                bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
+                    bi.getPharmaceuticalBillItem(), bi.getBillItemFinanceDetails());
         }
         validateReturnQuantities(bi);
         calculateLineTotal(bi);
