@@ -76,6 +76,39 @@
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <h:outputLabel  value="#{grnReturnWorkflowController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
                                 </p:column>
+                                <p:column 
+                                    width="6em" 
+                                    headerText="Remaining Qty" 
+                                    styleClass="text-center"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <div class="badge bg-info text-white">
+                                        <h:outputLabel value="#{grnReturnWorkflowController.getRemainingQtyToReturn(ph.referanceBillItem)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </div>
+                                </p:column>
+                                <p:column 
+                                    width="6em" 
+                                    headerText="Remaining Free Qty" 
+                                    styleClass="text-center"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <div class="badge bg-success text-white">
+                                        <h:outputLabel value="#{grnReturnWorkflowController.getRemainingFreeQtyToReturn(ph.referanceBillItem)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </div>
+                                </p:column>
+                                <p:column 
+                                    width="6em" 
+                                    headerText="Remaining Total Qty" 
+                                    styleClass="text-center"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
+                                    <div class="badge bg-warning text-dark">
+                                        <h:outputLabel value="#{grnReturnWorkflowController.getRemainingTotalQtyToReturn(ph.referanceBillItem)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </div>
+                                </p:column>
                                 <p:column
                                     width="5em" 
                                     headerText="Return rate (#{grnReturnWorkflowController.returnRateLabel})" >

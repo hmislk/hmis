@@ -226,6 +226,7 @@
                                     <p:commandButton
                                         id="finalize"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}"
                                         title="#{b.checkedBy ne null ? 'Already Finalized' : (b.cancelled eq true ? 'Cancelled Return' : 'Edit and Finalize GRN Return')}"
                                         icon="fas #{b.checkedBy ne null ? 'fa-check-double' : 'fa-edit'}"
                                         class="#{b.checkedBy ne null ? 'ui-button-success ui-button-outlined' : (b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
