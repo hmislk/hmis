@@ -293,7 +293,7 @@
                                         value="View"
                                         title="To View Approved Purchase Order"
                                         action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrder}" 
-                                        disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}"
+                                        disabled="#{empty b.referenceBill or empty b.referenceBill.creater or empty b.referenceBill.referenceBill}"
                                         style="min-width: 60px;">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                     </p:commandButton>
