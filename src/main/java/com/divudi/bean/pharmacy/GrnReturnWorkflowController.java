@@ -109,6 +109,7 @@ public class GrnReturnWorkflowController implements Serializable {
     public String navigateToCreateGrnReturn() {
         resetBillValues();
         makeListNull();
+        printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
     }
 
@@ -119,6 +120,7 @@ public class GrnReturnWorkflowController implements Serializable {
         }
         // Follow legacy pattern - create return bill from selected GRN
         createReturnBillFromGrn(selectedGrn);
+        printPreview = false;  // Ensure no print preview when creating new return
         return "/pharmacy/pharmacy_grn_return_form?faces-redirect=true";
     }
 
@@ -128,47 +130,55 @@ public class GrnReturnWorkflowController implements Serializable {
             return "";
         }
         generateBillItemsForUpdate();
+        printPreview = false;  // Ensure no print preview when editing
         return "/pharmacy/pharmacy_grn_return_form?faces-redirect=true";
     }
 
     public String navigateToFinalizeGrnReturn() {
         makeListNull();
+        printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_list_to_finalize?faces-redirect=true";
     }
 
     public String navigateToApproveGrnReturn() {
         makeListNull();
+        printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_list_to_approve?faces-redirect=true";
     }
 
     public String navigateToGrnReturnApproval() {
-        if (requestedBill == null) {
+        if (currentBill == null) {
             JsfUtil.addErrorMessage("No GRN Return selected for approval");
             return "";
         }
 
-        // Create approved bill based on requested bill
-        approvedBill = new RefundBill();
-        approvedBill.copy(requestedBill);
-        approvedBill.setBillType(BillType.PharmacyGrnReturn);
-        approvedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        approvedBill.setReferenceBill(requestedBill.getReferenceBill());
-        approvedBill.setBilledBill(requestedBill);
-
-        generateBillItemsForApproval();
-
-        return "/pharmacy/pharmacy_grn_return_approving?faces-redirect=true";
+        // Load the bill items for approval review
+        generateBillItemsForUpdate();
+        printPreview = false;  // Ensure no print preview when navigating
+        
+        // Use the same form page for approval - no need for separate page
+        return "/pharmacy/pharmacy_grn_return_form?faces-redirect=true";
     }
 
     // Core workflow methods
     public void saveRequest() {
         saveBill(false);
+        // Ensure bill items are properly associated for any subsequent operations
+        ensureBillItemsForPreview();
         JsfUtil.addSuccessMessage("GRN Return Request Saved Successfully");
     }
 
     public void finalizeRequest() {
+        // Check if comments are provided for finalization
+        if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a reason for return to finalize");
+            return;
+        }
+        
         if (validateGrnReturn()) {
             saveBill(true);
+            // Ensure the bill items are properly associated with the current bill for print preview
+            ensureBillItemsForPreview();
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Request Finalized Successfully");
         }
@@ -176,8 +186,18 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public void approve() {
         if (validateApproval()) {
-            saveApprovedBill();
+            // Mark the current bill as completed (approved)
+            currentBill.setCompleted(true);
+            currentBill.setCompletedBy(sessionController.getLoggedUser());
+            currentBill.setCompletedAt(new Date());
+            
+            // Save the bill with completed status
+            billFacade.edit(currentBill);
+            
             updateStock();  // Stock handling happens only at approval stage
+            
+            // Ensure bill items are properly associated for print preview
+            ensureBillItemsForPreview();
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Approved Successfully");
         }
@@ -219,37 +239,6 @@ public class GrnReturnWorkflowController implements Serializable {
         saveBillItems();
     }
 
-    private void saveApprovedBill() {
-        boolean isNewBill = (approvedBill.getId() == null);
-        
-        approvedBill.setInstitution(sessionController.getInstitution());
-        approvedBill.setDepartment(sessionController.getDepartment());
-        approvedBill.setCreater(sessionController.getLoggedUser());
-        approvedBill.setCreatedAt(new Date());
-        approvedBill.setCheckedBy(sessionController.getLoggedUser());
-        approvedBill.setCheckeAt(new Date());
-
-        String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
-                sessionController.getDepartment(),
-                BillTypeAtomic.PHARMACY_GRN_RETURN);
-        approvedBill.setDeptId(billNumber);
-        approvedBill.setInsId(billNumber);
-
-        calculateApprovedTotal();
-        
-        // Use create() for new bills, edit() for existing bills
-        if (isNewBill) {
-            billFacade.create(approvedBill);
-        } else {
-            billFacade.edit(approvedBill);
-        }
-        
-        saveApprovedBillItems();
-
-        // Link the approved bill to the requested bill
-        requestedBill.setReferenceBill(approvedBill);
-        billFacade.edit(requestedBill);
-    }
 
     private void saveBillItems() {
         for (BillItem bi : billItems) {
@@ -289,28 +278,6 @@ public class GrnReturnWorkflowController implements Serializable {
         }
     }
 
-    private void saveApprovedBillItems() {
-        for (BillItem bi : billItems) {
-            // Allow items with zero quantities - they represent approved zero returns
-            // Skip only if item is retired
-            if (bi.isRetired()) {
-                continue;
-            }
-
-            BillItem approvedBi = new BillItem();
-            approvedBi.copy(bi);
-            approvedBi.setBill(approvedBill);
-            approvedBi.setCreatedAt(new Date());
-            approvedBi.setCreater(sessionController.getLoggedUser());
-
-            PharmaceuticalBillItem approvedPhi = new PharmaceuticalBillItem();
-            approvedPhi.copy(bi.getPharmaceuticalBillItem());
-            approvedPhi.setBillItem(approvedBi);
-
-            billItemFacade.create(approvedBi);
-            pharmaceuticalBillItemFacade.create(approvedPhi);
-        }
-    }
 
     // Stock handling - only at approval stage
     private void updateStock() {
@@ -428,6 +395,75 @@ public class GrnReturnWorkflowController implements Serializable {
         }
     }
 
+    public void deleteReturnItem(BillItem bi) {
+        if (bi == null) {
+            return;
+        }
+
+        try {
+            // If the item is not saved (no ID), simply remove it from the list
+            if (bi.getId() == null) {
+                billItems.remove(bi);
+                JsfUtil.addSuccessMessage("Item removed from return list");
+            } else {
+                // If already saved, mark as retired and remove from database
+                bi.setRetired(true);
+                bi.setRetirer(sessionController.getLoggedUser());
+                bi.setRetiredAt(new Date());
+                bi.setBill(null); // Set bill as null as requested
+                
+                // Update the bill item in database
+                billItemFacade.edit(bi);
+                
+                // Also retire the pharmaceutical bill item
+                if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getId() != null) {
+                    PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+                    phi.setRetired(true);
+                    phi.setRetirer(sessionController.getLoggedUser());
+                    phi.setRetiredAt(new Date());
+                    pharmaceuticalBillItemFacade.edit(phi);
+                }
+                
+                // Remove from current list to refresh the display
+                billItems.remove(bi);
+                JsfUtil.addSuccessMessage("Item retired and removed from return");
+            }
+            
+            // Recalculate total after removal
+            calculateTotal();
+            
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error removing item: " + e.getMessage());
+        }
+    }
+
+    private void ensureBillItemsForPreview() {
+        if (currentBill != null) {
+            // Ensure the current bill has its billItems collection properly populated
+            // The print preview component expects bill.billItems to be available
+            try {
+                if (currentBill.getBillItems() == null) {
+                    // Initialize the collection if it's null
+                    currentBill.setBillItems(new ArrayList<>());
+                }
+                
+                // Clear and repopulate with current bill items
+                currentBill.getBillItems().clear();
+                
+                // Add all current bill items that are not retired
+                for (BillItem bi : billItems) {
+                    if (bi != null && !bi.isRetired()) {
+                        currentBill.getBillItems().add(bi);
+                    }
+                }
+            } catch (Exception e) {
+                // If there's an issue with the billItems collection, log it but don't fail
+                JsfUtil.addErrorMessage("Warning: Could not properly associate items for preview: " + e.getMessage());
+            }
+        }
+    }
+
+
     // Calculation methods
     private void calculateTotal() {
         if (currentBill == null) {
@@ -446,22 +482,6 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.setNetTotal(total);
     }
 
-    private void calculateApprovedTotal() {
-        if (approvedBill == null) {
-            return;
-        }
-
-        double total = 0.0;
-        for (BillItem bi : billItems) {
-            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-            double itemTotal = (phi.getQty() + phi.getFreeQty()) * phi.getPurchaseRateInUnit();
-            bi.setNetValue(itemTotal);
-            total += itemTotal;
-        }
-
-        approvedBill.setTotal(total);
-        approvedBill.setNetTotal(total);
-    }
 
     // Event handlers (with comprehensive validation)
     public void onEdit(BillItem bi) {
@@ -1046,12 +1066,12 @@ public class GrnReturnWorkflowController implements Serializable {
     public void fillGrnReturnsToApprove() {
         // Find finalized bills that are ready for approval
         // Finalized = has checkedBy (finalized by someone)
-        // Ready for approval = no referenceBill (not yet approved)
+        // Ready for approval = completed = false (not yet approved)
         String jpql = "SELECT b FROM RefundBill b "
                 + "WHERE b.billType = :bt "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.checkedBy IS NOT NULL "
-                + "AND b.referenceBill IS NULL "
+                + "AND (b.completed = false OR b.completed IS NULL) "
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";

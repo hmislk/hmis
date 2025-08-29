@@ -239,17 +239,17 @@
                             <p:column headerText="Approved Person">
                                 <h:commandLink 
                                     action="pharmacy_reprint_grn_return_request" 
-                                    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"
-                                    rendered="#{b.referenceBill.cancelled eq false}">
+                                    value="#{b.completedBy.webUserPerson.nameWithTitle}"
+                                    rendered="#{b.completed eq true}">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column headerText="Approved Value" sortBy="#{b.referenceBill.netTotal}" styleClass="text-end">
-                                <div class="d-flex align-items-center justify-content-end">
+                            <p:column headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end" rendered="#{b.completed eq true}">
                                     <i class="fas fa-coins text-info me-2"></i>
                                     <span class="fw-bold text-info fs-6">
-                                        <h:outputLabel value="#{b.referenceBill.netTotal}">
+                                        <h:outputLabel value="#{b.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </span>
@@ -257,10 +257,10 @@
                             </p:column>
 
                             <p:column headerText="Status" width="8em">
-                                <h:panelGroup rendered="#{b.checkedBy ne null and b.referenceBill eq null}">
+                                <h:panelGroup rendered="#{b.checkedBy ne null and (b.completed eq false or b.completed eq null)}">
                                     <span class="badge bg-warning text-dark">Pending Approval</span>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{b.referenceBill ne null and b.referenceBill.creater ne null}">
+                                <h:panelGroup rendered="#{b.completed eq true}">
                                     <span class="badge bg-success">Approved</span>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{b.checkedBy eq null}">
@@ -278,9 +278,9 @@
                                         value="Approve"
                                         title="To Approve GRN Return"
                                         action="#{grnReturnWorkflowController.navigateToGrnReturnApproval}"
-                                        disabled="#{b.checkedBy eq null or (b.referenceBill ne null and b.referenceBill.creater ne null) or b.cancelled eq true or !webUserController.hasPrivilege('ApproveGrnReturn')}"
+                                        disabled="#{b.checkedBy eq null or b.completed eq true or b.cancelled eq true or !webUserController.hasPrivilege('ApproveGrnReturn')}"
                                         style="min-width: 70px;">
-                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.requestedBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>
                                     <p:commandButton 
                                         id="view"
@@ -288,11 +288,11 @@
                                         icon="fas fa-eye"
                                         class="ui-button-info"
                                         value="View"
-                                        title="To View Approved GRN Return"
+                                        title="To View GRN Return"
                                         action="#{pharmacyBillSearch.navigateToReprintGrnReturn}" 
-                                        disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}"
+                                        disabled="#{b.referenceBill eq null}"
                                         style="min-width: 60px;">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                     </p:commandButton>
                                 </div>
                             </p:column>
