@@ -11307,9 +11307,7 @@ public class SearchController implements Serializable {
         if (refunded) {
             params.put("ref", refunded);
             jpql.append(" and b.refunded = :ref ");
-        }
-        
-        if (cancelled) {
+        }else if (cancelled) {
             params.put("can", cancelled);
             jpql.append(" and b.cancelled = :can ");
         }
