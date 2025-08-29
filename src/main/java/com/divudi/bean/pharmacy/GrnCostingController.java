@@ -1881,11 +1881,6 @@ public class GrnCostingController implements Serializable {
         // Distribute proportional bill values (including expenses considered for costing) to line items
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
-        // Persist the updated GRN bill
-        if (getGrnBill().getId() != null) {
-            getBillFacade().edit(getGrnBill());
-        }
-
         currentExpense = null;
     }
 
@@ -2567,20 +2562,20 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        // Save bill expenses - work directly with bill's expense collection
+        // Do not manually create/edit expense items here to avoid double-persisting.
+        // They will be persisted via cascade when editing the bill at the end.
+        // Ensure the relationship is set for all current expenses.
         if (getCurrentGrnBillPre().getBillExpenses() != null) {
             for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
-
-                // Ensure expenseBill reference is set
+                if (expense == null) {
+                    continue;
+                }
                 expense.setExpenseBill(getCurrentGrnBillPre());
-                expense.setCreatedAt(new Date());
-                expense.setCreater(getSessionController().getLoggedUser());
-
-                // Create or update expense BillItem (including retired ones to persist retirement status)
-                if (expense.getId() == null) {
-                    getBillItemFacade().create(expense);
-                } else {
-                    getBillItemFacade().edit(expense);
+                if (expense.getCreatedAt() == null) {
+                    expense.setCreatedAt(new Date());
+                }
+                if (expense.getCreater() == null) {
+                    expense.setCreater(getSessionController().getLoggedUser());
                 }
             }
         }
