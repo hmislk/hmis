@@ -1,153 +1,163 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-<h:body class="w-100 border">
+    <h:body class="w-100 border">
 
-    <ui:composition template="/reports/index.xhtml" class="w-100 border">
-        <ui:define name="subcontent">
-            <h:form class="w-100">
-                <p:panel header="Debtor Balance Report" class="w-100">
-                    <h:panelGrid columns="8" class="w-100 ">
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Debtor Balance Report" class="w-100">
+                        <h:panelGrid columns="8" class="w-100 ">
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
-                            <p:outputLabel value="From Date" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="fromDate"
-                                value="#{reportsController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                        </p:calendar>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker 
+                                id="fromDate" value="#{reportsController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                styleClass="form-control w-100"
+                                showTime="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                class="w-100" 
+                                inputStyleClass="w-100" >                               
+                            </p:datePicker> 
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
-                            <p:outputLabel value="To Date" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="toDate"
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker 
+                                id="toDate" 
                                 value="#{reportsController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                        </p:calendar>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                styleClass="form-control w-100"
+                                showTime="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                class="w-100" 
+                                inputStyleClass="w-100" >                               
+                            </p:datePicker> 
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf09d;" styleClass="fa mr-2"/>
-                            <h:outputLabel value="Payment Type" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="#{reportsController.methodType}" class="w-100 ">
-                            <f:selectItem itemValue="Any" itemLabel="Any"/>
-                            <f:selectItem itemValue="Credit" itemLabel="Credit"/>
-                            <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
-                        </p:selectOneMenu>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="#{reportsController.methodType}" class="w-100 ">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
+                            </p:selectOneMenu>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf084;" styleClass="fa mr-2"/>
-                            <h:outputLabel value="Admission Type" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu id="admissionTypeDropdown" class="w-100"
-                                         value="#{reportsController.admissionType}"
-                                         disabled="#{reportsController.visitType eq 'OP'}">
-                            <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
-                            <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}"
-                                           itemLabel="#{myItem.name}"/>
-                        </p:selectOneMenu>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Admission Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="admissionTypeDropdown" class="w-100"
+                                             value="#{reportsController.admissionType}"
+                                             disabled="#{reportsController.visitType eq 'OP'}">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
+                                <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}"
+                                               itemLabel="#{myItem.name}"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf236;" styleClass="fa mr-2"/>
-                            <h:outputLabel value="Room Category" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu id="roomCategoryDropdown" class="w-100"
-                                         value="#{reportsController.roomCategory}"
-                                         disabled="#{reportsController.visitType eq 'OP'}">
-                            <f:selectItem itemLabel="Select Room Category" itemValue="#{null}"/>
-                            <f:selectItems value="#{roomCategoryController.items}" var="r" itemLabel="#{r.name}"
-                                           itemValue="#{r}"/>
-                        </p:selectOneMenu>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Room Category" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="roomCategoryDropdown" class="w-100"
+                                             value="#{reportsController.roomCategory}"
+                                             disabled="#{reportsController.visitType eq 'OP'}">
+                                <f:selectItem itemLabel="Select Room Category" itemValue="#{null}"/>
+                                <f:selectItems value="#{roomCategoryController.items}" var="r" itemLabel="#{r.name}"
+                                               itemValue="#{r}"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
-                            <h:outputLabel value="Visit Type" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
-                            <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
-                            <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Visit Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
 
-                            <p:ajax update="admissionTypeDropdown"/>
-                            <p:ajax update="roomCategoryDropdown"/>
-                        </p:selectOneMenu>
+                                <p:ajax update="admissionTypeDropdown"/>
+                                <p:ajax update="roomCategoryDropdown"/>
+                            </p:selectOneMenu>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
-                            <h:outputLabel value="Credit Company" for="companyName" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true"
-                                        style="text-align: right;"
-                                        value="#{reportsController.creditCompany}"
-                                        completeMethod="#{creditCompanyController.completeCredit}"
-                                        var="ix" itemLabel="#{ix.name}"
-                                        itemValue="#{ix}">
-                        </p:autoComplete>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Credit Company" for="companyName" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true"
+                                            style="text-align: right;"
+                                            value="#{reportsController.creditCompany}"
+                                            completeMethod="#{creditCompanyController.completeCredit}"
+                                            var="ix" itemLabel="#{ix.name}"
+                                            itemValue="#{ix}">
+                            </p:autoComplete>
 
-                    </h:panelGrid>
+                        </h:panelGrid>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-warning my-4 mx-2"
                             style="width: 150px"
                             ajax="false"
                             value="Process All"
                             action="#{reportsController.generateDebtorBalanceReport(false)}"
                             icon="fas fa-cogs">
-                    </p:commandButton>
+                        </p:commandButton>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-warning my-4 mx-2"
                             style="width: 190px"
                             ajax="false"
                             value="Process Due Only"
                             action="#{reportsController.generateDebtorBalanceReport(true)}"
                             icon="fas fa-cogs">
-                    </p:commandButton>
+                        </p:commandButton>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-info my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-print"
                             ajax="false"
                             value="Print">
-                        <p:printer target="printPanel"/>
-                    </p:commandButton>
+                            <p:printer target="printPanel"/>
+                        </p:commandButton>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
                             rendered="#{reportsController.visitType eq 'OP'}"
                             value="Excel">
-                        <p:dataExporter type="xlsx" target="tbl" fileName="debtor_balance_report.xlsx"/>
-                    </p:commandButton>
+                            <p:dataExporter type="xlsx" target="tbl" fileName="debtor_balance_report.xlsx"/>
+                        </p:commandButton>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-danger my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-pdf"
@@ -155,9 +165,9 @@
                             rendered="#{reportsController.visitType eq 'OP'}"
                             action="#{reportsController.exportDebtorBalanceReportOPToPdf()}"
                             value="PDF">
-                    </p:commandButton>
+                        </p:commandButton>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-excel"
@@ -165,9 +175,9 @@
                             rendered="#{reportsController.visitType eq 'IP'}"
                             action="#{reportsController.exportDebtorBalanceReportIPToExcel()}"
                             value="Excel">
-                    </p:commandButton>
+                        </p:commandButton>
 
-                    <p:commandButton
+                        <p:commandButton
                             class="ui-button-danger my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-pdf"
@@ -175,413 +185,413 @@
                             rendered="#{reportsController.visitType eq 'IP'}"
                             action="#{reportsController.exportDebtorBalanceReportIPToPdf()}"
                             value="PDF">
-                    </p:commandButton>
-                    <h:panelGroup id="printPanel">
-                        <ui:fragment id="commonHeader">
-                            <br/>
-                            <h:outputLabel style="font-weight: bold" value="Debtor Balance Report"/><br/><br/>
-                            <h:panelGrid columns="2" class="mb-2">
-                                <h:outputLabel value="From Date :"/>
-                                <h:outputLabel value="#{reportsController.fromDate}">
-                                    <f:convertDateTime
+                        </p:commandButton>
+                        <h:panelGroup id="printPanel">
+                            <ui:fragment id="commonHeader">
+                                <br/>
+                                <h:outputLabel style="font-weight: bold" value="Debtor Balance Report"/><br/><br/>
+                                <h:panelGrid columns="2" class="mb-2">
+                                    <h:outputLabel value="From Date :"/>
+                                    <h:outputLabel value="#{reportsController.fromDate}">
+                                        <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="To Date :"/>
-                                <h:outputLabel value="#{reportsController.toDate}">
-                                    <f:convertDateTime
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To Date :"/>
+                                    <h:outputLabel value="#{reportsController.toDate}">
+                                        <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </h:outputLabel>
-                            </h:panelGrid>
-                        </ui:fragment>
+                                    </h:outputLabel>
+                                </h:panelGrid>
+                            </ui:fragment>
 
-                        <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                     value="#{reportsController.bundle.reportTemplateRows}" var="i" rowIndexVar="in"
-                                     rendered="#{reportsController.visitType eq 'OP'}">
-                            <p:column headerText="No">
-                                <f:facet name="header">
-                                    <h:outputLabel value="No"/>
-                                </f:facet>
-                                <h:outputLabel value="#{in+1}"/>
-                            </p:column>
-                            <p:column headerText="Discharge Date"
-                                      rendered="#{reportsController.visitType eq 'IP'and i.bill.billClassType ne 'CancelledBill'}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Discharge Date"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.dateOfDischarge}">
-                                    <f:convertDateTime timeZone="Asia/Colombo"
-                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Discharge Date"
-                                      rendered="#{reportsController.visitType eq 'IP'and i.bill.billClassType eq 'CancelledBill'}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Discharge Date"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo"
-                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'OP'}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Bill Date"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo"
-                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="BHT No" rendered="#{reportsController.visitType eq 'IP'}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="BHT No"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.bhtNo}"/>
-                            </p:column>
-                            <p:column headerText="MRN No">
-                                <f:facet name="header">
-                                    <h:outputLabel value="MRN No"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patient.phn}"/>
-                            </p:column>
-                            <p:column headerText="Payment Method">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Payment Method"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.paymentMethod}"
-                                               rendered="#{reportsController.visitType eq 'IP'}"/>
-                                <h:outputLabel value="#{i.bill.paymentMethod}"
-                                               rendered="#{reportsController.visitType eq 'OP'}"/>
-                            </p:column>
-                            <p:column headerText="Credit Company Name">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Credit Company Name"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.creditCompany.name}"
-                                               rendered="#{reportsController.visitType eq 'IP'}"/>
-                                <h:outputLabel value="#{i.bill.creditCompany.name}"
-                                               rendered="#{reportsController.visitType eq 'OP'}"/>
-                            </p:column>
-                            <p:column headerText="Phone">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Phone"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patient.person.mobile}">
-                                </h:outputLabel>
-                            </p:column>
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
+                                         value="#{reportsController.bundle.reportTemplateRows}" var="i" rowIndexVar="in"
+                                         rendered="#{reportsController.visitType eq 'OP'}">
+                                <p:column headerText="No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{in+1}"/>
+                                </p:column>
+                                <p:column headerText="Discharge Date"
+                                          rendered="#{reportsController.visitType eq 'IP'and i.bill.billClassType ne 'CancelledBill'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.dateOfDischarge}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discharge Date"
+                                          rendered="#{reportsController.visitType eq 'IP'and i.bill.billClassType eq 'CancelledBill'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'OP'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="BHT No" rendered="#{reportsController.visitType eq 'IP'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="BHT No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="MRN No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="MRN No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patient.phn}"/>
+                                </p:column>
+                                <p:column headerText="Payment Method">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payment Method"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.paymentMethod}"
+                                                   rendered="#{reportsController.visitType eq 'IP'}"/>
+                                    <h:outputLabel value="#{i.bill.paymentMethod}"
+                                                   rendered="#{reportsController.visitType eq 'OP'}"/>
+                                </p:column>
+                                <p:column headerText="Credit Company Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.creditCompany.name}"
+                                                   rendered="#{reportsController.visitType eq 'IP'}"/>
+                                    <h:outputLabel value="#{i.bill.creditCompany.name}"
+                                                   rendered="#{reportsController.visitType eq 'OP'}"/>
+                                </p:column>
+                                <p:column headerText="Phone">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Phone"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patient.person.mobile}">
+                                    </h:outputLabel>
+                                </p:column>
 
-                            <p:column headerText="Patient Name">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Patient Name"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patient.person.name}">
-                                </h:outputLabel>
-                            </p:column>
+                                <p:column headerText="Patient Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Patient Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patient.person.name}">
+                                    </h:outputLabel>
+                                </p:column>
 
-                            <p:column headerText="Admited Date" rendered="#{reportsController.visitType eq 'IP'}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Admitted Date"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.dateOfAdmission}">
-                                    <f:convertDateTime timeZone="Asia/Colombo"
-                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
-                            </p:column>
+                                <p:column headerText="Admited Date" rendered="#{reportsController.visitType eq 'IP'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Admitted Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.dateOfAdmission}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
 
-                            <p:column headerText="Final Bill Total" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Final Bill Total"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.finalBill.netTotal}"
-                                               rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="#{i.bill.netTotal}"
-                                               rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="#{i.bill.netTotal}"
-                                               rendered="#{reportsController.visitType eq 'OP'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{reportsController.bundle.total}">
+                                <p:column headerText="Final Bill Total" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Final Bill Total"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.finalBill.netTotal}"
+                                                   rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Paid By Patient" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Paid By Patient"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountByPatient}"
-                                               rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="#{i.bill.settledAmountByPatient}"
-                                               rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="#{i.bill.settledAmountByPatient}"
-                                               rendered="#{reportsController.visitType eq 'OP'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{reportsController.bundle.settledAmountByPatientsTotal}">
+                                    <h:outputLabel value="#{i.bill.netTotal}"
+                                                   rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Credit Paid Amount" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Credit Paid Amount"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountBySponsor}"
-                                               rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="#{i.bill.settledAmountBySponsor}"
-                                               rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="#{i.bill.settledAmountBySponsor}"
-                                               rendered="#{reportsController.visitType eq 'OP'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{reportsController.bundle.settledAmountBySponsorsTotal}">
+                                    <h:outputLabel value="#{i.bill.netTotal}"
+                                                   rendered="#{reportsController.visitType eq 'OP'}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsController.bundle.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column headerText="Due Amount" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Due Amount"/>
-                                </f:facet>
-                                <h:outputLabel
+                                <p:column headerText="Paid By Patient" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid By Patient"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountByPatient}"
+                                                   rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.bill.settledAmountByPatient}"
+                                                   rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.bill.settledAmountByPatient}"
+                                                   rendered="#{reportsController.visitType eq 'OP'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsController.bundle.settledAmountByPatientsTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Credit Paid Amount" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Paid Amount"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountBySponsor}"
+                                                   rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.bill.settledAmountBySponsor}"
+                                                   rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.bill.settledAmountBySponsor}"
+                                                   rendered="#{reportsController.visitType eq 'OP'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsController.bundle.settledAmountBySponsorsTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Due Amount" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Due Amount"/>
+                                    </f:facet>
+                                    <h:outputLabel
                                         value="#{i.bill.patientEncounter.finalBill.netTotal - i.bill.patientEncounter.finalBill.settledAmountByPatient - i.bill.patientEncounter.finalBill.settledAmountBySponsor}"
                                         rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel
-                                        value="#{i.bill.netTotal - i.bill.settledAmountByPatient - i.bill.settledAmountBySponsor}"
-                                        rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel
-                                        value="#{i.bill.netTotal - i.bill.settledAmountByPatient - i.bill.settledAmountBySponsor}"
-                                        rendered="#{reportsController.visitType eq 'OP'}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel
-                                            value="#{reportsController.bundle.totalBalance}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:dataTable>
+                                    <h:outputLabel
+                                        value="#{i.bill.netTotal - i.bill.settledAmountByPatient - i.bill.settledAmountBySponsor}"
+                                        rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel
+                                        value="#{i.bill.netTotal - i.bill.settledAmountByPatient - i.bill.settledAmountBySponsor}"
+                                        rendered="#{reportsController.visitType eq 'OP'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel
+                                            value="#{reportsController.bundle.totalBalance}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
 
-                        <h:panelGroup id="tableContainer" layout="block" style="margin: 20px 0;"
-                                      rendered="#{reportsController.visitType eq 'IP'}">
-                            <table id="tblExport1" style="width: 100%; border-collapse: collapse;">
-                                <thead>
-                                <tr>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;"></th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">BHT</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN No</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Phone</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Admitted At</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Discharged At</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Final Total</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">GOP by Patient</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Patient</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Due</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Companies</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Total Due</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Details</th>
-                                </tr>
-                                </thead>
-                                <tbody>
+                            <h:panelGroup id="tableContainer" layout="block" style="margin: 20px 0;"
+                                          rendered="#{reportsController.visitType eq 'IP'}">
+                                <table id="tblExport1" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;"></th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">BHT</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN No</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Phone</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Admitted At</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Discharged At</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Final Total</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">GOP by Patient</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Patient</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Due</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Companies</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Total Due</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
 
-                                <f:event type="preRenderComponent"
-                                         listener="#{reportsController.resetCounter}"/>
+                                        <f:event type="preRenderComponent"
+                                                 listener="#{reportsController.resetCounter}"/>
 
-                                <ui:repeat value="#{reportsController.institutionBillPatientEncounterMap.entrySet()}"
-                                           var="entry" rowIndexVar="i">
-                                    <tr style="border-bottom: 1px solid #d9d9d9;">
-                                        <td>#{reportsController.nextRowCounter()}</td>
-                                        <td>#{entry.key.bhtNo}</td>
-                                        <td>#{entry.key.patient.phn}</td>
-                                        <td>#{entry.key.patient.person.mobile}</td>
-                                        <td>#{entry.key.patient.person.name}</td>
-                                        <td>
-                                            <h:outputText value="#{entry.key.dateOfAdmission}">
-                                                <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{entry.key.dateOfDischarge}">
-                                                <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{entry.key.finalBill.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText
-                                                    value="#{entry.value.get(0).patientGopAmount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{entry.value.get(0).paidByPatient}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{entry.value.get(0).patientDue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{entry.value.get(0).totalPaidByCompanies}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td>
-                                            <h:outputText
-                                                    value="#{entry.value.get(0).totalDue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText></td>
-                                        <td>
-                                            <!-- Inner Table -->
-                                            <table style="width: 100%; border-collapse: collapse;">
-                                                <thead>
-                                                <tr>
-                                                    <th style="min-width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Name</th>
-                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Policy Number</th>
-                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Reference Number</th>
-                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">GOP by Company</th>
-                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Paid by Company</th>
-                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Company Due</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <ui:repeat value="#{entry.value}" var="b">
-                                                    <tr style="border-bottom: 1px solid #d9d9d9;">
-                                                        <td style="min-width: 6rem; ">#{b.institution.name}</td>
-                                                        <td style="min-width: 6rem; ">#{reportsController.getPolicyNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
-                                                        <td style="min-width: 6rem; ">#{reportsController.getReferenceNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
-                                                        <td style="width: 6rem; text-align: right">
-                                                            <h:outputText value="#{b.gopAmount}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td style="width: 6rem; text-align: right">
-                                                            <h:outputText value="#{b.paidByCompany}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td style="width: 6rem; text-align: right">
-                                                            <h:outputText
-                                                                    value="#{b.companyDue ne 0 ? b.companyDue : b.companyExcess}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
-                                                </ui:repeat>
-                                                </tbody>
-                                                <tfoot>
-                                                <tr>
-                                                    <td style="font-weight: bold;" colspan="3">Total</td>
-                                                    <td style="text-align: right">
-                                                        <h:outputText
-                                                                value="#{reportsController.patientEncounterGopMap.get(entry.key)}"
-                                                                style="font-weight: bold;">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td style="text-align: right">
-                                                        <h:outputText
-                                                                value="#{reportsController.patientEncounterPaidByCompanyMap.get(entry.key)}"
-                                                                style="font-weight: bold;">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td style="text-align: right">
-                                                        <h:outputText
-                                                                value="#{reportsController.patientEncounterGopMap.get(entry.key) - reportsController.patientEncounterPaidByCompanyMap.get(entry.key)}"
-                                                                style="font-weight: bold;">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </td>
-                                                </tr>
-                                                </tfoot>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </ui:repeat>
-                                </tbody>
-                                <tfoot>
-                                <tr>
-                                    <td style="font-weight: bold; text-align: center;" colspan="7">Total</td>
-                                    <td style="vertical-align: middle;">
-                                        <h:outputText
-                                                value="#{reportsController.billed}"
-                                                style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </td>
-                                    <td style="vertical-align: middle;">
-                                        <h:outputText
-                                                value="#{reportsController.payableByPatient}"
-                                                style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </td>
-                                    <td style="vertical-align: middle;">
-                                        <h:outputText
-                                                value="#{reportsController.paidByPatient}"
-                                                style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </td>
-                                    <td style="vertical-align: middle;">
-                                        <h:outputText
-                                                value="#{reportsController.payableByPatient - reportsController.paidByPatient}"
-                                                style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </td>
-                                    <td style="vertical-align: middle;">
-                                        <h:outputText
-                                                value="#{reportsController.paidByCompany}"
-                                                style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </td>
-                                    <td style="vertical-align: middle;">
-                                        <h:outputText
-                                                value="#{reportsController.billed - reportsController.paidByPatient - reportsController.paidByCompany}"
-                                                style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </td>
-                                </tr>
-                                </tfoot>
-                            </table>
+                                        <ui:repeat value="#{reportsController.institutionBillPatientEncounterMap.entrySet()}"
+                                                   var="entry" rowIndexVar="i">
+                                            <tr style="border-bottom: 1px solid #d9d9d9;">
+                                                <td>#{reportsController.nextRowCounter()}</td>
+                                                <td>#{entry.key.bhtNo}</td>
+                                                <td>#{entry.key.patient.phn}</td>
+                                                <td>#{entry.key.patient.person.mobile}</td>
+                                                <td>#{entry.key.patient.person.name}</td>
+                                                <td>
+                                                    <h:outputText value="#{entry.key.dateOfAdmission}">
+                                                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{entry.key.dateOfDischarge}">
+                                                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{entry.key.finalBill.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText
+                                                        value="#{entry.value.get(0).patientGopAmount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{entry.value.get(0).paidByPatient}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{entry.value.get(0).patientDue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{entry.value.get(0).totalPaidByCompanies}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText
+                                                        value="#{entry.value.get(0).totalDue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText></td>
+                                                <td>
+                                                    <!-- Inner Table -->
+                                                    <table style="width: 100%; border-collapse: collapse;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="min-width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Name</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Policy Number</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Reference Number</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">GOP by Company</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Paid by Company</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Company Due</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <ui:repeat value="#{entry.value}" var="b">
+                                                                <tr style="border-bottom: 1px solid #d9d9d9;">
+                                                                    <td style="min-width: 6rem; ">#{b.institution.name}</td>
+                                                                    <td style="min-width: 6rem; ">#{reportsController.getPolicyNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
+                                                                    <td style="min-width: 6rem; ">#{reportsController.getReferenceNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
+                                                                    <td style="width: 6rem; text-align: right">
+                                                                        <h:outputText value="#{b.gopAmount}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td style="width: 6rem; text-align: right">
+                                                                        <h:outputText value="#{b.paidByCompany}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td style="width: 6rem; text-align: right">
+                                                                        <h:outputText
+                                                                            value="#{b.companyDue ne 0 ? b.companyDue : b.companyExcess}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:repeat>
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <tr>
+                                                                <td style="font-weight: bold;" colspan="3">Total</td>
+                                                                <td style="text-align: right">
+                                                                    <h:outputText
+                                                                        value="#{reportsController.patientEncounterGopMap.get(entry.key)}"
+                                                                        style="font-weight: bold;">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="text-align: right">
+                                                                    <h:outputText
+                                                                        value="#{reportsController.patientEncounterPaidByCompanyMap.get(entry.key)}"
+                                                                        style="font-weight: bold;">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="text-align: right">
+                                                                    <h:outputText
+                                                                        value="#{reportsController.patientEncounterGopMap.get(entry.key) - reportsController.patientEncounterPaidByCompanyMap.get(entry.key)}"
+                                                                        style="font-weight: bold;">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td style="font-weight: bold; text-align: center;" colspan="7">Total</td>
+                                            <td style="vertical-align: middle;">
+                                                <h:outputText
+                                                    value="#{reportsController.billed}"
+                                                    style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <h:outputText
+                                                    value="#{reportsController.payableByPatient}"
+                                                    style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <h:outputText
+                                                    value="#{reportsController.paidByPatient}"
+                                                    style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <h:outputText
+                                                    value="#{reportsController.payableByPatient - reportsController.paidByPatient}"
+                                                    style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <h:outputText
+                                                    value="#{reportsController.paidByCompany}"
+                                                    style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <h:outputText
+                                                    value="#{reportsController.billed - reportsController.paidByPatient - reportsController.paidByCompany}"
+                                                    style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </h:panelGroup>
                         </h:panelGroup>
-                    </h:panelGroup>
-                </p:panel>
-            </h:form>
-        </ui:define>
-    </ui:composition>
-</h:body>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
 </html>
