@@ -8,6 +8,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -85,6 +86,8 @@ public class GrnReturnWorkflowController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     EnumController enumController;
+    @Inject
+    private WebUserController webUserController;
 
     // Main properties
     private Bill currentBill;
@@ -1272,27 +1275,19 @@ public class GrnReturnWorkflowController implements Serializable {
 
         // Check if rate modification is allowed
         boolean rateChangeAllowed = configOptionApplicationController.getBooleanValueByKey("Purchase Return - Changing Return Rate is allowed", false);
-        System.out.println("=== RATE CHANGE VALIDATION DEBUG ===");
-        System.out.println("Item: " + (billItem.getItem() != null ? billItem.getItem().getName() : "Unknown"));
-        System.out.println("Rate change allowed: " + rateChangeAllowed);
-        System.out.println("Current rate: " + fd.getLineGrossRate());
         
         if (!rateChangeAllowed && billItem.getReferanceBillItem() != null) {
             // For AMPP items, we need to get the original pack rate, not unit rate
             if (billItem.getItem() instanceof Ampp) {
                 // For AMPP: Get original pack rate from the original bill item
                 BigDecimal originalPackRate = getOriginalPackRate(billItem.getReferanceBillItem());
-                System.out.println("AMPP RATE RESET! From " + fd.getLineGrossRate() + " to original pack rate: " + originalPackRate);
                 fd.setLineGrossRate(originalPackRate);
             } else {
                 // For AMP: Use unit rate as before
                 BigDecimal originalRate = BigDecimal.valueOf(getOriginalPurchaseRate(billItem.getItem()));
-                System.out.println("AMP RATE RESET! From " + fd.getLineGrossRate() + " to " + originalRate);
                 fd.setLineGrossRate(originalRate);
             }
         }
-        System.out.println("Final rate after validation: " + fd.getLineGrossRate());
-        System.out.println("=== RATE CHANGE VALIDATION END ===");
 
         return isValid;
     }
@@ -1403,7 +1398,6 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Event handlers for quantity changes (with validation) - following legacy pattern
     public void onReturnRateChange(BillItem bi) {
-        System.out.println("=== onReturnRateChange CALLED ===");
         // Use dedicated method for this controller to avoid external service interference
         syncQuantitiesAfterRateChange(bi);
         validateReturnQuantities(bi);
@@ -1427,17 +1421,12 @@ public class GrnReturnWorkflowController implements Serializable {
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
         
-        System.out.println("=== AMPP RATE DEBUG: Rate Change ===");
-        System.out.println("Item: " + itemName + " (AMPP: " + isAmpp + ")");
-        System.out.println("User entered rate: " + userEnteredRate);
-        
         if (isAmpp) {
             // For AMPP items: User entered rate is per pack, we need to sync unit-based calculations
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
             BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
             BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
             
-            System.out.println("BEFORE - Qty: " + quantity + ", FreeQty: " + freeQuantity + ", UnitsPerPack: " + unitsPerPack);
             
             // Calculate unit-based quantities
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
@@ -1459,8 +1448,6 @@ public class GrnReturnWorkflowController implements Serializable {
             phi.setPurchaseRatePack(userEnteredRate.doubleValue());
             phi.setPurchaseRate(userEnteredRate.doubleValue()); // Pack rate for AMPP
             
-            System.out.println("AFTER - Rate per unit: " + ratePerUnit + ", Pack rate: " + userEnteredRate);
-            
         } else {
             // For AMP items: User entered rate is per unit
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
@@ -1479,8 +1466,6 @@ public class GrnReturnWorkflowController implements Serializable {
         
         // Always preserve the user-entered rate
         fd.setLineGrossRate(userEnteredRate);
-        System.out.println("Final rate preserved: " + fd.getLineGrossRate());
-        System.out.println("=== AMPP RATE DEBUG: END ===");
     }
 
     public void onReturningTotalQtyChange(BillItem bi) {
@@ -1523,17 +1508,12 @@ public class GrnReturnWorkflowController implements Serializable {
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
         
-        System.out.println("=== AMPP RATE DEBUG: Quantity Change (" + changeType + ") ===");
-        System.out.println("Item: " + itemName + " (AMPP: " + isAmpp + ")");
-        System.out.println("Existing rate BEFORE sync: " + existingRate);
-        
         if (isAmpp) {
             // For AMPP items: Rate should remain as pack rate
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
             BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
             BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
             
-            System.out.println("Quantities - Qty: " + quantity + ", FreeQty: " + freeQuantity + ", UnitsPerPack: " + unitsPerPack);
             
             // Calculate unit-based quantities
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
@@ -1555,8 +1535,6 @@ public class GrnReturnWorkflowController implements Serializable {
             phi.setPurchaseRatePack(existingRate.doubleValue());
             phi.setPurchaseRate(existingRate.doubleValue()); // Pack rate for AMPP
             
-            System.out.println("Calculated - Rate per unit: " + ratePerUnit + ", Pack rate: " + existingRate);
-            
         } else {
             // For AMP items: Rate is per unit
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
@@ -1575,8 +1553,6 @@ public class GrnReturnWorkflowController implements Serializable {
         
         // CRITICAL: Restore the original rate to prevent external service interference
         fd.setLineGrossRate(existingRate);
-        System.out.println("Rate AFTER sync: " + fd.getLineGrossRate());
-        System.out.println("=== AMPP RATE DEBUG: END ===");
     }
 
     /**
@@ -1595,10 +1571,6 @@ public class GrnReturnWorkflowController implements Serializable {
         
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
-        
-        System.out.println("=== calculateLineTotal DEBUG ===");
-        System.out.println("Item: " + itemName + " (AMPP: " + isAmpp + ")");
-        System.out.println("Rate input: " + rate);
 
         if (qty == null) {
             qty = BigDecimal.ZERO;
@@ -1619,8 +1591,6 @@ public class GrnReturnWorkflowController implements Serializable {
         fd.setLineNetTotal(lineTotal);
         bi.setNetValue(lineTotal.doubleValue());
         
-        System.out.println("Final calculation: (" + qty + " + " + freeQty + ") x " + rate + " = " + lineTotal);
-        System.out.println("=== calculateLineTotal END ===");
     }
 
     // Utility methods
@@ -1649,7 +1619,6 @@ public class GrnReturnWorkflowController implements Serializable {
         
         // For AMPP items, the lineGrossRate in the original bill should be the pack rate
         if (originalFd.getLineGrossRate() != null) {
-            System.out.println("getOriginalPackRate: Found original pack rate: " + originalFd.getLineGrossRate());
             return originalFd.getLineGrossRate();
         }
         
@@ -1659,11 +1628,9 @@ public class GrnReturnWorkflowController implements Serializable {
             BigDecimal unitRate = BigDecimal.valueOf(originalPhi.getPurchaseRateInUnit());
             BigDecimal unitsPerPack = originalFd.getUnitsPerPack();
             BigDecimal packRate = unitRate.multiply(unitsPerPack);
-            System.out.println("getOriginalPackRate: Calculated pack rate: " + unitRate + " x " + unitsPerPack + " = " + packRate);
             return packRate;
         }
         
-        System.out.println("getOriginalPackRate: Could not determine pack rate, returning ZERO");
         return BigDecimal.ZERO;
     }
 
