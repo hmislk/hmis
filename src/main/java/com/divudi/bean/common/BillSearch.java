@@ -4350,7 +4350,7 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        boolean approvalOnly = configOptionApplicationController.getBooleanValueByKey("GRN Returns is only after Approval", false);
+        boolean approvalOnly = configOptionApplicationController.getBooleanValueByKey("GRN Returns is only after Approval", true);
         if (approvalOnly) {
             grnReturnApprovalController.setGrnBill(bill);
             grnReturnApprovalController.prepareReturnRequest();

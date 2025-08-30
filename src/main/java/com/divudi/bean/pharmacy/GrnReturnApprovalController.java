@@ -55,8 +55,8 @@ public class GrnReturnApprovalController implements Serializable {
         pendingReturn.setReferenceBill(grnBill);
         pendingReturn.setDepartment(sessionController.getDepartment());
         pendingReturn.setInstitution(sessionController.getInstitution());
-        pendingReturn.setFromInstitution(grnBill.getToInstitution());
-        pendingReturn.setToDepartment(grnBill.getDepartment());
+        pendingReturn.setFromDepartment(grnBill.getDepartment());
+        pendingReturn.setToInstitution(grnBill.getFromInstitution());
         pendingReturn.setCreatedAt(new Date());
         pendingReturn.setCreater(sessionController.getLoggedUser());
         pendingReturn.setBillItems(new ArrayList<>());
