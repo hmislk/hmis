@@ -500,22 +500,60 @@ public class GrnReturnWorkflowController implements Serializable {
         }
     }
 
-    // Calculation methods
+    // Calculation methods - Dedicated methods for GRN Return calculations
     private void calculateTotal() {
         if (currentBill == null) {
             return;
         }
 
-        double total = 0.0;
-        for (BillItem bi : billItems) {
-            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-            double itemTotal = (phi.getQty() + phi.getFreeQty()) * phi.getPurchaseRateInUnit();
-            bi.setNetValue(itemTotal);
-            total += itemTotal;
+        // Use the comprehensive calculation method that properly handles finance details
+        calculateGrnReturnTotal();
+    }
+    
+    /**
+     * Dedicated GRN Return total calculation using BillItemFinanceDetails.lineGrossTotal
+     * This ensures consistency with the line-by-line calculations shown in the UI
+     */
+    private void calculateGrnReturnTotal() {
+        if (currentBill == null) {
+            return;
         }
 
-        currentBill.setTotal(total);
-        currentBill.setNetTotal(total);
+        BigDecimal returnTotal = BigDecimal.ZERO;
+        int itemCount = 0;
+        
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
+                continue;
+            }
+
+            BigDecimal lineGrossTotal = fd.getLineGrossTotal();
+            if (lineGrossTotal != null) {
+                returnTotal = returnTotal.add(lineGrossTotal);
+                itemCount++;
+                // Also update the individual bill item net value for consistency
+                bi.setNetValue(lineGrossTotal.doubleValue());
+            }
+        }
+
+        // Ensure the bill has finance details
+        if (currentBill.getBillFinanceDetails() == null) {
+            currentBill.setBillFinanceDetails(new BillFinanceDetails());
+            currentBill.getBillFinanceDetails().setBill(currentBill);
+        }
+
+        // Set the calculated totals
+        currentBill.getBillFinanceDetails().setNetTotal(returnTotal);
+        currentBill.getBillFinanceDetails().setGrossTotal(returnTotal);
+        
+        // Also set the legacy total fields for backward compatibility
+        currentBill.setTotal(returnTotal.doubleValue());
+        currentBill.setNetTotal(returnTotal.doubleValue());
     }
 
     // Event handlers (with comprehensive validation)
@@ -623,12 +661,12 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
-                calculateLineTotalByLineGrossRate(newBillItemInReturnBill);
+                calculateLineTotal(newBillItemInReturnBill);
                 getBillItems().add(newBillItemInReturnBill);
             } catch (Exception e) {
             }
         }
-        calculateTotalReturnByLineNetTotals(newGrnReturnBill);
+        calculateGrnReturnTotal();
         try {
             BigDecimal netTotal = newGrnReturnBill != null && newGrnReturnBill.getBillFinanceDetails() != null
                     ? Optional.ofNullable(newGrnReturnBill.getBillFinanceDetails().getNetTotal()).orElse(BigDecimal.ZERO)
@@ -642,62 +680,52 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private void calculateTotalReturnByLineNetTotals(Bill newGrnReturnBill) {
+        // Use the dedicated calculation method for consistency
+        if (newGrnReturnBill != null && newGrnReturnBill.equals(currentBill)) {
+            calculateGrnReturnTotal();
+        } else {
+            // Legacy fallback for different bill calculations
+            BigDecimal returnTotal = BigDecimal.ZERO;
+            int itemCount = 0;
+            for (BillItem bi : billItems) {
+                if (bi == null) {
+                    continue;
+                }
 
-        BigDecimal returnTotal = BigDecimal.ZERO;
-        int itemCount = 0;
-        for (BillItem bi : billItems) {
-            if (bi == null) {
-                continue;
+                BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+                if (f == null) {
+                    continue;
+                }
+
+                BigDecimal lineGrossTotal = f.getLineGrossTotal();
+
+                if (lineGrossTotal != null) {
+                    returnTotal = returnTotal.add(lineGrossTotal);
+                    itemCount++;
+                }
             }
 
-            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-            if (f == null) {
-                continue;
+            if (newGrnReturnBill == null) {
+                return;
             }
 
-            BigDecimal lineGrossTotal = f.getLineGrossTotal();
-
-            if (lineGrossTotal != null) {
-                returnTotal = returnTotal.add(lineGrossTotal);
-                itemCount++;
+            if (newGrnReturnBill.getBillFinanceDetails() == null) {
+                newGrnReturnBill.setBillFinanceDetails(new BillFinanceDetails());
+                newGrnReturnBill.getBillFinanceDetails().setBill(newGrnReturnBill);
             }
-        }
 
-        if (newGrnReturnBill == null) {
-            return;
+            newGrnReturnBill.getBillFinanceDetails().setNetTotal(returnTotal);
+            newGrnReturnBill.getBillFinanceDetails().setGrossTotal(returnTotal);
+            
+            // Also set legacy fields for backward compatibility
+            newGrnReturnBill.setTotal(returnTotal.doubleValue());
+            newGrnReturnBill.setNetTotal(returnTotal.doubleValue());
         }
-
-        if (newGrnReturnBill.getBillFinanceDetails() == null) {
-            newGrnReturnBill.setBillFinanceDetails(new BillFinanceDetails());
-            newGrnReturnBill.getBillFinanceDetails().setBill(newGrnReturnBill);
-        }
-
-        newGrnReturnBill.getBillFinanceDetails().setNetTotal(returnTotal);
     }
 
     private void calculateLineTotalByLineGrossRate(BillItem inputBillItem) {
-
-        if (inputBillItem == null) {
-            return;
-        }
-
-        BillItemFinanceDetails f = inputBillItem.getBillItemFinanceDetails();
-        if (f == null) {
-            return;
-        }
-
-        BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
-        BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
-        BigDecimal totalQty = qty.add(freeQty);
-        BigDecimal grossRate = f.getLineGrossRate();
-
-        if (grossRate == null) {
-            grossRate = BigDecimal.ZERO;
-        }
-
-        // For GRN returns, line total = total quantity (qty + free qty) × rate
-        BigDecimal grossTotal = totalQty.multiply(grossRate);
-        f.setLineGrossTotal(grossTotal);
+        // Use the dedicated line calculation method for consistency
+        calculateLineTotal(inputBillItem);
     }
 
     private void addDataToReturningBillItem(BillItem returningBillItem) {
@@ -1547,14 +1575,19 @@ public class GrnReturnWorkflowController implements Serializable {
         System.out.println("=== AMPP RATE DEBUG: END ===");
     }
 
+    /**
+     * Dedicated line total calculation for GRN Return items
+     * Uses proper quantity and rate calculations without external service interference
+     */
     private void calculateLineTotal(BillItem bi) {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
 
-        BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
-        BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
-        BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        BigDecimal qty = fd.getQuantity();
+        BigDecimal freeQty = fd.getFreeQuantity();
+        BigDecimal rate = fd.getLineGrossRate();
         
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
@@ -1573,11 +1606,16 @@ public class GrnReturnWorkflowController implements Serializable {
             rate = BigDecimal.ZERO;
         }
 
-        BigDecimal total = qty.add(freeQty).multiply(rate);
-        bi.getBillItemFinanceDetails().setLineGrossTotal(total);
-        bi.setNetValue(total.doubleValue());
+        // For GRN returns, line total = (quantity + free quantity) × rate
+        BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal lineTotal = totalQty.multiply(rate);
         
-        System.out.println("Final calculation: (" + qty + " + " + freeQty + ") x " + rate + " = " + total);
+        // Set the calculated line total
+        fd.setLineGrossTotal(lineTotal);
+        fd.setLineNetTotal(lineTotal);
+        bi.setNetValue(lineTotal.doubleValue());
+        
+        System.out.println("Final calculation: (" + qty + " + " + freeQty + ") x " + rate + " = " + lineTotal);
         System.out.println("=== calculateLineTotal END ===");
     }
 

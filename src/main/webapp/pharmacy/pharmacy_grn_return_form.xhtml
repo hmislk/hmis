@@ -161,7 +161,7 @@
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue @form" listener="#{grnReturnWorkflowController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue returnTotal" listener="#{grnReturnWorkflowController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -181,7 +181,7 @@
                                         <p:ajax 
                                             event="blur" 
                                             process="@this"
-                                            update="txtLineReturnValue @form" 
+                                            update="txtLineReturnValue returnTotal" 
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -200,7 +200,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
-                                            update="txtLineReturnValue @form" 
+                                            update="txtLineReturnValue returnTotal" 
                                             listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -217,7 +217,7 @@
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
-                                            update="txtLineReturnValue @form"
+                                            update="txtLineReturnValue returnTotal"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
@@ -303,7 +303,7 @@
                                 <p:outputLabel 
                                     id="returnTotal" 
                                     class="h3 text-success"
-                                    value="#{grnReturnWorkflowController.currentBill.netTotal}" >
+                                    value="#{grnReturnWorkflowController.currentBill.billFinanceDetails.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
 
