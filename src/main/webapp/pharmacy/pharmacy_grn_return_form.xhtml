@@ -179,7 +179,7 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                         <p:ajax 
-                                            event="keyup" 
+                                            event="blur" 
                                             process="@this"
                                             update="txtLineReturnValue @form" 
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
@@ -199,7 +199,7 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <p:ajax 
                                             process="@this"
-                                            event="keyup" 
+                                            event="blur" 
                                             update="txtLineReturnValue @form" 
                                             listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
@@ -215,7 +215,7 @@
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
                                         <p:ajax
-                                            event="keyup" 
+                                            event="blur" 
                                             process="@this" 
                                             update="txtLineReturnValue @form"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
