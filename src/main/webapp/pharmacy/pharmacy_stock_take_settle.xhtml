@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h:outputText value="Review Stock Count Bill" style="font-size: 1.5rem; font-weight: bold; color: #495057;"/>
+                        </div>
+                        <div class="card-body">
+                            <h:form>
+                                <div class="row mb-4">
+                                    <div class="col-lg-8">
+                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" 
+                                                     columnClasses="text-right pr-3 font-weight-bold,text-left">
+                                            <h:outputText value="Institution:" style="font-weight:bold; color: #6c757d;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}" 
+                                                         style="color: #495057;"/>
+                                            <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}" 
+                                                         style="color: #495057;"/>
+                                            <h:outputText value="Total Stock Value:" style="font-weight:bold; color: #6c757d;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
+                                                         style="font-weight: bold; color: #28a745; font-size: 1.1rem;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:panelGrid>
+                                    </div>
+                                    <div class="col-lg-4 text-right">
+                                        <div class="btn-group" role="group">
+                                            <p:commandButton value="Back" ajax="false" 
+                                                           styleClass="ui-button-secondary mx-2" 
+                                                           icon="fa fa-arrow-left" 
+                                                           action="pharmacy_stock_take?faces-redirect=true"/>
+                                            <p:commandButton value="Record Stock Counts to Start Stock Taking" ajax="false" 
+                                                           styleClass="ui-button-success mx-2" 
+                                                           icon="fa fa-check" 
+                                                           action="#{pharmacyStockTakeController.settleStockCount}"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <p:separator/>
+
+                                <p:dataTable value="#{pharmacyStockTakeController.snapshotBill.billItems}" 
+                                           var="bi" 
+                                           rows="25" 
+                                           paginator="true"
+                                           paginatorPosition="both"
+                                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                           rowsPerPageTemplate="10,25,50,100"
+                                           styleClass="ui-datatable-striped ui-datatable-gridlines"
+                                           emptyMessage="No stock items found for this count."
+                                           sortMode="multiple"
+                                           filterable="true">
+                                    
+                                    <p:column headerText="Bill Item ID" sortBy="#{bi.id}"
+                                             filterBy="#{bi.id}" filterMatchMode="exact"
+                                             style="width: 110px; text-align: right;">
+                                        <h:outputText value="#{bi.id}" 
+                                                     style="color: #6c757d; font-family: monospace;"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Category" sortBy="#{bi.item.category.name}" 
+                                             filterBy="#{bi.item.category.name}" filterMatchMode="contains"
+                                             style="width: 120px;">
+                                        <h:outputText value="#{bi.item.category.name}" 
+                                                     style="color: #495057;"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Item Description" sortBy="#{bi.descreption}" 
+                                             filterBy="#{bi.descreption}" filterMatchMode="contains"
+                                             style="min-width: 200px;">
+                                        <h:outputText value="#{bi.descreption}" 
+                                                     style="color: #495057; font-weight: 500;"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Batch No." sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
+                                             filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" filterMatchMode="contains"
+                                             style="width: 100px; text-align: center;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
+                                                     style="color: #6c757d; font-family: monospace;"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Expiry Date" sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
+                                             filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" filterMatchMode="contains"
+                                             style="width: 110px; text-align: center;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
+                                                     style="color: #6c757d;">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Quantity" sortBy="#{bi.qty}" 
+                                             filterBy="#{bi.qty}" filterMatchMode="exact"
+                                             style="width: 80px; text-align: right;">
+                                        <h:outputText value="#{bi.qty}" 
+                                                     style="color: #495057; font-weight: 500;">
+                                            <f:convertNumber integerOnly="true"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Purchase Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
+                                             filterBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" filterMatchMode="exact"
+                                             style="width: 110px; text-align: right;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
+                                                     style="color: #6c757d;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Retail Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
+                                             filterBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" filterMatchMode="exact"
+                                             style="width: 110px; text-align: right;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
+                                                     style="color: #6c757d;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Cost Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
+                                             filterBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" filterMatchMode="exact"
+                                             style="width: 110px; text-align: right;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
+                                                     style="color: #6c757d;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Line Value" sortBy="#{bi.netValue}" 
+                                             filterBy="#{bi.netValue}" filterMatchMode="exact"
+                                             style="width: 120px; text-align: right;">
+                                        <h:outputText value="#{bi.netValue}" 
+                                                     style="color: #28a745; font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <div class="row mt-4">
+                                    <div class="col-lg-8">
+                                        <!-- Summary information can be added here if needed -->
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-right">
+                                                <h:outputText value="Total Stock Value:" 
+                                                             style="font-weight: bold; color: #6c757d; font-size: 1.1rem;"/>
+                                                <br/>
+                                                <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
+                                                             style="font-weight: bold; color: #28a745; font-size: 1.8rem;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
