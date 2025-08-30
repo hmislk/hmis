@@ -223,6 +223,16 @@ public class GrnReturnWorkflowController implements Serializable {
 
             updateStock();  // Stock handling happens only at approval stage
 
+            // Check if the original GRN is fully returned and mark it as fullReturned
+            Bill originalGrnBill = currentBill.getReferenceBill();
+            if (originalGrnBill != null && isGrnFullyReturned(originalGrnBill)) {
+                originalGrnBill.setFullReturned(true);
+                originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
+                originalGrnBill.setFullReturnedAt(new Date());
+                billFacade.edit(originalGrnBill);
+                JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
+            }
+
             // Ensure bill items are properly associated for print preview
             ensureBillItemsForPreview();
             printPreview = true;
@@ -764,12 +774,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "WHERE bi.referanceBillItem = :refBi "
                 + "AND bi.bill.billType = :bt "
                 + "AND bi.bill.cancelled = :can "
+                + "AND bi.bill.completed = :comp "
                 + "AND bi.retired = :ret";
 
         Map<String, Object> params = new HashMap<>();
         params.put("refBi", referanceBillItem);
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("can", false);
+        params.put("comp", true);
         params.put("ret", false);
 
         return billItemFacade.findDoubleByJpql(sql, params);
@@ -785,12 +797,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "WHERE bi.referanceBillItem = :refBi "
                 + "AND bi.bill.billType = :bt "
                 + "AND bi.bill.cancelled = :can "
+                + "AND bi.bill.completed = :comp "
                 + "AND bi.retired = :ret";
 
         Map<String, Object> params = new HashMap<>();
         params.put("refBi", referanceBillItem);
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("can", false);
+        params.put("comp", true);
         params.put("ret", false);
 
         return billItemFacade.findDoubleByJpql(sql, params);
@@ -1281,5 +1295,54 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public void setFilteredGrnReturnsToApprove(List<Bill> filteredGrnReturnsToApprove) {
         this.filteredGrnReturnsToApprove = filteredGrnReturnsToApprove;
+    }
+    
+    /**
+     * Checks if a GRN is fully returned by comparing original quantities with returned quantities
+     * for all items in the GRN. Only considers completed (approved) returns.
+     * @param grnBill The original GRN bill to check
+     * @return true if all items are fully returned, false otherwise
+     */
+    private boolean isGrnFullyReturned(Bill grnBill) {
+        if (grnBill == null) {
+            return false;
+        }
+
+        // Get all bill items from the original GRN
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", grnBill.getId());
+        List<BillItem> originalBillItems = billItemFacade.findByJpql(jpql, params);
+
+        if (originalBillItems == null || originalBillItems.isEmpty()) {
+            return false;
+        }
+
+        // Check each item to see if it's fully returned
+        for (BillItem originalBillItem : originalBillItems) {
+            if (originalBillItem.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            // Get original quantities
+            double originalQty = Math.abs(originalBillItem.getPharmaceuticalBillItem().getQty());
+            double originalFreeQty = Math.abs(originalBillItem.getPharmaceuticalBillItem().getFreeQty());
+
+            // Get already returned quantities (only completed/approved returns)
+            double returnedQty = Math.abs(getAlreadyReturnedQuantity(originalBillItem));
+            double returnedFreeQty = Math.abs(getAlreadyReturnedFreeQuantity(originalBillItem));
+
+            // Calculate remaining quantities
+            double remainingQty = originalQty - returnedQty;
+            double remainingFreeQty = originalFreeQty - returnedFreeQty;
+
+            // If any item has remaining quantity > 0, GRN is not fully returned
+            if (remainingQty > 0.001 || remainingFreeQty > 0.001) { // Using small epsilon for floating point comparison
+                return false;
+            }
+        }
+
+        // All items are fully returned
+        return true;
     }
 }

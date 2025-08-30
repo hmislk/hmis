@@ -354,6 +354,12 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fullyIssuedAt;
 
+    private boolean fullReturned;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullReturnedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullReturnedAt;
+
     //Print Information
     private boolean printed;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -2723,6 +2729,30 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setFullyIssuedAt(Date fullyIssuedAt) {
         this.fullyIssuedAt = fullyIssuedAt;
+    }
+
+    public boolean isFullReturned() {
+        return fullReturned;
+    }
+
+    public void setFullReturned(boolean fullReturned) {
+        this.fullReturned = fullReturned;
+    }
+
+    public WebUser getFullReturnedBy() {
+        return fullReturnedBy;
+    }
+
+    public void setFullReturnedBy(WebUser fullReturnedBy) {
+        this.fullReturnedBy = fullReturnedBy;
+    }
+
+    public Date getFullReturnedAt() {
+        return fullReturnedAt;
+    }
+
+    public void setFullReturnedAt(Date fullReturnedAt) {
+        this.fullReturnedAt = fullReturnedAt;
     }
 
     public BankAccount getBankAccount() {
