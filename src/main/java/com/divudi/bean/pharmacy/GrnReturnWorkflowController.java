@@ -1053,7 +1053,7 @@ public class GrnReturnWorkflowController implements Serializable {
             bi.copy(requestedPhi.getBillItem());
             
             // Ensure the original referenceBillItem link is preserved after copy
-            bi.setReferenceBillItem(requestedPhi.getBillItem().getReferenceBillItem());
+            bi.setReferanceBillItem(requestedPhi.getBillItem().getReferanceBillItem());
 
             PharmaceuticalBillItem phi = new PharmaceuticalBillItem();
             phi.copy(requestedPhi);
