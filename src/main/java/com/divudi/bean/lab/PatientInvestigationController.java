@@ -987,10 +987,18 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientInvestigation> getPatientInvestigationsFromSample(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample. = :ps";
 
         Map m = new HashMap();
         m.put("ps", ps);
+        return patientSampleComponantFacade.findByJpql(j, m);
+    }
+    
+    public List<PatientInvestigation> getPatientInvestigationsFromBill(Bill bill) {
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample.bill = :bill";
+
+        Map m = new HashMap();
+        m.put("bill", bill);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
