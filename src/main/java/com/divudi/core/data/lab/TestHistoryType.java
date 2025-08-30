@@ -12,6 +12,8 @@ package com.divudi.core.data.lab;
 
 public enum TestHistoryType {
     ORDERED,
+    CANCELED,
+    REFUNDED,
     BARCODE_GENERATED,
     BARCODE_REGENERATED,
     BARCODE_PRINTED,
