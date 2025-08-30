@@ -744,6 +744,7 @@ public class GrnController implements Serializable {
         return true;
     }
 
+
     public void settleWholesale() {
         if (insTotal == 0 && difference != 0) {
             JsfUtil.addErrorMessage("Fill the invoice Total");

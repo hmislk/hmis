@@ -344,6 +344,9 @@
                                     minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                        <h:outputLabel value="#{vt.id}"></h:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Item" style="width: 350px; padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>

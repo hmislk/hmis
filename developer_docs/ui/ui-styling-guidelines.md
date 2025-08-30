@@ -137,5 +137,153 @@
 </p:dataTable>
 ```
 
+## Page Structure Guidelines
+
+### Header Spacing Optimization (ERP Systems)
+- **No HTML heading tags**: Do NOT use h1, h2, h3, h4, h5, h6 tags - this is an ERP system, not a website
+- **Use h:outputText**: Use `<h:outputText>` with appropriate CSS classes for all headings and labels
+- **Compact design**: Keep text compact and business-focused
+- **Efficient use of space**: Text should be informative but not dominate the page layout
+
+### Page Type Selection
+- **Use HTML structure WITH ui:composition and template**: XHTML pages should use proper HTML document structure that contains ui:composition with template
+- **HTML + Template combination**: Use complete HTML document structure with proper DOCTYPE and html root element, then use ui:composition inside h:body
+- **Best of both worlds**: HTML structure provides flexibility while ui:composition with template ensures consistent layout and navigation
+
+### Layout Structure Optimization
+- **Consider p:panelGrid over nested panels**: When you have a simple container with just content inside, `p:panelGrid` can be more efficient than wrapping `p:panel`
+- **Avoid unnecessary nesting**: Don't use `p:panel` when a simple `div` or `p:panelGrid` would suffice
+- **Container efficiency**: Use the most appropriate container component for your content structure
+
+### XML Entity Handling
+- **Escape ampersands**: Always use `&amp;` instead of `&` in XHTML attribute values and content
+- **Proper entity references**: The entity name must immediately follow the '&' in entity references
+- **Common entities**: 
+  - `&amp;` for &
+  - `&lt;` for <
+  - `&gt;` for >
+  - `&quot;` for "
+  - `&apos;` for '
+
+## Efficient Layouts
+
+### When to Use p:panelGrid vs p:panel
+```xhtml
+<!-- ❌ Unnecessary wrapping when only containing content -->
+<p:panel>
+    <div class="content">Simple content here</div>
+</p:panel>
+
+<!-- ✅ More efficient for simple layouts -->
+<p:panelGrid columns="1" styleClass="w-100">
+    <div class="content">Simple content here</div>
+</p:panelGrid>
+
+<!-- ✅ Use p:panel when you need header/footer facets -->
+<p:panel>
+    <f:facet name="header">Header Content</f:facet>
+    <div class="content">Main content</div>
+</p:panel>
+```
+
+### Page Structure Examples
+
+#### ✅ Correct: HTML Structure WITH ui:composition and Template (PREFERRED)
+```xhtml
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Purchase Orders - Finalization</title>
+    <!-- Additional head elements if needed -->
+</h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <!-- Page content here -->
+            <h:form>
+                <!-- Form content -->
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
+```
+
+#### ❌ Wrong: HTML Structure WITHOUT Template
+```xhtml
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<h:head>
+    <title>Page Title</title>
+</h:head>
+<h:body>
+    <!-- Page content here - loses template benefits -->
+</h:body>
+</html>
+```
+
+#### ❌ Wrong: ui:composition WITHOUT HTML Structure
+```xhtml
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml">
+    <ui:define name="content">
+        <!-- Content - lacks HTML document structure -->
+    </ui:define>
+</ui:composition>
+```
+
+### Why This Structure is Best
+
+#### Advantages of HTML + ui:composition + Template:
+1. **Proper Document Structure**: HTML DOCTYPE and root element provide proper document foundation
+2. **Template Benefits**: Consistent navigation, layout, and styling from template system  
+3. **Flexibility**: Can add custom head elements, scripts, or styles when needed
+4. **SEO Friendly**: Proper HTML structure with meaningful titles
+5. **Standards Compliant**: Follows web standards while leveraging JSF templates
+6. **Maintenance**: Template changes propagate to all pages automatically
+
+#### Key Requirements:
+- **HTML DOCTYPE**: Must use `<!DOCTYPE html>` not `<!DOCTYPE composition>`
+- **HTML Root Element**: Must use `<html>` with proper namespaces including `xmlns:ui`
+- **Template Inside Body**: ui:composition with template goes inside `<h:body>`
+- **Content Definition**: Page content goes inside `<ui:define name="content">`
+
+### ERP-Appropriate Text Design
+```xhtml
+<!-- ❌ Wrong: HTML heading tags (website approach) -->
+<h1 class="display-4 mb-4">Purchase Orders - Finalization Process</h1>
+<h3>Search Filters</h3>
+<h5 class="mb-0 text-primary fw-bold">Purchase Orders - Finalization</h5>
+
+<!-- ✅ Correct: h:outputText (ERP approach) -->
+<div class="d-flex align-items-center">
+    <i class="fas fa-clipboard-check text-primary me-2"></i>
+    <h:outputText value="Purchase Orders - Finalization" styleClass="text-primary fw-bold"/>
+</div>
+
+<!-- ✅ For labels and section titles -->
+<h:outputText value="Search Filters" styleClass="fw-bold"/>
+
+<!-- ✅ For messages and notifications -->
+<h:outputText value="Access Restricted - You do not have the necessary permissions to access this page." 
+              styleClass="fw-medium"/>
+```
+
+### Why h:outputText for ERP Systems
+1. **Business Application**: ERP systems need compact, functional interfaces
+2. **Screen Real Estate**: Maximize usable space for data and forms
+3. **Consistency**: JSF components provide consistent rendering
+4. **Flexibility**: Easy to style with CSS classes without semantic HTML overhead
+5. **Performance**: Lighter rendering than semantic HTML headers
+
 ---
 This behavior should persist across all Claude Code sessions for this project.
