@@ -150,7 +150,7 @@ public class PharmacyCostingService {
 
         billItemFinanceDetails.setProfitMargin(calculateProfitMarginForPurchasesBigDecimal(billItemFinanceDetails.getBillItem()));
 
-        pbi.setRetailRate(retailRate.doubleValue());
+        pbi.setRetailRate(rrPerUnit);
         pbi.setRetailRateInUnit(rrPerUnit);
         pbi.setRetailRatePack(retailRate.doubleValue());
 
@@ -249,7 +249,7 @@ public class PharmacyCostingService {
 
         billItemFinanceDetails.setProfitMargin(calculateProfitMarginForPurchasesBigDecimal(billItemFinanceDetails.getBillItem()));
 
-        pbi.setRetailRate(retailRate.doubleValue());
+        pbi.setRetailRate(rrPerUnit);
         pbi.setRetailRateInUnit(rrPerUnit);
         pbi.setRetailRatePack(retailRate.doubleValue());
 

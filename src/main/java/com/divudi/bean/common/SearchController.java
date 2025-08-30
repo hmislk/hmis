@@ -5953,7 +5953,7 @@ public class SearchController implements Serializable {
     }
 
     private List<Bill> getReturnBill(Bill b, BillType bt) {
-        String sql = "Select b From BilledBill b where b.retired=false and b.creater is not null"
+        String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
                 + " b.referenceBill=:ref";
         HashMap hm = new HashMap();
@@ -5964,7 +5964,7 @@ public class SearchController implements Serializable {
 
     private List<Bill> getReturnBill(Bill b, BillTypeAtomic bt) {
         String jpql = "Select b "
-                + " From BilledBill b "
+                + " From Bill b "
                 + " where b.retired=false "
                 + " and b.creater is not null"
                 + " and  b.billTypeAtomic=:btp "
@@ -5981,7 +5981,7 @@ public class SearchController implements Serializable {
         }
 
         String jpql = "Select b "
-                + " From BilledBill b "
+                + " From Bill b "
                 + " where b.retired=false "
                 + " and b.creater is not null"
                 + " and b.billTypeAtomic in :btps "
