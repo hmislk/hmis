@@ -194,6 +194,10 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Core workflow methods
     public void saveRequest() {
+        if (!isAuthorized("CREATE", "CreateGrnReturn")) {
+            return;
+        }
+        
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
         ensureBillItemsForPreview();
@@ -201,6 +205,10 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "FinalizeGrnReturn")) {
+            return;
+        }
+        
         // Check if comments are provided for finalization
         if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a reason for return to finalize");
@@ -217,6 +225,10 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public void approve() {
+        if (!isAuthorized("APPROVE", "ApproveGrnReturn")) {
+            return;
+        }
+        
         if (validateApproval()) {
             // Mark the current bill as completed (approved)
             currentBill.setCompleted(true);
@@ -1907,5 +1919,32 @@ public class GrnReturnWorkflowController implements Serializable {
         return true;
     }
     
+    /**
+     * Authorization helper method to check GRN Return privileges and audit denied access
+     * @param action The action being attempted (CREATE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}", 
+                      new Object[]{action, currentBill != null ? currentBill.getId() : "null"});
+            return false;
+        }
+        
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = currentBill != null ? currentBill.getId() : null;
+            
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN Return access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}", 
+                      new Object[]{action, userId, billId, requiredPrivilege});
+            
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN return requests.");
+            return false;
+        }
+        
+        return true;
+    }
    
 }
