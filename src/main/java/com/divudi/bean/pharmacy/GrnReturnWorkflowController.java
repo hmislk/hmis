@@ -1906,22 +1906,28 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            BigDecimal originalQtyBD = originalFd.getQuantityByUnits();
-            BigDecimal originalFreeQtyBD = originalFd.getFreeQuantityByUnits();
+            // Use BigDecimal for precise calculations like the legacy method
+            BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantityByUnits());
+            BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantityByUnits());
 
-            double originalQty = originalQtyBD != null ? Math.abs(originalQtyBD.doubleValue()) : 0.0;
-            double originalFreeQty = originalFreeQtyBD != null ? Math.abs(originalFreeQtyBD.doubleValue()) : 0.0;
+            // Get already returned quantities using the same methods as legacy
+            // (includes current transaction since return bill is already saved as completed)
+            BigDecimal returnedQty = getAlreadyReturnedQuantityWhenApproval(originalBillItem);
+            BigDecimal returnedFreeQty = getAlreadyReturnedFreeQuantityWhenApproval(originalBillItem);
 
-            // Get already returned quantities (only completed/approved returns)
-            double returnedQty = Math.abs(getAlreadyReturnedQuantity(originalBillItem));
-            double returnedFreeQty = Math.abs(getAlreadyReturnedFreeQuantity(originalBillItem));
+            // Calculate remaining quantities using BigDecimal for precision
+            BigDecimal remainingQty = originalQty.subtract(returnedQty);
+            BigDecimal remainingFreeQty = originalFreeQty.subtract(returnedFreeQty);
+            
+            // For total quantity mode, check total remaining instead of individual qty/free qty
+            BigDecimal originalTotal = originalQty.add(originalFreeQty);
+            BigDecimal returnedTotal = returnedQty.add(returnedFreeQty);
+            BigDecimal remainingTotal = originalTotal.subtract(returnedTotal);
 
-            // Calculate remaining quantities
-            double remainingQty = originalQty - returnedQty;
-            double remainingFreeQty = originalFreeQty - returnedFreeQty;
+            // Check if item is fully returned - use total quantity comparison for more accurate results
+            boolean isItemFullyReturned = remainingTotal.compareTo(BigDecimal.ZERO) <= 0;
 
-            // If any item has remaining quantity > 0, GRN is not fully returned
-            if (remainingQty > 0.001 || remainingFreeQty > 0.001) { // Using small epsilon for floating point comparison
+            if (!isItemFullyReturned) {
                 return false;
             }
         }
@@ -1929,4 +1935,6 @@ public class GrnReturnWorkflowController implements Serializable {
         // All items are fully returned
         return true;
     }
+    
+   
 }
