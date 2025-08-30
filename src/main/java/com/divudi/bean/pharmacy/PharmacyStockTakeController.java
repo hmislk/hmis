@@ -314,9 +314,9 @@ public class PharmacyStockTakeController implements Serializable {
                 cExp.setCellStyle(dateLocked);
 
                 // Rates
-                Double pr = (ib != null && ib.getPurcahseRate() != null) ? ib.getPurcahseRate() : 0.0;
-                Double rr = (ib != null && ib.getRetailsaleRate() != null) ? ib.getRetailsaleRate() : 0.0;
-                Double cr = (ib != null && ib.getCostRate() != null) ? ib.getCostRate() : 0.0;
+                double pr = (ib != null) ? ib.getPurcahseRate() : 0.0;
+                double rr = (ib != null) ? ib.getRetailsaleRate() : 0.0;
+                double cr = (ib != null) ? ib.getCostRate() : 0.0;
 
                 Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
                 Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
@@ -324,7 +324,7 @@ public class PharmacyStockTakeController implements Serializable {
 
                 // System Qty (optional)
                 if (includeSystemQty) {
-                    Double sys = pbi != null && pbi.getQty() != null ? pbi.getQty() : 0.0;
+                    double sys = pbi != null ? pbi.getQty() : 0.0;
                     Cell cSys = row.createCell(c++);
                     cSys.setCellValue(sys);
                     cSys.setCellStyle(integerLocked);
@@ -335,8 +335,8 @@ public class PharmacyStockTakeController implements Serializable {
                 cReal.setCellStyle(inputUnlocked);
 
                 // Line Value (system = cost rate * system qty)
-                Double sysQtyForLV = includeSystemQty ? (pbi != null && pbi.getQty() != null ? pbi.getQty() : 0.0) : 0.0;
-                Double lineValue = (cr != null ? cr : 0.0) * sysQtyForLV;
+                double sysQtyForLV = includeSystemQty ? (pbi != null ? pbi.getQty() : 0.0) : 0.0;
+                double lineValue = cr * sysQtyForLV;
                 Cell cLV = row.createCell(c++);
                 cLV.setCellValue(lineValue);
                 cLV.setCellStyle(numberLocked);
