@@ -250,7 +250,9 @@ public class GrnReturnWithCostingController implements Serializable {
             return BigDecimal.ZERO;
         }
 
-        String sql = "Select sum(b.billItemFinanceDetails.quantity) "
+        // For consistency with original quantities which are in units, 
+        // sum quantityByUnits instead of quantity (which might be in packs for Ampp items)
+        String sql = "Select sum(b.billItemFinanceDetails.quantityByUnits) "
                 + " from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
@@ -281,7 +283,9 @@ public class GrnReturnWithCostingController implements Serializable {
         String itemName = originalBillItem.getItem() != null ? originalBillItem.getItem().getName() : "Unknown Item";
         System.out.println("DEBUG getAlreadyReturnedQuantityWhenApproval: Item=" + itemName);
 
-        String sql = "Select sum(b.billItemFinanceDetails.quantity) "
+        // For consistency with original quantities which are in units, 
+        // sum quantityByUnits instead of quantity (which might be in packs for Ampp items)
+        String sql = "Select sum(b.billItemFinanceDetails.quantityByUnits) "
                 + " from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
@@ -315,7 +319,9 @@ public class GrnReturnWithCostingController implements Serializable {
             return BigDecimal.ZERO;
         }
 
-        String sql = "Select sum(b.billItemFinanceDetails.freeQuantity) "
+        // For consistency with original quantities which are in units, 
+        // sum freeQuantityByUnits instead of freeQuantity (which might be in packs for Ampp items)
+        String sql = "Select sum(b.billItemFinanceDetails.freeQuantityByUnits) "
                 + " from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
@@ -346,7 +352,9 @@ public class GrnReturnWithCostingController implements Serializable {
         String itemName = originalBillItem.getItem() != null ? originalBillItem.getItem().getName() : "Unknown Item";
         System.out.println("DEBUG getAlreadyReturnedFreeQuantityWhenApproval: Item=" + itemName);
 
-        String sql = "Select sum(b.billItemFinanceDetails.freeQuantity) "
+        // For consistency with original quantities which are in units, 
+        // sum freeQuantityByUnits instead of freeQuantity (which might be in packs for Ampp items)
+        String sql = "Select sum(b.billItemFinanceDetails.freeQuantityByUnits) "
                 + " from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
@@ -396,9 +404,9 @@ public class GrnReturnWithCostingController implements Serializable {
 
             String itemName = originalBillItem.getItem() != null ? originalBillItem.getItem().getName() : "Unknown Item";
 
-            // Get original purchased quantities
-            BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantity());
-            BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantity());
+            // Get original purchased quantities in units for consistency with returned quantities
+            BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantityByUnits());
+            BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantityByUnits());
 
             // Get already returned quantities (from database, excluding this transaction)
             BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantityWhenApproval(originalBillItem);
@@ -502,10 +510,11 @@ public class GrnReturnWithCostingController implements Serializable {
                 continue;
             }
 
-            // Get original quantities
-            BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantity());
-            BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantity());
-            System.out.println("DEBUG: Item " + itemIndex + " original qty=" + originalQty + ", originalFreeQty=" + originalFreeQty);
+            // Get original quantities in units for consistency with returned quantities
+            // Use quantityByUnits and freeQuantityByUnits to match the return calculation logic
+            BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantityByUnits());
+            BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantityByUnits());
+            System.out.println("DEBUG: Item " + itemIndex + " original qty=" + originalQty + " (units), originalFreeQty=" + originalFreeQty + " (units)");
 
             // Get already returned quantities (using approved/completed returns only)
             // Note: This includes the current transaction since return bill is already saved as completed
@@ -577,9 +586,9 @@ public class GrnReturnWithCostingController implements Serializable {
             BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
             
             if (originalFd != null) {
-                // Get original and already returned quantities
-                BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantity());
-                BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantity());
+                // Get original and already returned quantities (all in units for consistency)
+                BigDecimal originalQty = safeToBigDecimal(originalFd.getQuantityByUnits());
+                BigDecimal originalFreeQty = safeToBigDecimal(originalFd.getFreeQuantityByUnits());
                 BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantity(originalBillItem);
                 BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantity(originalBillItem);
                 

@@ -770,12 +770,10 @@ public class GrnReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
-        String sql = "SELECT SUM(bi.pharmaceuticalBillItem.qty) FROM BillItem bi "
-                + "WHERE bi.referanceBillItem = :refBi "
-                + "AND bi.bill.billType = :bt "
-                + "AND bi.bill.cancelled = :can "
-                + "AND bi.bill.completed = :comp "
-                + "AND bi.retired = :ret";
+        String sql = "Select sum(b.billItemFinanceDetails.quantityByUnits) "
+                + "from BillItem b where b.referanceBillItem=:refBi "
+                + "and b.bill.billType=:bt and b.bill.cancelled=:can "
+                + "and b.retired=:ret and b.bill.completed=:comp";
 
         Map<String, Object> params = new HashMap<>();
         params.put("refBi", referanceBillItem);
@@ -793,12 +791,10 @@ public class GrnReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
-        String sql = "SELECT SUM(bi.pharmaceuticalBillItem.freeQty) FROM BillItem bi "
-                + "WHERE bi.referanceBillItem = :refBi "
-                + "AND bi.bill.billType = :bt "
-                + "AND bi.bill.cancelled = :can "
-                + "AND bi.bill.completed = :comp "
-                + "AND bi.retired = :ret";
+        String sql = "Select sum(b.billItemFinanceDetails.freeQuantityByUnits) "
+                + "from BillItem b where b.referanceBillItem=:refBi "
+                + "and b.bill.billType=:bt and b.bill.cancelled=:can "
+                + "and b.retired=:ret and b.bill.completed=:comp";
 
         Map<String, Object> params = new HashMap<>();
         params.put("refBi", referanceBillItem);
@@ -816,8 +812,16 @@ public class GrnReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
-        double originalQty = Math.abs(referanceBillItem.getPharmaceuticalBillItem().getQty());
-        double originalFreeQty = Math.abs(referanceBillItem.getPharmaceuticalBillItem().getFreeQty());
+        BillItemFinanceDetails originalFd = referanceBillItem.getBillItemFinanceDetails();
+        if (originalFd == null) {
+            return 0.0;
+        }
+        
+        BigDecimal originalQtyBD = originalFd.getQuantityByUnits();
+        BigDecimal originalFreeQtyBD = originalFd.getFreeQuantityByUnits();
+        
+        double originalQty = originalQtyBD != null ? Math.abs(originalQtyBD.doubleValue()) : 0.0;
+        double originalFreeQty = originalFreeQtyBD != null ? Math.abs(originalFreeQtyBD.doubleValue()) : 0.0;
         double alreadyReturned = getAlreadyReturnedQuantity(referanceBillItem) + getAlreadyReturnedFreeQuantity(referanceBillItem);
 
         return (originalQty + originalFreeQty) - Math.abs(alreadyReturned);
@@ -828,7 +832,13 @@ public class GrnReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
-        double originalQty = Math.abs(referanceBillItem.getPharmaceuticalBillItem().getQty());
+        BillItemFinanceDetails originalFd = referanceBillItem.getBillItemFinanceDetails();
+        if (originalFd == null) {
+            return 0.0;
+        }
+        
+        BigDecimal originalQtyBD = originalFd.getQuantityByUnits();
+        double originalQty = originalQtyBD != null ? Math.abs(originalQtyBD.doubleValue()) : 0.0;
         double alreadyReturned = getAlreadyReturnedQuantity(referanceBillItem);
 
         return originalQty - Math.abs(alreadyReturned);
@@ -839,7 +849,13 @@ public class GrnReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
-        double originalFreeQty = Math.abs(referanceBillItem.getPharmaceuticalBillItem().getFreeQty());
+        BillItemFinanceDetails originalFd = referanceBillItem.getBillItemFinanceDetails();
+        if (originalFd == null) {
+            return 0.0;
+        }
+        
+        BigDecimal originalFreeQtyBD = originalFd.getFreeQuantityByUnits();
+        double originalFreeQty = originalFreeQtyBD != null ? Math.abs(originalFreeQtyBD.doubleValue()) : 0.0;
         double alreadyReturned = getAlreadyReturnedFreeQuantity(referanceBillItem);
 
         return originalFreeQty - Math.abs(alreadyReturned);
@@ -1324,9 +1340,17 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            // Get original quantities
-            double originalQty = Math.abs(originalBillItem.getPharmaceuticalBillItem().getQty());
-            double originalFreeQty = Math.abs(originalBillItem.getPharmaceuticalBillItem().getFreeQty());
+            // Get original quantities using unit-based values for consistency
+            BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
+            if (originalFd == null) {
+                continue;
+            }
+            
+            BigDecimal originalQtyBD = originalFd.getQuantityByUnits();
+            BigDecimal originalFreeQtyBD = originalFd.getFreeQuantityByUnits();
+            
+            double originalQty = originalQtyBD != null ? Math.abs(originalQtyBD.doubleValue()) : 0.0;
+            double originalFreeQty = originalFreeQtyBD != null ? Math.abs(originalFreeQtyBD.doubleValue()) : 0.0;
 
             // Get already returned quantities (only completed/approved returns)
             double returnedQty = Math.abs(getAlreadyReturnedQuantity(originalBillItem));
