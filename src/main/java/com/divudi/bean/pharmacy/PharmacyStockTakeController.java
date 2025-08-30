@@ -73,6 +73,9 @@ public class PharmacyStockTakeController implements Serializable {
     private UploadedFile file;
     private Institution institution;
     private Department department;
+    private Date fromDate;
+    private Date toDate;
+    private List<Bill> snapshotBills; // search results
 
     /**
      * Generate stock count bill preview without persisting.
@@ -464,6 +467,60 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
+    // List snapshot bills by filters
+    public void listSnapshotBills() {
+        HashMap<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where b.billType=:bt");
+        params.put("bt", BillType.PharmacySnapshotBill);
+        if (fromDate != null) {
+            jpql.append(" and b.createdAt>=:fd");
+            params.put("fd", fromDate);
+        }
+        if (toDate != null) {
+            // add end of day
+            Date td = new Date(toDate.getTime());
+            params.put("td", td);
+            jpql.append(" and b.createdAt<=:td");
+        }
+        if (institution != null) {
+            jpql.append(" and b.institution=:ins");
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql.append(" and b.department=:dep");
+            params.put("dep", department);
+        }
+        jpql.append(" order by b.createdAt desc");
+        snapshotBills = billFacade.findByJpql(jpql.toString(), params);
+        if (snapshotBills == null) {
+            snapshotBills = new java.util.ArrayList<>();
+        }
+    }
+
+    // Navigate to view the snapshot creation page while keeping context
+    public String viewSnapshot(Bill b) {
+        if (b == null) {
+            return null;
+        }
+        this.snapshotBill = b;
+        this.institution = b.getInstitution();
+        this.department = b.getDepartment();
+        return "/pharmacy/pharmacy_stock_take?faces-redirect=true";
+    }
+
+    // Navigate to upload adjustments page with the selected snapshot
+    public String gotoUploadAdjustments(Bill b) {
+        if (b == null) {
+            return null;
+        }
+        this.snapshotBill = b;
+        this.institution = b.getInstitution();
+        this.department = b.getDepartment();
+        this.file = null;
+        this.physicalCountBill = null;
+        return "/pharmacy/pharmacy_stock_take_upload?faces-redirect=true";
+    }
+
     private int findColumnIndex(Row header, String title) {
         if (header == null) {
             return -1;
@@ -658,5 +715,29 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<Bill> getSnapshotBills() {
+        return snapshotBills;
+    }
+
+    public void setSnapshotBills(List<Bill> snapshotBills) {
+        this.snapshotBills = snapshotBills;
     }
 }
