@@ -62,10 +62,24 @@ public class LabTestHistoryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
+    
     // <editor-fold defaultstate="collapsed" desc="Billing">
     public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment) {
         addNewHistory(TestHistoryType.ORDERED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, null);
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Cancel">
+    public void addCancelHistory(PatientInvestigation patientInvestigation, Department toDepartment, String comment) {
+        addNewHistory(TestHistoryType.CANCELED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, comment);
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Refund">
+    public void addRefundHistory(PatientInvestigation patientInvestigation, Department toDepartment, String comment) {
+        addNewHistory(TestHistoryType.REFUNDED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, comment);
     }
     // </editor-fold>
 
@@ -111,6 +125,7 @@ public class LabTestHistoryController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Report History">
     public void addCreateReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
         addNewHistory(TestHistoryType.REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null);
