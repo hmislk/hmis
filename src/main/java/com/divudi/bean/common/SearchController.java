@@ -5400,6 +5400,144 @@ public class SearchController implements Serializable {
 
     }
 
+    // GRN Return Workflow Search Methods
+    public void fillOnlySavedGrnReturns() {
+        bills = null;
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "Select b From RefundBill b where "
+                + " b.referenceBill is not null "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType= :bTp  "
+                + " and b.checkedBy is null";
+
+        sql += createKeySqlSearchForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", BillType.PharmacyGrnReturn);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    public void fillOnlyFinalizedGrnReturns() {
+        bills = null;
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "Select b From RefundBill b where "
+                + " b.referenceBill is not null "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType= :bTp  "
+                + " and b.checkedBy is not null";
+        sql += createKeySqlSearchForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", BillType.PharmacyGrnReturn);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    public void createGrnReturnRequestedAndApproved() {
+        Date startTime = new Date();
+        createGrnReturnRequestedAndApproved(InstitutionType.Dealer, BillType.PharmacyGrnReturn);
+    }
+
+    public void createApprovedGrnReturns() {
+        Date startTime = new Date();
+        createApprovedGrnReturns(InstitutionType.Dealer, BillType.PharmacyGrnReturn);
+    }
+
+    private void createGrnReturnRequestedAndApproved(InstitutionType institutionType, BillType billType) {
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "SELECT b FROM RefundBill b WHERE "
+                + "b.retired = false "
+                + "and b.billType = :bTp "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.toInstitution.institutionType = :insTp ";
+
+        sql += createKeySqlSearchForGrnReturn(tmp);
+        sql += " ORDER BY b.createdAt DESC ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billType);
+        tmp.put("insTp", institutionType);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    private void createApprovedGrnReturns(InstitutionType institutionType, BillType billType) {
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "SELECT b FROM RefundBill b WHERE "
+                + "b.retired = false "
+                + "and b.cancelled = false "
+                + "and b.billType = :bTp "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.toInstitution.institutionType = :insTp "
+                + "and b.billedBill is not null "
+                + "and b.referenceBill is not null ";
+
+        sql += createKeySqlSearchForGrnReturn(tmp);
+        sql += " ORDER BY b.createdAt DESC ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billType);
+        tmp.put("insTp", institutionType);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    private String createKeySqlSearchForGrnReturn(HashMap tmp) {
+        String sql = "";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (abs(b.netTotal) like :netTotal )";
+            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (abs(b.total) like :total )";
+            tmp.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
+            sql += " and  ((b.toInstitution.name) like :toIns )";
+            tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getCreator() != null && !getSearchKeyword().getCreator().trim().equals("")) {
+            sql += " and  ((b.creater.webUserPerson.name) like :cr )";
+            tmp.put("cr", "%" + getSearchKeyword().getCreator().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :dep )";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+            sql += " and  ((b.referenceBill.deptId) like :refBillNo )";
+            tmp.put("refBillNo", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        return sql;
+    }
+
     public void fillOnlySavedPharmacyTransferRequest() {
         bills = null;
         HashMap tmp = new HashMap();
@@ -5815,7 +5953,7 @@ public class SearchController implements Serializable {
     }
 
     private List<Bill> getReturnBill(Bill b, BillType bt) {
-        String sql = "Select b From BilledBill b where b.retired=false and b.creater is not null"
+        String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
                 + " b.referenceBill=:ref";
         HashMap hm = new HashMap();
@@ -5826,7 +5964,7 @@ public class SearchController implements Serializable {
 
     private List<Bill> getReturnBill(Bill b, BillTypeAtomic bt) {
         String jpql = "Select b "
-                + " From BilledBill b "
+                + " From Bill b "
                 + " where b.retired=false "
                 + " and b.creater is not null"
                 + " and  b.billTypeAtomic=:btp "
@@ -5843,7 +5981,7 @@ public class SearchController implements Serializable {
         }
 
         String jpql = "Select b "
-                + " From BilledBill b "
+                + " From Bill b "
                 + " where b.retired=false "
                 + " and b.creater is not null"
                 + " and b.billTypeAtomic in :btps "

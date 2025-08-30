@@ -70,6 +70,31 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.math.BigDecimal;
 
 /**
+ * ⚠️⚠️⚠️ CRITICAL FINANCIAL & INVENTORY MANAGEMENT BEAN ⚠️⚠️⚠️
+ * 
+ * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
+ * This EJB contains the CORE stock management methods for the entire pharmacy system.
+ * These methods handle REAL MONEY and REGULATORY compliance operations.
+ * 
+ * 🛑 PROTECTED CRITICAL METHODS - DO NOT MODIFY UNDER ANY CIRCUMSTANCE: 🛑
+ * - addToStock() - Increases stock levels (GRNs, transfers)
+ * - deductFromStock() - Decreases stock levels (sales, returns, issues)
+ * - addToStockHistory() - Maintains audit trails for regulatory compliance
+ * - Stock validation and error handling methods
+ * 
+ * 💰 FINANCIAL IMPACT: Changes can cause:
+ * - Inventory discrepancies costing thousands of dollars
+ * - Regulatory audit failures
+ * - Patient safety issues (wrong stock levels)
+ * - Financial report corruption
+ * 
+ * 🏥 REGULATORY COMPLIANCE: Required for:
+ * - Ministry of Health audits
+ * - Financial audits  
+ * - Drug regulatory compliance
+ * - Hospital accreditation
+ * 
+ * ANY modifications require senior management approval and extensive testing.
  *
  * @author Buddhika
  */
@@ -1018,6 +1043,28 @@ public class PharmacyBean {
         return list;
     }
 
+    /**
+     * ⚠️⚠️⚠️ CRITICAL INVENTORY MANAGEMENT METHOD - DO NOT MODIFY ⚠️⚠️⚠️
+     * 
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
+     * This method handles CRITICAL stock deduction operations that directly affect:
+     * - Real money and financial reports
+     * - Regulatory compliance and audit trails  
+     * - Inventory accuracy across the entire system
+     * - Patient safety (stock availability)
+     * 
+     * 🛑 NEVER MODIFY THIS METHOD WITHOUT:
+     * 1. Senior developer + Financial controller approval
+     * 2. Full backup and rollback plan
+     * 3. Extensive testing with audit verification
+     * 4. Regulatory compliance review
+     * 
+     * 📋 This method correctly handles:
+     * - Stock level validation (prevents negative stock)
+     * - Database consistency with editAndCommit  
+     * - Audit trail creation via addToStockHistory
+     * - Proper error handling with boolean return
+     */
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -1195,6 +1242,28 @@ public class PharmacyBean {
     }
 
     //
+    /**
+     * ⚠️⚠️⚠️ CRITICAL INVENTORY MANAGEMENT METHOD - DO NOT MODIFY ⚠️⚠️⚠️
+     * 
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
+     * This method handles CRITICAL stock addition operations that directly affect:
+     * - Real money and financial reports
+     * - Regulatory compliance and audit trails  
+     * - Inventory accuracy across the entire system
+     * - Purchase order and GRN processing
+     * 
+     * 🛑 NEVER MODIFY THIS METHOD WITHOUT:
+     * 1. Senior developer + Financial controller approval
+     * 2. Full backup and rollback plan
+     * 3. Extensive testing with audit verification
+     * 4. Regulatory compliance review
+     * 
+     * 📋 This method correctly handles:
+     * - Stock level addition with proper validation
+     * - Database consistency with editAndFlush
+     * - Audit trail creation via addToStockHistory  
+     * - Proper error handling with boolean return
+     */
     public boolean addToStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;

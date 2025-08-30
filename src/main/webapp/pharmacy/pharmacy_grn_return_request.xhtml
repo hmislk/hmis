@@ -6,13 +6,17 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateGrnReturn')}" >
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}" >
         <h:form>
             <p:panel> 
                 <f:facet name="header">
-                    <h:outputLabel value="Goods Received Note List"/>
+                    <h:outputLabel value="Select GRN for Return"/>
                 </f:facet>
                 <div class="row">
-                    <div class="col-1">
+                    <div class="col-3">
                         <h:panelGrid columns="1" class="w-100" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
@@ -67,7 +71,7 @@
 
                         </h:panelGrid>
                     </div>
-                    <div class="col-11">
+                    <div class="col-9">
                         <p:dataTable 
                             value="#{searchController.bills}" 
                             var="p"
@@ -136,7 +140,7 @@
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </h:panelGroup>
-                                <h:panelGroup id="gpReturned" rendered="#{p.fullReturned}">
+                                <h:panelGroup rendered="#{p.fullReturned}">
                                     <br/>
                                     <h:outputText styleClass="text-success" value="Fully Returned at " />
                                     <h:outputText styleClass="text-success" value="#{p.fullReturnedAt}">
@@ -193,25 +197,16 @@
                                 </h:outputText>
                             </p:column>
 
-
-                            <p:column headerText="Actions" width="6em" styleClass="text-center">
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="pi pi-eye"
-                                    title="View"
-                                    action="#{pharmacyBillSearch.navigateToViewPharmacyGrn}"
-                                    styleClass="ui-button-sm ui-button-info mx-1">
-                                    <f:setPropertyActionListener target="#{goodsReturnController.bill}" value="#{p}" />
-                                </p:commandButton>
-
+                            <p:column headerText="Actions" width="10em" styleClass="text-center">
                                 <p:commandButton 
                                     ajax="false"
                                     icon="pi pi-undo"
-                                    title="Return"
-                                    action="#{billSearch.navigateToPharmacyGrnReturnBillView()}"
+                                    title="Create Return"
+                                    value="Create Return"
+                                    action="#{grnReturnWorkflowController.navigateToCreateGrnReturnFromGrn()}"
                                     disabled="#{p.cancelled or p.fullReturned}"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
-                                    <f:setPropertyActionListener target="#{billSearch.bill}" value="#{p}" />
+                                    <f:setPropertyActionListener target="#{grnReturnWorkflowController.selectedGrn}" value="#{p}" />
                                 </p:commandButton>
                             </p:column>
 
@@ -262,6 +257,7 @@
 
             </p:panel>
         </h:form>
+        </h:panelGroup>
     </ui:define>  
 
 </ui:composition>
