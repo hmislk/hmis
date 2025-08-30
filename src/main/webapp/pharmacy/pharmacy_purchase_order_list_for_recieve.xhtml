@@ -9,99 +9,100 @@
     <ui:define name="content">
         <h:panelGroup rendered="#{!webUserController.hasPrivilege('GoodsRecipt')}">You are NOT authorized</h:panelGroup>
         <h:panelGroup id="gpPOListForReceive" rendered="#{webUserController.hasPrivilege('GoodsRecipt')}">
-        <h:form>
-            <p:panel styleClass="shadow-sm border-0">  
-                <f:facet name="header">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-shopping-cart text-info me-2"></i>
-                        <h4 class="mb-0 text-info">Purchase Orders for Receiving</h4>
-                    </div>
-                </f:facet>
+            <h:form>
+                <p:panel styleClass="shadow-sm border-0">  
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shopping-cart text-info me-2"></i>
+                            <h:outputLabel 
+                                class="mb-0 text-info"
+                                value="Purchase Orders for Receiving" ></h:outputLabel>
+                        </div>
+                    </f:facet>
 
-                <div class="row g-3">
-                    <div class="col-lg-2 col-md-3">
-                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                    <div class="row g-3">
+                        <div class="col-lg-2 col-md-3">
+                            <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
 
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>From Date
-                                </label>
-                                <p:calendar 
-                                    id="fromDate" 
-                                    class="w-100"
-                                    inputStyleClass="form-control"
-                                    value="#{searchController.fromDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    placeholder="Select start date">      
-                                </p:calendar>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>To Date
-                                </label>
-                                <p:calendar 
-                                    id="toDate"
-                                    class="w-100"
-                                    inputStyleClass="form-control"
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    placeholder="Select end date">                                                                              
-                                </p:calendar>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-hashtag me-1"></i>PO Number
-                                </label>
-                                <p:inputText 
-                                    autocomplete="off" 
-                                    class="form-control" 
-                                    value="#{searchController.searchKeyword.billNo}" 
-                                    placeholder="Enter PO number" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-building me-1"></i>Distributor
-                                </label>
-                                <p:inputText 
-                                    autocomplete="off" 
-                                    class="form-control" 
-                                    value="#{searchController.searchKeyword.toInstitution}" 
-                                    placeholder="Enter distributor name" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-coins me-1"></i>PO Value
-                                </label>
-                                <p:inputText 
-                                    autocomplete="off" 
-                                    class="form-control" 
-                                    value="#{searchController.searchKeyword.netTotal}" 
-                                    placeholder="Enter PO value" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-pills me-1"></i>Item Name
-                                </label>
-                                <p:inputText 
-                                    autocomplete="off" 
-                                    class="form-control" 
-                                    value="#{searchController.searchKeyword.itemName}" 
-                                    placeholder="Enter item name" />
-                            </div>
-                            <p:commandButton 
-                                class="ui-button-warning w-100" 
-                                icon="fas fa-search"
-                                id="btnSearch" 
-                                ajax="false" 
-                                value="Search Purchase Orders" 
-                                action="#{searchController.createPoTablePharmacy}"
-                                style="min-height: 45px;"/>
-                        </p:panel>  
-                    </div>
-                    <div class="col-lg-10 col-md-9">
-                        <p:panel header="Purchase Orders Available for Receiving" styleClass="shadow-sm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-calendar-alt me-1"></i>From Date
+                                    </label>
+                                    <p:calendar 
+                                        id="fromDate" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.fromDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        placeholder="Select start date">      
+                                    </p:calendar>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-calendar-alt me-1"></i>To Date
+                                    </label>
+                                    <p:calendar 
+                                        id="toDate"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.toDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        placeholder="Select end date">                                                                              
+                                    </p:calendar>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hashtag me-1"></i>PO Number
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.billNo}" 
+                                        placeholder="Enter PO number" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-building me-1"></i>Distributor
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.toInstitution}" 
+                                        placeholder="Enter distributor name" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-coins me-1"></i>PO Value
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.netTotal}" 
+                                        placeholder="Enter PO value" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-pills me-1"></i>Item Name
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.itemName}" 
+                                        placeholder="Enter item name" />
+                                </div>
+                                <p:commandButton 
+                                    class="ui-button-warning w-100" 
+                                    icon="fas fa-search"
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search Purchase Orders" 
+                                    action="#{searchController.createPoTablePharmacy}"
+                                    style="min-height: 45px;"/>
+                            </p:panel>  
+                        </div>
+                        <div class="col-lg-10 col-md-9">
                             <p:dataTable 
                                 value="#{searchController.bills}" 
                                 var="p"
@@ -115,264 +116,263 @@
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
-                            <p:column headerText="Approved On"  width="5em">
-                                <h:commandLink action="pharmacy_reprint_po" >
-                                    <h:outputLabel value="#{p.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
-                                </h:commandLink>
-                                <br/>
-                                <h:panelGroup rendered="#{p.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
-                                                   value="#{p.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                    </h:outputLabel>
-                                </h:panelGroup>                   
-                            </p:column> 
-                            <p:column headerText="Department" width="4em">
-                                <h:outputLabel value="#{p.fromDepartment.name}" >                                      
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Approve By" width="6em">
-                                <h:commandLink action="pharmacy_reprint_po" style="width: 4em; overflow: hidden;" >
-                                    <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
-                                </h:commandLink>
-                                <br/>
-                                <h:panelGroup rendered="#{p.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled by " />
-                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>                  
-                            </p:column>    
-
-                            <p:column headerText="Distributor" width="10em">
-                                <h:commandLink action="pharmacy_reprint_po" >
-                                    <h:outputLabel  value="#{p.toInstitution.name}"/>
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
-                                </h:commandLink>
-                            </p:column>
-                            <p:column headerText="PO Number" width="5em">                   
-                                <h:commandLink action="pharmacy_reprint_po"  >    
-                                    <h:outputLabel  value="#{p.deptId}"/>
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
-                                </h:commandLink>
-                            </p:column>              
-                            <p:column headerText="PO Value" width="5em" styleClass="text-end" sortBy="#{p.netTotal}">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <i class="fas fa-coins text-success me-2"></i>
-                                    <h:commandLink action="pharmacy_reprint_po" class="fw-bold text-success text-decoration-none">   
-                                        <h:outputLabel value="#{p.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Approved On"  width="5em">
+                                    <h:commandLink action="pharmacy_reprint_po" >
+                                        <h:outputLabel value="#{p.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
+                                        <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
+                                    </h:commandLink>
+                                    <br/>
+                                    <h:panelGroup rendered="#{p.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
+                                                       value="#{p.cancelledBill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>                   
+                                </p:column> 
+                                <p:column headerText="Department" width="4em">
+                                    <h:outputLabel value="#{p.fromDepartment.name}" >                                      
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Approve By" width="6em">
+                                    <h:commandLink action="pharmacy_reprint_po" style="width: 4em; overflow: hidden;" >
+                                        <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>
+                                        <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
+                                    </h:commandLink>
+                                    <br/>
+                                    <h:panelGroup rendered="#{p.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled by " />
+                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                    </h:panelGroup>                  
+                                </p:column>    
+
+                                <p:column headerText="Distributor" width="10em">
+                                    <h:commandLink action="pharmacy_reprint_po" >
+                                        <h:outputLabel  value="#{p.toInstitution.name}"/>
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                     </h:commandLink>
-                                </div>
-                            </p:column>
-                            <p:column 
-                                headerText="Consignment" 
-                                width="2em" 
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing',true)}"
-                                styleClass="text-enter">
-                                <h:outputText value="#{p.consignment ? 'Yes' : 'No'}" />
-                            </p:column>
-
-                            <p:column 
-                                headerText="Actions"
-                                width="6em">
-                                <div class="row">
-                                    <div class="d-flex gap-1 mb-1">
-
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Receive"
-                                            title="Goos Receive when Costing is not managed."
-                                            class="ui-button-warning"
-                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                            action="#{grnController.navigateToResive()}"
-                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>
-                                        <!--
-                                        These were the methods used earlier before the feature of adding the feature of Saving GRNs.
-                                        THey are not yet deleted just to detect errors by QA.
-                                        Once QA is completed. these buttons and relevant methods will be removed.
-                                        
-                                        
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Receive"
-                                            class="ui-button-warning"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                            action="#{grnCostingController.navigateToResiveCosting()}"
-                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
-                                            <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>
-                                        
-                                        
-
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Create GRN"
-                                            class="ui-button-info"
-                                            title="Create a GRN for Selected Approved PO without costing"
-                                            styleClass="w-100"
-                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                            action="#{grnController.navigateToResiveWithSaveApprove()}"
-                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>
-                                        
-                                        -->
-
-
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Create GRN"
-                                            styleClass="ui-button-info w-100"
-                                            title="Create a GRN for Selected Approved PO with costing"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                            action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
-                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
-                                            <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>
+                                </p:column>
+                                <p:column headerText="PO Number" width="5em">                   
+                                    <h:commandLink action="pharmacy_reprint_po"  >    
+                                        <h:outputLabel  value="#{p.deptId}"/>
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
+                                    </h:commandLink>
+                                </p:column>              
+                                <p:column headerText="PO Value" width="5em" styleClass="text-end" sortBy="#{p.netTotal}">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        <i class="fas fa-coins text-success me-2"></i>
+                                        <h:commandLink action="pharmacy_reprint_po" class="fw-bold text-success text-decoration-none">   
+                                            <h:outputLabel value="#{p.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
+                                        </h:commandLink>
                                     </div>
-                                    <div class="col-md-12">
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100 ui-button-info"
-                                            value="Create Wholesale GRN" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Pharmacy Wholesales', true)}"
-                                            action="#{grnController.navigateToReceiveWholesale()}" 
-                                            disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>
+                                </p:column>
+                                <p:column 
+                                    headerText="Consignment" 
+                                    width="2em" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing',true)}"
+                                    styleClass="text-enter">
+                                    <h:outputText value="#{p.consignment ? 'Yes' : 'No'}" />
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Actions"
+                                    width="6em">
+                                    <div class="row">
+                                        <div class="d-flex gap-1 mb-1">
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Receive"
+                                                title="Goos Receive when Costing is not managed."
+                                                class="ui-button-warning"
+                                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                action="#{grnController.navigateToResive()}"
+                                                disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                            <!--
+                                            These were the methods used earlier before the feature of adding the feature of Saving GRNs.
+                                            THey are not yet deleted just to detect errors by QA.
+                                            Once QA is completed. these buttons and relevant methods will be removed.
+                                            
+                                            
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Receive"
+                                                class="ui-button-warning"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                action="#{grnCostingController.navigateToResiveCosting()}"
+                                                disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                                <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                            
+                                            
+    
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Create GRN"
+                                                class="ui-button-info"
+                                                title="Create a GRN for Selected Approved PO without costing"
+                                                styleClass="w-100"
+                                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                action="#{grnController.navigateToResiveWithSaveApprove()}"
+                                                disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                            
+                                            -->
+
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Create GRN"
+                                                styleClass="ui-button-info w-100"
+                                                title="Create a GRN for Selected Approved PO with costing"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
+                                                disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                                <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100 ui-button-info"
+                                                value="Create Wholesale GRN" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Pharmacy Wholesales', true)}"
+                                                action="#{grnController.navigateToReceiveWholesale()}" 
+                                                disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100 ui-button-success my-1"
+                                                value="PO Close" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
+                                                action="#{grnController.closeSelectedPurchaseOrder()}"
+                                                disabled="#{p.cancelled or p.billClosed}">
+                                                <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100 ui-button-success my-1"
+                                                value="PO Re-Open" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
+                                                action="#{grnController.openSelectedPurchaseOrder()}"
+                                                disabled="#{p.cancelled}">
+                                                <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
+                                            </p:commandButton>
+                                        </div>
+
+
                                     </div>
-                                    <div class="col-md-12">
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100 ui-button-success my-1"
-                                            value="PO Close" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.closeSelectedPurchaseOrder()}"
-                                            disabled="#{p.cancelled or p.billClosed}">
-                                            <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
-                                        </p:commandButton>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100 ui-button-success my-1"
-                                            value="PO Re-Open" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.openSelectedPurchaseOrder()}"
-                                            disabled="#{p.cancelled}">
-                                            <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
-                                        </p:commandButton>
-                                    </div>
+                                </p:column>
+                                <p:column 
+                                    rendered="true"
+                                    headerText="Goods Received Notes" 
+                                    width="20em"
+                                    class="">     
+                                    <p:dataTable 
+                                        var="b" 
+                                        value="#{p.listOfBill}" 
+                                        styleClass="ui-datatable-borderless ui-datatable-sm p-0 m-0"
+                                        rendered="#{not empty p.listOfBill}">
 
-
-                                </div>
-                            </p:column>
-                            <p:column 
-                                rendered="true"
-                                headerText="Goods Received Notes" 
-                                width="20em"
-                                class="">     
-                                <p:dataTable 
-                                    var="b" 
-                                    value="#{p.listOfBill}" 
-                                    styleClass="ui-datatable-borderless ui-datatable-sm p-0 m-0"
-                                    rendered="#{not empty p.listOfBill}">
-
-                                    <p:column headerText="GRN Number">
-                                        <h:outputText 
-                                            value="#{b.deptId}" 
-                                            styleClass="#{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
-                                                          b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
-                                                          b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}" />
-                                        <h:panelGroup rendered="#{b.cancelled}">
-                                            <span class="ui-icon ui-icon-circle-close" title="Cancelled" style="margin-left:5px;"></span>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{b.refunded}">
-                                            <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="Refunded" style="margin-left:5px;"></span>
-                                        </h:panelGroup>
-                                    </p:column>
-
-                                    <p:column headerText="GRN Date" width="6em">
-                                        <h:outputText 
-                                            value="#{b.createdAt}" 
-                                            styleClass="#{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
-                                                          b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
-                                                          b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Value" width="6em" styleClass="text-end">
-                                        <div class="d-flex align-items-center justify-content-end">
-                                            <i class="fas fa-coins me-1 #{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
-                                                          b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
-                                                          b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}"></i>
+                                        <p:column headerText="GRN Number">
                                             <h:outputText 
-                                                value="#{b.netTotal lt 0 ? b.netTotal * -1 : b.netTotal}" 
-                                                styleClass="fw-bold #{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
+                                                value="#{b.deptId}" 
+                                                styleClass="#{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
+                                                              b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
+                                                              b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}" />
+                                            <h:panelGroup rendered="#{b.cancelled}">
+                                                <span class="ui-icon ui-icon-circle-close" title="Cancelled" style="margin-left:5px;"></span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{b.refunded}">
+                                                <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="Refunded" style="margin-left:5px;"></span>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="GRN Date" width="6em">
+                                            <h:outputText 
+                                                value="#{b.createdAt}" 
+                                                styleClass="#{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
                                                               b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
                                                               b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                             </h:outputText>
-                                        </div>
-                                    </p:column>
+                                        </p:column>
 
-                                    <p:column headerText="Actions" width="5em">
-                                        <h:panelGroup layout="block" styleClass="d-flex gap-1">
-                                            <p:commandButton  
-                                                class="ui-button-info"  
-                                                icon="fa fa-eye"
-                                                title="View Finalized GRN" 
-                                                ajax="false"
-                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN'}"
-                                                action="#{pharmacyBillSearch.navigateToViewPharmacyGrn()}" 
-                                                actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                            </p:commandButton>
-                                            <p:commandButton  
-                                                class="ui-button-warning"  
-                                                icon="fa fa-edit"
-                                                title="Edit Saved GRN" 
-                                                ajax="false"
-                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                                action="#{pharmacyBillSearch.navigateToEditSavedGrn()}">
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                            </p:commandButton>
-                                            <p:commandButton  
-                                                class="ui-button-warning"  
-                                                icon="fa fa-edit"
-                                                title="Edit Saved GRN with Costing" 
-                                                ajax="false"
-                                                rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                                action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}">
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                            </p:commandButton>
-                                        </h:panelGroup>
-                                    </p:column>
-                                </p:dataTable>
+                                        <p:column headerText="Value" width="6em" styleClass="text-end">
+                                            <div class="d-flex align-items-center justify-content-end">
+                                                <i class="fas fa-coins me-1 #{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
+                                                                              b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
+                                                                              b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}"></i>
+                                                <h:outputText 
+                                                    value="#{b.netTotal lt 0 ? b.netTotal * -1 : b.netTotal}" 
+                                                    styleClass="fw-bold #{b.billTypeAtomic.billCategory eq 'BILL' ? 'text-success' : 
+                                                                          b.billTypeAtomic.billCategory eq 'CANCELLATION' ? 'text-danger' : 
+                                                                          b.billTypeAtomic.billCategory eq 'REFUND' ? 'text-warning' : ''}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </div>
+                                        </p:column>
+
+                                        <p:column headerText="Actions" width="5em">
+                                            <h:panelGroup layout="block" styleClass="d-flex gap-1">
+                                                <p:commandButton  
+                                                    class="ui-button-info"  
+                                                    icon="fa fa-eye"
+                                                    title="View Finalized GRN" 
+                                                    ajax="false"
+                                                    rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN'}"
+                                                    action="#{pharmacyBillSearch.navigateToViewPharmacyGrn()}" 
+                                                    actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                                </p:commandButton>
+                                                <p:commandButton  
+                                                    class="ui-button-warning"  
+                                                    icon="fa fa-edit"
+                                                    title="Edit Saved GRN" 
+                                                    ajax="false"
+                                                    rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                    action="#{pharmacyBillSearch.navigateToEditSavedGrn()}">
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                                </p:commandButton>
+                                                <p:commandButton  
+                                                    class="ui-button-warning"  
+                                                    icon="fa fa-edit"
+                                                    title="Edit Saved GRN with Costing" 
+                                                    ajax="false"
+                                                    rendered="#{b.billTypeAtomic eq 'PHARMACY_GRN_PRE' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                    action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}">
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                                </p:commandButton>
+                                            </h:panelGroup>
+                                        </p:column>
+                                    </p:dataTable>
 
 
 
-                            </p:column>
-                        </p:dataTable>
-                        </p:panel>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
                     </div>
-                </div>
-            </p:panel>
-            <h:outputLabel/><h:outputLabel/>
+                </p:panel>
+                <h:outputLabel/><h:outputLabel/>
 
-        </h:form>
+            </h:form>
         </h:panelGroup>
     </ui:define>  
 
