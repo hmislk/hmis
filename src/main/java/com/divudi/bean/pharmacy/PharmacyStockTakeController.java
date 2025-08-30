@@ -31,6 +31,13 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -200,31 +207,147 @@ public class PharmacyStockTakeController implements Serializable {
         }
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             XSSFSheet sheet = wb.createSheet("Stock");
+
+            // Helpers and formats
+            CreationHelper creationHelper = wb.getCreationHelper();
+            DataFormat dataFormat = wb.createDataFormat();
+
+            // Styles
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setLocked(true);
+
+            CellStyle textLocked = wb.createCellStyle();
+            textLocked.setLocked(true);
+
+            CellStyle dateLocked = wb.createCellStyle();
+            dateLocked.setLocked(true);
+            dateLocked.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd"));
+
+            CellStyle numberLocked = wb.createCellStyle();
+            numberLocked.setLocked(true);
+            numberLocked.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            CellStyle integerLocked = wb.createCellStyle();
+            integerLocked.setLocked(true);
+            integerLocked.setDataFormat(dataFormat.getFormat("#,##0"));
+
+            CellStyle inputUnlocked = wb.createCellStyle();
+            inputUnlocked.setLocked(false);
+            inputUnlocked.setDataFormat(dataFormat.getFormat("#,##0.######"));
+            inputUnlocked.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+            inputUnlocked.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Header
             Row header = sheet.createRow(0);
-            header.createCell(0).setCellValue("Code");
-            header.createCell(1).setCellValue("Name");
-            header.createCell(2).setCellValue("Batch");
-            header.createCell(3).setCellValue("Expiry Date");
-            int col = 4;
+            int col = 0;
+            // Always include BillItem ID first for reliable mapping
+            Cell hId = header.createCell(col++); hId.setCellValue("BillItem ID"); hId.setCellStyle(headerStyle);
+            Cell hCode = header.createCell(col++); hCode.setCellValue("Code"); hCode.setCellStyle(headerStyle);
+            Cell hName = header.createCell(col++); hName.setCellValue("Name"); hName.setCellStyle(headerStyle);
+            Cell hCat  = header.createCell(col++); hCat.setCellValue("Category"); hCat.setCellStyle(headerStyle);
+            Cell hBatch= header.createCell(col++); hBatch.setCellValue("Batch"); hBatch.setCellStyle(headerStyle);
+            Cell hExp  = header.createCell(col++); hExp.setCellValue("Expiry Date"); hExp.setCellStyle(headerStyle);
+            Cell hPR   = header.createCell(col++); hPR.setCellValue("Purchase Rate"); hPR.setCellStyle(headerStyle);
+            Cell hRR   = header.createCell(col++); hRR.setCellValue("Retail Rate"); hRR.setCellStyle(headerStyle);
+            Cell hCR   = header.createCell(col++); hCR.setCellValue("Cost Rate"); hCR.setCellStyle(headerStyle);
+            Integer systemQtyColIndex = null;
             if (includeSystemQty) {
-                header.createCell(col++).setCellValue("System Qty");
+                Cell hSys = header.createCell(col++); hSys.setCellValue("System Qty"); hSys.setCellStyle(headerStyle);
+                systemQtyColIndex = col - 1;
             }
-            header.createCell(col).setCellValue("Counted Qty");
+            int realQtyColIndex = col; // this will be unlocked for input
+            Cell hReal = header.createCell(col++); hReal.setCellValue("Real Stock Qty"); hReal.setCellStyle(headerStyle);
+            Cell hLV   = header.createCell(col++); hLV.setCellValue("Line Value"); hLV.setCellStyle(headerStyle);
+
+            // Rows
             int rowNum = 1;
             for (BillItem bi : snapshotBill.getBillItems()) {
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                ItemBatch ib = pbi.getItemBatch();
+                ItemBatch ib = pbi != null ? pbi.getItemBatch() : null;
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(ib.getItem().getCode());
-                row.createCell(1).setCellValue(ib.getItem().getName());
-                row.createCell(2).setCellValue(ib.getBatchNo());
-                row.createCell(3).setCellValue(ib.getDateOfExpire() != null ? ib.getDateOfExpire().toString() : "");
-                int c = 4;
-                if (includeSystemQty) {
-                    row.createCell(c++).setCellValue(pbi.getQty());
+                int c = 0;
+
+                // BillItem ID
+                Cell cId = row.createCell(c++);
+                if (bi.getId() != null) {
+                    cId.setCellValue(bi.getId());
+                    cId.setCellStyle(integerLocked);
+                } else {
+                    cId.setCellValue(0);
+                    cId.setCellStyle(integerLocked);
                 }
-                // Counted quantity cell left blank for user input
+
+                // Code
+                Cell cCode = row.createCell(c++);
+                cCode.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getCode() != null ? ib.getItem().getCode() : "");
+                cCode.setCellStyle(textLocked);
+
+                // Name
+                Cell cName = row.createCell(c++);
+                cName.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getName() != null ? ib.getItem().getName() : (bi.getDescreption() != null ? bi.getDescreption() : ""));
+                cName.setCellStyle(textLocked);
+
+                // Category
+                Cell cCat = row.createCell(c++);
+                cCat.setCellValue(bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null ? bi.getItem().getCategory().getName() : "");
+                cCat.setCellStyle(textLocked);
+
+                // Batch
+                Cell cBatch = row.createCell(c++);
+                cBatch.setCellValue(ib != null && ib.getBatchNo() != null ? ib.getBatchNo() : "");
+                cBatch.setCellStyle(textLocked);
+
+                // Expiry
+                Cell cExp = row.createCell(c++);
+                if (ib != null && ib.getDateOfExpire() != null) {
+                    cExp.setCellValue(ib.getDateOfExpire());
+                } else {
+                    cExp.setCellValue("");
+                }
+                cExp.setCellStyle(dateLocked);
+
+                // Rates
+                Double pr = (ib != null && ib.getPurcahseRate() != null) ? ib.getPurcahseRate() : 0.0;
+                Double rr = (ib != null && ib.getRetailsaleRate() != null) ? ib.getRetailsaleRate() : 0.0;
+                Double cr = (ib != null && ib.getCostRate() != null) ? ib.getCostRate() : 0.0;
+
+                Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
+                Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
+                Cell cCR = row.createCell(c++); cCR.setCellValue(cr); cCR.setCellStyle(numberLocked);
+
+                // System Qty (optional)
+                if (includeSystemQty) {
+                    Double sys = pbi != null && pbi.getQty() != null ? pbi.getQty() : 0.0;
+                    Cell cSys = row.createCell(c++);
+                    cSys.setCellValue(sys);
+                    cSys.setCellStyle(integerLocked);
+                }
+
+                // Real Stock Qty (input - unlocked)
+                Cell cReal = row.createCell(c++);
+                cReal.setCellStyle(inputUnlocked);
+
+                // Line Value (system = cost rate * system qty)
+                Double sysQtyForLV = includeSystemQty ? (pbi != null && pbi.getQty() != null ? pbi.getQty() : 0.0) : 0.0;
+                Double lineValue = (cr != null ? cr : 0.0) * sysQtyForLV;
+                Cell cLV = row.createCell(c++);
+                cLV.setCellValue(lineValue);
+                cLV.setCellStyle(numberLocked);
             }
+
+            // Protect sheet so that only the input column is editable
+            sheet.protectSheet("protect");
+
+            // Autosize columns
+            int totalCols = header.getLastCellNum();
+            for (int i = 0; i < totalCols; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
             InputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -261,19 +384,32 @@ public class PharmacyStockTakeController implements Serializable {
             physicalCountBill.setCreatedAt(new Date());
             physicalCountBill.setCreater(sessionController.getLoggedUser());
             physicalCountBill.setReferenceBill(snapshotBill);
+            // Identify relevant columns by header names to be resilient to layout changes
+            Row header = sheet.getRow(0);
+            int colBillItemId = findColumnIndex(header, "BillItem ID");
+            int colCode = findColumnIndex(header, "Code");
+            int colBatch = findColumnIndex(header, "Batch");
+            int colRealStock = findColumnIndex(header, "Real Stock Qty");
+
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) {
                     continue;
                 }
-                String code = getString(row, 0);
-                String batch = getString(row, 2);
-                // Skip expiry date column (column 3) and get physical count from last column
-                double physical = getDouble(row, row.getLastCellNum() - 1);
-                if (code == null || batch == null) {
-                    continue;
+                String code = colCode >= 0 ? getString(row, colCode) : null;
+                String batch = colBatch >= 0 ? getString(row, colBatch) : null;
+                double physical = colRealStock >= 0 ? getDouble(row, colRealStock) : 0.0;
+
+                BillItem snapItem = null;
+                if (colBillItemId >= 0) {
+                    long bid = (long) getDouble(row, colBillItemId);
+                    if (bid > 0) {
+                        snapItem = findSnapshotBillItemById(bid);
+                    }
                 }
-                BillItem snapItem = findSnapshotBillItem(code, batch);
+                if (snapItem == null && code != null && batch != null) {
+                    snapItem = findSnapshotBillItem(code, batch);
+                }
                 if (snapItem == null) {
                     continue;
                 }
@@ -328,6 +464,26 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
+    private int findColumnIndex(Row header, String title) {
+        if (header == null) {
+            return -1;
+        }
+        short last = header.getLastCellNum();
+        for (int i = 0; i < last; i++) {
+            if (header.getCell(i) == null) {
+                continue;
+            }
+            try {
+                String v = header.getCell(i).getStringCellValue();
+                if (v != null && v.trim().equalsIgnoreCase(title)) {
+                    return i;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return -1;
+    }
+
     private BillItem findSnapshotBillItem(String code, String batch) {
         if (snapshotBill == null) {
             return null;
@@ -339,6 +495,18 @@ public class PharmacyStockTakeController implements Serializable {
             }
             if (code.equalsIgnoreCase(pbi.getItemBatch().getItem().getCode())
                     && batch.equalsIgnoreCase(pbi.getItemBatch().getBatchNo())) {
+                return bi;
+            }
+        }
+        return null;
+    }
+
+    private BillItem findSnapshotBillItemById(long id) {
+        if (snapshotBill == null || snapshotBill.getBillItems() == null) {
+            return null;
+        }
+        for (BillItem bi : snapshotBill.getBillItems()) {
+            if (bi.getId() != null && bi.getId() == id) {
                 return bi;
             }
         }
