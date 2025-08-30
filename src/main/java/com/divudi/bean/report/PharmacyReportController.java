@@ -2176,7 +2176,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyIssue));
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyDisposalIssue));
         calculateStockConsumptionNetTotal(billItems);
     }
 
