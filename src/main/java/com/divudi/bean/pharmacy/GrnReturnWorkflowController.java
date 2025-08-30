@@ -288,8 +288,6 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Ensure bill reference is set
             bi.setBill(currentBill);
-            bi.setCreatedAt(new Date());
-            bi.setCreater(sessionController.getLoggedUser());
 
             // Set up pharmaceutical bill item relationship
             PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
@@ -303,6 +301,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Save entities in correct order
             if (bi.getId() == null) {
+                // Set audit fields only for new records
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
                 billItemFacade.create(bi);
             } else {
                 billItemFacade.edit(bi);

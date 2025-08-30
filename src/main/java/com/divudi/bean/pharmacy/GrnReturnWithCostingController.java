@@ -1351,9 +1351,9 @@ public class GrnReturnWithCostingController implements Serializable {
             System.out.println("prepareBillItems: returnByTotalQuantity=" + returnByTotalQuantity);
 
             if (returnByTotalQuantity) {
-                // Use consistent database query methods
-                BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantity(pbiOfBilledBill.getBillItem());
-                BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantity(pbiOfBilledBill.getBillItem());
+                // Use approval-scoped database query methods
+                BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantityWhenApproval(pbiOfBilledBill.getBillItem());
+                BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantityWhenApproval(pbiOfBilledBill.getBillItem());
                 BigDecimal totalAlreadyReturned = alreadyReturnedQty.add(alreadyReturnedFreeQty);
                 
                 double originalTotal = Math.abs(originalQtyInUnits) + Math.abs(originalFreeQtyInUnits);
@@ -1362,17 +1362,17 @@ public class GrnReturnWithCostingController implements Serializable {
                 // Ensure we don't show negative quantities
                 availableToReturn = Math.max(0.0, availableToReturn);
                 System.out.println(
-                        "prepareBillItems: alreadyReturnedQty=" + alreadyReturnedQty
-                        + ", alreadyReturnedFreeQty=" + alreadyReturnedFreeQty
-                        + ", totalAlreadyReturned=" + totalAlreadyReturned
+                        "prepareBillItems: alreadyReturnedQtyApproved=" + alreadyReturnedQty
+                        + ", alreadyReturnedFreeQtyApproved=" + alreadyReturnedFreeQty
+                        + ", totalAlreadyReturnedApproved=" + totalAlreadyReturned
                         + ", originalTotal=" + originalTotal
                         + ", availableToReturn=" + availableToReturn);
                 newPharmaceuticalBillItemInReturnBill.setQty(availableToReturn);
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
             } else {
-                // Use consistent database query methods
-                BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantity(pbiOfBilledBill.getBillItem());
-                BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantity(pbiOfBilledBill.getBillItem());
+                // Use approval-scoped database query methods
+                BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantityWhenApproval(pbiOfBilledBill.getBillItem());
+                BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantityWhenApproval(pbiOfBilledBill.getBillItem());
                 
                 double availableQty = Math.abs(originalQtyInUnits) - alreadyReturnedQty.doubleValue();
                 double availableFreeQty = Math.abs(originalFreeQtyInUnits) - alreadyReturnedFreeQty.doubleValue();
@@ -1381,8 +1381,8 @@ public class GrnReturnWithCostingController implements Serializable {
                 availableQty = Math.max(0.0, availableQty);
                 availableFreeQty = Math.max(0.0, availableFreeQty);
                 System.out.println(
-                        "prepareBillItems: alreadyReturnedQty=" + alreadyReturnedQty
-                        + ", alreadyReturnedFreeQty=" + alreadyReturnedFreeQty
+                        "prepareBillItems: alreadyReturnedQtyApproved=" + alreadyReturnedQty
+                        + ", alreadyReturnedFreeQtyApproved=" + alreadyReturnedFreeQty
                         + ", availableQty=" + availableQty
                         + ", availableFreeQty=" + availableFreeQty);
                 newPharmaceuticalBillItemInReturnBill.setQty(availableQty);
