@@ -136,6 +136,13 @@
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </h:panelGroup>
+                                <h:panelGroup id="gpReturned" rendered="#{p.fullReturned}">
+                                    <br/>
+                                    <h:outputText styleClass="text-success" value="Fully Returned at " />
+                                    <h:outputText styleClass="text-success" value="#{p.fullReturnedAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </h:panelGroup>
                             </p:column>
 
                             <p:column 
@@ -154,6 +161,11 @@
                                     <br/>
                                     <h:outputText styleClass="text-danger" value="Refunded by " />
                                     <h:outputText styleClass="text-danger" value="#{p.refundedBill.creater.webUserPerson.name}" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{p.fullReturned}">
+                                    <br/>
+                                    <h:outputText styleClass="text-success" value="Full Return by " />
+                                    <h:outputText styleClass="text-success" value="#{p.fullReturnedBy.webUserPerson.name}" />
                                 </h:panelGroup>
                             </p:column>
 
@@ -197,7 +209,7 @@
                                     icon="pi pi-undo"
                                     title="Return"
                                     action="#{billSearch.navigateToPharmacyGrnReturnBillView()}"
-                                    disabled="#{p.cancelled}"
+                                    disabled="#{p.cancelled or p.fullReturned}"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
                                     <f:setPropertyActionListener target="#{billSearch.bill}" value="#{p}" />
                                 </p:commandButton>

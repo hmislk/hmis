@@ -11,6 +11,7 @@ import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
+import com.divudi.bean.pharmacy.GrnReturnApprovalController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillSummery;
@@ -237,6 +238,8 @@ public class BillSearch implements Serializable {
     IssueReturnController issueReturnController;
     @Inject
     PharmacyIssueController pharmacyIssueController;
+    @Inject
+    GrnReturnApprovalController grnReturnApprovalController;
     @Inject
     TransferIssueController transferIssueController;
     @Inject
@@ -2513,13 +2516,13 @@ public class BillSearch implements Serializable {
                     return;
                 }
             } else {
-                if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
                     JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                     return;
                 }
             }
         } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+            if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
                 JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                 return;
             }
@@ -4347,6 +4350,12 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
+        boolean approvalOnly = configOptionApplicationController.getBooleanValueByKey("GRN Returns is only after Approval", false);
+        if (approvalOnly) {
+            grnReturnApprovalController.setGrnBill(bill);
+            grnReturnApprovalController.prepareReturnRequest();
+            return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
+        }
         grnReturnWithCostingController.resetValuesForReturn();
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {

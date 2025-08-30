@@ -16,6 +16,9 @@
         </h:outputStylesheet>
 
         <div class="row" >
+            
+            <h1>#{webUserController.hasPrivilege('PharmacyGrnFinalize')}</h1>
+            
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
                 <!-- Cashier Drawer -->

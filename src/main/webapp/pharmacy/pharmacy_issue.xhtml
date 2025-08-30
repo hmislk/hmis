@@ -168,7 +168,7 @@
                                                 readonly="true"
                                                 class="w-100 text-end"
                                                 value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </p:inputText>
                                         </div>
                                         <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
@@ -188,7 +188,7 @@
                                                 readonly="true"
                                                 class="w-100 text-end"
                                                 value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </p:inputText>
                                         </div>
 
@@ -273,7 +273,7 @@
                                         </p:column>
                                         <p:column headerText="Issue Rate" style="padding: 6px;" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column 
@@ -300,7 +300,7 @@
                                             styleClass="text-end"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </h:outputLabel>
                                         </p:column>
 
@@ -411,7 +411,7 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
@@ -424,7 +424,7 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
@@ -437,7 +437,7 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
@@ -450,7 +450,7 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
