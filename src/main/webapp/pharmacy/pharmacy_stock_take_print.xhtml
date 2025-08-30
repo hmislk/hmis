@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Pharmacy Stock Count Bill</h2>
+                        </div>
+                        <div class="card-body">
+                            <h:form>
+                                <div class="d-flex gap-2 mb-2">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        icon="fa-solid fa-print" 
+                                        ajax="false" 
+                                        styleClass="ui-button-info">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Export PDF" 
+                                        icon="fa fa-file-pdf" 
+                                        ajax="false" 
+                                        styleClass="ui-button-secondary">
+                                        <p:dataExporter type="pdf" target=":#{p:resolveFirstComponentWithId('tbl',view).clientId}" fileName="pharmacy_stock_count" />
+                                    </p:commandButton>
+                                    <p:commandButton value="Back" ajax="false" styleClass="ui-button-secondary" icon="fa fa-arrow-left" action="pharmacy_stock_take?faces-redirect=true"/>
+                                </div>
+
+                                <h:panelGroup id="reportView">
+                                <h:panelGrid columns="2" styleClass="w-100">
+                                    <h:outputText value="Institution:" style="font-weight:bold"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/>
+                                    <h:outputText value="Department:" style="font-weight:bold"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"/>
+                                    <h:outputText value="Bill No:" style="font-weight:bold"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}"/>
+                                    <h:outputText value="Total Stock Value:" style="font-weight:bold"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGrid>
+
+                                <p:separator/>
+
+                                <p:dataTable id="tbl" widgetVar="tbl" value="#{pharmacyStockTakeController.snapshotBill.billItems}" var="bi" rows="50" paginator="true">
+                                    <p:column headerText="Item">
+                                        <h:outputText value="#{bi.descreption}"/>
+                                    </p:column>
+                                    <p:column headerText="Batch">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.stringValue}"/>
+                                    </p:column>
+                                    <p:column headerText="Qty" style="text-align:right">
+                                        <h:outputText value="#{bi.qty}">
+                                            <f:convertNumber integerOnly="true"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Cost Rate" style="text-align:right">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.costRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Line Value" style="text-align:right">
+                                        <h:outputText value="#{bi.netValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                </h:panelGroup>
+
+                                <p:separator/>
+
+                                <p:commandButton value="Download Guided Sheet" ajax="false" styleClass="ui-button-success" icon="fa fa-download" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
+                                </p:commandButton>
+                                <p:commandButton value="Download Blind Sheet" ajax="false" styleClass="ui-button-secondary" icon="fa fa-download" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
+                                </p:commandButton>
+                                
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+    
+</html>

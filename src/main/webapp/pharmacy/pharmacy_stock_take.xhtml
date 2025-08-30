@@ -16,55 +16,42 @@
                         </div>
                         <div class="card-body">
                             <h:form>
-                                <p:commandButton value="Take Snapshot" action="#{pharmacyStockTakeController.captureSnapshot}" update="@form" icon="fa fa-camera"/>
-                                <p:commandButton value="Reset Session" action="#{pharmacyStockTakeController.resetStockTakingSession}" update="@form" icon="fa fa-refresh" styleClass="ui-button-secondary" rendered="#{pharmacyStockTakeController.snapshotBill ne null}"/>
-                                <p:commandButton value="Download Guided Sheet" ajax="false" styleClass="ui-button-success" icon="fa fa-download" rendered="#{pharmacyStockTakeController.snapshotBill ne null}" onclick="PrimeFaces.monitorDownload(start, stop);">
-                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
-                                </p:commandButton>
-                                <p:commandButton value="Download Blind Sheet" ajax="false" styleClass="ui-button-secondary" icon="fa fa-download" rendered="#{pharmacyStockTakeController.snapshotBill ne null}" onclick="PrimeFaces.monitorDownload(start, stop);">
-                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
-                                </p:commandButton>
-                                <p:separator/> 
-                                <p:fileUpload value="#{pharmacyStockTakeController.file}" mode="simple" rendered="#{pharmacyStockTakeController.snapshotBill ne null}"/>
-                                <p:commandButton value="Upload Sheet" action="#{pharmacyStockTakeController.parseUploadedSheet}" update="@form" icon="fa fa-upload" rendered="#{pharmacyStockTakeController.snapshotBill ne null}"/>
-                                <p:commandButton value="Save Physical Count" action="#{pharmacyStockTakeController.savePhysicalCount}" update="@form" icon="fa fa-save" rendered="#{pharmacyStockTakeController.physicalCountBill ne null and pharmacyStockTakeController.physicalCountBill.id eq null}"/>
-                                
-                                <p:separator rendered="#{pharmacyStockTakeController.physicalCountBill ne null and pharmacyStockTakeController.physicalCountBill.id ne null and pharmacyStockTakeController.physicalCountBill.approveUser eq null}"/>
-                                <h:panelGroup rendered="#{pharmacyStockTakeController.physicalCountBill ne null and pharmacyStockTakeController.physicalCountBill.id ne null and pharmacyStockTakeController.physicalCountBill.approveUser eq null}">
-                                    <p:commandButton value="Approve Physical Count" action="#{pharmacyStockTakeController.approvePhysicalCount}" update="@form" icon="fa fa-check" styleClass="ui-button-success"/>
-                                    <p:commandButton value="Reject Physical Count" action="#{pharmacyStockTakeController.rejectPhysicalCount}" update="@form" icon="fa fa-times" styleClass="ui-button-danger"/>
-                                </h:panelGroup>
-                                
-                                <h:panelGroup rendered="#{pharmacyStockTakeController.physicalCountBill ne null and pharmacyStockTakeController.physicalCountBill.approveUser ne null}">
-                                    <h:outputText value="Status: " style="font-weight:bold"/>
-                                    <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.cancelled ? 'Rejected' : 'Approved'}" 
-                                                  style="color:#{pharmacyStockTakeController.physicalCountBill.cancelled ? 'red' : 'green'}; font-weight:bold"/>
-                                    <h:outputText value=" by #{pharmacyStockTakeController.physicalCountBill.approveUser.webUserPerson.name}" style="font-weight:bold"/>
-                                    <h:outputText value=" on #{pharmacyStockTakeController.physicalCountBill.approveAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputText>
-                                </h:panelGroup>
-                                
-                                <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}" var="bi" rendered="#{pharmacyStockTakeController.physicalCountBill ne null}">
-                                    <p:column headerText="Item">
-                                        <h:outputText value="#{bi.item.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Snapshot Qty" style="text-align:right">
-                                        <h:outputText value="#{bi.referanceBillItem.qty}">
-                                            <f:convertNumber integerOnly="true"/>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Physical Qty" style="text-align:right">
-                                        <h:outputText value="#{bi.qty}">
-                                            <f:convertNumber integerOnly="true"/>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Variance" style="text-align:right">
-                                        <h:outputText value="#{bi.adjustedValue}">
-                                            <f:convertNumber integerOnly="true"/>
-                                        </h:outputText>
-                                    </p:column>
-                                </p:dataTable>
+                                <p:panel header="Filters" styleClass="mb-3">
+                                    <p:panelGrid columns="2" styleClass="w-100" layout="tabular">
+                                        <h:outputLabel for="ins" value="Institution"/>
+                                        <p:selectOneMenu id="ins" class="w-100 " value="#{pharmacyStockTakeController.institution}" filter="true">
+                                            <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
+                                            <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                            <p:ajax process="@this" update="cmbDept"/>
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Department"/>
+                                        <h:panelGroup id="cmbDept">
+                                            <p:selectOneMenu
+                                                styleClass="w-100 form-control"
+                                                value="#{pharmacyStockTakeController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                <f:selectItems 
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
+                                        <p:spacer ></p:spacer>
+                                        <p:commandButton 
+                                            value="Generate Stock Count Bill" 
+                                            action="#{pharmacyStockTakeController.generateStockCountBill}" 
+                                            ajax="false"
+                                            icon="fa fa-calculator"/>
+
+                                    </p:panelGrid>
+                                </p:panel>
+
+
                             </h:form>
                         </div>
                     </div>

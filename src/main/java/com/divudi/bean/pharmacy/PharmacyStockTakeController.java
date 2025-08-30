@@ -12,6 +12,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -63,23 +64,35 @@ public class PharmacyStockTakeController implements Serializable {
     private Bill snapshotBill;
     private Bill physicalCountBill;
     private UploadedFile file;
+    private Institution institution;
+    private Department department;
 
     /**
-     * Capture current department stock into a snapshot bill.
+     * Generate stock count bill preview without persisting.
      */
-    public void captureSnapshot() {
-        Department dept = sessionController.getLoggedUser().getDepartment();
-        if (dept == null) {
-            JsfUtil.addErrorMessage("No department found");
-            return;
+    public String generateStockCountBill() {
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please select an institution");
+            return null;
         }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return null;
+        }
+        // Optional cross-check to prevent mismatch selections
+        if (department.getInstitution() != null && !department.getInstitution().equals(institution)) {
+            JsfUtil.addErrorMessage("Selected department does not belong to chosen institution");
+            return null;
+        }
+        // Site selection is not used on this page
+        Department dept = department;
         String jpql = "select s from Stock s where s.department=:d and s.stock>0";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
         List<Stock> stocks = stockFacade.findByJpql(jpql, params);
         if (stocks == null || stocks.isEmpty()) {
             JsfUtil.addErrorMessage("No stock available");
-            return;
+            return null;
         }
         snapshotBill = new Bill();
         snapshotBill.setBillType(BillType.PharmacySnapshotBill);
@@ -88,30 +101,83 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill.setInstitution(dept.getInstitution());
         snapshotBill.setCreatedAt(new Date());
         snapshotBill.setCreater(sessionController.getLoggedUser());
-        String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
-        snapshotBill.setInsId(deptId);
-        snapshotBill.setDeptId(deptId);
-        billFacade.create(snapshotBill);
-
+        double total = 0.0;
         for (Stock s : stocks) {
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
             bi.setItem(s.getItemBatch().getItem());
+            // Cache display fields to avoid lazy loading issues in preview pages
+            if (s.getItemBatch() != null && s.getItemBatch().getItem() != null) {
+                bi.setDescreption(s.getItemBatch().getItem().getName());
+            }
             bi.setQty(s.getStock());
             bi.setCreatedAt(new Date());
             bi.setCreater(sessionController.getLoggedUser());
-            billItemFacade.create(bi);
             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
             pbi.setBillItem(bi);
             pbi.setItemBatch(s.getItemBatch());
             pbi.setQty(s.getStock());
             pbi.setStock(s);
-            pharmaceuticalBillItemFacade.create(pbi);
+            if (s.getItemBatch() != null) {
+                pbi.setStringValue(s.getItemBatch().getBatchNo());
+            }
+            Double costRate = s.getItemBatch() != null ? s.getItemBatch().getCostRate() : 0.0;
+            pbi.setCostRate(costRate != null ? costRate : 0.0);
+            double lineValue = (pbi.getCostRate()) * (bi.getQty() != null ? bi.getQty() : 0.0);
+            bi.setNetValue(lineValue);
+            total += lineValue;
             bi.setPharmaceuticalBillItem(pbi);
+            if (snapshotBill.getBillItems() == null) {
+                snapshotBill.setBillItems(new java.util.ArrayList<>());
+            }
             snapshotBill.getBillItems().add(bi);
         }
-        billFacade.edit(snapshotBill);
-        JsfUtil.addSuccessMessage("Snapshot created");
+        snapshotBill.setNetTotal(total);
+        JsfUtil.addSuccessMessage("Preview generated. Please review and settle.");
+        return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+    }
+
+    /**
+     * Persist the generated stock count bill and navigate to print view.
+     */
+    public String settleStockCount() {
+        if (snapshotBill == null || snapshotBill.getBillItems() == null || snapshotBill.getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to settle");
+            return null;
+        }
+        // Ensure fresh persistence for a new bill: null out IDs if bill is new
+        if (snapshotBill.getId() == null) {
+            if (snapshotBill.getBillItems() != null) {
+                for (BillItem bi : snapshotBill.getBillItems()) {
+                    bi.setId(null);
+                    if (bi.getPharmaceuticalBillItem() != null) {
+                        bi.getPharmaceuticalBillItem().setId(null);
+                    }
+                }
+            }
+        }
+        Department dept = snapshotBill.getDepartment();
+        if (snapshotBill.getId() == null) {
+            String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
+            snapshotBill.setInsId(deptId);
+            snapshotBill.setDeptId(deptId);
+            // Cascade will persist bill items and pharmaceutical bill items
+            billFacade.create(snapshotBill);
+        } else {
+            // Existing bill: update only
+            billFacade.edit(snapshotBill);
+        }
+        JsfUtil.addSuccessMessage("Stock count bill saved");
+        return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
+    }
+
+    // Convenience getters for EL to access downloads as properties
+    public StreamedContent getDownloadGuidedSheet() {
+        return downloadGuidedSheet();
+    }
+
+    public StreamedContent getDownloadBlindSheet() {
+        return downloadBlindSheet();
     }
 
     /**
@@ -186,7 +252,7 @@ public class PharmacyStockTakeController implements Serializable {
         }
         try (InputStream in = file.getInputStream(); XSSFWorkbook wb = new XSSFWorkbook(in)) {
             XSSFSheet sheet = wb.getSheetAt(0);
-            Department dept = sessionController.getLoggedUser().getDepartment();
+            Department dept = snapshotBill.getDepartment();
             physicalCountBill = new Bill();
             physicalCountBill.setBillType(BillType.PharmacyPhysicalCountBill);
             physicalCountBill.setBillClassType(BillClassType.BilledBill);
@@ -287,7 +353,7 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("No physical counts to save");
             return;
         }
-        Department dept = sessionController.getLoggedUser().getDepartment();
+        Department dept = physicalCountBill.getDepartment();
         String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyPhysicalCountBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
         physicalCountBill.setInsId(deptId);
         physicalCountBill.setDeptId(deptId);
@@ -317,7 +383,7 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Not authorized");
             return;
         }
-        Department dept = sessionController.getLoggedUser().getDepartment();
+        Department dept = physicalCountBill.getDepartment();
         Bill adjustmentBill = new Bill();
         adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
         adjustmentBill.setBillClassType(BillClassType.BilledBill);
@@ -408,5 +474,21 @@ public class PharmacyStockTakeController implements Serializable {
         this.physicalCountBill = null;
         this.file = null;
         JsfUtil.addSuccessMessage("Stock taking session reset");
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 }
