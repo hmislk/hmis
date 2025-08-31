@@ -459,14 +459,6 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class="d-flex justify-content-center mt-5">
-                                                <div class="row"><p:badge 
-                                                        value="Bill Cancel" 
-                                                        severity="info"
-                                                        size="large"
-                                                        style="width: 200px;"
-                                                        styleClass="ui-badge-danger" >
-                                                    </p:badge>
-                                                </div>
                                                 <div class="row">
                                                     <p:commandButton 
                                                         icon="fa fa-history"
@@ -530,6 +522,18 @@
                                                             class="ui-button-success mt-2"
                                                             ajax="false" 
                                                             action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
+                                                        </p:commandButton>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <p:commandButton 
+                                                            icon="fa fa-history"
+                                                            value="View History" 
+                                                            class="ui-button-success mt-2"
+                                                            ajax="false" 
+                                                            rendered="#{webUserController.hasPrivilege('AccessLabTestHistory')}"
+                                                            action="#{patientInvestigationController.navigateToTestHistory()}" >
+                                                            <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                         </p:commandButton>
                                                     </div>
 
