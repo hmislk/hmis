@@ -262,14 +262,14 @@
                                                                        ajax="false" 
                                                                        action="#{pharmacyStockTakeController.savePhysicalCount}"/>
 
-                                                        <p:commandButton value="Approve & Post Adjustments"
+                                                        <p:commandButton value="Approve &amp; Post Adjustments (Background)"
                                                                        icon="fa fa-check"
                                                                        styleClass="ui-button-warning ui-button-lg mr-2"
                                                                        title="Approve this physical count and create stock adjustment entries"
                                                                        ajax="false"
                                                                        rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove') and not empty pharmacyStockTakeController.physicalCountBill and not empty pharmacyStockTakeController.physicalCountBill.billItems}"
                                                                        onclick="return confirm('Approve this physical count and post stock adjustments?');"
-                                                                       action="#{pharmacyStockTakeController.approvePhysicalCount}"/>
+                                                                       action="#{pharmacyStockTakeController.startApprovePhysicalCountAsync}"/>
 
                                                         <p:commandButton value="Reject"
                                                                        icon="fa fa-times"
@@ -282,6 +282,26 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <h:panelGroup id="approvalProgressPanel">
+                                                <h:panelGroup rendered="#{pharmacyStockTakeController.approvalRunning}">
+                                                    <div class="alert alert-info mt-3" role="alert">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>
+                                                            <span>Approval in progress: #{pharmacyStockTakeController.approvalStatusText}</span>
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <p:progressBar value="#{pharmacyStockTakeController.approvalProgressPercent}" displayOnly="true"/>
+                                                        </div>
+                                                    </div>
+                                                    <p:poll interval="2" update="approvalProgressPanel"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{not pharmacyStockTakeController.approvalRunning and pharmacyStockTakeController.approvalStatusText eq 'Completed'}">
+                                                    <div class="alert alert-success mt-3" role="alert">
+                                                        <i class="fa fa-check mr-2" aria-hidden="true"></i>
+                                                        Approval completed successfully.
+                                                    </div>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
                                 </h:form>

@@ -86,21 +86,24 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Actions" style="width: 420px; text-align: center;">
+                                    <p:column headerText="Actions" style="text-align: center;">
                                         <p:commandButton 
                                             value="View" 
                                             icon="fa fa-eye" 
+                                            styleClass="ui-button-success"
                                             ajax="false"
                                             action="#{pharmacyStockTakeController.viewSnapshotById(d.id)}"/>
                                         <p:spacer width="8"/>
                                         <p:commandButton 
-                                            value="Upload Adjustments" 
+                                            value="Upload" 
+                                            styleClass="ui-button-warning"
                                             icon="fa fa-upload" 
                                             ajax="false"
                                             action="#{pharmacyStockTakeController.gotoUploadAdjustmentsById(d.id)}"/>
                                         <p:spacer width="8"/>
                                         <p:commandButton 
-                                            value="View Variance" 
+                                            value="Variance" 
+                                            styleClass="ui-button-primary"
                                             icon="fa fa-chart-bar" 
                                             ajax="false"
                                             action="#{pharmacyStockTakeController.gotoViewVarianceById(d.id)}"/>
