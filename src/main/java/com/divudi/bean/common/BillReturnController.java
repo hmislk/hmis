@@ -76,8 +76,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     AgentAndCcApplicationController agentAndCcApplicationController;
     @Inject
     WebUserController webUserController;
-
-    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
@@ -342,8 +346,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
 
+        System.out.println("Original BillItems = " + originalBillItemsToSelectedToReturn.size());
+        
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
-
+            
+            System.out.println("Selected BillItem  = " + selectedBillItemToReturn);
+            
             returningTotal += selectedBillItemToReturn.getGrossValue();
             returningNetTotal += selectedBillItemToReturn.getNetValue();
             returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
@@ -363,9 +371,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-
+            
+            System.out.println("Before");
+            
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                System.out.println("Lab Test History Enabled");
                 for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                    System.out.println("pi = " + pi);
                     labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
                 }
             }
@@ -424,11 +436,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
-
-    @Inject
-    PatientInvestigationController patientInvestigationController;
-    @Inject
-    LabTestHistoryController labTestHistoryController;
 
     public void calculateRefundingAmount() {
         refundingTotalAmount = 0.0;
