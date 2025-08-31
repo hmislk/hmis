@@ -135,8 +135,6 @@ public class GrnCostingController implements Serializable {
     private double difference;
     private Institution fromInstitution;
     private Institution referenceInstitution;
-    private Date invoiceDate;
-    private String invoiceNumber;
     BillItem currentExpense;
 
     public double calDifference() {
@@ -155,8 +153,6 @@ public class GrnCostingController implements Serializable {
     public void clear() {
         // grnBill = null; // Field removed
         currentGrnBillPre = null; // Clear both bills since they should be the same object
-        invoiceDate = null;
-        invoiceNumber = null;
         printPreview = false;
         // billItems removed - using bill's collection directly
         difference = 0;
@@ -290,8 +286,7 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getReferenceInstitution() == null) {
             getCurrentGrnBillPre().setReferenceInstitution(getReferenceInstitution());
         }
-        getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
-        getCurrentGrnBillPre().setInvoiceNumber(invoiceNumber);
+        // Invoice details are already bound on currentGrnBillPre via UI
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
 
         if (getCurrentGrnBillPre().getInvoiceDate() == null) {
@@ -385,8 +380,7 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getReferenceInstitution() == null) {
             getCurrentGrnBillPre().setReferenceInstitution(getReferenceInstitution());
         }
-        getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
-        getCurrentGrnBillPre().setInvoiceNumber(invoiceNumber);
+        // Invoice details are already bound on currentGrnBillPre via UI
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
 
         String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
@@ -616,8 +610,7 @@ public class GrnCostingController implements Serializable {
             return false;
         }
 
-        getGrnBill().setInvoiceDate(invoiceDate);
-        getGrnBill().setInvoiceNumber(invoiceNumber);
+        // Invoice details are already bound on grnBill/currentGrnBillPre via UI
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
@@ -2306,21 +2299,7 @@ public class GrnCostingController implements Serializable {
         this.referenceInstitution = referenceInstitution;
     }
 
-    public Date getInvoiceDate() {
-        return invoiceDate;
-    }
-
-    public void setInvoiceDate(Date invoiceDate) {
-        this.invoiceDate = invoiceDate;
-    }
-
-    public String getInvoiceNumber() {
-        return invoiceNumber;
-    }
-
-    public void setInvoiceNumber(String invoiceNumber) {
-        this.invoiceNumber = invoiceNumber;
-    }
+    // Removed controller-level invoiceDate/invoiceNumber; use currentGrnBillPre's fields directly
 
     private void saveImportBill(Bill importGrn) {
         importGrn.setBillType(BillType.PharmacyGrnBillImport);
@@ -2397,8 +2376,7 @@ public class GrnCostingController implements Serializable {
             getCurrentGrnBillPre().setBillExpenses(loadedExpenses);
         }
 
-        invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
-        invoiceNumber = getCurrentGrnBillPre().getInvoiceNumber();
+        // Invoice details already on currentGrnBillPre
         setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
 
         // Recalculate totals when loading saved bill
@@ -2469,6 +2447,8 @@ public class GrnCostingController implements Serializable {
                 if (e.getId() != null) {
                     // Persisted duplicate: retire it so it won't load next time
                     e.setRetired(true);
+                    e.setBill(null);
+                    e.setExpenseBill(null);
                     e.setRetiredAt(new Date());
                     e.setRetirer(getSessionController().getLoggedUser());
                     getBillItemFacade().edit(e);
@@ -2497,10 +2477,7 @@ public class GrnCostingController implements Serializable {
             getCurrentGrnBillPre().setReferenceBill(getApproveBill());
         }
 
-        // Set invoice date if provided
-        if (invoiceDate != null) {
-            getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
-        }
+        // Invoice details already on currentGrnBillPre via UI binding
 
         if (getCurrentGrnBillPre().getFromInstitution() == null) {
             getCurrentGrnBillPre().setFromInstitution(getFromInstitution());
