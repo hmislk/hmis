@@ -77,7 +77,9 @@ public class PharmacyStockTakeController implements Serializable {
     private Department department;
     private Date fromDate;
     private Date toDate;
-    private List<Bill> snapshotBills; // search results
+    // Removed legacy snapshotBills; using DTO rows instead
+    // Lightweight rows for list page to avoid loading heavy entity graphs
+    private List<SnapshotRow> snapshotBillRows;
     private List<VarianceRow> varianceRows; // aggregated variance report rows
 
     /**
@@ -537,20 +539,23 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
-    // List snapshot bills by filters
-    public void listSnapshotBills() {
+    // Removed legacy listSnapshotBills(); replaced by listSnapshotBillRows()
+
+    // New: List snapshot bill rows using DTOs to avoid heavy entity loading
+    public void listSnapshotBillRows() {
         HashMap<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from Bill b where b.billType=:bt");
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, ");
+        jpql.append("(select count(bi) from BillItem bi where bi.bill = b), b.netTotal ");
+        jpql.append("from Bill b where b.billType=:bt");
         params.put("bt", BillType.PharmacySnapshotBill);
         if (fromDate != null) {
             jpql.append(" and b.createdAt>=:fd");
             params.put("fd", fromDate);
         }
         if (toDate != null) {
-            // add end of day
-            Date td = new Date(toDate.getTime());
-            params.put("td", td);
             jpql.append(" and b.createdAt<=:td");
+            params.put("td", toDate);
         }
         if (institution != null) {
             jpql.append(" and b.institution=:ins");
@@ -561,10 +566,32 @@ public class PharmacyStockTakeController implements Serializable {
             params.put("dep", department);
         }
         jpql.append(" order by b.createdAt desc");
-        snapshotBills = billFacade.findByJpql(jpql.toString(), params);
-        if (snapshotBills == null) {
-            snapshotBills = new java.util.ArrayList<>();
+
+        List<Object[]> rows = billFacade.findObjectArrayByJpql(jpql.toString(), params, null);
+        List<SnapshotRow> out = new java.util.ArrayList<>();
+        if (rows != null) {
+            for (Object[] r : rows) {
+                SnapshotRow d = new SnapshotRow();
+                d.setId((Long) r[0]);
+                d.setDeptId((String) r[1]);
+                d.setCreatedAt((Date) r[2]);
+                d.setInstitutionName((String) r[3]);
+                d.setDepartmentName((String) r[4]);
+                // count may be Long, Integer, or BigInteger depending on JPA provider
+                Object cnt = r[5];
+                long ic;
+                if (cnt == null) ic = 0L;
+                else if (cnt instanceof Long) ic = (Long) cnt;
+                else if (cnt instanceof Integer) ic = ((Integer) cnt).longValue();
+                else if (cnt instanceof java.math.BigInteger) ic = ((java.math.BigInteger) cnt).longValue();
+                else if (cnt instanceof java.math.BigDecimal) ic = ((java.math.BigDecimal) cnt).longValue();
+                else ic = Long.parseLong(cnt.toString());
+                d.setItemsCount(ic);
+                d.setNetTotal(r[6] == null ? 0.0 : ((Number) r[6]).doubleValue());
+                out.add(d);
+            }
         }
+        snapshotBillRows = out;
     }
 
     // Navigate to view the snapshot creation page while keeping context
@@ -577,6 +604,13 @@ public class PharmacyStockTakeController implements Serializable {
         this.department = b.getDepartment();
         this.snapshotBill = b;
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
+    }
+
+    // Overload: navigate using id (for DTO rows)
+    public String viewSnapshotById(Long billId) {
+        if (billId == null) return null;
+        Bill b = billFacade.find(billId);
+        return viewSnapshot(b);
     }
 
     // Navigate to upload adjustments page with the selected snapshot
@@ -592,6 +626,13 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_stock_take_upload?faces-redirect=true";
     }
 
+    // Overload: navigate using id (for DTO rows)
+    public String gotoUploadAdjustmentsById(Long billId) {
+        if (billId == null) return null;
+        Bill b = billFacade.find(billId);
+        return gotoUploadAdjustments(b);
+    }
+
     // Navigate to view variance report for a snapshot
     public String gotoViewVariance(Bill b) {
         if (b == null) {
@@ -602,6 +643,13 @@ public class PharmacyStockTakeController implements Serializable {
         this.department = b.getDepartment();
         prepareVarianceRows();
         return "/pharmacy/pharmacy_stock_take_variance?faces-redirect=true";
+    }
+
+    // Overload: navigate using id (for DTO rows)
+    public String gotoViewVarianceById(Long billId) {
+        if (billId == null) return null;
+        Bill b = billFacade.find(billId);
+        return gotoViewVariance(b);
     }
 
     // Build aggregated variance rows for the selected snapshot
@@ -921,16 +969,40 @@ public class PharmacyStockTakeController implements Serializable {
         this.toDate = toDate;
     }
 
-    public List<Bill> getSnapshotBills() {
-        return snapshotBills;
-    }
-
-    public void setSnapshotBills(List<Bill> snapshotBills) {
-        this.snapshotBills = snapshotBills;
-    }
+    // Removed legacy getters/setters for snapshotBills
 
     public List<VarianceRow> getVarianceRows() {
         return varianceRows;
+    }
+
+    public List<SnapshotRow> getSnapshotBillRows() {
+        return snapshotBillRows;
+    }
+
+    // Lightweight DTO for snapshot bills list
+    public static class SnapshotRow implements Serializable {
+        private Long id;
+        private String deptId;
+        private Date createdAt;
+        private String institutionName;
+        private String departmentName;
+        private long itemsCount;
+        private double netTotal;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getDeptId() { return deptId; }
+        public void setDeptId(String deptId) { this.deptId = deptId; }
+        public Date getCreatedAt() { return createdAt; }
+        public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+        public String getInstitutionName() { return institutionName; }
+        public void setInstitutionName(String institutionName) { this.institutionName = institutionName; }
+        public String getDepartmentName() { return departmentName; }
+        public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
+        public long getItemsCount() { return itemsCount; }
+        public void setItemsCount(long itemsCount) { this.itemsCount = itemsCount; }
+        public double getNetTotal() { return netTotal; }
+        public void setNetTotal(double netTotal) { this.netTotal = netTotal; }
     }
 
     // DTO for variance report
