@@ -34,13 +34,17 @@
                                         </p:selectOneMenu>
 
                                         <h:outputLabel for="fd" value="From Date"/>
-                                        <p:datePicker id="fd" value="#{pharmacyStockTakeController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" showIcon="true"/>
+                                        <p:datePicker id="fd" value="#{pharmacyStockTakeController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
 
                                         <h:outputLabel for="td" value="To Date"/>
-                                        <p:datePicker id="td" value="#{pharmacyStockTakeController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" showIcon="true"/>
+                                        <p:datePicker id="td" value="#{pharmacyStockTakeController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
 
                                         <p:spacer/>
-                                        <p:commandButton value="List" icon="fa fa-list" actionListener="#{pharmacyStockTakeController.listSnapshotBills()}" update=":frmTable"/>
+                                        <p:commandButton
+                                            value="List" 
+                                            icon="fa fa-list" 
+                                            action="#{pharmacyStockTakeController.listSnapshotBills()}" 
+                                            ajax="false"/>
                                     </p:panelGrid>
                                 </p:panel>
                             </h:form>
@@ -52,8 +56,7 @@
                                              rowsPerPageTemplate="10,25,50,100"
                                              styleClass="ui-datatable-striped ui-datatable-gridlines"
                                              emptyMessage="No bills found."
-                                             sortMode="multiple"
-                                             filterable="true">
+                                             sortMode="multiple">
 
                                     <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" style="width: 160px;">
                                         <h:outputText value="#{b.deptId}" style="font-family: monospace;"/>
@@ -83,12 +86,24 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Actions" style="width: 260px; text-align: center;">
-                                        <p:commandButton value="View" icon="fa fa-eye" ajax="false"
-                                                         action="#{pharmacyStockTakeController.viewSnapshot(b)}"/>
+                                    <p:column headerText="Actions" style="width: 420px; text-align: center;">
+                                        <p:commandButton 
+                                            value="View" 
+                                            icon="fa fa-eye" 
+                                            ajax="false"
+                                            action="#{pharmacyStockTakeController.viewSnapshot(b)}"/>
                                         <p:spacer width="8"/>
-                                        <p:commandButton value="Upload Adjustments" icon="fa fa-upload" ajax="false"
-                                                         action="#{pharmacyStockTakeController.gotoUploadAdjustments(b)}"/>
+                                        <p:commandButton 
+                                            value="Upload Adjustments" 
+                                            icon="fa fa-upload" 
+                                            ajax="false"
+                                            action="#{pharmacyStockTakeController.gotoUploadAdjustments(b)}"/>
+                                        <p:spacer width="8"/>
+                                        <p:commandButton 
+                                            value="View Variance" 
+                                            icon="fa fa-chart-bar" 
+                                            ajax="false"
+                                            action="#{pharmacyStockTakeController.gotoViewVariance(b)}"/>
                                     </p:column>
                                 </p:dataTable>
                             </h:form>
@@ -98,6 +113,5 @@
             </ui:define>
         </ui:composition>
     </h:body>
-    
-</html>
 
+</html>

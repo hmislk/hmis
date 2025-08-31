@@ -35,14 +35,16 @@
 
                                 <p:separator/>
 
-                                <div class="mb-3">
-                                    <p:commandButton value="Download Guided Sheet" ajax="false" styleClass="ui-button-success mr-2" icon="fa fa-download">
-                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
-                                    </p:commandButton>
-                                    <p:commandButton value="Download Blind Sheet" ajax="false" styleClass="ui-button-warning" icon="fa fa-download">
-                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
-                                    </p:commandButton>
-                                </div>
+                                <h:form id="frmDownloads">
+                                    <div class="mb-3">
+                                        <p:commandButton value="Download Guided Sheet" ajax="false" styleClass="ui-button-success mr-2" icon="fa fa-download" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                            <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
+                                        </p:commandButton>
+                                        <p:commandButton value="Download Blind Sheet" ajax="false" styleClass="ui-button-warning" icon="fa fa-download" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                            <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
+                                        </p:commandButton>
+                                    </div>
+                                </h:form>
 
                                 <h:form id="frmUpload" enctype="multipart/form-data">
                                     <p:panel header="Upload Completed Sheet">
@@ -101,4 +103,3 @@
         </ui:composition>
     </h:body>
 </html>
-
