@@ -249,16 +249,37 @@
                                                 </p:dataTable>
                                             </div>
                                             <div class="card-footer bg-light">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="text-muted">
-                                                        <i class="fa fa-info-circle mr-2"></i>
-                                                        Review all variances before saving to ensure accuracy
+                                                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                                    <div class="text-muted mb-2 mb-md-0">
+                                                        <i class="fa fa-info-circle mr-2" aria-hidden="true"></i>
+                                                        Review all variances before saving or approving
                                                     </div>
-                                                    <p:commandButton value="Save Physical Count" 
-                                                                   icon="fa fa-save" 
-                                                                   styleClass="ui-button-success ui-button-lg"
-                                                                   ajax="false" 
-                                                                   action="#{pharmacyStockTakeController.savePhysicalCount}"/>
+                                                    <div class="d-flex align-items-center">
+                                                        <p:commandButton value="Save Physical Count" 
+                                                                       icon="fa fa-save" 
+                                                                       styleClass="ui-button-success ui-button-lg mr-2"
+                                                                       title="Persist the current physical count entries"
+                                                                       ajax="false" 
+                                                                       action="#{pharmacyStockTakeController.savePhysicalCount}"/>
+
+                                                        <p:commandButton value="Approve & Post Adjustments"
+                                                                       icon="fa fa-check"
+                                                                       styleClass="ui-button-warning ui-button-lg mr-2"
+                                                                       title="Approve this physical count and create stock adjustment entries"
+                                                                       ajax="false"
+                                                                       rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove') and not empty pharmacyStockTakeController.physicalCountBill and not empty pharmacyStockTakeController.physicalCountBill.billItems}"
+                                                                       onclick="return confirm('Approve this physical count and post stock adjustments?');"
+                                                                       action="#{pharmacyStockTakeController.approvePhysicalCount}"/>
+
+                                                        <p:commandButton value="Reject"
+                                                                       icon="fa fa-times"
+                                                                       styleClass="ui-button-secondary ui-button-lg"
+                                                                       title="Reject this physical count without posting adjustments"
+                                                                       ajax="false"
+                                                                       rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove') and not empty pharmacyStockTakeController.physicalCountBill}"
+                                                                       onclick="return confirm('Reject this physical count?');"
+                                                                       action="#{pharmacyStockTakeController.rejectPhysicalCount}"/>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

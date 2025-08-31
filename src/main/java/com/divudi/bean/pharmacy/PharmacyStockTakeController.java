@@ -21,6 +21,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.PharmacyBean;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -69,6 +70,8 @@ public class PharmacyStockTakeController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private PharmacyBean pharmacyBean;
 
     private Bill snapshotBill;
     private Bill physicalCountBill;
@@ -78,8 +81,8 @@ public class PharmacyStockTakeController implements Serializable {
     private Date fromDate;
     private Date toDate;
     // Removed legacy snapshotBills; using DTO rows instead
-    // Lightweight rows for list page to avoid loading heavy entity graphs
-    private List<SnapshotRow> snapshotBillRows;
+    // Use Light DTOs via constructor-based JPQL to avoid heavy entity graphs
+    private List<com.divudi.core.light.common.PharmacySnapshotBillLight> snapshotBillRows;
     private List<VarianceRow> varianceRows; // aggregated variance report rows
 
     /**
@@ -541,13 +544,14 @@ public class PharmacyStockTakeController implements Serializable {
 
     // Removed legacy listSnapshotBills(); replaced by listSnapshotBillRows()
 
-    // New: List snapshot bill rows using DTOs to avoid heavy entity loading
+    // New: List snapshot bill rows using constructor-based DTO and findLightsByJpql
     public void listSnapshotBillRows() {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, ");
-        jpql.append("(select count(bi) from BillItem bi where bi.bill = b), b.netTotal ");
-        jpql.append("from Bill b where b.billType=:bt");
+        jpql.append("select new com.divudi.core.light.common.PharmacySnapshotBillLight( ");
+        jpql.append(" b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, ");
+        jpql.append(" (select count(bi) from BillItem bi where bi.bill = b), b.netTotal ) ");
+        jpql.append(" from Bill b where b.billType=:bt");
         params.put("bt", BillType.PharmacySnapshotBill);
         if (fromDate != null) {
             jpql.append(" and b.createdAt>=:fd");
@@ -567,31 +571,10 @@ public class PharmacyStockTakeController implements Serializable {
         }
         jpql.append(" order by b.createdAt desc");
 
-        List<Object[]> rows = billFacade.findObjectArrayByJpql(jpql.toString(), params, null);
-        List<SnapshotRow> out = new java.util.ArrayList<>();
-        if (rows != null) {
-            for (Object[] r : rows) {
-                SnapshotRow d = new SnapshotRow();
-                d.setId((Long) r[0]);
-                d.setDeptId((String) r[1]);
-                d.setCreatedAt((Date) r[2]);
-                d.setInstitutionName((String) r[3]);
-                d.setDepartmentName((String) r[4]);
-                // count may be Long, Integer, or BigInteger depending on JPA provider
-                Object cnt = r[5];
-                long ic;
-                if (cnt == null) ic = 0L;
-                else if (cnt instanceof Long) ic = (Long) cnt;
-                else if (cnt instanceof Integer) ic = ((Integer) cnt).longValue();
-                else if (cnt instanceof java.math.BigInteger) ic = ((java.math.BigInteger) cnt).longValue();
-                else if (cnt instanceof java.math.BigDecimal) ic = ((java.math.BigDecimal) cnt).longValue();
-                else ic = Long.parseLong(cnt.toString());
-                d.setItemsCount(ic);
-                d.setNetTotal(r[6] == null ? 0.0 : ((Number) r[6]).doubleValue());
-                out.add(d);
-            }
-        }
-        snapshotBillRows = out;
+        @SuppressWarnings("unchecked")
+        List<com.divudi.core.light.common.PharmacySnapshotBillLight> rows =
+                (List<com.divudi.core.light.common.PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP);
+        snapshotBillRows = rows == null ? new java.util.ArrayList<>() : rows;
     }
 
     // Navigate to view the snapshot creation page while keeping context
@@ -872,16 +855,18 @@ public class PharmacyStockTakeController implements Serializable {
             apbi.setQty(variance);
             if (stock != null) {
                 double before = stock.getStock();
+                double after = before + variance;
                 apbi.setBeforeAdjustmentValue(before);
-                apbi.setAfterAdjustmentValue(before + variance);
+                apbi.setAfterAdjustmentValue(after);
             }
             abi.setPharmaceuticalBillItem(apbi);
             // Persist only BillItem; PharmaceuticalBillItem is cascaded
             billItemFacade.create(abi);
             adjustmentBill.getBillItems().add(abi);
+            // Update stock via PharmacyBean to ensure StockHistory is recorded
             if (stock != null) {
-                stock.setStock(stock.getStock() + variance);
-                stockFacade.edit(stock);
+                double targetQty = apbi.getAfterAdjustmentValue() != null ? apbi.getAfterAdjustmentValue() : stock.getStock() + variance;
+                pharmacyBean.resetStock(apbi, stock, targetQty, dept);
             }
         }
         physicalCountBill.setApproveUser(sessionController.getLoggedUser());
@@ -975,34 +960,8 @@ public class PharmacyStockTakeController implements Serializable {
         return varianceRows;
     }
 
-    public List<SnapshotRow> getSnapshotBillRows() {
+    public List<com.divudi.core.light.common.PharmacySnapshotBillLight> getSnapshotBillRows() {
         return snapshotBillRows;
-    }
-
-    // Lightweight DTO for snapshot bills list
-    public static class SnapshotRow implements Serializable {
-        private Long id;
-        private String deptId;
-        private Date createdAt;
-        private String institutionName;
-        private String departmentName;
-        private long itemsCount;
-        private double netTotal;
-
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getDeptId() { return deptId; }
-        public void setDeptId(String deptId) { this.deptId = deptId; }
-        public Date getCreatedAt() { return createdAt; }
-        public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-        public String getInstitutionName() { return institutionName; }
-        public void setInstitutionName(String institutionName) { this.institutionName = institutionName; }
-        public String getDepartmentName() { return departmentName; }
-        public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
-        public long getItemsCount() { return itemsCount; }
-        public void setItemsCount(long itemsCount) { this.itemsCount = itemsCount; }
-        public double getNetTotal() { return netTotal; }
-        public void setNetTotal(double netTotal) { this.netTotal = netTotal; }
     }
 
     // DTO for variance report
