@@ -366,11 +366,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-            
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
-                    labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                        labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
             }
 
             if (originalBillFeesOfSelectedBillItem != null) {
@@ -531,11 +535,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-            
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
-                    labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                        labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
             }
 
             if (originalBillFeesOfSelectedBillItem != null) {

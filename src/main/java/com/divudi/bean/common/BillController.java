@@ -2297,11 +2297,15 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancelSingleBills.add(individualCancelltionBill);
 
         List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, individualCancelltionBill);
-        
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
-                labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
+                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                }
             }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
         }
 
         try {

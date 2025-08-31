@@ -668,10 +668,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
-                labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                }
             }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
         }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
@@ -794,12 +798,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingPackageBatchBill(originalBill, cancellationBatchBill);
-
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
-                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
+                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
             }
+
         }
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());

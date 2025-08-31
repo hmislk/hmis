@@ -179,7 +179,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillSearch billSearch;
     @Inject
     private BillBeanController billBean;
-    @Inject 
+    @Inject
     LabTestHistoryController labTestHistoryController;
 
     /**
@@ -992,12 +992,17 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
-        
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addBillingHistory(ptIx,sessionController.getDepartment());
+
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
+            }
+        } catch (Exception error) {
+            System.out.println("Error = " + error);
         }
 
     }
+
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;

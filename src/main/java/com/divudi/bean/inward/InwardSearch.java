@@ -750,10 +750,14 @@ public class InwardSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
 
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
-                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
             }
 
             //To null payment methord
