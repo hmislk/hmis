@@ -27,7 +27,7 @@
                                              value="Back To Po List" 
                                              class="ui-button-warning" 
                                              icon="fas fa-arrow-left" 
-                                             action="pharmacy_purhcase_order_list_to_approve">
+                                             action="pharmacy_purhcase_order_list_to_approve_dto">
                             </p:commandButton>
                         </div>
                     </f:facet>
@@ -210,7 +210,7 @@
             </h:panelGroup>
             <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
                 <p:panel >
-                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
+                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve_dto" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
                     <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info m-1" icon="fas fa-print">
                         <p:printer target=":form:gpBillPreview" ></p:printer>
                     </p:commandButton>

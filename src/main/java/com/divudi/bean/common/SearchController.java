@@ -75,6 +75,7 @@ import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
+import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -253,6 +254,8 @@ public class SearchController implements Serializable {
     // DTO lists for disposal issue search results
     private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
     private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
+    // DTO list for pharmacy purchase orders
+    private List<PharmacyPurchaseOrderDTO> pharmacyPurchaseOrderDtos;
     private List<Payment> payments;
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
@@ -5250,10 +5253,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPoRequestedAndApprovedPharmacy() {
-        Date startTime = new Date();
-
         createPoRequestedAndApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
-
     }
 
     public void createPoRequestedAndApprovedStore() {
@@ -5363,7 +5363,8 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.billType= :bTp  "
-                + " and b.checkedBy is null";
+                + " and b.checkedBy is null"
+                + " and b.department=:dept";
 
         sql += createKeySqlSearchForPoCancel(tmp);
 
@@ -5372,6 +5373,7 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", InstitutionType.Dealer);
         tmp.put("bTp", BillType.PharmacyOrder);
+        tmp.put("dept", sessionController.getDepartment());
 
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
@@ -5387,7 +5389,8 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.billType= :bTp  "
-                + " and b.checkedBy is not null";
+                + " and b.checkedBy is not null"
+                + " and b.department=:dept";
         sql += createKeySqlSearchForPoCancel(tmp);
 
         sql += " order by b.createdAt desc  ";
@@ -5395,9 +5398,216 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", InstitutionType.Dealer);
         tmp.put("bTp", BillType.PharmacyOrder);
+        tmp.put("dept", sessionController.getDepartment());
 
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
+    }
+
+    // DTO-based methods for pharmacy purchase orders
+    public void createPoRequestedAndApprovedPharmacyDto() {
+        createPoRequestedAndApprovedDto(InstitutionType.Dealer, BillType.PharmacyOrder);
+    }
+
+    public void createApprovedPharmacyDto() {
+        createApprovedDto(InstitutionType.Dealer, BillType.PharmacyOrder);
+    }
+
+    public void fillOnlyFinalizedPharmacyPoDto() {
+        pharmacyPurchaseOrderDtos = null;
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.netTotal, "
+                + "b.paymentMethod, "
+                + "b.cancelled, "
+                + "b.consignment, "
+                + "b.creater.webUserPerson.name, "
+                + "b.toInstitution.name, "
+                + "b.department.name, "
+                + "b.checkedBy.id, "
+                + "b.checkedBy.webUserPerson.name) "
+                + "FROM BilledBill b WHERE "
+                + "b.referenceBill is null "
+                + "and b.toInstitution.institutionType=:insTp "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false "
+                + "and b.billType=:bTp "
+                + "and b.checkedBy is not null "
+                + "and b.department=:dept";
+
+        sql += createKeySqlSearchForPoCancelDto(tmp);
+        sql += " order by b.createdAt desc ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("insTp", InstitutionType.Dealer);
+        tmp.put("bTp", BillType.PharmacyOrder);
+        tmp.put("dept", sessionController.getDepartment());
+
+        pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade().findLightsByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    public void createPoRequestedAndApprovedDto(InstitutionType institutionType, BillType bt) {
+        pharmacyPurchaseOrderDtos = null;
+        String sql = "";
+        HashMap tmp = new HashMap();
+
+        sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.netTotal, "
+                + "b.paymentMethod, "
+                + "b.cancelled, "
+                + "b.consignment, "
+                + "b.creater.webUserPerson.name, "
+                + "b.toInstitution.name, "
+                + "b.department.name, "
+                + "b.referenceBill.id, "
+                + "b.referenceBill.deptId, "
+                + "b.referenceBill.createdAt, "
+                + "b.referenceBill.netTotal, "
+                + "b.referenceBill.paymentMethod, "
+                + "b.referenceBill.creater.webUserPerson.name, "
+                + "b.referenceBill.cancelled, "
+                + "b.checkedBy.id, "
+                + "b.checkedBy.webUserPerson.name) "
+                + "FROM BilledBill b WHERE "
+                + "b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false "
+                + "and b.toInstitution.institutionType=:insTp "
+                + "and b.billType=:bTp ";
+
+        sql += createKeySqlDto(tmp);
+        sql += " order by b.createdAt desc ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("insTp", institutionType);
+        tmp.put("bTp", bt);
+
+        pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade().findLightsByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    public void createApprovedDto(InstitutionType institutionType, BillType bt) {
+        pharmacyPurchaseOrderDtos = null;
+        String sql = "";
+        HashMap tmp = new HashMap();
+
+        sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.netTotal, "
+                + "b.paymentMethod, "
+                + "b.cancelled, "
+                + "b.consignment, "
+                + "b.creater.webUserPerson.name, "
+                + "b.toInstitution.name, "
+                + "b.department.name, "
+                + "b.referenceBill.id, "
+                + "b.referenceBill.deptId, "
+                + "b.referenceBill.createdAt, "
+                + "b.referenceBill.netTotal, "
+                + "b.referenceBill.paymentMethod, "
+                + "b.referenceBill.creater.webUserPerson.name, "
+                + "b.referenceBill.cancelled, "
+                + "b.checkedBy.id, "
+                + "b.checkedBy.webUserPerson.name) "
+                + "FROM BilledBill b WHERE "
+                + "b.referenceBill.creater is not null "
+                + "and b.referenceBill.cancelled=false "
+                + "and b.toInstitution.institutionType=:insTp "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false "
+                + "and b.billType=:bTp ";
+
+        sql += createKeySqlDto(tmp);
+        sql += " order by b.createdAt desc ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("insTp", institutionType);
+        tmp.put("bTp", bt);
+
+        pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade().findLightsByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    // Helper methods for DTO queries
+    private String createKeySqlDto(HashMap tmp) {
+        String sql = "";
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            sql += " and ((b.qutationNumber) like :qutNo )";
+            tmp.put("qutNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
+            sql += " and ((b.toInstitution.name) like :toIns )";
+            tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and ((b.department.name) like :dep )";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+            sql += " and ((b.referenceBill.deptId) like :refNo )";
+            tmp.put("refNo", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getCreator() != null && !getSearchKeyword().getCreator().trim().equals("")) {
+            sql += " and ((b.creater.webUserPerson.name) like :crt )";
+            tmp.put("crt", "%" + getSearchKeyword().getCreator().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and (abs(b.netTotal) like :reqTotal )";
+            tmp.put("reqTotal", "%" + getSearchKeyword().getTotal().trim() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and (abs(b.referenceBill.netTotal) like :appTotal )";
+            tmp.put("appTotal", "%" + getSearchKeyword().getNetTotal().trim() + "%");
+        }
+
+        return sql;
+    }
+
+    private String createKeySqlSearchForPoCancelDto(HashMap tmp) {
+        String sql = "";
+
+        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
+            sql += " and ((b.toInstitution.name) like :toIns )";
+            tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getCreator() != null && !getSearchKeyword().getCreator().trim().equals("")) {
+            sql += " and ((b.creater.webUserPerson.name) like :crt )";
+            tmp.put("crt", "%" + getSearchKeyword().getCreator().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and ((b.department.name) like :dep )";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and (abs(b.netTotal) like :total )";
+            tmp.put("total", "%" + getSearchKeyword().getTotal().trim() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and ((b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        return sql;
     }
 
     // GRN Return Workflow Search Methods
@@ -14600,7 +14810,7 @@ public class SearchController implements Serializable {
 
     public String navigateToPurchaseOrderApprove() {
         makeListNull();
-        return "/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
+        return "/pharmacy/pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true";
     }
 
     public void createDocPaymentDue() {
@@ -18858,6 +19068,14 @@ public class SearchController implements Serializable {
 
     public void setDisposalIssueBillItemDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos) {
         this.disposalIssueBillItemDtos = disposalIssueBillItemDtos;
+    }
+
+    public List<PharmacyPurchaseOrderDTO> getPharmacyPurchaseOrderDtos() {
+        return pharmacyPurchaseOrderDtos;
+    }
+
+    public void setPharmacyPurchaseOrderDtos(List<PharmacyPurchaseOrderDTO> pharmacyPurchaseOrderDtos) {
+        this.pharmacyPurchaseOrderDtos = pharmacyPurchaseOrderDtos;
     }
 
     public Long getSelectedRequestId() {

@@ -186,6 +186,19 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
     }
 
+    public String navigateToReprintPharmacyPurchaseOrderFromDto() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No purchase order is selected to view");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Purchase order not found");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
+    }
+
     public String navigateToImportBillsFromJson() {
         return "/pharmacy/admin/import_bill?faces-redirect=true";
     }
