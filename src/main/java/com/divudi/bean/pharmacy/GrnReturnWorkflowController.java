@@ -192,6 +192,16 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No bill selected to save");
+            return;
+        }
+        
+        if (billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items to save");
+            return;
+        }
+        
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
         ensureBillItemsForPreview();
@@ -200,6 +210,11 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public void finalizeRequest() {
         if (!isAuthorized("FINALIZE", "FinalizeGrnReturn")) {
+            return;
+        }
+        
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No bill selected to finalize");
             return;
         }
         
@@ -226,6 +241,16 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No bill selected to approve");
+            return;
+        }
+        
+        if (sessionController == null || sessionController.getLoggedUser() == null) {
+            JsfUtil.addErrorMessage("User session invalid");
+            return;
+        }
+        
         if (validateApproval()) {
             // Process zero quantity items before approval
             processZeroQuantityItems();
@@ -236,7 +261,12 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCompletedAt(new Date());
 
             // Save the bill with completed status
-            billFacade.edit(currentBill);
+            try {
+                billFacade.edit(currentBill);
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage("Error saving bill: " + e.getMessage());
+                return;
+            }
 
             updateStock();  // Stock handling happens only at approval stage
 
@@ -375,7 +405,15 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private void saveBillItems() {
+        if (billItems == null || billItems.isEmpty()) {
+            return;
+        }
+        
         for (BillItem bi : billItems) {
+            if (bi == null) {
+                continue;
+            }
+            
             // Allow items with zero quantities - they may be intentionally set to zero
             // Skip only if item is retired or invalid
             if (bi.isRetired()) {
@@ -387,7 +425,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Set up pharmaceutical bill item relationship
             PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-            phi.setBillItem(bi);
+            if (phi != null) {
+                phi.setBillItem(bi);
+            }
 
             // Set up finance details relationship
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();

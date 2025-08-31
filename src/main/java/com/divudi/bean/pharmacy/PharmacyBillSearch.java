@@ -191,7 +191,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No purchase order is selected to view");
             return null;
         }
-        bill = billFacade.find(billId);
+        bill = billService.reloadBill(billId);
         if (bill == null) {
             JsfUtil.addErrorMessage("Purchase order not found");
             return null;
@@ -257,7 +257,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        bill = billFacade.find(billId);
+        bill = billService.reloadBill(billId);
         if (bill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -456,7 +456,7 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
         
-        Bill bill = billFacade.find(id);
+        Bill bill = billService.reloadBill(id);
         
         if(bill == null){
             return "";
@@ -3979,7 +3979,7 @@ public class PharmacyBillSearch implements Serializable {
     public void setBillId(Long billId) {
         this.billId = billId;
         if (billId != null) {
-            this.bill = billFacade.find(billId);
+            this.bill = billService.reloadBill(billId);
         } else {
             this.bill = null;
         }

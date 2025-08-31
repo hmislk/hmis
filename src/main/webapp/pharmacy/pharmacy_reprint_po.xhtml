@@ -18,7 +18,7 @@
                                     <h:outputLabel value="Purchase Order Reprint" ></h:outputLabel>                        
                                 </div>
                                 <div>
-                                    <p:commandButton ajax="false" value="Back To PO List" rendered="#{webUserController.hasPrivilege('Pharmacy')}" action="pharmacy_purhcase_order_list_to_approve_dto" class="ui-button-warning" icon="fas fa-arrow-left"/>
+                                    <p:commandButton ajax="false" value="Back To PO List" rendered="#{webUserController.hasPrivilege('Pharmacy')}" action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true" class="ui-button-warning" icon="fas fa-arrow-left"/>
                                     <p:commandButton ajax="false" value="Back To Good Recipt" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}"
                                                      action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"   class="ui-button-warning mx-2" icon="fas fa-arrow-left"/>
                                     <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint" ajax="false" >

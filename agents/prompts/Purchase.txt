@@ -1,19 +1,22 @@
-Create PO
-http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
-Finalize PO List
-http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_list_to_finalize.xhtml
-Finalize POs
-http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
+Purchase Order Workflow:
 
+1. Create PO
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
 
+2. Finalize PO List
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_list_to_finalize.xhtml
 
+3. Finalize POs
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
 
-the page lists GRNs
-http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_request.xhtml
+GRN Return Workflow:
 
-We select one and click Create Return
-Then user is directed to the page http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_form.xhtml 
+1. The page lists available GRNs
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_request.xhtml
 
-One we create a grn return, then we save, finalize and approve
+2. We select a GRN and click "Create Return"
+   Then the user is directed to: http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_form.xhtml 
 
-such completed GRN returns should be listed as a table under each row for GRN. But it is not happenning
+3. Once we create a GRN return, we follow these steps: save, finalize, and approve
+
+Issue: Completed GRN returns should be listed in a table under each GRN row, but this is not happening.
