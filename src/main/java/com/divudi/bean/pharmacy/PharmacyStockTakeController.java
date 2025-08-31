@@ -3,6 +3,8 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.Privileges;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -784,11 +786,19 @@ public class PharmacyStockTakeController implements Serializable {
         adjustmentBill.setBillClassType(BillClassType.BilledBill);
         adjustmentBill.setDepartment(dept);
         adjustmentBill.setInstitution(dept.getInstitution());
-        adjustmentBill.setCreatedAt(new Date());
+        Date now = new Date();
+        adjustmentBill.setBillDate(now);
+        adjustmentBill.setBillTime(now);
+        adjustmentBill.setCreatedAt(now);
         adjustmentBill.setCreater(sessionController.getLoggedUser());
-        String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyStockAdjustmentBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
-        adjustmentBill.setInsId(deptId);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
         adjustmentBill.setDeptId(deptId);
+        adjustmentBill.setInsId(deptId);
+        adjustmentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+        adjustmentBill.setFromDepartment(dept);
+        adjustmentBill.setFromInstitution(dept.getInstitution());
+        adjustmentBill.setToDepartment(null);
+        adjustmentBill.setToInstitution(null);
         adjustmentBill.setBackwardReferenceBill(physicalCountBill);
         physicalCountBill.setForwardReferenceBill(adjustmentBill);
         billFacade.create(adjustmentBill);
@@ -801,17 +811,25 @@ public class PharmacyStockTakeController implements Serializable {
             abi.setBill(adjustmentBill);
             abi.setItem(bi.getItem());
             abi.setQty(variance);
-            abi.setCreatedAt(new Date());
+            abi.setCreatedAt(now);
             abi.setCreater(sessionController.getLoggedUser());
-            billItemFacade.create(abi);
+            abi.setInwardChargeType(InwardChargeType.Medicine);
+            // Link adjustment line to its physical count line
+            abi.setReferanceBillItem(bi);
             PharmaceuticalBillItem apbi = new PharmaceuticalBillItem();
             apbi.setBillItem(abi);
             apbi.setItemBatch(bi.getPharmaceuticalBillItem().getItemBatch());
             Stock stock = bi.getReferanceBillItem().getPharmaceuticalBillItem().getStock();
             apbi.setStock(stock);
             apbi.setQty(variance);
-            pharmaceuticalBillItemFacade.create(apbi);
+            if (stock != null) {
+                double before = stock.getStock();
+                apbi.setBeforeAdjustmentValue(before);
+                apbi.setAfterAdjustmentValue(before + variance);
+            }
             abi.setPharmaceuticalBillItem(apbi);
+            // Persist only BillItem; PharmaceuticalBillItem is cascaded
+            billItemFacade.create(abi);
             adjustmentBill.getBillItems().add(abi);
             if (stock != null) {
                 stock.setStock(stock.getStock() + variance);

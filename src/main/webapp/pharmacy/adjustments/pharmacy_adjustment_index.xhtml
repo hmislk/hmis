@@ -15,7 +15,8 @@
                         <div class="col-2" >
                             <h:form>
 
-                                <p:accordionPanel>
+                                <p:accordionPanel activeIndex="#{pharmacyAdjustmentController.tabIndex}">
+                                    <p:ajax process="@this" ></p:ajax>
                                     <p:tab title="Adjustments">
                                         <p:panelGrid columns="1">
                                             <p:commandButton 
@@ -48,12 +49,7 @@
                                                 action="/pharmacy/pharmacy_stock_take_list?faces-redirect=true" 
                                                 ajax="false" 
                                                 styleClass="w-100"/>
-                                            <p:commandButton 
-                                                value="Stock Adjustment Variance" 
-                                                icon="fa fa-balance-scale" 
-                                                action="/pharmacy/reports/stock_adjustment_variance?faces-redirect=true" 
-                                                ajax="false" 
-                                                styleClass="w-100"/>
+                                            
                                         </p:panelGrid>
                                     </p:tab>
                                     <p:tab title="Reports">
