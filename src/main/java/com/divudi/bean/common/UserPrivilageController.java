@@ -692,6 +692,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyAdjustmentExpiaryDate = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentExpiryDate, "Pharmacy Adjustment Expiary Date"), PharmacyAdjustment);
         TreeNode PharmacyAdjustmentReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentSearchAdjustmentBills, "Pharmacy Adjustment Search Adjustment Bills"), PharmacyAdjustment);
         TreeNode PharmacyPhysicalCountApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPhysicalCountApprove, "Pharmacy Physical Count Approve"), PharmacyAdjustment);
+        // Stock Take approval privilege for new stock take workflow
+        TreeNode PharmacyStockTakeApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockTakeApprove, "Pharmacy Stock Take Approve"), PharmacyAdjustment);
 
         TreeNode PharmacyDisposal = new DefaultTreeNode("Pharmacy Disposal", pharmacyNode);
         TreeNode pharmacyDisposalMenu = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalMenue, "Pharmacy Disposal Menue"), PharmacyDisposal);

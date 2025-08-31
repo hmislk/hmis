@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="mb-0">Review Physical Count</h2>
+                            <h:form>
+                                <p:commandButton value="Pending Approvals" icon="fa fa-clock" ajax="false"
+                                                 action="/pharmacy/pharmacy_physical_count_pending?faces-redirect=true"/>
+                            </h:form>
+                        </div>
+                        <div class="card-body">
+                            <h:panelGroup rendered="#{empty pharmacyStockTakeController.physicalCountBill}">
+                                <div class="alert alert-warning">No physical count selected.</div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{not empty pharmacyStockTakeController.physicalCountBill}">
+                                <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
+                                    <h:outputText value="Institution:"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.institution.name}"/>
+                                    <h:outputText value="Department:"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.department.name}"/>
+                                    <h:outputText value="Physical Count Bill No:"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.deptId}" style="font-family: monospace;"/>
+                                    <h:outputText value="Date:"/>
+                                    <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                </p:panelGrid>
+
+                                <p:separator/>
+
+                                <h:form id="frmReview">
+                                    <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}" var="bi"
+                                                 rows="25" paginator="true" paginatorPosition="both"
+                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="10,25,50,100" styleClass="ui-datatable-striped ui-datatable-gridlines">
+                                        <p:column headerText="Code" style="min-width: 110px;">
+                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}" />
+                                        </p:column>
+                                        <p:column headerText="Item" style="min-width: 220px;">
+                                            <h:outputText value="#{bi.item.name}" />
+                                        </p:column>
+                                        <p:column headerText="Batch" style="width: 120px; text-align:center;">
+                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                        </p:column>
+                                        <p:column headerText="System Qty" style="width: 120px; text-align:right;">
+                                            <h:outputText value="#{bi.referanceBillItem.qty}">
+                                                <f:convertNumber integerOnly="true"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Physical Qty" style="width: 120px; text-align:right;">
+                                            <h:outputText value="#{bi.qty}">
+                                                <f:convertNumber integerOnly="true"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Variance" style="width: 120px; text-align:right;">
+                                            <h:outputText value="#{bi.adjustedValue}" styleClass="font-weight-bold #{bi.adjustedValue gt 0 ? 'text-success' : (bi.adjustedValue lt 0 ? 'text-danger' : 'text-muted')}">
+                                                <f:convertNumber integerOnly="true"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <div class="mt-3 d-flex justify-content-end">
+                                        <p:commandButton value="Approve and Make Stock Adjustments" icon="fa fa-check"
+                                                         styleClass="ui-button-warning ui-button-lg"
+                                                         ajax="false"
+                                                         rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
+                                                         onclick="return confirm('Approve this physical count and post stock adjustments?');"
+                                                         action="#{pharmacyStockTakeController.approvePhysicalCount}"/>
+                                    </div>
+                                </h:form>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>
