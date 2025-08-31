@@ -346,12 +346,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
 
-        System.out.println("Original BillItems = " + originalBillItemsToSelectedToReturn.size());
-        
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
-            
-            System.out.println("Selected BillItem  = " + selectedBillItemToReturn);
-            
             returningTotal += selectedBillItemToReturn.getGrossValue();
             returningNetTotal += selectedBillItemToReturn.getNetValue();
             returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
@@ -372,12 +367,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
             
-            System.out.println("Before");
-            
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                System.out.println("Lab Test History Enabled");
                 for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
-                    System.out.println("pi = " + pi);
                     labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
                 }
             }

@@ -526,7 +526,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        
+
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
 
@@ -587,7 +587,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
-        
+
         for (BillItem bi : originalBillItem) {
             BillItem cancelBillItem = new BillItem();
             cancelBillItem.copy(bi);
@@ -667,7 +667,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 billItemFacade.edit(bi);
             }
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
                 labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
@@ -691,7 +691,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBillCancellationStarted = false;
         return null;
     }
-    
+
     public boolean checkCancelBill(Bill originalBill) {
         List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
         boolean canCancelBill = false;
@@ -735,7 +735,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        
+
         if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
 
@@ -794,6 +794,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingPackageBatchBill(originalBill, cancellationBatchBill);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
+                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                }
+            }
         }
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());

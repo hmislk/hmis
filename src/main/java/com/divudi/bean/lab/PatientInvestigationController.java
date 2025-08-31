@@ -987,7 +987,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientInvestigation> getPatientInvestigationsFromSample(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample. = :ps";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
 
         Map m = new HashMap();
         m.put("ps", ps);
