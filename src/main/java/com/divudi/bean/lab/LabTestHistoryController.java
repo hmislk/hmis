@@ -232,6 +232,45 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
+    
+    public List<LabTestHistoryLight> getCanceledLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
+        if (patientInvestigation == null) {
+            return null;
+        }
+
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+                + " FROM LabTestHistory his "
+                + " WHERE his.retired=:retired "
+                + " AND his.patientInvestigation =:patientInvestigation"
+                + " AND his.testHistoryType =:type"
+                + " order by his.createdAt asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("patientInvestigation", patientInvestigation);
+        params.put("type", TestHistoryType.CANCELED);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        return labHistory;
+    }
+    
+    public List<LabTestHistoryLight> getRefundedLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
+        if (patientInvestigation == null) {
+            return null;
+        }
+
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+                + " FROM LabTestHistory his "
+                + " WHERE his.retired=:retired "
+                + " AND his.patientInvestigation =:patientInvestigation"
+                + " AND his.testHistoryType =:type"
+                + " order by his.createdAt asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("patientInvestigation", patientInvestigation);
+        params.put("type", TestHistoryType.REFUNDED);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        return labHistory;
+    }
+    
 
     public List<LabTestHistoryLight> getReportLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {
