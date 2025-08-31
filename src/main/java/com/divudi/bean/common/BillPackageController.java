@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.ItemLight;
@@ -56,6 +58,7 @@ import com.divudi.service.StaffService;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
@@ -146,6 +149,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ApplicationController applicationController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Item> malePackaes;
@@ -580,7 +587,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
-
+        
         for (BillItem bi : originalBillItem) {
             BillItem cancelBillItem = new BillItem();
             cancelBillItem.copy(bi);
@@ -660,6 +667,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 billItemFacade.edit(bi);
             }
         }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+            }
+        }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
@@ -678,7 +691,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBillCancellationStarted = false;
         return null;
     }
-
+    
     public boolean checkCancelBill(Bill originalBill) {
         List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
         boolean canCancelBill = false;
