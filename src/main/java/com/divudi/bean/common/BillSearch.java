@@ -9,6 +9,7 @@ import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.core.data.BillClassType;
@@ -266,6 +267,8 @@ public class BillSearch implements Serializable {
     SaleReturnController saleReturnController;
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
     /**
      * Class Variables
      */
@@ -2529,6 +2532,13 @@ public class BillSearch implements Serializable {
         billController.save(cancellationBill);
         List<Payment> ps = getOpdPreSettleController().createPaymentsForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+            }
+        }
+        
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
 

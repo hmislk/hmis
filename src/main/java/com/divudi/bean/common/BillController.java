@@ -2300,7 +2300,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
-                labTestHistoryController.addCancelHistory(pi, department, comment);
+                labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
             }
         }
 

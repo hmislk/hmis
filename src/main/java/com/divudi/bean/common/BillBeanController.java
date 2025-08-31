@@ -4360,7 +4360,7 @@ public class BillBeanController implements Serializable {
         }
         
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addBillingHistory(ptIx,prformingDept);
+            labTestHistoryController.addBillingHistory(ptIx,sessionController.getDepartment());
         }
 
     }

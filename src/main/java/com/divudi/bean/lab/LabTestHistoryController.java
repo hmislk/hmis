@@ -66,20 +66,20 @@ public class LabTestHistoryController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Function">
     
     // <editor-fold defaultstate="collapsed" desc="Billing">
-    public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment) {
-        addNewHistory(TestHistoryType.ORDERED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, null);
+    public void addBillingHistory(PatientInvestigation patientInvestigation, Department department) {
+        addNewHistory(TestHistoryType.ORDERED, department, null, patientInvestigation, null, null, null, null, null, null, null, null);
     }
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Cancel">
-    public void addCancelHistory(PatientInvestigation patientInvestigation, Department toDepartment, String comment) {
-        addNewHistory(TestHistoryType.CANCELED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, comment);
+    public void addCancelHistory(PatientInvestigation patientInvestigation, Department department, String comment) {
+        addNewHistory(TestHistoryType.CANCELED, department, null, patientInvestigation, null, null, null, null, null, null, null, comment);
     }
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Refund">
-    public void addRefundHistory(PatientInvestigation patientInvestigation, Department toDepartment, String comment) {
-        addNewHistory(TestHistoryType.REFUNDED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, comment);
+    public void addRefundHistory(PatientInvestigation patientInvestigation, Department department, String comment) {
+        addNewHistory(TestHistoryType.REFUNDED, department, null, patientInvestigation, null, null, null, null, null, null, null, comment);
     }
     // </editor-fold>
 
