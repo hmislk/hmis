@@ -381,7 +381,7 @@
                                                 action="#{grnCostingController.addExpense()}"
                                                 ajax = "false"
                                                 process="billExpenseGrid btnAddExpense @this"
-                                                update=" billExpenseGrid @all"/>
+                                                update="@all"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>
@@ -627,7 +627,7 @@
                                     value="#{grnCostingController.currentGrnBillPre.tax}" >
                                     <p:ajax
                                         process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                         event="keyup"
                                         listener="#{grnCostingController.discountChangedLitener()}"/>
                                     <f:convertNumber pattern="#,##0.00" />
