@@ -79,11 +79,6 @@ public class GrnReturnApprovalController implements Serializable {
             if (bi.getPharmaceuticalBillItem() != null) {
                 PharmaceuticalBillItem pi = bi.getPharmaceuticalBillItem();
                 pi.setBillItem(bi);
-                if (pi.getId() == null) {
-                    pharmaceuticalBillItemFacade.create(pi);
-                } else {
-                    pharmaceuticalBillItemFacade.edit(pi);
-                }
             }
             if (bi.getId() == null) {
                 billItemFacade.create(bi);
