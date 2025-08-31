@@ -104,6 +104,10 @@ public class PharmacyStockTakeController implements Serializable {
      * Generate stock count bill preview without persisting.
      */
     public String generateStockCountBill() {
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
+            return null;
+        }
         if (institution == null) {
             JsfUtil.addErrorMessage("Please select an institution");
             return null;
@@ -174,6 +178,10 @@ public class PharmacyStockTakeController implements Serializable {
      * Persist the generated stock count bill and navigate to print view.
      */
     public String settleStockCount() {
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to settle stock take bills");
+            return null;
+        }
         if (snapshotBill == null || snapshotBill.getBillItems() == null || snapshotBill.getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to settle");
             return null;
@@ -511,6 +519,10 @@ public class PharmacyStockTakeController implements Serializable {
      * Parse, persist a Physical Count bill, and navigate to review page.
      */
     public String parseAndPersistNavigate() {
+        if (!webUserController.hasPrivilege(Privileges.PharmacyPhysicalCountApprove.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to process physical count uploads");
+            return null;
+        }
         parseUploadedSheet();
         if (physicalCountBill == null || physicalCountBill.getBillItems() == null || physicalCountBill.getBillItems().isEmpty()) {
             return null;
@@ -706,7 +718,6 @@ public class PharmacyStockTakeController implements Serializable {
         this.snapshotBill = b;
         this.institution = b.getInstitution();
         this.department = b.getDepartment();
-        this.snapshotBill = b;
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
     }
 

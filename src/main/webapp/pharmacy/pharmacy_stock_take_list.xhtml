@@ -96,6 +96,7 @@
                                             icon="fa fa-eye" 
                                             styleClass="ui-button-success"
                                             ajax="false"
+                                            title="View stock take snapshot details and items"
                                             action="#{pharmacyStockTakeController.viewSnapshotById(d.id)}"/>
                                         <p:spacer width="8"/>
                                         <p:commandButton 
@@ -103,6 +104,7 @@
                                             styleClass="ui-button-warning"
                                             icon="fa fa-upload" 
                                             ajax="false"
+                                            title="Upload physical count adjustments from Excel sheet"
                                             action="#{pharmacyStockTakeController.gotoUploadAdjustmentsById(d.id)}"/>
                                         <p:spacer width="8"/>
                                         <p:commandButton 
@@ -110,6 +112,7 @@
                                             styleClass="ui-button-primary"
                                             icon="fa fa-chart-bar" 
                                             ajax="false"
+                                            title="View variance report between system stock and physical count"
                                             action="#{pharmacyStockTakeController.gotoViewVarianceById(d.id)}"/>
                                     </p:column>
                                 </p:dataTable>
