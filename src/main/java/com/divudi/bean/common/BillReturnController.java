@@ -1,6 +1,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.HistoryType;
@@ -16,6 +18,7 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
 
 import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.lab.PatientInvestigation;
 
 import com.divudi.core.facade.BillFacade;
 import com.divudi.service.BillService;
@@ -262,9 +265,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted.set(false);
             return null;
         }
-        
+
         Bill backward = originalBillToReturn.getBackwardReferenceBill();
-        
+
         if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
             if (items != null && !items.isEmpty()) {
@@ -361,6 +364,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
 
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                    labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                }
+            }
+
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
                     BillFee newlyCreatedBillFeeToReturn = new BillFee();
@@ -415,6 +424,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
+
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     public void calculateRefundingAmount() {
         refundingTotalAmount = 0.0;
