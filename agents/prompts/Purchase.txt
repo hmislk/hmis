@@ -1,0 +1,22 @@
+Purchase Order Workflow:
+
+1. Create PO
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
+
+2. Finalize PO List
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_list_to_finalize.xhtml
+
+3. Finalize POs
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
+
+GRN Return Workflow:
+
+1. The page lists available GRNs
+   URL: http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_request.xhtml
+
+2. We select a GRN and click "Create Return"
+   Then the user is directed to: http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_form.xhtml 
+
+3. Once we create a GRN return, we follow these steps: save, finalize, and approve
+
+Issue: Completed GRN returns should be listed in a table under each GRN row, but this is not happening.
