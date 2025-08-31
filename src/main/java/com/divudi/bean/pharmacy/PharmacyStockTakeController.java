@@ -519,8 +519,8 @@ public class PharmacyStockTakeController implements Serializable {
      * Parse, persist a Physical Count bill, and navigate to review page.
      */
     public String parseAndPersistNavigate() {
-        if (!webUserController.hasPrivilege(Privileges.PharmacyPhysicalCountApprove.toString())) {
-            JsfUtil.addErrorMessage("Not authorized to process physical count uploads");
+        if (!webUserController.hasPrivilege(Privileges.Pharmacy.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to upload/save physical count data");
             return null;
         }
         parseUploadedSheet();
