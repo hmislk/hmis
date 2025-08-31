@@ -71,6 +71,7 @@
                                     </p:dataTable>
 
                                     <div class="mt-3 d-flex justify-content-end">
+                                        #{webUserController.hasPrivilege('PharmacyStockTakeApprove')}
                                         <p:commandButton value="Approve and Make Stock Adjustments" icon="fa fa-check"
                                                          styleClass="ui-button-warning ui-button-lg"
                                                          ajax="false"
@@ -88,4 +89,3 @@
     </h:body>
 
 </html>
-
