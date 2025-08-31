@@ -22,10 +22,13 @@ import java.util.List;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless
 public class StockTakeApprovalService {
 
+    private static final Logger LOGGER = Logger.getLogger(StockTakeApprovalService.class.getName());
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -45,8 +48,11 @@ public class StockTakeApprovalService {
 
     @Asynchronous
     public void approvePhysicalCountAsync(Long physicalCountBillId, Long approverUserId, String jobId) {
+        LOGGER.log(Level.INFO, "[StockTake-Async] approvePhysicalCountAsync() called. pcBillId={0}, approverId={1}, jobId={2}",
+                new Object[]{physicalCountBillId, approverUserId, jobId});
         Bill physicalCountBill = billFacade.find(physicalCountBillId);
         if (physicalCountBill == null) {
+            LOGGER.log(Level.WARNING, "[StockTake-Async] PhysicalCount bill not found. id={0}", physicalCountBillId);
             return;
         }
         Department dept = physicalCountBill.getDepartment();
@@ -75,6 +81,7 @@ public class StockTakeApprovalService {
         adjustmentBill.setBackwardReferenceBill(physicalCountBill);
         physicalCountBill.setForwardReferenceBill(adjustmentBill);
         billFacade.create(adjustmentBill);
+        LOGGER.log(Level.INFO, "[StockTake-Async] Created Adjustment bill. id={0}, deptId={1}", new Object[]{adjustmentBill.getId(), adjustmentBill.getDeptId()});
 
         int processed = 0;
         if (items != null) {
@@ -105,17 +112,21 @@ public class StockTakeApprovalService {
                 apbi.setQty(variance);
                 if (stock != null) {
                     double before = stock.getStock();
-                    double after = before + variance;
+                    double target = bi.getQty() == null ? before : bi.getQty();
                     apbi.setBeforeAdjustmentValue(before);
-                    apbi.setAfterAdjustmentValue(after);
+                    apbi.setAfterAdjustmentValue(target);
                 }
                 abi.setPharmaceuticalBillItem(apbi);
                 billItemFacade.create(abi);
                 adjustmentBill.getBillItems().add(abi);
-
+                // Update stock at approval time and write StockHistory
                 if (stock != null && dept != null) {
                     double targetQty = apbi.getAfterAdjustmentValue();
-                    pharmacyBean.resetStock(apbi, stock, targetQty, dept);
+                    boolean ok = pharmacyBean.resetStock(apbi, stock, targetQty, dept);
+                    LOGGER.log(Level.INFO, "[StockTake-Async] Posted adjustment line. adjItemId={0}, refItemId={1}, stockId={2}, before={3}, after={4}, variance={5}, resetOk={6}",
+                            new Object[]{abi.getId(), bi.getId(), stock.getId(), apbi.getBeforeAdjustmentValue(), apbi.getAfterAdjustmentValue(), variance, ok});
+                } else {
+                    LOGGER.log(Level.WARNING, "[StockTake-Async] No stock/department. refItemId={0}, deptNull={1}", new Object[]{bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null, dept == null});
                 }
             }
         }
@@ -125,5 +136,6 @@ public class StockTakeApprovalService {
         billFacade.edit(physicalCountBill);
         billFacade.edit(adjustmentBill);
         progressTracker.complete(jobId);
+        LOGGER.log(Level.INFO, "[StockTake-Async] Approval completed. pcBillId={0}, adjBillId={1}", new Object[]{physicalCountBill.getId(), adjustmentBill.getId()});
     }
 }

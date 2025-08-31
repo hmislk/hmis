@@ -59,7 +59,7 @@
             <ui:define name="subcontent">
                 <div class="container-fluid">
                     <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
                                 <i class="fa fa-upload fa-lg mr-3"></i>
                                 <div>
@@ -67,6 +67,10 @@
                                     <small class="d-block opacity-75">Import physical stock count data from Excel sheets</small>
                                 </div>
                             </div>
+                            <h:form>
+                                <p:commandButton value="Pending Approvals" icon="fa fa-clock" ajax="false"
+                                                 action="/pharmacy/pharmacy_physical_count_pending?faces-redirect=true"/>
+                            </h:form>
                         </div>
                         <div class="card-body">
                             <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
@@ -191,120 +195,17 @@
                                             </div>
                                             
                                             <div class="text-center">
-                                                <p:commandButton value="Process Upload &amp; Generate Preview" 
+                                                <p:commandButton value="Process Upload &amp; Review" 
                                                                icon="fa fa-upload" 
                                                                styleClass="ui-button-success ui-button-lg"
-                                                               actionListener="#{pharmacyStockTakeController.parseUploadedSheet()}" 
-                                                               update=":frmPreview"/>
+                                                               action="#{pharmacyStockTakeController.parseAndPersistNavigate}"
+                                                               ajax="false"/>
                                             </div>
                                         </div>
                                     </div>
                                 </h:form>
 
-                                <h:form id="frmPreview">
-                                    <h:panelGroup rendered="#{not empty pharmacyStockTakeController.physicalCountBill and not empty pharmacyStockTakeController.physicalCountBill.billItems}">
-                                        <div class="card">
-                                            <div class="card-header bg-success text-white">
-                                                <i class="fa fa-table mr-2"></i>
-                                                <strong>Physical Count Results Preview</strong>
-                                                <small class="ml-2 opacity-75">Review the parsed data before saving</small>
-                                            </div>
-                                            <div class="card-body p-0">
-                                                <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}" var="bi"
-                                                             rows="25" paginator="true"
-                                                             paginatorPosition="both"
-                                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                             rowsPerPageTemplate="10,25,50,100"
-                                                             styleClass="ui-datatable-striped ui-datatable-gridlines"
-                                                             responsiveLayout="scroll">
-                                                    <p:column headerText="Item Code" style="min-width: 100px;" styleClass="font-weight-bold">
-                                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}" 
-                                                                    styleClass="badge badge-light"/>
-                                                    </p:column>
-                                                    <p:column headerText="Item Name" style="min-width: 200px;">
-                                                        <h:outputText value="#{bi.item.name}" styleClass="font-weight-medium"/>
-                                                    </p:column>
-                                                    <p:column headerText="Batch No" style="width: 120px; text-align:center;">
-                                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" 
-                                                                    styleClass="badge badge-info"/>
-                                                    </p:column>
-                                                    <p:column headerText="System Qty" style="width: 100px; text-align:right;">
-                                                        <h:outputText value="#{bi.referanceBillItem.qty}" 
-                                                                    styleClass="font-weight-bold text-primary">
-                                                            <f:convertNumber integerOnly="true"/>
-                                                        </h:outputText>
-                                                    </p:column>
-                                                    <p:column headerText="Physical Qty" style="width: 100px; text-align:right;">
-                                                        <h:outputText value="#{bi.qty}" 
-                                                                    styleClass="font-weight-bold text-success">
-                                                            <f:convertNumber integerOnly="true"/>
-                                                        </h:outputText>
-                                                    </p:column>
-                                                    <p:column headerText="Variance" style="width: 100px; text-align:right;">
-                                                        <h:outputText value="#{bi.adjustedValue}" 
-                                                                    styleClass="font-weight-bold #{bi.adjustedValue gt 0 ? 'text-success' : (bi.adjustedValue lt 0 ? 'text-danger' : 'text-muted')}">
-                                                            <f:convertNumber integerOnly="true"/>
-                                                        </h:outputText>
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </div>
-                                            <div class="card-footer bg-light">
-                                                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                                    <div class="text-muted mb-2 mb-md-0">
-                                                        <i class="fa fa-info-circle mr-2" aria-hidden="true"></i>
-                                                        Review all variances before saving or approving
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <p:commandButton value="Save Physical Count" 
-                                                                       icon="fa fa-save" 
-                                                                       styleClass="ui-button-success ui-button-lg mr-2"
-                                                                       title="Persist the current physical count entries"
-                                                                       ajax="false" 
-                                                                       action="#{pharmacyStockTakeController.savePhysicalCount}"/>
-
-                                                        <p:commandButton value="Approve &amp; Post Adjustments (Background)"
-                                                                       icon="fa fa-check"
-                                                                       styleClass="ui-button-warning ui-button-lg mr-2"
-                                                                       title="Approve this physical count and create stock adjustment entries"
-                                                                       ajax="false"
-                                                                       rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove') and not empty pharmacyStockTakeController.physicalCountBill and not empty pharmacyStockTakeController.physicalCountBill.billItems}"
-                                                                       onclick="return confirm('Approve this physical count and post stock adjustments?');"
-                                                                       action="#{pharmacyStockTakeController.startApprovePhysicalCountAsync}"/>
-
-                                                        <p:commandButton value="Reject"
-                                                                       icon="fa fa-times"
-                                                                       styleClass="ui-button-secondary ui-button-lg"
-                                                                       title="Reject this physical count without posting adjustments"
-                                                                       ajax="false"
-                                                                       rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove') and not empty pharmacyStockTakeController.physicalCountBill}"
-                                                                       onclick="return confirm('Reject this physical count?');"
-                                                                       action="#{pharmacyStockTakeController.rejectPhysicalCount}"/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <h:panelGroup id="approvalProgressPanel">
-                                                <h:panelGroup rendered="#{pharmacyStockTakeController.approvalRunning}">
-                                                    <div class="alert alert-info mt-3" role="alert">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>
-                                                            <span>Approval in progress: #{pharmacyStockTakeController.approvalStatusText}</span>
-                                                        </div>
-                                                        <div class="mt-2">
-                                                            <p:progressBar value="#{pharmacyStockTakeController.approvalProgressPercent}" displayOnly="true"/>
-                                                        </div>
-                                                    </div>
-                                                    <p:poll interval="2" update="approvalProgressPanel"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{not pharmacyStockTakeController.approvalRunning and pharmacyStockTakeController.approvalStatusText eq 'Completed'}">
-                                                    <div class="alert alert-success mt-3" role="alert">
-                                                        <i class="fa fa-check mr-2" aria-hidden="true"></i>
-                                                        Approval completed successfully.
-                                                    </div>
-                                                </h:panelGroup>
-                                            </h:panelGroup>
-                                        </div>
-                                    </h:panelGroup>
-                                </h:form>
+                                <!-- Preview is now on the review page -->
                             </h:panelGroup>
                         </div>
                     </div>
