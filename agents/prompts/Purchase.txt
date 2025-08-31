@@ -1,0 +1,19 @@
+Create PO
+http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
+Finalize PO List
+http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_list_to_finalize.xhtml
+Finalize POs
+http://localhost:8080/rh/faces/pharmacy/pharmacy_purhcase_order_request.xhtml
+
+
+
+
+the page lists GRNs
+http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_request.xhtml
+
+We select one and click Create Return
+Then user is directed to the page http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_return_form.xhtml 
+
+One we create a grn return, then we save, finalize and approve
+
+such completed GRN returns should be listed as a table under each row for GRN. But it is not happenning

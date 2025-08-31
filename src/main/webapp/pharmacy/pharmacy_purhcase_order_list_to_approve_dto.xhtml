@@ -60,33 +60,34 @@
                                 </div>
                                 <!-- Search Buttons positioned for better visibility -->
                                 <div class="mb-4">
-                                    <p:commandButton 
+                                    
+<!--                                    <p:commandButton 
                                         class="ui-button-info w-100 mb-2" 
                                         icon="fas fa-search" 
-                                        value="Search All Requests (DTO)" 
+                                        value="Search All Requests" 
                                         action="#{searchController.createPoRequestedAndApprovedPharmacyDto()}" 
                                         ajax="false"
                                         style="min-height: 40px;"
-                                        title="High-performance DTO-based search">
+                                        title="Search all purchase requests">
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        class="ui-button-success w-100 mb-2" 
-                                        icon="fas fa-check" 
-                                        value="Search Approved Requests (DTO)" 
-                                        action="#{searchController.createApprovedPharmacyDto()}" 
-                                        ajax="false"
-                                        style="min-height: 40px;"
-                                        title="High-performance DTO-based approved search">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        class="ui-button-warning w-100" 
+                                    -->
+                                     <p:commandButton 
+                                        class="ui-button-warning w-100 m-1" 
                                         icon="fas fa-clock" 
-                                        value="Search To Approve Requests (DTO)" 
+                                        value="Search To Approve Requests" 
                                         action="#{searchController.fillOnlyFinalizedPharmacyPoDto()}" 
                                         ajax="false"
-                                        style="min-height: 40px;"
-                                        title="High-performance DTO-based finalized search">
+                                        title="Search requests pending approval">
                                     </p:commandButton>
+                                    <p:commandButton 
+                                        class="ui-button-success w-100 m-1" 
+                                        icon="fas fa-check" 
+                                        value="Search Approved Requests" 
+                                        action="#{searchController.createApprovedPharmacyDto()}" 
+                                        ajax="false"
+                                        title="Search approved purchase requests">
+                                    </p:commandButton>
+                                   
                                 </div>
 
                                 <!-- Collapsible Advanced Filters -->

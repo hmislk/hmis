@@ -5354,10 +5354,21 @@ public class SearchController implements Serializable {
     }
 
     public void fillOnlySavedPharmacyPo() {
-        bills = null;
+        pharmacyPurchaseOrderDtos = null;
         HashMap tmp = new HashMap();
         String sql;
-        sql = "Select b From BilledBill b where "
+        sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.netTotal, "
+                + "b.paymentMethod, "
+                + "b.cancelled, "
+                + "b.consignment, "
+                + "b.creater.webUserPerson.name, "
+                + "b.toInstitution.name, "
+                + "b.department.name"
+                + ") FROM BilledBill b where "
                 + " b.referenceBill is null "
                 + " and b.toInstitution.institutionType=:insTp "
                 + " and b.createdAt between :fromDate and :toDate "
@@ -5366,16 +5377,30 @@ public class SearchController implements Serializable {
                 + " and b.checkedBy is null"
                 + " and b.department=:dept";
 
-        sql += createKeySqlSearchForPoCancel(tmp);
+        sql += createKeySqlSearchForPoCancelDto(tmp);
 
         sql += " order by b.createdAt desc  ";
+        
+        // Ensure all required parameters are set to prevent NullPointerException
+        if (getToDate() == null || getFromDate() == null) {
+            pharmacyPurchaseOrderDtos = new ArrayList<>();
+            return;
+        }
+        
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", InstitutionType.Dealer);
         tmp.put("bTp", BillType.PharmacyOrder);
-        tmp.put("dept", sessionController.getDepartment());
+        
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            tmp.put("dept", sessionController.getDepartment());
+        } else {
+            // If no department is set, return empty list to prevent NPE
+            pharmacyPurchaseOrderDtos = new ArrayList<>();
+            return;
+        }
 
-        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+        pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade().findLightsByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
     }
 
@@ -5480,7 +5505,8 @@ public class SearchController implements Serializable {
                 + "b.createdAt between :fromDate and :toDate "
                 + "and b.retired=false "
                 + "and b.toInstitution.institutionType=:insTp "
-                + "and b.billType=:bTp ";
+                + "and b.billType=:bTp "
+                + "and b.checkedBy is not null ";
 
         sql += createKeySqlDto(tmp);
         sql += " order by b.createdAt desc ";

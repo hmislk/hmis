@@ -169,6 +169,64 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
         this.checkedByName = checkedByName;
     }
 
+    // Constructor for pending purchase orders (to finalize) - 12 parameters with Object types for JPQL compatibility
+    // Used for fillOnlySavedPharmacyPo() where checkedBy fields will be null
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            Object deptId,
+            Date createdAt,
+            Object netTotal,
+            Object paymentMethod,
+            Object cancelled,
+            Object consignment,
+            Object creatorName,
+            Object supplierName,
+            Object departmentName,
+            Object checkedById,
+            Object checkedByName) {
+        this.billId = billId;
+        this.billNumber = deptId != null ? deptId.toString() : "";
+        this.deptId = deptId != null ? deptId.toString() : "";
+        this.createdAt = createdAt;
+        this.netTotal = netTotal != null ? (Double) netTotal : 0.0;
+        this.paymentMethod = paymentMethod != null ? paymentMethod.toString() : null;
+        this.cancelled = cancelled != null ? (Boolean) cancelled : false;
+        this.consignment = consignment != null ? (Boolean) consignment : false;
+        this.creatorName = creatorName != null ? creatorName.toString() : "";
+        this.supplierName = supplierName != null ? supplierName.toString() : "";
+        this.departmentName = departmentName != null ? departmentName.toString() : "";
+        this.checkedById = checkedById != null ? (Long) checkedById : null;
+        this.checkedByName = checkedByName != null ? checkedByName.toString() : null;
+    }
+
+    // Constructor for pending purchase orders (to finalize) - 10 parameters without checkedBy fields
+    // Used for fillOnlySavedPharmacyPo() JPQL query
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            String deptId,
+            Date createdAt,
+            Double netTotal,
+            Object paymentMethod,
+            Object cancelled,
+            Object consignment,
+            String creatorName,
+            String supplierName,
+            String departmentName) {
+        this.billId = billId;
+        this.billNumber = deptId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.paymentMethod = paymentMethod != null ? paymentMethod.toString() : null;
+        this.cancelled = cancelled != null ? (Boolean) cancelled : false;
+        this.consignment = consignment != null ? (Boolean) consignment : false;
+        this.creatorName = creatorName;
+        this.supplierName = supplierName;
+        this.departmentName = departmentName;
+        this.checkedById = null; // Always null for pending orders
+        this.checkedByName = null; // Always null for pending orders
+    }
+
     // Constructor for requested and approved search (19 parameters - JPQL compatible)
     // Note: JPQL returns enum as String, primitives as wrappers, nullable fields as Object
     public PharmacyPurchaseOrderDTO(
