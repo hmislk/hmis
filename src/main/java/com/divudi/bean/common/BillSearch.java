@@ -2628,6 +2628,13 @@ public class BillSearch implements Serializable {
         billController.save(cancellationBill);
 //        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelCcBillItems(getBill(), cancellationBill);
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+            }
+        }
+        
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
 
