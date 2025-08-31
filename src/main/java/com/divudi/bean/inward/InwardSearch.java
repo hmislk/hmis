@@ -624,7 +624,7 @@ public class InwardSearch implements Serializable {
         }
 
         if (getBill().getPatientEncounter() == null) {
-            JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
+            JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
 
@@ -710,7 +710,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("You cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
@@ -1003,7 +1003,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
@@ -1064,7 +1064,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
@@ -1316,7 +1316,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
