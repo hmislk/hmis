@@ -210,6 +210,9 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         if (validateGrnReturn()) {
+            // Process zero quantity items before saving
+            processZeroQuantityItems();
+            
             saveBill(true);
             // Ensure the bill items are properly associated with the current bill for print preview
             ensureBillItemsForPreview();
@@ -224,6 +227,9 @@ public class GrnReturnWorkflowController implements Serializable {
         }
         
         if (validateApproval()) {
+            // Process zero quantity items before approval
+            processZeroQuantityItems();
+            
             // Mark the current bill as completed (approved)
             currentBill.setCompleted(true);
             currentBill.setCompletedBy(sessionController.getLoggedUser());
@@ -248,6 +254,87 @@ public class GrnReturnWorkflowController implements Serializable {
             ensureBillItemsForPreview();
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Approved Successfully");
+        }
+    }
+
+    /**
+     * Process items with zero return quantities by retiring them and setting bill reference to null.
+     * This ensures they are not displayed in the print and not included in stock processing.
+     */
+    private void processZeroQuantityItems() {
+        if (billItems == null || billItems.isEmpty()) {
+            return;
+        }
+
+        List<BillItem> itemsToRetire = new ArrayList<>();
+        boolean returnByTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
+
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
+                continue;
+            }
+
+            double totalReturnQty = 0.0;
+            
+            if (returnByTotalQuantity) {
+                // Total quantity mode - check combined qty + free qty
+                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                totalReturnQty = qty + freeQty;
+            } else {
+                // Separate quantity mode - check individual quantities
+                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                totalReturnQty = qty + freeQty;
+            }
+
+            // If no return quantity, mark for retirement
+            if (totalReturnQty <= 0.0) {
+                itemsToRetire.add(bi);
+            }
+        }
+
+        // Process items that need to be retired
+        for (BillItem bi : itemsToRetire) {
+            try {
+                // Mark as retired
+                bi.setRetired(true);
+                bi.setRetirer(sessionController.getLoggedUser());
+                bi.setRetiredAt(new Date());
+                bi.setBill(null); // Set bill reference to null as requested
+
+                // If the item already exists in database, update it
+                if (bi.getId() != null) {
+                    billItemFacade.edit(bi);
+
+                    // Also retire the pharmaceutical bill item
+                    if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getId() != null) {
+                        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+                        phi.setRetired(true);
+                        phi.setRetirer(sessionController.getLoggedUser());
+                        phi.setRetiredAt(new Date());
+                        pharmaceuticalBillItemFacade.edit(phi);
+                    }
+                }
+
+                LOGGER.log(Level.INFO, "Retired zero quantity return item: {0}", 
+                    bi.getItem() != null ? bi.getItem().getName() : "Unknown Item");
+
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error retiring zero quantity item: {0}", e.getMessage());
+            }
+        }
+
+        // Remove retired items from the current list so they don't appear in print
+        billItems.removeAll(itemsToRetire);
+
+        if (!itemsToRetire.isEmpty()) {
+            LOGGER.log(Level.INFO, "Processed {0} zero quantity items for retirement", itemsToRetire.size());
         }
     }
 
