@@ -34,6 +34,28 @@
                                             <p:commandButton value="Expiry Date Adjustment" icon="fas fa-calendar-times" action="/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentExpiryDate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
                                         </p:panelGrid>
                                     </p:tab>
+                                    <p:tab title="Stock Take">
+                                        <p:panelGrid columns="1">
+                                            <p:commandButton 
+                                                value="Stock Take" 
+                                                icon="fa fa-clipboard-list" 
+                                                action="/pharmacy/pharmacy_stock_take?faces-redirect=true" 
+                                                ajax="false" 
+                                                styleClass="w-100"/>
+                                            <p:commandButton 
+                                                value="Stock Take Bills" 
+                                                icon="fa fa-list" 
+                                                action="/pharmacy/pharmacy_stock_take_list?faces-redirect=true" 
+                                                ajax="false" 
+                                                styleClass="w-100"/>
+                                            <p:commandButton 
+                                                value="Stock Adjustment Variance" 
+                                                icon="fa fa-balance-scale" 
+                                                action="/pharmacy/reports/stock_adjustment_variance?faces-redirect=true" 
+                                                ajax="false" 
+                                                styleClass="w-100"/>
+                                        </p:panelGrid>
+                                    </p:tab>
                                     <p:tab title="Reports">
                                         <p:panelGrid columns="1">
                                             <p:commandButton value="Search Adjustment Bills" icon="fas fa-search" action="/pharmacy/adjustments/pharmacy_search_adjustment_bill_item?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSearchAdjustmentBills')}" styleClass="w-100"/>
