@@ -52,6 +52,11 @@
                                 onfocus="this.select()"
                                 itemLabel="#{vt.name}"
                                 itemValue="#{vt}" >
+
+                                <p:column headerText="ID" style="padding: 6px;width: 4em;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                </p:column>
+
                                 <p:column headerText="Code" style="padding: 6px;width: 4em;">
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                 </p:column>
@@ -149,6 +154,9 @@
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
+                                                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                            <h:outputLabel value="#{i.id}"></h:outputLabel>
+                                                        </p:column>
                                                         <p:column 
                                                             headerText="Item" 
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
@@ -200,7 +208,10 @@
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
-                                                        <p:column headerText="Item"  styleClass="table-success">
+                                                        <p:column headerText="ID"  rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                            <h:outputLabel value="#{i.code}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column headerText="Item*"  styleClass="table-success">
                                                             <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
                                                                 &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
                                                             </h:outputText>
@@ -747,7 +758,7 @@
 
                                                                                     value="#{pharmacySaleController.patient.person.ageYearsComponent}"
                                                                                     class="form-control">
-    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
+                                                                                    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-2">
@@ -756,7 +767,7 @@
                                                                                     autocomplete="off" id="month" placeholder="Months"
                                                                                     value="#{pharmacySaleController.patient.person.ageMonthsComponent}"
                                                                                     class="form-control">
-    <f:ajax event="keyup" execute="@this"  render="dpDob"  listener="#{pharmacySaleController.calculateDobFromAge}" />
+                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-2">
@@ -765,7 +776,7 @@
                                                                                     autocomplete="off" id="day" placeholder="Days"
                                                                                     value="#{pharmacySaleController.patient.person.ageDaysComponent}"
                                                                                     class="form-control">
-    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
+                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-6">

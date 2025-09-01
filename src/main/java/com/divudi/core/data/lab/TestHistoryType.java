@@ -2,21 +2,24 @@ package com.divudi.core.data.lab;
 
 /**
  *
- * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan <hkddrajapaksha@gmail.com>
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan
+ * <hkddrajapaksha@gmail.com>
  *
  */
-
 /**
- * Enum representing different stages of laboratory test history. ChatGPT contributed.
+ * Enum representing different stages of laboratory test history. ChatGPT
+ * contributed.
  */
-
 public enum TestHistoryType {
     ORDERED,
+    CANCELED,
+    REFUNDED,
     BARCODE_GENERATED,
     BARCODE_REGENERATED,
     BARCODE_PRINTED,
-    BARCODE_PRINTED_INDIVIDUAL ,
+    BARCODE_PRINTED_INDIVIDUAL,
     SAMPLE_COLLECTED,
+    SAMPLE_RECOLLECT_REQUEST,
     SAMPLE_RECOLLECTED,
     SAMPLE_ACCEPTED,
     SAMPLE_SENT,
@@ -43,6 +46,10 @@ public enum TestHistoryType {
         switch (this) {
             case ORDERED:
                 return "Ordered";
+            case CANCELED:
+                return "Cancelled";
+            case REFUNDED:
+                return "Refunded";
             case BARCODE_GENERATED:
                 return "Barcode Generated";
             case BARCODE_REGENERATED:
@@ -53,6 +60,10 @@ public enum TestHistoryType {
                 return "Barcode Printed (Individual)";
             case SAMPLE_COLLECTED:
                 return "Sample Collected";
+            case SAMPLE_RECOLLECT_REQUEST:
+                return "Sample Recollect Request";
+            case SAMPLE_RECOLLECTED:
+                return "Sample Recollected";
             case SAMPLE_ACCEPTED:
                 return "Sample Accepted";
             case SAMPLE_SENT:
@@ -97,5 +108,5 @@ public enum TestHistoryType {
                 return this.toString();
         }
     }
-    
+
 }

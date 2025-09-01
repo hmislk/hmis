@@ -161,7 +161,7 @@
                                 </td>
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.qty}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
@@ -200,7 +200,7 @@
 
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRate * bip.billItemFinanceDetails.totalQuantity}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRatePerUnit * bip.billItemFinanceDetails.totalQuantityByUnits}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
