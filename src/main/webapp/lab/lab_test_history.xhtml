@@ -105,8 +105,78 @@
                                                 </thead>
 
                                                 <tbody>
-                                                    <!--Sample History Data-->
+                                                    <!--Ordered History Data-->
                                                     <ui:repeat value="#{labTestHistoryController.getCreatedLabTestHistoryByInvestigation(patientInvestigationController.current)}" var="history">
+                                                        <tr class="table-row row-white">
+                                                            <td class="td-cell">
+                                                                <span class="stage-name">#{history.historyType.label}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="person-name">#{history.user.webUserPerson.nameWithTitle}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="person-name">#{history.transporter != null and history.transporter.person != null ? history.transporter.person.nameWithTitle : 'N/A'}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="location-name">#{history.institutionName} - #{history.departmentName}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="comment">#{history.comment}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="date-text">
+                                                                    <h:outputText value="#{history.historyAt}">
+                                                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                                    </h:outputText>
+                                                                </span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="time-text">
+                                                                    <h:outputText value="#{history.historyAt}">
+                                                                        <f:convertDateTime pattern="HH:mm:ss" />
+                                                                    </h:outputText>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                    
+                                                    <!--Canceled History Data-->
+                                                    <ui:repeat value="#{labTestHistoryController.getCanceledLabTestHistoryByInvestigation(patientInvestigationController.current)}" var="history">
+                                                        <tr class="table-row row-white">
+                                                            <td class="td-cell">
+                                                                <span class="stage-name">#{history.historyType.label}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="person-name">#{history.user.webUserPerson.nameWithTitle}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="person-name">#{history.transporter != null and history.transporter.person != null ? history.transporter.person.nameWithTitle : 'N/A'}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="location-name">#{history.institutionName} - #{history.departmentName}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="comment">#{history.comment}</span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="date-text">
+                                                                    <h:outputText value="#{history.historyAt}">
+                                                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                                    </h:outputText>
+                                                                </span>
+                                                            </td>
+                                                            <td class="td-cell">
+                                                                <span class="time-text">
+                                                                    <h:outputText value="#{history.historyAt}">
+                                                                        <f:convertDateTime pattern="HH:mm:ss" />
+                                                                    </h:outputText>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                    
+                                                    <!--Refunded History Data-->
+                                                    <ui:repeat value="#{labTestHistoryController.getRefundedLabTestHistoryByInvestigation(patientInvestigationController.current)}" var="history">
                                                         <tr class="table-row row-white">
                                                             <td class="td-cell">
                                                                 <span class="stage-name">#{history.historyType.label}</span>

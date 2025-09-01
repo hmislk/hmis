@@ -93,6 +93,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private List<BillItem> billItems;
     private boolean printPreview;
     private double totalBillItemsCount;
+    private Long billId;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -940,6 +941,17 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setCurrentBill(Bill currentBill) {
         this.currentBill = currentBill;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
+        if (billId != null) {
+            this.currentBill = billFacade.find(billId);
+        }
     }
 
     public BillItemFacade getBillItemFacade() {

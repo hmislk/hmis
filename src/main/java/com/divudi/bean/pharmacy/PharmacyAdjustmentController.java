@@ -127,6 +127,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
+    
+    private int tabIndex = 0;
 
     private YearMonthDay yearMonthDay;
 
@@ -2215,6 +2217,14 @@ public class PharmacyAdjustmentController implements Serializable {
             }
         }
         return total;
+    }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
     }
 
 }

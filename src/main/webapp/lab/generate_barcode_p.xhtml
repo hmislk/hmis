@@ -459,13 +459,17 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class="d-flex justify-content-center mt-5">
-                                                <p:badge 
-                                                    value="Bill Cancel" 
-                                                    severity="info"
-                                                    size="large"
-                                                    style="width: 200px;"
-                                                    styleClass="ui-badge-danger" >
-                                                </p:badge>
+                                                <div class="row">
+                                                    <p:commandButton 
+                                                        icon="fa fa-history"
+                                                        value="View History" 
+                                                        class="ui-button-success mt-2"
+                                                        ajax="false" 
+                                                        rendered="#{webUserController.hasPrivilege('AccessLabTestHistory')}"
+                                                        action="#{patientInvestigationController.navigateToTestHistory()}" >
+                                                        <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </div>
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{patientInvestigation.billItem.refunded}">
@@ -518,6 +522,18 @@
                                                             class="ui-button-success mt-2"
                                                             ajax="false" 
                                                             action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
+                                                        </p:commandButton>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <p:commandButton 
+                                                            icon="fa fa-history"
+                                                            value="View History" 
+                                                            class="ui-button-success mt-2"
+                                                            ajax="false" 
+                                                            rendered="#{webUserController.hasPrivilege('AccessLabTestHistory')}"
+                                                            action="#{patientInvestigationController.navigateToTestHistory()}" >
+                                                            <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                         </p:commandButton>
                                                     </div>
 
@@ -1395,11 +1411,11 @@
                                                             value="Print All">
                                                             <p:printer target="batchBarcodeIndividual"></p:printer>
                                                         </p:commandButton>
-<!--
-                                                                                                              <h:outputLabel value="Print Individual Barcodes"/>
-                                                                                                                <p:selectBooleanButton id="cheindbarIndividual" onIcon="pi pi-check" offIcon="pi pi-times" value="#{patientInvestigationController.printIndividualBarcodes}">
-                                                                                                                    <p:ajax process="cheindbarIndividual" update="allBatchBarcodeIndividual individualBarcodeSingle batchBarcodeIndividual" event="change"></p:ajax>
-                                                                                                                </p:selectBooleanButton>-->
+                                                        <!--
+                                                                                                                                                                      <h:outputLabel value="Print Individual Barcodes"/>
+                                                                                                                                                                        <p:selectBooleanButton id="cheindbarIndividual" onIcon="pi pi-check" offIcon="pi pi-times" value="#{patientInvestigationController.printIndividualBarcodes}">
+                                                                                                                                                                            <p:ajax process="cheindbarIndividual" update="allBatchBarcodeIndividual individualBarcodeSingle batchBarcodeIndividual" event="change"></p:ajax>
+                                                                                                                                                                        </p:selectBooleanButton>-->
 
                                                         <p:commandButton 
                                                             icon="fa-solid fa-flask-vial"

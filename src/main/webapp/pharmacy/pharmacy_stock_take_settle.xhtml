@@ -59,15 +59,7 @@
                                            rowsPerPageTemplate="10,25,50,100"
                                            styleClass="ui-datatable-striped ui-datatable-gridlines"
                                            emptyMessage="No stock items found for this count."
-                                           sortMode="multiple"
-                                           filterable="true">
-                                    
-                                    <p:column headerText="Bill Item ID" sortBy="#{bi.id}"
-                                             filterBy="#{bi.id}" filterMatchMode="exact"
-                                             style="width: 110px; text-align: right;">
-                                        <h:outputText value="#{bi.id}" 
-                                                     style="color: #6c757d; font-family: monospace;"/>
-                                    </p:column>
+                                           sortMode="multiple">
                                     
                                     <p:column headerText="Category" sortBy="#{bi.item.category.name}" 
                                              filterBy="#{bi.item.category.name}" filterMatchMode="contains"

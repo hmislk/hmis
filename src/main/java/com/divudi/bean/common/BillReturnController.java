@@ -1,6 +1,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.HistoryType;
@@ -16,6 +18,7 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
 
 import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.lab.PatientInvestigation;
 
 import com.divudi.core.facade.BillFacade;
 import com.divudi.service.BillService;
@@ -73,8 +76,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     AgentAndCcApplicationController agentAndCcApplicationController;
     @Inject
     WebUserController webUserController;
-
-    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
@@ -262,9 +269,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted.set(false);
             return null;
         }
-        
+
         Bill backward = originalBillToReturn.getBackwardReferenceBill();
-        
+
         if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
             if (items != null && !items.isEmpty()) {
@@ -340,7 +347,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBillFees = new ArrayList<>();
 
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
-
             returningTotal += selectedBillItemToReturn.getGrossValue();
             returningNetTotal += selectedBillItemToReturn.getNetValue();
             returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
@@ -360,6 +366,16 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
+
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                        labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
+            }
 
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
@@ -519,6 +535,16 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
+
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                        labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
+            }
 
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {

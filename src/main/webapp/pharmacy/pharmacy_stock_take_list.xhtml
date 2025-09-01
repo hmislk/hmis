@@ -11,8 +11,12 @@
             <ui:define name="subcontent">
                 <div class="container-fluid">
                     <div class="card">
-                        <div class="card-header">
-                            <h2>Pharmacy Stock Take Bills</h2>
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h:outputText value="Pharmacy Stock Take Bills" styleClass="mb-0"/>
+                            <h:form>
+                                <p:commandButton value="Pending Physical Count Approvals" icon="fa fa-clock" ajax="false"
+                                                 action="/pharmacy/pharmacy_physical_count_pending?faces-redirect=true"/>
+                            </h:form>
                         </div>
                         <div class="card-body">
                             <h:form id="frmFilters">
@@ -34,61 +38,82 @@
                                         </p:selectOneMenu>
 
                                         <h:outputLabel for="fd" value="From Date"/>
-                                        <p:datePicker id="fd" value="#{pharmacyStockTakeController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" showIcon="true"/>
+                                        <p:datePicker id="fd" value="#{pharmacyStockTakeController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
 
                                         <h:outputLabel for="td" value="To Date"/>
-                                        <p:datePicker id="td" value="#{pharmacyStockTakeController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" showIcon="true"/>
+                                        <p:datePicker id="td" value="#{pharmacyStockTakeController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
 
                                         <p:spacer/>
-                                        <p:commandButton value="List" icon="fa fa-list" actionListener="#{pharmacyStockTakeController.listSnapshotBills()}" update=":frmTable"/>
+                                        <p:commandButton
+                                            value="List" 
+                                            icon="fa fa-list" 
+                                            action="#{pharmacyStockTakeController.listSnapshotBillRows()}" 
+                                            ajax="false"/>
                                     </p:panelGrid>
                                 </p:panel>
                             </h:form>
 
                             <h:form id="frmTable">
-                                <p:dataTable value="#{pharmacyStockTakeController.snapshotBills}" var="b" rows="25" paginator="true"
+                                <p:dataTable value="#{pharmacyStockTakeController.snapshotBillRows}" var="d" rows="25" paginator="true"
                                              paginatorPosition="both"
                                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="10,25,50,100"
                                              styleClass="ui-datatable-striped ui-datatable-gridlines"
                                              emptyMessage="No bills found."
-                                             sortMode="multiple"
-                                             filterable="true">
+                                             sortMode="multiple">
 
-                                    <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" style="width: 160px;">
-                                        <h:outputText value="#{b.deptId}" style="font-family: monospace;"/>
+                                    <p:column headerText="Bill No" sortBy="#{d.deptId}" filterBy="#{d.deptId}" style="width: 160px;">
+                                        <h:outputText value="#{d.deptId}" style="font-family: monospace;"/>
                                     </p:column>
 
-                                    <p:column headerText="Date" sortBy="#{b.createdAt}" style="width: 140px; text-align:center;">
-                                        <h:outputText value="#{b.createdAt}">
+                                    <p:column headerText="Date" sortBy="#{d.createdAt}" style="width: 140px; text-align:center;">
+                                        <h:outputText value="#{d.createdAt}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Institution" sortBy="#{b.institution.name}" filterBy="#{b.institution.name}" style="min-width: 160px;">
-                                        <h:outputText value="#{b.institution.name}"/>
+                                    <p:column headerText="Institution" sortBy="#{d.institutionName}" filterBy="#{d.institutionName}" style="min-width: 160px;">
+                                        <h:outputText value="#{d.institutionName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Department" sortBy="#{b.department.name}" filterBy="#{b.department.name}" style="min-width: 160px;">
-                                        <h:outputText value="#{b.department.name}"/>
+                                    <p:column headerText="Department" sortBy="#{d.departmentName}" filterBy="#{d.departmentName}" style="min-width: 160px;">
+                                        <h:outputText value="#{d.departmentName}"/>
                                     </p:column>
 
                                     <p:column headerText="Items" style="width: 80px; text-align: right;">
-                                        <h:outputText value="#{b.billItems.size()}"/>
+                                        <h:outputText value="#{d.itemsCount}"/>
                                     </p:column>
 
                                     <p:column headerText="Net Total" style="width: 120px; text-align: right;">
-                                        <h:outputText value="#{b.netTotal}">
+                                        <h:outputText value="#{d.netTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Actions" style="width: 260px; text-align: center;">
-                                        <p:commandButton value="View" icon="fa fa-eye" ajax="false"
-                                                         action="#{pharmacyStockTakeController.viewSnapshot(b)}"/>
+                                    <p:column headerText="Actions" style="text-align: center;">
+                                        <p:commandButton 
+                                            value="View" 
+                                            icon="fa fa-eye" 
+                                            styleClass="ui-button-success"
+                                            ajax="false"
+                                            title="View stock take snapshot details and items"
+                                            action="#{pharmacyStockTakeController.viewSnapshotById(d.id)}"/>
                                         <p:spacer width="8"/>
-                                        <p:commandButton value="Upload Adjustments" icon="fa fa-upload" ajax="false"
-                                                         action="#{pharmacyStockTakeController.gotoUploadAdjustments(b)}"/>
+                                        <p:commandButton 
+                                            value="Upload" 
+                                            styleClass="ui-button-warning"
+                                            icon="fa fa-upload" 
+                                            ajax="false"
+                                            title="Upload physical count adjustments from Excel sheet"
+                                            action="#{pharmacyStockTakeController.gotoUploadAdjustmentsById(d.id)}"/>
+                                        <p:spacer width="8"/>
+                                        <p:commandButton 
+                                            value="Variance" 
+                                            styleClass="ui-button-primary"
+                                            icon="fa fa-chart-bar" 
+                                            ajax="false"
+                                            title="View variance report between system stock and physical count"
+                                            action="#{pharmacyStockTakeController.gotoViewVarianceById(d.id)}"/>
                                     </p:column>
                                 </p:dataTable>
                             </h:form>
@@ -98,6 +123,5 @@
             </ui:define>
         </ui:composition>
     </h:body>
-    
-</html>
 
+</html>

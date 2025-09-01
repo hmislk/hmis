@@ -24,25 +24,25 @@
                                                     value="Print Report" 
                                                     icon="fa fa-print" 
                                                     ajax="false" 
-                                                    styleClass="ui-button-info">
+                                                    styleClass="ui-button-info mx-1">
                                                     <p:printer target="reportView" />
                                                 </p:commandButton>
                                                 <p:commandButton 
                                                     value="Export PDF" 
                                                     icon="fa fa-file-pdf" 
                                                     ajax="false" 
-                                                    styleClass="ui-button-secondary">
+                                                    styleClass="ui-button-secondary mx-1">
                                                     <p:dataExporter type="pdf" target=":#{p:resolveFirstComponentWithId('tbl',view).clientId}" fileName="pharmacy_stock_count_#{pharmacyStockTakeController.snapshotBill.deptId}" />
                                                 </p:commandButton>
                                             </div>
                                             <div class="btn-group mr-3" role="group" aria-label="Download Sheets">
                                                 <p:commandButton value="Download Guided Sheet" ajax="false" 
-                                                               styleClass="ui-button-success" icon="fa fa-download" 
+                                                               styleClass="ui-button-success mx-1" icon="fa fa-download" 
                                                                onclick="PrimeFaces.monitorDownload(start, stop);">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Download Blind Sheet" ajax="false" 
-                                                               styleClass="ui-button-warning" icon="fa fa-download" 
+                                                               styleClass="ui-button-warning mx-1" icon="fa fa-download" 
                                                                onclick="PrimeFaces.monitorDownload(start, stop);">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
                                                 </p:commandButton>
@@ -105,8 +105,7 @@
                                                 rowsPerPageTemplate="10,25,50,100"
                                                 styleClass="ui-datatable-striped ui-datatable-gridlines"
                                                 emptyMessage="No stock items found for this bill."
-                                                sortMode="multiple"
-                                                filterable="true">
+                                                sortMode="multiple">
                                         
                                         <p:column headerText="Bill Item ID" sortBy="#{bi.id}"
                                                  filterBy="#{bi.id}" filterMatchMode="exact"
