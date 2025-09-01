@@ -67,21 +67,24 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     >
-                                    <p:column headerText="Bill No" > 
+                                    <p:column headerText="Prebill No" > 
+                                        <h:outputText value="#{bill.deptId}" ></h:outputText>
                                         <p:commandLink 
+                                            ajax="false"
+                                            value="View"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}" >
+                                        </p:commandLink>
+
+<!--                                        <p:commandLink 
                                             action="pharmacy_reprint_prebill_sale?faces-redirect=true" 
                                             value="#{bill.deptId}" 
                                             disabled="#{bill.referenceBill eq null}"                                            
                                             >
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/> 
                                             <f:setPropertyActionListener value="#{bill.referenceBill.paymentMethod}" target="#{pharmacyBillSearch.paymentMethod}"/> 
-                                        </p:commandLink>
+                                        </p:commandLink>-->
                                     </p:column>
-                                    
-                                    <p:column headerText="Paid/Not">
-                                        <h:outputLabel value="PAID" rendered="#{bill.referenceBill ne null}" style="color: green;"/>
-                                        <h:outputLabel value="NOT PAID" rendered="#{bill.referenceBill eq null}" style="color: red;"/>
-                                    </p:column>
+
 
                                     <p:column headerText="Department"  >                                
                                         <h:outputLabel value="#{bill.department.name}" />                                    
@@ -132,6 +135,19 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column> 
+                                    <p:column headerText="Paid/Not">
+                                        <h:outputLabel value="PAID" rendered="#{bill.referenceBill ne null}" style="color: green;"/>
+                                        <h:outputLabel value="NOT PAID" rendered="#{bill.referenceBill eq null}" style="color: red;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" > 
+                                        <h:outputText value="#{bill.referenceBill.deptId}" ></h:outputText>
+                                        <p:commandLink 
+                                            ajax="false"
+                                            value="View"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBill.id)}" >
+                                        </p:commandLink>
+                                    </p:column>
 
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.referenceBill.createdAt}" >
@@ -163,7 +179,7 @@
 
                                     </p:column> 
 
-                                       
+
 
                                     <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" />                                      

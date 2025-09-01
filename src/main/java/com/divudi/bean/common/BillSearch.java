@@ -3978,6 +3978,7 @@ public class BillSearch implements Serializable {
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
 
             case PHARMACY_RETAIL_SALE_PRE:
+                return navigateToViewPharmacyPreBill();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -4356,6 +4357,15 @@ public class BillSearch implements Serializable {
         } else {
             return "/pharmacy/pharmacy_cancel_bill_unit_issue";
         }
+    }
+
+    public String navigateToViewPharmacyPreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        return "/pharmacy/view/pharmacy_pre_bill_view?faces-redirect=true";
     }
 
     public String navigateToPharmacyGrnCancellationBillView() {
