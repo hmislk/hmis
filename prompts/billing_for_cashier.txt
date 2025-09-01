@@ -1,0 +1,20 @@
+Pharmacy Retail Sale - Billing Through Cashier
+
+Billing for Cashier done in page by Pharmacist - http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml
+Bill Class - PreBill
+Bill Type - BillType.PharmacyPre
+Bill Type Atomic - BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+
+Such Bills are listed for Pharmacist - http://localhost:8080/rh/faces/pharmacy/pharmacy_search_sale_pre_bill.xhtml
+
+This is the global method to view bills -    public String navigateToViewBillByAtomicBillTypeByBillId(Long BillId)  in the controller BillSearch
+
+This is the page where cashier search for Pre Bills - http://localhost:8080/rh/faces/pharmacy/pharmacy_search_pre_bill.xhtml
+
+This is the page where cashier accept payments - http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_pre_settle.xhtml
+
+Currently it has no specific page
+We need to create a new page to view
+The new page should contain the details under the id="panelPrint" in the /pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml page
+
+Can you please create that page?

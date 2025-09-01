@@ -327,11 +327,12 @@
                                             </p:column>
                                             <p:column width="15%">
                                                 <p:commandButton
+                                                    id="btnViewPaymentBill"
                                                     ajax="false"
                                                     value="View Payment Bill"
-                                                    action="pharmacy_reprint_bill_sale_cashier?faces-redirect=true"
+                                                    action="#{billSearch.navigateToViewPharmacySettledPreBill()}"
                                                     disabled="#{bill.referenceBill eq null}">
-                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
+                                                    <f:setPropertyActionListener target="#{billSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
