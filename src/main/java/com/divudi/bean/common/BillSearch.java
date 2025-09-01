@@ -4377,7 +4377,8 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        return "../pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
 
     public String navigateToPharmacyGrnCancellationBillView() {
