@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="mb-0">Stock Take Variance Report</h2>
+                            <h:form>
+                                <p:commandButton value="Print" icon="fa fa-print" ajax="false" style="margin-right: 8px;">
+                                    <p:printer target="variancePanel" />
+                                </p:commandButton>
+                                <p:commandButton value="Download" icon="fa fa-download" ajax="false">
+                                    <p:dataExporter type="xlsx" target="tblVariance" fileName="pharmacy_stock_take_variance" />
+                                </p:commandButton>
+                            </h:form>
+                        </div>
+                        <div class="card-body">
+                            <h:panelGroup id="variancePanel">
+                                <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
+                                    <div class="alert alert-warning">No snapshot bill selected. Please go back to the list and choose a bill.</div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
+                                    <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
+                                        <h:outputText value="Institution:"/>
+                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/>
+                                        <h:outputText value="Department:"/>
+                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"/>
+                                        <h:outputText value="Snapshot Bill No:"/>
+                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}" style="font-family: monospace;"/>
+                                        <h:outputText value="Snapshot Date:"/>
+                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputText>
+                                    </p:panelGrid>
+
+                                    <p:separator/>
+
+                                    <h:form id="frmVariance">
+                                        <p:dataTable id="tblVariance" value="#{pharmacyStockTakeController.varianceRows}" var="r"
+                                                     rows="25" paginator="true"
+                                                     paginatorPosition="both"
+                                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     rowsPerPageTemplate="10,25,50,100"
+                                                     styleClass="ui-datatable-striped ui-datatable-gridlines">
+                                            <p:column headerText="BillItem ID" style="width: 120px; text-align:right;">
+                                                <h:outputText value="#{r.billItemId}"/>
+                                            </p:column>
+                                            <p:column headerText="Code" style="min-width: 100px;">
+                                                <h:outputText value="#{r.code}"/>
+                                            </p:column>
+                                            <p:column headerText="Item" style="min-width: 220px;">
+                                                <h:outputText value="#{r.itemName}"/>
+                                            </p:column>
+                                            <p:column headerText="Batch" style="width: 120px; text-align:center;">
+                                                <h:outputText value="#{r.batch}"/>
+                                            </p:column>
+                                            <p:column headerText="Initial Stock" style="width: 120px; text-align:right;">
+            
+                                                <h:outputText value="#{r.initialQty}">
+                                                    <f:convertNumber integerOnly="true"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Sum of Variances" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance}">
+                                                    <f:convertNumber integerOnly="true"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Last Physical Count" style="width: 160px; text-align:right;">
+                                                <h:outputText value="#{r.lastPhysicalQty}">
+                                                    <f:convertNumber integerOnly="true"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:form>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+

@@ -16,6 +16,9 @@
         </h:outputStylesheet>
 
         <div class="row" >
+            
+            
+            
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
                 <!-- Cashier Drawer -->
@@ -1038,7 +1041,7 @@
                         <p:commandLink 
                             id="Purchase_Orders_Approval"
                             ajax="false" 
-                            action="/pharmacy/pharmacy_purchase_order_list_to_approve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Purchase Orders Approval" />

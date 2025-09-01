@@ -62,10 +62,24 @@ public class LabTestHistoryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
+    
     // <editor-fold defaultstate="collapsed" desc="Billing">
-    public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment) {
-        addNewHistory(TestHistoryType.ORDERED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null, null);
+    public void addBillingHistory(PatientInvestigation patientInvestigation, Department department) {
+        addNewHistory(TestHistoryType.ORDERED, department, null, patientInvestigation, null, null, null, null, null, null, null, null);
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Cancel">
+    public void addCancelHistory(PatientInvestigation patientInvestigation, Department department, String comment) {
+        addNewHistory(TestHistoryType.CANCELED, department, null, patientInvestigation, null, null, null, null, null, null, null, comment);
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Refund">
+    public void addRefundHistory(PatientInvestigation patientInvestigation, Department department, String comment) {
+        addNewHistory(TestHistoryType.REFUNDED, department, null, patientInvestigation, null, null, null, null, null, null, null, comment);
     }
     // </editor-fold>
 
@@ -111,6 +125,7 @@ public class LabTestHistoryController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Report History">
     public void addCreateReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
         addNewHistory(TestHistoryType.REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null);
@@ -217,6 +232,45 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
+    
+    public List<LabTestHistoryLight> getCanceledLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
+        if (patientInvestigation == null) {
+            return null;
+        }
+
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+                + " FROM LabTestHistory his "
+                + " WHERE his.retired=:retired "
+                + " AND his.patientInvestigation =:patientInvestigation"
+                + " AND his.testHistoryType =:type"
+                + " order by his.createdAt asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("patientInvestigation", patientInvestigation);
+        params.put("type", TestHistoryType.CANCELED);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        return labHistory;
+    }
+    
+    public List<LabTestHistoryLight> getRefundedLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
+        if (patientInvestigation == null) {
+            return null;
+        }
+
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+                + " FROM LabTestHistory his "
+                + " WHERE his.retired=:retired "
+                + " AND his.patientInvestigation =:patientInvestigation"
+                + " AND his.testHistoryType =:type"
+                + " order by his.createdAt asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("patientInvestigation", patientInvestigation);
+        params.put("type", TestHistoryType.REFUNDED);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        return labHistory;
+    }
+    
 
     public List<LabTestHistoryLight> getReportLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {

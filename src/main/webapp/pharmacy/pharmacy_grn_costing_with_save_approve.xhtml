@@ -17,45 +17,45 @@
                 <p:panel
                     class="w-100">
                     <f:facet name="header">
-                        <h:outputLabel value="Goods Receive with Save/Approve" />
-                        <p:commandButton
-                            ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
-                            actionListener="#{searchController.makeListNull()}"
-                            class="ui-button-warning"
-                            icon="fa fa-arrow-left"
-                            style="float: right; margin-right: 0.5em;"
-                            value="Back to PO List">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Approve"
-                            action="#{grnCostingController.requestFinalizeWithSaveApprove}"
-                            class="ui-button-success"
-                            icon="fas fa-check"
-                            ajax="false"
-                            rendered="#{grnCostingController.currentGrnBillPre.completed}"
-                            style="float: right; margin-right: 0.5em;">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Finalize"
-                            action="#{grnCostingController.finalizeGrnWithSaveApprove}"
-                            class="ui-button-warning"
-                            icon="fas fa-flag"
-                            ajax="false"
-                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
-                            style="float: right; margin-right: 0.5em;">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Save"
-                            action="#{grnCostingController.requestWithSaveApprove}"
-                            class="ui-button-info"
-                            icon="pi pi-save"
-                            ajax="false"
-                            rendered="#{!grnCostingController.currentGrnBillPre.completed}"
-                            style="float: right; margin-right: 0.5em;">
-                        </p:commandButton>
-                    </f:facet>
+                        <div class="row">
+                            <div class="text-start col-3">
+                                <h:outputLabel value="Goods Receive with Save/Approve" />
+                            </div>
+                            <div class="text-end col-9">
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fa fa-arrow-left"
+                                    value="To PO List">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-plus-circle"
+                                    value="To Finalize GRNs">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-check-circle"
+                                    value="To Approve GRNs">
+                                </p:commandButton>
 
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <p:messages id="messages" showDetail="true" closable="true" />
+                            </div>
+                        </div>
+
+                    </f:facet>
 
                     <div class="row" >
                         <div class="col-12" >
@@ -381,7 +381,7 @@
                                                 action="#{grnCostingController.addExpense()}"
                                                 ajax = "false"
                                                 process="billExpenseGrid btnAddExpense @this"
-                                                update=" billExpenseGrid @all"/>
+                                                update="@all"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>
@@ -431,6 +431,35 @@
                                 class="w-100"
                                 id="grn"
                                 layout="tabular">
+
+                                <f:facet name="header" >
+                                    <p:commandButton
+                                        value="Save"
+                                        action="#{grnCostingController.requestWithSaveApprove}"
+                                        class="ui-button-success mx-1"
+                                        icon="pi pi-save"
+                                        ajax="false"
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Finalize"
+                                        action="#{grnCostingController.finalizeGrnWithSaveApprove}"
+                                        class="ui-button-warning mx-1"
+                                        icon="fas fa-flag"
+                                        ajax="false"
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Approve"
+                                        action="#{grnCostingController.requestFinalizeWithSaveApprove}"
+                                        class="ui-button-warning mx-1"
+                                        icon="fas fa-check"
+                                        ajax="false"
+                                        rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                                    </p:commandButton>
+                                </f:facet>
+
+
                                 <h:outputLabel value="Supplier"/>
                                 <p:autoComplete 
                                     class="w-100"
@@ -527,6 +556,35 @@
                                 </p:inputText>
 
                             </p:panelGrid>
+
+                            <!-- Workflow Action Buttons -->
+                            <div class="text-center my-3">
+                                <p:commandButton
+                                    value="Save"
+                                    action="#{grnCostingController.requestWithSaveApprove}"
+                                    class="ui-button-success mx-1"
+                                    icon="pi pi-save"
+                                    ajax="false"
+                                    rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Finalize"
+                                    action="#{grnCostingController.finalizeGrnWithSaveApprove}"
+                                    class="ui-button-warning mx-1"
+                                    icon="pi pi-check"
+                                    ajax="false"
+                                    rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Approve"
+                                    action="#{grnCostingController.requestFinalizeWithSaveApprove}"
+                                    class="ui-button-success mx-1"
+                                    icon="fas fa-check-circle"
+                                    ajax="false"
+                                    rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                                </p:commandButton>
+                            </div>
+
                             <p:panelGrid 
                                 id="panelBillDetails"
                                 columns="2"
@@ -569,7 +627,7 @@
                                     value="#{grnCostingController.currentGrnBillPre.tax}" >
                                     <p:ajax
                                         process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                         event="keyup"
                                         listener="#{grnCostingController.discountChangedLitener()}"/>
                                     <f:convertNumber pattern="#,##0.00" />
@@ -644,14 +702,33 @@
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="GRN Preview " class="mt-2"/>
                             <div class="d-flex gap-2">
+                                
                                 <p:commandButton
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-warning"
+                                    class="ui-button-info ui-button-outlined mx-1"
                                     icon="fa fa-arrow-left"
-                                    value="Back to PO List">
+                                    value="To PO List">
                                 </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-plus-circle"
+                                    value="To Finalize GRNs">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-check-circle"
+                                    value="To Approve GRNs">
+                                </p:commandButton>
+                                
+                               
                                 <p:commandButton 
                                     value="Print" 
                                     ajax="false" 

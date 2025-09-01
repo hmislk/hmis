@@ -153,7 +153,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Receive QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qtyInUnit}">
+                        <h:outputLabel value="#{bip.qty}">
                             <f:convertNumber pattern="#0.00"/>
                         </h:outputLabel>
                     </p:column>
@@ -164,7 +164,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Issued QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{bip.qty}">
                             <f:convertNumber pattern="#0.00"/>
                         </h:outputLabel>
                     </p:column>

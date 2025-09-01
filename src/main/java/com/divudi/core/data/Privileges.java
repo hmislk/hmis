@@ -47,6 +47,7 @@ public enum Privileges {
     OpdBillItemSearch("OPD Bill Item Search"),
     OpdReprint("OPD Reprint"),
     OpdCancel("OPD Cancel"),
+    OpdIndividualCancel("OPD Individual Cancel"),
     OpdReturn("OPD Return"),
     OpdReactivate("OPD Reactivate"),
     OpdBillSearchEdit("OPD Bill Search Edit"),
@@ -566,7 +567,13 @@ public enum Privileges {
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
+    CreateGrnReturn("Create GRN Return"),
+    FinalizeGrnReturn("Finalize GRN Return"),
+    ApproveGrnReturn("Approve GRN Return"),
     ReturnWithoutRecipt("Return without Receipt"),
+    PharmacyGrnSave("Pharmacy GRN Save"),
+    PharmacyGrnFinalize("Pharmacy GRN Finalize"),
+    PharmacyGrnApprove("Pharmacy GRN Approve"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
@@ -828,6 +835,9 @@ public enum Privileges {
             case PurchaseOrdersApprovel:
             case GoodsRecipt:
             case ReturnReceviedGoods:
+            case CreateGrnReturn:
+            case FinalizeGrnReturn:
+            case ApproveGrnReturn:
             case ReturnWithoutRecipt:
             // Disbursement
             case PharmacyDisburesementMenu:
@@ -896,6 +906,9 @@ public enum Privileges {
             case PharmacyItemSearch:
             case PharmacyGenarateReports:
             case PharmacySummaryViews:
+            case PharmacyGrnSave:
+            case PharmacyGrnFinalize:
+            case PharmacyGrnApprove:
 
                 return "Pharmacy";
 
