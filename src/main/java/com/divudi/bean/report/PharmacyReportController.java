@@ -44,6 +44,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.RefundBill;
@@ -115,6 +116,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author Pubudu Piyankara
  */
@@ -165,6 +168,8 @@ public class PharmacyReportController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     SessionController sessionController;
+    @Inject
+    SearchController searchController;
     @EJB
     private ReportTimerController reportTimerController;
 
@@ -2011,6 +2016,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(billJpql, billParams, "b.institution", "ins", institution);
             addFilter(billJpql, billParams, "b.department.site", "sit", site);
             addFilter(billJpql, billParams, "b.department", "dep", department);
+            addFilter(billJpql, billParams, "b.paymentMethod", "pmFilter", this.paymentMethod);
 
             cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
 
@@ -4355,6 +4361,352 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void exportPharmacySalesToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Pharmacy_Sales_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Pharmacy Sales Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            if (fromDate != null && toDate != null) {
+                document.add(new Paragraph("Period: " + sdf.format(fromDate) + " to " + sdf.format(toDate),
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            }
+            document.add(new Paragraph(" "));
+
+            if (cogsBillDtos == null || cogsBillDtos.isEmpty()) {
+                document.add(new Paragraph("No sales data available for the selected period.",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                document.close();
+                context.responseComplete();
+                return;
+            }
+
+            PdfPTable table = new PdfPTable(15);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10);
+            float[] columnWidths = {1.2f, 1.8f, 3.5f, 1.5f, 2.2f, 1f, 1.5f, 1.5f, 1.5f, 1.5f, 2f, 3.5f, 1.5f, 2f, 1.5f};
+            table.setWidths(columnWidths);
+
+            addHeaderRow(table);
+
+            double grandTotal = 0.0;
+
+            for (CostOfGoodSoldBillDTO billDto : cogsBillDtos) {
+                addBillRows(table, billDto, sdf);
+                grandTotal += billDto.getNetTotal() != null ? billDto.getNetTotal() : 0.0;
+            }
+
+            addGrandTotalRow(table, grandTotal);
+            document.add(table);
+            addSummary(document, grandTotal);
+
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
+    private void addBillRows(PdfPTable table, CostOfGoodSoldBillDTO billDto, SimpleDateFormat sdf) {
+        List<BillItemDTO> items = billDto.getBillItems();
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        int totalItems = items.size();
+        // Determine the total number of rows this bill will occupy (items + payments)
+        int rowSpan = totalItems - 1;
+        if (rowSpan < totalItems) {
+            rowSpan = totalItems; // Ensure rowspan is at least the number of items
+        }
+        double billNetTotal = billDto.getNetTotal() != null ? billDto.getNetTotal() : 0.0;
+        double billDiscount = billDto.getDiscount() != null ? billDto.getDiscount() : 0.0;
+
+        boolean isFirstItem = true;
+
+        // Loop 1: Add all the item rows
+        for (BillItemDTO item : items) {
+            if (isFirstItem) {
+                // CORRECTED LOGIC: All spanning cells are added ONCE on the very first row.
+                addSpanningCell(table, billDto.getBillCreatedAt() != null ? sdf.format(billDto.getBillCreatedAt()) : "-", rowSpan, createDateCell(""));
+                addSpanningCell(table, getBillDisplayNumber(billDto), rowSpan, createDocNoCell(""));
+
+                // Item-specific cells for the first item
+                addItemCells(table, item);
+
+                // Add the rest of the spanning cells for the bill
+                addSpanningCell(table, String.format("%.2f", billNetTotal), rowSpan, createNetTotalCell(""));
+
+                // This cell acts as a placeholder for the payment methods that will be added below
+                PdfPCell paymentPlaceholder = createDataCell(billDto.getPaymentMethod().toString());
+                paymentPlaceholder.setRowspan(rowSpan);
+                table.addCell(paymentPlaceholder);
+
+                addSpanningCell(table, "", rowSpan, createEmptyCell()); // MRP
+                addSpanningCell(table, "", rowSpan, createEmptyCell()); // MRP Value
+                addSpanningCell(table, String.format("%.2f", billDiscount), rowSpan, createDataCell(""));
+
+                isFirstItem = false;
+            } else {
+                // For all subsequent items, only add the item-specific cells.
+                addItemCells(table, item);
+            }
+        }
+
+        // Loop 2: Add all the payment breakdown rows
+        addPaymentBreakdownRows(table, billDto);
+    }
+
+    private void addItemCells(PdfPTable table, BillItemDTO item) {
+        table.addCell(createItemNameCell(item.getItemName() != null ? item.getItemName() : "-"));
+        table.addCell(createDataCell(item.getItemCode() != null ? item.getItemCode().toString() : "-"));
+        table.addCell(createDataCell(item.getBatchNo() != null ? item.getBatchNo() : "-"));
+        table.addCell(createDataCell(String.valueOf(item.getQty().intValue())));
+        table.addCell(createDataCell(String.format("%.2f", item.getCostRate())));
+        table.addCell(createDataCell(String.format("%.2f", calculateCostValue(item))));
+        table.addCell(createDataCell(String.format("%.2f", item.getRetailRate())));
+        table.addCell(createDataCell(String.format("%.2f", calculateItemValue(item))));
+
+    }
+
+// Individual payment method row
+    private void addPaymentMethodRow(PdfPTable table, String method, double amount) {
+        // Empty cells until payment column
+        for (int i = 0; i < 11; i++) {
+            table.addCell(createPaymentCell(""));
+        }
+
+        // Payment details
+        table.addCell(createPaymentCell(method + " - " + String.format("%.2f", amount)));
+
+        // Empty remaining cells
+        table.addCell(createPaymentCell(""));
+        table.addCell(createPaymentCell(""));
+        table.addCell(createPaymentCell("0.00"));
+    }
+
+    private void addPaymentMethodRow(PdfPTable table, PaymentMethod method, double amount) {
+        // Empty cells until payment column
+        for (int i = 0; i < 11; i++) {
+            table.addCell(createPaymentCell(""));
+        }
+
+        // Payment details
+        table.addCell(createPaymentCell(method + " - " + String.format("%.2f", amount)));
+
+        // Empty remaining cells
+        table.addCell(createPaymentCell(""));
+        table.addCell(createPaymentCell(""));
+        table.addCell(createPaymentCell("0.00"));
+    }
+
+    private void addPaymentBreakdownRows(PdfPTable table, CostOfGoodSoldBillDTO billDto) {
+        Map<PaymentMethod, Double> paymentBreakdown = getPaymentBreakdown(billDto);
+
+        // Handle single payment method case
+        if (!"MultiplePaymentMethods".equals(billDto.getPaymentMethod().toString())) {
+            String methodName = billDto.getPaymentMethod().toString();
+            double total = billDto.getNetTotal();
+            addPaymentMethodRow(table, methodName, total);
+        } else {
+            for (Map.Entry<PaymentMethod, Double> entry : paymentBreakdown.entrySet()) {
+                addPaymentMethodRow(table, entry.getKey(), entry.getValue());
+            }
+        }
+
+    }
+
+    private void addSinglePaymentRow(PdfPTable table, String methodName, double amount) {
+        for (int i = 0; i < 11; i++) {
+            table.addCell(createEmptyCell());
+        }
+
+        table.addCell(createPaymentCell(methodName + " - " + String.format("%.2f", amount)));
+        // Empty cells for MRP, MRP Value, and Discount columns
+        table.addCell(createEmptyCell());
+        table.addCell(createEmptyCell());
+        table.addCell(createDataCell("0.00"));
+    }
+
+    private void addSinglePaymentRow(PdfPTable table, PaymentMethod methodName, double amount) {
+        for (int i = 0; i < 11; i++) {
+            table.addCell(createEmptyCell());
+        }
+
+        table.addCell(createPaymentCell(methodName + " - " + String.format("%.2f", amount)));
+        table.addCell(createEmptyCell());
+        table.addCell(createEmptyCell());
+        table.addCell(createDataCell("0.00"));
+    }
+
+    private Map<PaymentMethod, Double> getPaymentBreakdown(CostOfGoodSoldBillDTO billDto) {
+        Map<PaymentMethod, Double> paymentBreakdown = new LinkedHashMap<>();
+        // Assuming searchController.getPaymentDetails(bill) returns List<Payment>
+        List<Payment> payments = searchController.getPaymentDetals(billDto.getBill());
+        for (Payment payment : payments) {
+            // Make sure to get the name of the payment method as a String
+            PaymentMethod methodName = payment.getPaymentMethod();
+            double paidValue = payment.getPaidValue();
+            paymentBreakdown.merge(methodName, paidValue, Double::sum);
+        }
+        return paymentBreakdown;
+    }
+
+    private String getBillDisplayNumber(CostOfGoodSoldBillDTO billDto) {
+        // Use the actual bill number from your DTO
+        if (billDto.getBillDeptId() != null && !billDto.getBillDeptId().isEmpty()) {
+            return billDto.getBillDeptId();
+        }
+        return "";
+    }
+
+    private void addSpanningCell(PdfPTable table, String content, int rowspan, PdfPCell templateCell) {
+        templateCell.setPhrase(new Phrase(content, templateCell.getPhrase().getFont()));
+        templateCell.setRowspan(rowspan);
+        table.addCell(templateCell);
+    }
+
+    private void addHeaderRow(PdfPTable table) {
+        String[] headers = {
+            "Date", "Doc. No", "NAME", "CODE", "BATCH NO", "QTY",
+            "COST RATE", "COST VALUE", "RATE", "VALUE", "Net Total",
+            "Payment Mode/Modes", "MRP", "MRP Value", "Discount"
+        };
+
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header,
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(5);
+            cell.setBorder(Rectangle.BOX);
+            table.addCell(cell);
+        }
+    }
+
+    private void addGrandTotalRow(PdfPTable table, double grandTotal) {
+        PdfPCell totalLabel = new PdfPCell(new Phrase("Total",
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+        totalLabel.setColspan(14);
+        totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        totalLabel.setPadding(5);
+        totalLabel.setBorder(Rectangle.BOX);
+        table.addCell(totalLabel);
+
+        PdfPCell totalValue = new PdfPCell(new Phrase(String.format("%.2f", grandTotal),
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+        totalValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+        totalValue.setBorder(Rectangle.BOX);
+        table.addCell(totalValue);
+    }
+
+    private PdfPCell createDateCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
+                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+        cell.setPadding(4);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private PdfPCell createDocNoCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+        cell.setPadding(4);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setBackgroundColor(new BaseColor(173, 216, 230)); // Light blue
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private PdfPCell createItemNameCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
+                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+        cell.setPadding(4);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private PdfPCell createDataCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
+                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+        cell.setPadding(4);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private PdfPCell createNetTotalCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+        cell.setPadding(4);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setBackgroundColor(new BaseColor(144, 238, 144)); // Light green
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private PdfPCell createPaymentCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
+                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+        cell.setPadding(4);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setBackgroundColor(new BaseColor(255, 255, 224)); // Light yellow
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private PdfPCell createEmptyCell() {
+        PdfPCell cell = new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+        cell.setPadding(4);
+        cell.setBorder(Rectangle.BOX);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+// Helper calculation methods
+    private double calculateCostValue(BillItemDTO item) {
+        if (item.getCostRate() != null && item.getQty() != null) {
+            return item.getCostRate() * item.getQty();
+        }
+        return 0.0;
+    }
+
+    private double calculateItemValue(BillItemDTO item) {
+        if (item.getRetailRate() != null && item.getQty() != null) {
+            return item.getRetailRate() * item.getQty();
+        }
+        return 0.0;
+    }
+
+    private void addSummary(Document document, double grandTotal) throws DocumentException {
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph("Summary:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+        document.add(new Paragraph("Total Bills: " + (cogsBillDtos != null ? cogsBillDtos.size() : 0)));
+        document.add(new Paragraph("Grand Total: " + String.format("%.2f", grandTotal)));
+    }
+
     public void exportBatchWisePharmacyStockToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -4638,7 +4990,7 @@ public class PharmacyReportController implements Serializable {
 
         switch (dateRange) {
             case "within3months":
-                toDate =  convertToDate(today.plusMonths(3));
+                toDate = convertToDate(today.plusMonths(3));
                 fromDate = convertToDate(today);
                 break;
             case "within6months":
@@ -5426,6 +5778,93 @@ public class PharmacyReportController implements Serializable {
             totalNetTotal += twc.getTotal();
             totalDiscount += twc.getDiscount();
             totalNetHosFee += twc.getHosFee() - twc.getDiscount();
+        }
+    }
+
+    public void exportBillsToExcel(String fileName, List<CostOfGoodSoldBillDTO> bills) {
+        if (bills == null || bills.isEmpty()) {
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Pharmacy Sales Report");
+
+            createHeaderRow(sheet);
+            populateDataRows(sheet, bills);
+
+            OutputStream outputStream = externalContext.getResponseOutputStream();
+            workbook.write(outputStream);
+            facesContext.responseComplete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createHeaderRow(Sheet sheet) {
+        String[] headers = {
+            "Date", "Doc. No", "NAME", "CODE", "BATCH NO", "QTY", "COST RATE",
+            "COST VALUE", "RATE", "VALUE", "Net Total", "Payment Mode/Modes",
+            "MRP", "MRP Value", "Discount"
+        };
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+    }
+
+    private void populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills) {
+        AtomicInteger rowNum = new AtomicInteger(1);
+        for (CostOfGoodSoldBillDTO bill : bills) {
+            List<BillItemDTO> billItems = bill.getBillItems();
+            if (billItems == null || billItems.isEmpty()) {
+                continue;
+            }
+
+            for (int i = 0; i < billItems.size(); i++) {
+                BillItemDTO item = billItems.get(i);
+                Row row = sheet.createRow(rowNum.getAndIncrement());
+
+                if (i == 0) {
+                    row.createCell(0).setCellValue(bill.getBillCreatedAt() != null ? bill.getBillCreatedAt().toString() : "");
+                    row.createCell(1).setCellValue(bill.getBillDeptId() != null ? bill.getBillDeptId() : "");
+                }
+
+                row.createCell(2).setCellValue(item.getItemName() != null ? item.getItemName() : "");
+                row.createCell(3).setCellValue(item.getItemCode() != null ? item.getItemCode() : "");
+                row.createCell(4).setCellValue(item.getBatchNo() != null ? item.getBatchNo() : "");
+                row.createCell(5).setCellValue(item.getQty());
+                row.createCell(6).setCellValue(item.getCostRate());
+                row.createCell(7).setCellValue(item.getQty() * item.getCostRate());
+                row.createCell(8).setCellValue(item.getRetailRate());
+                row.createCell(9).setCellValue(item.getQty() * item.getRetailRate());
+
+                if (i == 0) {
+                    row.createCell(10).setCellValue(bill.getNetTotal());
+                    String paymentModes = formatPaymentMethods(bill.getPaymentMethod().toString(), bill);
+                    row.createCell(11).setCellValue(paymentModes);
+                    row.createCell(14).setCellValue(bill.getDiscount());
+                }
+            }
+        }
+    }
+
+    private String formatPaymentMethods(String paymentMethod, CostOfGoodSoldBillDTO bill) {
+        if ("Staff".equalsIgnoreCase(paymentMethod)) {
+            return "Staff credit";
+        } else if ("MultiplePaymentMethods".equalsIgnoreCase(paymentMethod)) {
+            String paymentDetails = searchController.getPaymentDetals(bill.getBill()).stream()
+                    .map(p -> String.format("%s - %.2f", p.getPaymentMethod(), p.getPaidValue()))
+                    .collect(Collectors.joining("\n"));
+            return paymentMethod + "\n" + paymentDetails;
+        } else {
+            return paymentMethod;
         }
     }
 
