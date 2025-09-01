@@ -18,6 +18,16 @@
                             <h:outputLabel value="Reprint Sale Bill For Cashier" class="mt-2" ></h:outputLabel>
 
                             <p:commandButton 
+                                value="Print Original" 
+                                style="float: right;"
+                                class="ui-button-success mx-2"
+                                icon="fa fa-print"
+                                ajax="false"
+                                rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}" >
+                                <p:printer target="gpBillPreviewOriginal" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton 
                                 value="Reprint" 
                                 style="float: right;"
                                 class="ui-button-info mx-2"
@@ -46,6 +56,22 @@
 
                         </f:facet>
 
+                        <!-- Original Print Section (No Duplicate Text) -->
+                        <h:panelGroup id="gpBillPreviewOriginal" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}" >
+                            <h:panelGroup   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
+                                <div>
+                                    <ph:saleBill bill="#{pharmacyBillSearch.bill}"></ph:saleBill>
+                                </div>
+                            </h:panelGroup> 
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyBillSearch.bill}"/>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Reprint Section (With Duplicate Text) -->
                         <h:panelGroup id="gpBillPreview" >
                             <h:panelGroup   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
                                 <div>

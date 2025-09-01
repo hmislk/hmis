@@ -43,6 +43,16 @@
                                     </h:panelGroup>
 
                                     <p:commandButton
+                                        value="Print Original"
+                                        ajax="false"
+                                        icon="fa fa-print"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers') and webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}"
+                                        class="ui-button-success m-1"
+                                        action="#" >
+                                        <p:printer target="gpBillPreviewOriginal" ></p:printer>
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         accesskey="p"
                                         id="btnPrint"
                                         value="Print Bill"
@@ -103,6 +113,80 @@
                                 </div>
                             </div>
 
+                            <!-- Original Print Sections (No Duplicate Text) -->
+                            <h:panelGroup id="billAndTokenPrintOriginal" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}">
+                                <h:panelGroup 
+                                    layout="block"
+                                    rendered="#{billSearch.bill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"
+                                    style="page-break-after: always!important;"
+                                    id="tokenPrintOriginal">
+                                    <h:panelGroup 
+                                        id="gpBillPreviewFiveFiveTokenOriginal" 
+                                        rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+                                        <div >
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
+                                                <phi:saleBill_five_five_token id="saleBillTokenFiveFiveOriginal" bill="#{billSearch.bill}"></phi:saleBill_five_five_token>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup 
+                                        id="gpBillPreviewFiveFiveTokenOriginal2" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or
+                                                                                                   sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                        <div >
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
+                                                <phi:saleBillToken id="saleBillTokenPosOriginal" bill="#{billSearch.bill}"></phi:saleBillToken>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup 
+                                    styleClass="billPrint"  
+                                    layout="block"
+                                    style="page-break-after: always!important; page-break-before: always!important;"
+                                    id="gpBillPreviewOriginal">
+
+                                    <h:panelGroup id="gpBillPreviewPosOriginal" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
+                                        <div >
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
+                                                <phi:saleBill_for_Cashier bill="#{billSearch.bill}"></phi:saleBill_for_Cashier>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="gpBillPreviewFiveFiveOriginal" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+                                        <div >
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                                <phi:saleBill_five_five_for_Cashier bill="#{billSearch.bill}"></phi:saleBill_five_five_for_Cashier>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="gpBillPreviewPosHeaderOriginal" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}" >
+                                        <div >
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                                <phi:saleBill_Header bill="#{billSearch.bill}"></phi:saleBill_Header>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup 
+                                        id="gpBillPreviewFiveFiveCustom3Original" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for cashier Bill is FiveFiveCustom3',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFiveCustom3'}">
+                                        <div>
+                                            <phi:sale_bill_five_five_custom_3 bill="#{billSearch.bill}"/>
+                                        </div>
+
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                            <!-- Reprint Sections (With Duplicate Text) -->
                             <h:panelGroup id="billAndTokenPrint">
                                 <h:panelGroup 
                                     layout="block"
