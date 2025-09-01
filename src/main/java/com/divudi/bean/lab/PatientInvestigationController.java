@@ -993,6 +993,24 @@ public class PatientInvestigationController implements Serializable {
         m.put("ps", ps);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
+    
+    public List<PatientInvestigation> getPatientInvestigationsFromBill(Bill bill) {
+        String j = "select pi from PatientInvestigation pi where pi.retired = :ret and pi.billItem.bill =:bill";
+
+        Map m = new HashMap();
+        m.put("bill", bill);
+        m.put("ret", false);
+        return ejbFacade.findByJpql(j, m);
+    }
+    
+    public List<PatientInvestigation> getPatientInvestigationsFromBillItem(BillItem billItem) {
+        String j = "select pi from PatientInvestigation pi where pi.retired = :ret and pi.billItem =:billItem";
+
+        Map m = new HashMap();
+        m.put("billItem", billItem);
+        m.put("ret", false);
+        return ejbFacade.findByJpql(j, m);
+    }
 
     private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
         Set<PatientInvestigation> ptixhs = new HashSet<>();
