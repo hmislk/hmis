@@ -135,8 +135,6 @@ public class GrnCostingController implements Serializable {
     private double difference;
     private Institution fromInstitution;
     private Institution referenceInstitution;
-    private Date invoiceDate;
-    private String invoiceNumber;
     BillItem currentExpense;
 
     public double calDifference() {
@@ -155,8 +153,6 @@ public class GrnCostingController implements Serializable {
     public void clear() {
         // grnBill = null; // Field removed
         currentGrnBillPre = null; // Clear both bills since they should be the same object
-        invoiceDate = null;
-        invoiceNumber = null;
         printPreview = false;
         // billItems removed - using bill's collection directly
         difference = 0;
@@ -290,8 +286,7 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getReferenceInstitution() == null) {
             getCurrentGrnBillPre().setReferenceInstitution(getReferenceInstitution());
         }
-        getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
-        getCurrentGrnBillPre().setInvoiceNumber(invoiceNumber);
+        // Invoice details are already bound on currentGrnBillPre via UI
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
 
         if (getCurrentGrnBillPre().getInvoiceDate() == null) {
@@ -385,8 +380,7 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getReferenceInstitution() == null) {
             getCurrentGrnBillPre().setReferenceInstitution(getReferenceInstitution());
         }
-        getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
-        getCurrentGrnBillPre().setInvoiceNumber(invoiceNumber);
+        // Invoice details are already bound on currentGrnBillPre via UI
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
 
         String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
@@ -616,8 +610,7 @@ public class GrnCostingController implements Serializable {
             return false;
         }
 
-        getGrnBill().setInvoiceDate(invoiceDate);
-        getGrnBill().setInvoiceNumber(invoiceNumber);
+        // Invoice details are already bound on grnBill/currentGrnBillPre via UI
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
@@ -1881,11 +1874,6 @@ public class GrnCostingController implements Serializable {
         // Distribute proportional bill values (including expenses considered for costing) to line items
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
-        // Persist the updated GRN bill
-        if (getGrnBill().getId() != null) {
-            getBillFacade().edit(getGrnBill());
-        }
-
         currentExpense = null;
     }
 
@@ -2311,21 +2299,7 @@ public class GrnCostingController implements Serializable {
         this.referenceInstitution = referenceInstitution;
     }
 
-    public Date getInvoiceDate() {
-        return invoiceDate;
-    }
-
-    public void setInvoiceDate(Date invoiceDate) {
-        this.invoiceDate = invoiceDate;
-    }
-
-    public String getInvoiceNumber() {
-        return invoiceNumber;
-    }
-
-    public void setInvoiceNumber(String invoiceNumber) {
-        this.invoiceNumber = invoiceNumber;
-    }
+    // Removed controller-level invoiceDate/invoiceNumber; use currentGrnBillPre's fields directly
 
     private void saveImportBill(Bill importGrn) {
         importGrn.setBillType(BillType.PharmacyGrnBillImport);
@@ -2402,12 +2376,14 @@ public class GrnCostingController implements Serializable {
             getCurrentGrnBillPre().setBillExpenses(loadedExpenses);
         }
 
-        invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
-        invoiceNumber = getCurrentGrnBillPre().getInvoiceNumber();
+        // Invoice details already on currentGrnBillPre
         setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
 
         // Recalculate totals when loading saved bill
         if (getBillItems() != null && !getBillItems().isEmpty()) {
+            // Defensive: de-duplicate any repeated expense rows after loading
+            deduplicateBillExpensesInMemory();
+
             // Ensure each bill item's finance details are properly calculated
             for (BillItem bi : getBillItems()) {
                 if (bi.getBillItemFinanceDetails() != null) {
@@ -2429,6 +2405,65 @@ public class GrnCostingController implements Serializable {
         return "/pharmacy/pharmacy_grn_costing_with_save_approve?faces-redirect=true";
     }
 
+    /**
+     * Remove duplicate expense entries from the in-memory list before persist.
+     * Two expenses are considered duplicates if they share the same:
+     * - Item id (or both null),
+     * - Net rate,
+     * - Considered-for-costing flag,
+     * - Description (trimmed, case-insensitive), and
+     * - Quantity.
+     * Keeps the first occurrence and retires subsequent ones if already persisted;
+     * otherwise removes from the list.
+     */
+    private void deduplicateBillExpensesInMemory() {
+        if (getCurrentGrnBillPre() == null) {
+            return;
+        }
+        List<BillItem> expenses = getCurrentGrnBillPre().getBillExpenses();
+        if (expenses == null || expenses.isEmpty()) {
+            return;
+        }
+
+        Map<String, BillItem> seen = new HashMap<>();
+        List<BillItem> toRemove = new ArrayList<>();
+
+        for (BillItem e : expenses) {
+            if (e == null || e.isRetired()) {
+                continue;
+            }
+            Long itemId = e.getItem() != null ? e.getItem().getId() : null;
+            String desc = e.getDescreption() != null ? e.getDescreption().trim().toLowerCase() : "";
+            String key = (itemId == null ? "_null" : itemId.toString())
+                    + "|" + String.format(java.util.Locale.ROOT, "%.6f", e.getNetRate())
+                    + "|" + (e.isConsideredForCosting() ? "1" : "0")
+                    + "|" + desc
+                    + "|" + String.format(java.util.Locale.ROOT, "%.6f", e.getQty() == null ? 0.0 : e.getQty());
+
+            if (!seen.containsKey(key)) {
+                seen.put(key, e);
+            } else {
+                // duplicate
+                if (e.getId() != null) {
+                    // Persisted duplicate: retire it so it won't load next time
+                    e.setRetired(true);
+                    e.setBill(null);
+                    e.setExpenseBill(null);
+                    e.setRetiredAt(new Date());
+                    e.setRetirer(getSessionController().getLoggedUser());
+                    getBillItemFacade().edit(e);
+                } else {
+                    // Not persisted yet: just drop it from the list
+                    toRemove.add(e);
+                }
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            expenses.removeAll(toRemove);
+        }
+    }
+
     public void requestWithSaveApprove() {
         // Simple save method for costing save/approve workflow
         // Allow saving with incomplete data - no validation required
@@ -2442,10 +2477,7 @@ public class GrnCostingController implements Serializable {
             getCurrentGrnBillPre().setReferenceBill(getApproveBill());
         }
 
-        // Set invoice date if provided
-        if (invoiceDate != null) {
-            getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
-        }
+        // Invoice details already on currentGrnBillPre via UI binding
 
         if (getCurrentGrnBillPre().getFromInstitution() == null) {
             getCurrentGrnBillPre().setFromInstitution(getFromInstitution());
@@ -2468,6 +2500,10 @@ public class GrnCostingController implements Serializable {
         } else {
             getBillFacade().edit(getCurrentGrnBillPre());
         }
+
+        // Defensive: de-duplicate any repeated expense rows before persisting
+        // This prevents automatic duplication across save/edit cycles
+        deduplicateBillExpensesInMemory();
 
         // Save bill items - work directly with bill's collection
         for (BillItem i : getCurrentGrnBillPre().getBillItems()) {
@@ -2503,20 +2539,20 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        // Save bill expenses - work directly with bill's expense collection
+        // Do not manually create/edit expense items here to avoid double-persisting.
+        // They will be persisted via cascade when editing the bill at the end.
+        // Ensure the relationship is set for all current expenses.
         if (getCurrentGrnBillPre().getBillExpenses() != null) {
             for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
-
-                // Ensure expenseBill reference is set
+                if (expense == null) {
+                    continue;
+                }
                 expense.setExpenseBill(getCurrentGrnBillPre());
-                expense.setCreatedAt(new Date());
-                expense.setCreater(getSessionController().getLoggedUser());
-
-                // Create or update expense BillItem (including retired ones to persist retirement status)
-                if (expense.getId() == null) {
-                    getBillItemFacade().create(expense);
-                } else {
-                    getBillItemFacade().edit(expense);
+                if (expense.getCreatedAt() == null) {
+                    expense.setCreatedAt(new Date());
+                }
+                if (expense.getCreater() == null) {
+                    expense.setCreater(getSessionController().getLoggedUser());
                 }
             }
         }

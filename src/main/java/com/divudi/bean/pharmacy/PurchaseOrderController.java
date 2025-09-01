@@ -67,6 +67,7 @@ public class PurchaseOrderController implements Serializable {
     private EmailManagerEjb emailManagerEjb;
     ///////////////
     private Bill requestedBill;
+    private Long requestedBillId; // For DTO-based navigation
     private Bill aprovedBill;
     private Date fromDate;
     Date toDate;
@@ -562,6 +563,17 @@ public class PurchaseOrderController implements Serializable {
 //        getAprovedBill().setToInstitution(getRequestedBill().getToInstitution());
 //        getAprovedBill().setCreditDuration(getRequestedBill().getCreditDuration());
 //        generateBillComponent();
+    }
+
+    public Long getRequestedBillId() {
+        return requestedBillId;
+    }
+
+    public void setRequestedBillId(Long requestedBillId) {
+        this.requestedBillId = requestedBillId;
+        if (requestedBillId != null) {
+            this.requestedBill = billFacade.find(requestedBillId);
+        }
     }
 
     public Bill getAprovedBill() {
