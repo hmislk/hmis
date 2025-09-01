@@ -114,7 +114,7 @@
                                         rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
-                                                <phi:saleBill_five_five_token id="saleBillTokenFiveFive" bill="#{billSearch.bill}"></phi:saleBill_five_five_token>
+                                                <phi:saleBill_five_five_token id="saleBillTokenFiveFive" bill="#{billSearch.bill}" duplicate="true"></phi:saleBill_five_five_token>
                                             </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
@@ -125,7 +125,7 @@
                                                                                                    sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
-                                                <phi:saleBillToken id="saleBillTokenPos" bill="#{billSearch.bill}"></phi:saleBillToken>
+                                                <phi:saleBillToken id="saleBillTokenPos" bill="#{billSearch.bill}" duplicate="true"></phi:saleBillToken>
                                             </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
@@ -141,7 +141,7 @@
                                     <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
-                                                <phi:saleBill_for_Cashier bill="#{billSearch.bill}"></phi:saleBill_for_Cashier>
+                                                <phi:saleBill_for_Cashier bill="#{billSearch.bill}" duplicate="true"></phi:saleBill_for_Cashier>
                                             </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
@@ -149,7 +149,7 @@
                                     <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
-                                                <phi:saleBill_five_five_for_Cashier bill="#{billSearch.bill}"></phi:saleBill_five_five_for_Cashier>
+                                                <phi:saleBill_five_five_for_Cashier bill="#{billSearch.bill}" duplicate="true"></phi:saleBill_five_five_for_Cashier>
                                             </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
@@ -157,7 +157,7 @@
                                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}" >
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
-                                                <phi:saleBill_Header bill="#{billSearch.bill}"></phi:saleBill_Header>
+                                                <phi:saleBill_Header bill="#{billSearch.bill}" duplicate="true"></phi:saleBill_Header>
                                             </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
@@ -166,7 +166,7 @@
                                         id="gpBillPreviewFiveFiveCustom3" 
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for cashier Bill is FiveFiveCustom3',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFiveCustom3'}">
                                         <div>
-                                            <phi:sale_bill_five_five_custom_3 bill="#{billSearch.bill}"/>
+                                            <phi:sale_bill_five_five_custom_3 bill="#{billSearch.bill}" duplicate="true"/>
                                         </div>
 
                                     </h:panelGroup>
