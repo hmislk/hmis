@@ -114,7 +114,24 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>   
+                                    </p:column> 
+                                    <p:column headerText="Pre Bill By" >
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                                      
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
+                                                           value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bill.refunded}" >
+                                            <h:outputLabel style="color: red;" value="Refunded By " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}"
+                                                           value="#{bill.refundedBill.creater.webUserPerson.name}" >
+
+                                            </h:outputLabel>
+                                        </h:panelGroup>                               
+                                    </p:column> 
 
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.referenceBill.createdAt}" >
@@ -146,23 +163,7 @@
 
                                     </p:column> 
 
-                                    <p:column headerText="Pre Bill By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                                      
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
-                                                           value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}"
-                                                           value="#{bill.refundedBill.creater.webUserPerson.name}" >
-
-                                            </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column>    
+                                       
 
                                     <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" />                                      
