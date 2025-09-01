@@ -2176,7 +2176,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyIssue));
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyDisposalIssue));
         calculateStockConsumptionNetTotal(billItems);
     }
 
@@ -4098,7 +4098,7 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateStockConsumption() {
         try {
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyIssue));
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyDisposalIssue));
             cogsRows.put("Stock Consumption", stockConsumptions);
 
         } catch (Exception e) {
