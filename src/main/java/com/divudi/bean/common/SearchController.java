@@ -2692,6 +2692,22 @@ public class SearchController implements Serializable {
         this.pharmaceuticalBillItems = pharmaceuticalBillItems;
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public boolean isRefunded() {
+        return refunded;
+    }
+
+    public void setRefunded(boolean refunded) {
+        this.refunded = refunded;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -11642,6 +11658,10 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+    private boolean cancelled = false;
+    private boolean refunded = false;
+    
 
     public void listBills() {
         bills = null;
@@ -11656,6 +11676,14 @@ public class SearchController implements Serializable {
         if (institution != null) {
             params.put("ins", institution);
             jpql.append(" and b.department.institution = :ins ");
+        }
+        
+        if (refunded) {
+            params.put("ref", refunded);
+            jpql.append(" and b.refunded = :ref ");
+        }else if (cancelled) {
+            params.put("can", cancelled);
+            jpql.append(" and b.cancelled = :can ");
         }
 
         if (department != null) {
