@@ -2182,7 +2182,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyDisposalIssue));
+        List<BillType> billTypes = Arrays.asList(
+                BillType.PharmacyDisposalIssue,
+                BillType.PharmacyIssue
+        );
+        retrieveBillItems("b.billType", billTypes);
         calculateStockConsumptionNetTotal(billItems);
     }
 
