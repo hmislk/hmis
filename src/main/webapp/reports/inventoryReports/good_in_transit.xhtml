@@ -387,12 +387,17 @@
                             <h:outputLabel value="#{bi.billItem.item.code}"/>
                         </p:column>
                         <p:column headerText="Stock"
-                                  sortBy="#{bi.billItem.qty}"
+                                  sortBy="#{bi.billItem.pharmaceuticalBillItem.qty}"
                         >
                             <f:facet name="header">
                                 <h:outputLabel value="Stock"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItem.qty}"/>
+                            <h:outputLabel 
+                                value="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp' 
+                                                 ? bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack 
+                                                 : bi.billItem.pharmaceuticalBillItem.qty}">
+                                <f:convertNumber pattern="#,##0.##" />
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Expiry"
                                   sortBy="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
@@ -427,7 +432,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Retail Sale Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.retailsaleRate * bi.billItem.qty}">
+                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.retailRateInUnit * bi.billItem.pharmaceuticalBillItem.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -436,7 +441,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Purchase Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.purcahseRate * bi.billItem.qty}">
+                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.purchaseRate * bi.billItem.pharmaceuticalBillItem.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -445,7 +450,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Cost Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.itemBatch.costRate * bi.billItem.qty}">
+                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
