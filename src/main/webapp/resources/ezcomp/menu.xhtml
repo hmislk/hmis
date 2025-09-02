@@ -1204,7 +1204,7 @@
                     <p:submenu label="Transfer" icon="fas fa-exchange-alt" rendered="#{webUserController.hasPrivilege('TheaterTransfer')}" >
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  value="Request" icon="fas fa-paper-plane" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="#{transferIssueController.navigateToDirectPharmacyIssue}"  value="Direct Issue" icon="fas fa-share-square" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Recieve" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Receive" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{reportsTransfer.navigateToPharmacyTransferReports()}"
@@ -1217,7 +1217,7 @@
                     <p:menuitem 
                         ajax="false" 
                         icon="fa fa-pills"
-                        action="/theater/issue_index?faces-redirect=true" 
+                        action="/theater/issue_index?faces-redirect=true"
                         value="Pharmacy &amp; Stores"
                         rendered="#{webUserController.hasPrivilege('TheaterIssue')}" />
 
@@ -1329,7 +1329,7 @@
                     <p:submenu label="Transfer" icon="fas fa-exchange-alt" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
                         <p:menuitem  ajax="false" action="/store/store_transfer_request?faces-redirect=true"  value="Request" icon="fas fa-paper-plane" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_transfer_request_list?faces-redirect=true"  value="Issue" icon="fas fa-share-square" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferIssue')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/store_transfer_issued_list?faces-redirect=true"  value="Recieve" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRecive')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_transfer_issued_list?faces-redirect=true"  value="Receive" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRecive')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_report_transfer?faces-redirect=true"  value="Reports" icon="pi pi-chart-bar" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferReport')}" ></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('StoreAdjustment')}">
