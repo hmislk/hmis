@@ -393,11 +393,11 @@
                                 <h:outputLabel value="Stock"/>
                             </f:facet>
                             <h:panelGroup rendered="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
-                                <h:outputText value="#{bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack}">
+                                <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack)}">
                                     <f:convertNumber pattern="#,##0.##" />
                                 </h:outputText>
                                 <h:outputText value=" (" />
-                                <h:outputText value="#{bi.billItem.qty}">
+                                <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty)}">
                                     <f:convertNumber pattern="#,##0.##" />
                                 </h:outputText>
                                 <h:outputText value=" pack x " />
@@ -407,7 +407,7 @@
                                 <h:outputText value=")" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bi.billItem.item.class ne 'class com.divudi.core.entity.pharmacy.Ampp'}">
-                                <h:outputText value="#{bi.billItem.pharmaceuticalBillItem.qty}">
+                                <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.##" />
                                 </h:outputText>
                             </h:panelGroup>
@@ -445,7 +445,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Retail Sale Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.retailRateInUnit * bi.billItem.pharmaceuticalBillItem.qty}">
+                            <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.retailRateInUnit * bi.billItem.pharmaceuticalBillItem.qty)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -454,7 +454,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Purchase Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.purchaseRate * bi.billItem.pharmaceuticalBillItem.qty}">
+                            <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.purchaseRate * bi.billItem.pharmaceuticalBillItem.qty)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -463,7 +463,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Cost Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty}">
+                            <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
