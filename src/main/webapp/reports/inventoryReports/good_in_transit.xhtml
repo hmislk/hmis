@@ -392,12 +392,25 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Stock"/>
                             </f:facet>
-                            <h:outputLabel 
-                                value="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp' 
-                                                 ? bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack 
-                                                 : bi.billItem.pharmaceuticalBillItem.qty}">
-                                <f:convertNumber pattern="#,##0.##" />
-                            </h:outputLabel>
+                            <h:panelGroup rendered="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                <h:outputText value="#{bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack}">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputText>
+                                <h:outputText value=" (" />
+                                <h:outputText value="#{bi.billItem.qty}">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputText>
+                                <h:outputText value=" pack x " />
+                                <h:outputText value="#{bi.billItem.billItemFinanceDetails.unitsPerPack}">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputText>
+                                <h:outputText value=")" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{bi.billItem.item.class ne 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                <h:outputText value="#{bi.billItem.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputText>
+                            </h:panelGroup>
                         </p:column>
                         <p:column headerText="Expiry"
                                   sortBy="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
