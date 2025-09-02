@@ -111,6 +111,17 @@
                         </f:facet>
                     </p:column>
 
+                    <p:column 
+                        headerText="Bill ID"
+                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                        width="10rem">
+                        <p:commandLink 
+                            ajax="false"
+                            action="#{billController.navigateToBillById(sh.billId)}"
+                            value="#{sh.billId}" 
+                            ></p:commandLink>
+                    </p:column>
+
                     <!-- Date & Time with Format -->
                     <p:column headerText="Date &amp; Time">
                         <h:outputText value="#{sh.createdAt}">

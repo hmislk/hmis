@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="inpatientDashboardGrowl" ></p:growl>
+            <p:panel >
+                <f:facet name="header" >
+                    <h:outputText styleClass="fa fa-id-card"></h:outputText>
+                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard (DTO - Optimized)" class="m-2" ></p:outputLabel>
+
+                    <p:commandButton 
+                        value="Download" 
+                        ajax="false"
+                        class="ui-button-primary m-1"
+                        icon="fa fa-download">
+                        <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="false"
+                        class="ui-button-primary m-1"
+                        icon="fa fa-print">
+                        <p:printer target="tbl1"></p:printer>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Back to Inpatient Profile" 
+                        action="#{admissionController.navigateToSearchAdmissions()}" 
+                        style="float: right;"
+                        class="ui-button-secondary m-1"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+
+                </f:facet>
+
+                <style>
+                    @media print{
+
+                        body {
+                            margin :0px 5px;
+                        }
+                    }
+                </style>
+
+
+                <div class="row" >
+                    <div class="col-3" >
+                        <div class="m-1" >
+                            <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
+                        </div>
+                        <div class="m-1" >
+                            <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                    </div>
+                    <div class="col-9 " >
+                        <p:panel>
+                            <f:facet name="header">
+
+                                <p:outputLabel value="Medicine Issued Department" style="font-weight: bold"></p:outputLabel>
+
+                                <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true">
+                                    <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                </p:selectOneMenu>
+
+                                <p:commandButton 
+                                    value="Process" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="ui-button-success"
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                </p:commandButton>
+
+                            </f:facet>
+
+                            <p:dataTable 
+                                id="tbl1" 
+                                rowIndexVar="rowIndex" 
+                                value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounter}"  
+                                var="dto">
+
+                                <f:facet name="header">
+                                    <f:facet name="header">
+                                        <h:panelGrid columns="5" style="width: 100%; text-align: left;">
+                                            <h:outputLabel value="Name:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Age:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+
+                                            <h:outputLabel value="Gender:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Room Number:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
+
+                                            <h:outputLabel value="Date of Admission:" />
+                                            <h:outputLabel>
+                                                <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Date of Discharge:" />
+                                            <h:outputLabel>
+                                                <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="BHT:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Phone Number:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+
+                                        </h:panelGrid>
+                                    </f:facet>
+
+                                </f:facet>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column width="20em" style="padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.itemName}" />
+                                </p:column>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="QTY" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.qty : dto.qty}">
+                                        <f:convertNumber pattern="#0" />
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column width="3em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.rate}" >
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.netValue : dto.netValue}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterNetTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                    </div>
+                </div>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
