@@ -331,7 +331,8 @@
                                                     ajax="false"
                                                     value="View Payment Bill"
                                                     action="#{billSearch.navigateToViewPharmacySettledPreBill()}"
-                                                    disabled="#{bill.referenceBill eq null}">
+                                                    disabled="#{bill.referenceBill eq null}"
+                                                    rendered="#{webUserController.hasPrivilege('PharmacySaleReprint')}">
                                                     <f:setPropertyActionListener target="#{billSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>

@@ -13,7 +13,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" >
+                    <p:panel header="Reprint" rendered="#{webUserController.hasPrivilege('PharmacySaleReprint')}">
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between align-items-center">
                                 <h:outputLabel value="Reprint Sale Bill For Cashier" />
@@ -47,7 +47,7 @@
                                 <small class="text-warning" style="font-weight: bold;">Original Print:</small>
                                 <p:commandButton 
                                     value="Bill" 
-                                    class="ui-button-warning m-1"
+                                    styleClass="ui-button-warning m-1"
                                     icon="fa fa-print"
                                     ajax="false" >
                                     <p:printer target="gpBillPreviewOriginal" />

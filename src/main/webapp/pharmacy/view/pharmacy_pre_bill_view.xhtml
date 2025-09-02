@@ -49,9 +49,7 @@
                                             id="btnPrint"
                                             value="Print Bill"
                                             ajax="false"
-                                            icon="fa fa-print"
                                             class="ui-button-info m-1"
-                                            action="#" >
                                             <p:printer target="gpBillPreview" ></p:printer>
                                         </p:commandButton>
 
@@ -61,20 +59,16 @@
                                             value="Print Token"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                             ajax="false"
-                                            icon="fa fa-print"
                                             class="ui-button-info m-1"
-                                            action="#" >
                                             <p:printer target="tokenPrint" ></p:printer>
                                         </p:commandButton>
 
                                         <p:commandButton
-                                            accesskey="a"
+                                            accesskey="k"
                                             id="btnPrintTokenBill"
                                             value="Print Bill &amp; Token"
                                             ajax="false"
-                                            icon="fa fa-print"
                                             class="ui-button-info m-1"
-                                            action="#" >
                                             <p:printer target="billAndTokenPrint" ></p:printer>
                                         </p:commandButton>
                                     </div>
@@ -129,10 +123,11 @@
 
                                 <div class="col-2">
                                     <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                         accesskey="n"
                                         value="New Bill"
                                         icon="fa fa-plus"
-                                        class="ui-button-success m-1"
+                                        styleClass="ui-button-success m-1"
                                         ajax="false"
                                         action="/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
                                         actionListener="#{pharmacySaleController.resetAll()}" />

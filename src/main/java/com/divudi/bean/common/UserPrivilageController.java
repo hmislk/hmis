@@ -598,7 +598,7 @@ public class UserPrivilageController implements Serializable {
 
         //Pharmacy
         TreeNode pharmacyTokenManagement = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTokenManagement, "Pharmacy Token Management"), pharmacyNode);
-        TreeNode retailTransaction = new DefaultTreeNode("Pharmacy Retail Transaction", pharmacyNode);
+        TreeNode retailTransaction = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy Retail Transaction"), pharmacyNode);
         TreeNode retailTransactionMenu = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailTransactionMenue, "Pharmacy Retail Transaction Menu"), retailTransaction);
         TreeNode PharmacySale = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), retailTransaction);
         TreeNode PharmacySaleForCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleForCashier, "Pharmacy Sale For Cashier"), retailTransaction);
@@ -1304,7 +1304,7 @@ public class UserPrivilageController implements Serializable {
                 return null;
             }
             UserPrivilageController controller = (UserPrivilageController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "userPrivilegeController");
+                    getValue(facesContext.getELContext(), null, "userPrivilageController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
