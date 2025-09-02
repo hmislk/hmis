@@ -42,50 +42,76 @@
                                         <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                                     </h:panelGroup>
 
-                                    <p:commandButton
-                                        value="Print Original"
-                                        ajax="false"
-                                        icon="fa fa-print"
-                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers') and webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}"
-                                        class="ui-button-success m-1"
-                                        action="#" >
-                                        <p:printer target="gpBillPreviewOriginal" ></p:printer>
-                                    </p:commandButton>
+                                    <!-- Standard Print Group (Primary actions) -->
+                                    <div class="d-inline-block mx-2" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}">
+                                        <p:commandButton
+                                            accesskey="p"
+                                            id="btnPrint"
+                                            value="Print Bill"
+                                            ajax="false"
+                                            icon="fa fa-print"
+                                            class="ui-button-info m-1"
+                                            action="#" >
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
 
-                                    <p:commandButton
-                                        accesskey="p"
-                                        id="btnPrint"
-                                        value="Print Bill"
-                                        ajax="false"
-                                        icon="fa fa-print"
-                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                        class="ui-button-info m-1"
-                                        action="#" >
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
+                                        <p:commandButton
+                                            accesskey="a"
+                                            id="btnPrintToken"
+                                            value="Print Token"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                            ajax="false"
+                                            icon="fa fa-print"
+                                            class="ui-button-info m-1"
+                                            action="#" >
+                                            <p:printer target="tokenPrint" ></p:printer>
+                                        </p:commandButton>
 
-                                    <p:commandButton
-                                        accesskey="a"
-                                        id="btnPrintToken"
-                                        value="Print Token"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
-                                        ajax="false"
-                                        icon="fa fa-print"
-                                        class="ui-button-info m-1"
-                                        action="#" >
-                                        <p:printer target="tokenPrint" ></p:printer>
-                                    </p:commandButton>
+                                        <p:commandButton
+                                            accesskey="a"
+                                            id="btnPrintTokenBill"
+                                            value="Print Bill &amp; Token"
+                                            ajax="false"
+                                            icon="fa fa-print"
+                                            class="ui-button-info m-1"
+                                            action="#" >
+                                            <p:printer target="billAndTokenPrint" ></p:printer>
+                                        </p:commandButton>
+                                    </div>
 
-                                    <p:commandButton
-                                        accesskey="a"
-                                        id="btnPrintTokenBill"
-                                        value="Print Bill &amp; Token"
-                                        ajax="false"
-                                        icon="fa fa-print"
-                                        class="ui-button-info m-1"
-                                        action="#" >
-                                        <p:printer target="billAndTokenPrint" ></p:printer>
-                                    </p:commandButton>
+                                    <br/>
+
+                                    <!-- Original Print Group (Secondary actions - for privileged users) -->
+                                    <div class="d-inline-block mx-2 mt-2" style="border: 1px solid #f39c12; border-radius: 4px; padding: 4px;" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}">
+                                        <small class="text-warning" style="font-weight: bold;">Original Print:</small>
+                                        <p:commandButton
+                                            value="Bill"
+                                            ajax="false"
+                                            icon="fa fa-print"
+                                            class="ui-button-warning m-1"
+                                            action="#" >
+                                            <p:printer target="gpBillPreviewOriginal" ></p:printer>
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            value="Token"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                            ajax="false"
+                                            icon="fa fa-print"
+                                            class="ui-button-warning m-1"
+                                            action="#" >
+                                            <p:printer target="tokenPrintOriginal" ></p:printer>
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            value="Bill &amp; Token"
+                                            ajax="false"
+                                            icon="fa fa-print"
+                                            class="ui-button-warning m-1"
+                                            action="#" >
+                                            <p:printer target="billAndTokenPrintOriginal" ></p:printer>
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                                 
                                 <div class="col-4">

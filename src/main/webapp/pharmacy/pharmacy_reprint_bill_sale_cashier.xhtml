@@ -15,46 +15,45 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint Sale Bill For Cashier" class="mt-2" ></h:outputLabel>
-
-                            <p:commandButton 
-                                value="Print Original" 
-                                style="float: right;"
-                                class="ui-button-success mx-2"
-                                icon="fa fa-print"
-                                ajax="false"
-                                rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}" >
-                                <p:printer target="gpBillPreviewOriginal" ></p:printer>
-                            </p:commandButton>
-
-                            <p:commandButton 
-                                value="Reprint" 
-                                style="float: right;"
-                                class="ui-button-info mx-2"
-                                icon="fa fa-print"
-                                ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-
-                            <p:commandButton 
-                                ajax="false"
-                                value="Back" 
-                                style="float: right;"
-                                class="ui-button-warning mx-2"
-                                icon="fa fa-arrow-left"
-                                action="pharmacy_search_pre_bill?faces-redirect=true" >
-                            </p:commandButton>   
-                            <!--                            <p:commandButton 
-                                                            ajax="false" 
-                                                            value="Cancel" 
-                                                            style="float: right;"
-                                                            class="ui-button-danger"
-                                                            icon="fa fa-cancel"
-                                                            action="pharmacy_cancel_bill_retail_cash" 
-                                                            disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                                                        </p:commandButton>-->
-
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputLabel value="Reprint Sale Bill For Cashier" />
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Back" 
+                                        class="ui-button-secondary"
+                                        icon="fa fa-arrow-left"
+                                        action="pharmacy_search_pre_bill?faces-redirect=true" />
+                                </div>
+                            </div>
                         </f:facet>
+
+                        <div class="mb-3">
+                            <!-- Standard Print Group (Primary actions) -->
+                            <div class="d-inline-block mx-2">
+                                <p:commandButton 
+                                    value="Reprint" 
+                                    class="ui-button-info m-1"
+                                    icon="fa fa-print"
+                                    ajax="false" >
+                                    <p:printer target="gpBillPreview" />
+                                </p:commandButton>
+                            </div>
+
+                            <br/>
+
+                            <!-- Original Print Group (Secondary actions - for privileged users) -->
+                            <div class="d-inline-block mx-2 mt-2" style="border: 1px solid #f39c12; border-radius: 4px; padding: 4px;" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}">
+                                <small class="text-warning" style="font-weight: bold;">Original Print:</small>
+                                <p:commandButton 
+                                    value="Bill" 
+                                    class="ui-button-warning m-1"
+                                    icon="fa fa-print"
+                                    ajax="false" >
+                                    <p:printer target="gpBillPreviewOriginal" />
+                                </p:commandButton>
+                            </div>
+                        </div>
 
                         <!-- Original Print Section (No Duplicate Text) -->
                         <h:panelGroup id="gpBillPreviewOriginal" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}" >
