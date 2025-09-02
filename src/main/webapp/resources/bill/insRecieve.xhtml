@@ -124,8 +124,8 @@
                             </table>
 
                             <div class="section-title">
-                                <h:outputLabel value="OPD Credit Settlement" rendered="#{cc.attrs.billController.billItems.get(0).patientEncounter eq null}" />
-                                <h:outputLabel value="BHT Credit Settlement" rendered="#{cc.attrs.billController.billItems.get(0).patientEncounter ne null}" />
+                                <h:outputLabel value="OPD Credit Settlement" rendered="#{empty cc.attrs.billController.billItems or cc.attrs.billController.billItems[0].patientEncounter eq null}" />
+                                <h:outputLabel value="BHT Credit Settlement" rendered="#{not empty cc.attrs.billController.billItems and cc.attrs.billController.billItems[0].patientEncounter ne null}" />
                             </div>
 
                             <div class="patient">
