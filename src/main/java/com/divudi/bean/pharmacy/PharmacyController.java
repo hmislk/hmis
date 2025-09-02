@@ -765,6 +765,7 @@ public class PharmacyController implements Serializable {
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
     private List<DepartmentCategoryWiseItems> resultsList;
     private Map<String, List<PharmacyRow>> departmentWiseRows;
+    private Map<String, Double[]> departmentTotalsMap;
 
     private String transferType;
     private Institution fromSite;
@@ -3197,6 +3198,15 @@ public class PharmacyController implements Serializable {
 
                     dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-");
                 }
+                Row footerRow = sheet.createRow(rowIndex++);
+                Cell totalLabelCell = footerRow.createCell(0);
+                totalLabelCell.setCellValue("Total");
+
+                footerRow.createCell(10).setCellValue(departmentTotalsMap.get(departmentName)[0]);
+
+                if (costingEnabled) {
+                    footerRow.createCell(12).setCellValue(departmentTotalsMap.get(departmentName)[1]);
+                }
             }
 
             workbook.write(out);
@@ -3274,6 +3284,18 @@ public class PharmacyController implements Serializable {
 
                     table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 }
+                PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                totalLabelCell.setColspan(10);
+                totalLabelCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                table.addCell(totalLabelCell);
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", (departmentTotalsMap.get(departmentName)[0])), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
+
+                if (costingEnabled) {
+                    table.addCell(new PdfPCell(new Phrase("")));
+                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", (departmentTotalsMap.get(departmentName)[1])), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
+                }
+
+                table.addCell(new PdfPCell(new Phrase("")));
             }
 
             document.add(table);
@@ -3374,9 +3396,12 @@ public class PharmacyController implements Serializable {
 
     public void generateReportByBillItems(BillType billType) {
         try {
+            boolean costingEnabled = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
             departmentWiseRows = new HashMap<>();
             pharmacyRows = new ArrayList<>();
             billItems = new ArrayList<>();
+            departmentTotalsMap = new HashMap<>();
             Map<String, Object> parameters = new HashMap<>();
             StringBuilder sql = new StringBuilder();
 
@@ -3416,10 +3441,10 @@ public class PharmacyController implements Serializable {
                 List<ItemBatch> allBatches = getItemBatchesByItems(items);
                 pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
 
-                totalPurchase = pharmacyRows.stream()
-                        .filter(r -> r.getQuantity() != null && r.getPurchaseValue() != null)
-                        .mapToDouble(r -> r.getQuantity() * r.getPurchaseValue())
-                        .sum();
+//                totalPurchase = pharmacyRows.stream()
+//                        .filter(r -> r.getQuantity() != null && r.getPurchaseValue() != null)
+//                        .mapToDouble(r -> r.getQuantity() * r.getPurchaseValue())
+//                        .sum();
             }
 
             for (PharmacyRow row : pharmacyRows) {
@@ -3427,7 +3452,23 @@ public class PharmacyController implements Serializable {
                         ? row.getBillItem().getBill().getToDepartment().getName()
                         : "Other";
 
+                double purchaseValue = row.getBillItem().getPharmaceuticalBillItem().getQty() * row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate();
+                double costValue = costingEnabled ?
+                        row.getBillItem().getPharmaceuticalBillItem().getQty() * (row.getItemBatch() != null && row.getItemBatch().getCostRate() != null ?
+                                row.getItemBatch().getCostRate() : 0.0) : 0.0;
+
+                totalPurchase += row.getBillItem().getPharmaceuticalBillItem().getQty() * row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate();
+
                 departmentWiseRows.computeIfAbsent(departmentName, k -> new ArrayList<>()).add(row);
+                departmentTotalsMap.compute(departmentName, (k, v) -> {
+                    if (v == null) {
+                        return new Double[] { purchaseValue, costValue };
+                    } else {
+                        v[0] += purchaseValue;
+                        v[1] += costValue;
+                        return v;
+                    }
+                });
             }
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
@@ -5961,6 +6002,14 @@ public class PharmacyController implements Serializable {
 
     public void setInstitutionTransferReceive(List<InstitutionSale> institutionTransferReceive) {
         this.institutionTransferReceive = institutionTransferReceive;
+    }
+
+    public Map<String, Double[]> getDepartmentTotalsMap() {
+        return departmentTotalsMap;
+    }
+
+    public void setDepartmentTotalsMap(Map<String, Double[]> departmentTotalsMap) {
+        this.departmentTotalsMap = departmentTotalsMap;
     }
 
     public double getGrantTransferReceiveQty() {
