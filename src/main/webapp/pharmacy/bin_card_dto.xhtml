@@ -111,17 +111,6 @@
                         </f:facet>
                     </p:column>
 
-                    <p:column 
-                        headerText="Bill ID"
-                        rendered="#{webUserController.hasPrivilege('Developers')}"
-                        width="10rem">
-                        <p:commandLink 
-                            ajax="false"
-                            action="#{billController.navigateToBillById(sh.billId)}"
-                            value="#{sh.billId}" 
-                            ></p:commandLink>
-                    </p:column>
-
                     <!-- Date & Time with Format -->
                     <p:column headerText="Date &amp; Time">
                         <h:outputText value="#{sh.createdAt}">
@@ -130,9 +119,20 @@
                     </p:column>
 
                     <!-- Transaction Type -->
-                    <p:column headerText="Transaction Type">
+                    <p:column headerText="Transaction Type" width="18rem">
                         <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
+                        <br />
+                        <small style="color: #666;">Bill ID: #{sh.billId}</small>
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{billController.navigateToBillById(sh.billId)}"
+                            rendered="#{sh.billId ne null and sh.billId gt 0}"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-sm ui-button-info"
+                            title="View Bill (ID: #{sh.billId})"
+                            style="margin-left: 5px;">
+                        </p:commandButton>
                     </p:column>
 
                     <!-- Batch Number -->

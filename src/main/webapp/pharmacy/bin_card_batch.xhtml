@@ -9,16 +9,36 @@
 
     <ui:define name="subcontent">
         <style>
-            .batch-color-0 { background-color: #f8f9fa !important; }
-            .batch-color-1 { background-color: #e3f2fd !important; }
-            .batch-color-2 { background-color: #f3e5f5 !important; }
-            .batch-color-3 { background-color: #e8f5e8 !important; }
-            .batch-color-4 { background-color: #fff3e0 !important; }
-            .batch-color-5 { background-color: #fce4ec !important; }
-            .batch-color-6 { background-color: #f1f8e9 !important; }
-            .batch-color-7 { background-color: #e0f2f1 !important; }
-            .batch-color-8 { background-color: #fafafa !important; }
-            .batch-color-9 { background-color: #eceff1 !important; }
+            .batch-color-0 {
+                background-color: #f8f9fa !important;
+            }
+            .batch-color-1 {
+                background-color: #e3f2fd !important;
+            }
+            .batch-color-2 {
+                background-color: #f3e5f5 !important;
+            }
+            .batch-color-3 {
+                background-color: #e8f5e8 !important;
+            }
+            .batch-color-4 {
+                background-color: #fff3e0 !important;
+            }
+            .batch-color-5 {
+                background-color: #fce4ec !important;
+            }
+            .batch-color-6 {
+                background-color: #f1f8e9 !important;
+            }
+            .batch-color-7 {
+                background-color: #e0f2f1 !important;
+            }
+            .batch-color-8 {
+                background-color: #fafafa !important;
+            }
+            .batch-color-9 {
+                background-color: #eceff1 !important;
+            }
         </style>
 
         <h:form>
@@ -108,8 +128,8 @@
                               rendered="#{webUserController.hasPrivilege('Developers')}"
                               width="10rem">
                         <p:commandLink ajax="false"
-                                        action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
-                                        value="#{sh.id}">
+                                       action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
+                                       value="#{sh.id}">
                         </p:commandLink>
                         <f:facet name="footer">
                             <h:outputText value="Total"/>
@@ -122,9 +142,18 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Transaction Type">
+                    <p:column headerText="Transaction Type" width="15rem">
                         <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{billController.navigateToBillById(sh.billId)}"
+                            rendered="#{sh.billId ne null and sh.billId gt 0}"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-sm ui-button-info"
+                            title="View Bill"
+                            style="margin-left: 5px;">
+                        </p:commandButton>
                     </p:column>
 
                     <p:column headerText="Batch Number" class="text-end">

@@ -9,9 +9,9 @@
 
     <ui:define name="subcontent">
         <h:form>
-            <p:panel header="Pharmacy Item Bin Card (DTO)">
+            <p:panel header="Pharmacy Item Bin Card">
                 <f:facet name="header">
-                    <h:outputLabel value="Pharmacy Item Bin Card (DTO)"></h:outputLabel>
+                    <h:outputLabel value="Pharmacy Item Bin Card"></h:outputLabel>
                 </f:facet>
 
                 <h:panelGrid columns="7" class="w-100">
@@ -74,7 +74,7 @@
                         class="m-1 ui-button-warning"
                         ajax="false"
                         icon="fas fa-arrows-rotate"
-                        value="Process (DTO)"
+                        value="Generate Report"
                         action="#{pharmacyErrorChecking.processItemBinCardWithDTO()}" >
                     </p:commandButton>
                 </h:panelGrid>
@@ -108,12 +108,21 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Bill Type">
+                    <p:column headerText="Transaction Type" width="15rem">
                         <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{billController.navigateToBillById(sh.billId)}"
+                            rendered="#{sh.billId ne null and sh.billId gt 0}"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-sm ui-button-info"
+                            title="View Bill"
+                            style="margin-left: 5px;">
+                        </p:commandButton>
                     </p:column>
 
-                    <p:column headerText="Qty In" class="text-end">
+                    <p:column headerText="Quantity In" class="text-end">
                         <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}"
                                       rendered="#{sh.transThisIsStockIn}"
                                       styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
@@ -121,7 +130,7 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Qty Out" class="text-end">
+                    <p:column headerText="Quantity Out" class="text-end">
                         <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}"
                                       rendered="#{sh.transThisIsStockOut}"
                                       styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
@@ -129,7 +138,13 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Balance Qty (Item)" class="text-end">
+                    <p:column headerText="Stock Before (Item)" class="text-end">
+                        <h:outputText value="#{sh.transThisIsStockIn ? sh.itemStock - sh.transAbsoluteQtyPlusFreeQty : sh.itemStock + sh.transAbsoluteQtyPlusFreeQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Stock After (Item)" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
