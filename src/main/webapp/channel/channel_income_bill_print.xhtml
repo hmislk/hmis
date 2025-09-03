@@ -202,27 +202,27 @@
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.hospitalFee}">
+                                                <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.staffFee}">
+                                                <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.total}">
+                                                <h:outputText styleClass="grossValue" value="#{row.bill.total}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.discount}">
+                                                <h:outputText styleClass="discountValue" value="#{row.bill.discount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.netTotal}">
+                                                <h:outputText styleClass="netValue" value="#{row.bill.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
@@ -235,33 +235,76 @@
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.hospitalTotal}">
+                                            <h:outputText styleClass="totalHosValue" value="0.00">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.staffTotal}">
+                                            <h:outputText styleClass="totalStaffValue" value="0.00">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.grossTotal}">
+                                            <h:outputText styleClass="totalGrossValue" value="0.00">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.discount}">
+                                            <h:outputText styleClass="totalDiscountValue" value="0.00">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.total}">
+                                            <h:outputText styleClass="totalNetValue" value="0.00">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                     </tr>
                                     </tfoot>
                                 </table>
+                                <script>
+                                    function calculateTotals(selector, targeter) {
+                                        const values = Array.from(document.querySelectorAll(selector));
+                                        const totalValue = values
+                                            .map(value => {
+                                                const cleanValue = value.innerText.replace(/,/g, "");
+                                                return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                            })
+                                            .reduce((total, value) => total + value, 0);
+
+                                        const targetElement = document.querySelector(targeter);
+                                        if (targetElement) {
+                                            targetElement.innerText = totalValue.toLocaleString('en-US', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            });
+                                        }
+                                    }
+
+                                    function handleRowClick() {
+                                        onBillRowClick(); // triggers AJAX to server
+                                        setTimeout(updateTotals, 500);
+                                    }
+
+                                    function updateTotals() {
+                                        calculateTotals('.grossValue', '.totalGrossValue');
+                                        calculateTotals('.hosValue', '.totalHosValue');
+                                        calculateTotals('.staffValue', '.totalStaffValue');
+                                        calculateTotals('.netValue', '.totalNetValue');
+                                        calculateTotals('.discountValue', '.totalDiscountValue');
+                                    }
+
+                                    // Run the calculation after page loads
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        setTimeout(updateTotals, 1000);
+                                    });
+
+                                    // Also run on window load as backup
+                                    window.addEventListener('load', function() {
+                                        setTimeout(updateTotals, 500);
+                                    });
+
+                                </script>
                             </div>
                         </div>
                     </h:panelGroup>

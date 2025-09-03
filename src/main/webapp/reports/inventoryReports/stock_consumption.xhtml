@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -215,32 +215,23 @@
 
 
                             <p:column headerText="Date" width="5em">
-                                <h:outputText value="#{f.createdAt}" />
+                                <h:outputText value="#{f.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column headerText="Item Name" width="5em">
                                 <h:outputText value="#{f.item.name}" />
                             </p:column>
-                            
+
                             <p:column headerText="Batch Code" width="5em">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
-                            
+
                             <p:column headerText="Doc No" width="5em">
-                                <p:commandLink 
-                                    value="#{f.bill.referenceBill.deptId}" 
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
-                                </p:commandLink>
-                            </p:column>
-                            
-                            <p:column headerText="Ref. Doc No (Original bill No)" width="5em">
                                 <p:commandLink 
                                     value="#{f.bill.deptId}" 
                                     class="m-1 ui-button-info"
@@ -250,38 +241,68 @@
                                     <f:setPropertyActionListener value="#{f.bill}"  target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            
-                            <p:column headerText="QTY" width="5em">
-                                <h:outputText value="#{f.qty}" />
+
+                            <p:column headerText="Ref. Doc No (Original bill No)" width="5em">
+                                <p:commandLink 
+                                    value="#{f.bill.referenceBill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
-                            
+
+                            <p:column headerText="QTY" width="5em">
+                                <h:outputText value="#{f.qty}" >
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
                             <p:column headerText="Code" width="5em">
                                 <h:outputText value="#{f.item.code}" />
                             </p:column>
-                            
-                            <p:column headerText="Rate" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
+
+                            <p:column headerText="Purchase Rate" width="5em">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Stock Consumption" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
-                            
+                            <p:column headerText="Cost Rate" width="5em">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Value" width="5em">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
                             <p:column headerText="Net Total" width="5em">
-                                <h:outputText value="#{f.bill.netTotal}" />
+                                <h:outputText value="#{f.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column headerText="Consumption Department" width="5em">
                                 <h:outputText value="#{f.bill.toDepartment.name}" />
                             </p:column>
-                            
+
                             <p:column headerText="Remarks" width="5em">
                                 <h:outputText value="#{f.bill.comments}" />
                             </p:column>
-                            
+
                             <p:column headerText="UOM" width="5em">
                                 <h:outputText value="#{f.item.measurementUnit.name}" />
                             </p:column>

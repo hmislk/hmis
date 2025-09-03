@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.channel.OnlineBookingAgentController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
@@ -1251,7 +1252,7 @@ public class ChannelService {
         btList.add(BillType.ChannelOnlineBookingAgentPaidToHospital);
         btList.add(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
         params.put("bt", btList);
-        
+
         List<BillTypeAtomic> btaList = new ArrayList<>();
         btaList.add(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
         btaList.add(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
@@ -1289,7 +1290,7 @@ public class ChannelService {
         sql += " order by bill.createdAt desc";
 
         List<Bill> list = billFacade.findByJpql(sql, params, TemporalType.TIMESTAMP);
-        System.out.println("end "+list.size());
+        System.out.println("end " + list.size());
 
         return list;
     }
@@ -1397,6 +1398,124 @@ public class ChannelService {
         } else {
             return bundle;
         }
+
+    }
+
+    public OnlineBookingAgentController.ChannelAnalyticDto generateChannelAnaliticsData(Date fromDate, Date toDate, Institution institution, Institution agency, OnlineBookingAgentController.ChannelAnalyticDto dto) {
+        StringBuilder sql = new StringBuilder("select ob from OnlineBooking ob where "
+                + " ob.onlineBookingStatus in :status "
+                + " and ob.retired = :ret"
+                + " and ob.agency = :agent"
+                + " and ob.createdAt between :fromDate and :toDate ");
+
+        Map<String, Object> params = new HashMap();
+        List<OnlineBookingStatus> status = Arrays.stream(OnlineBookingStatus.values())
+                .filter(stat -> stat != OnlineBookingStatus.PENDING)
+                .collect(Collectors.toList());
+
+        params.put("status", status);
+        params.put("ret", false);
+        params.put("agent", agency);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            sql.append(" and ob.hospital = :hos");
+            params.put("hos", institution);
+        }
+
+        sql.append(" order by ob.createdAt desc");
+
+        List<OnlineBooking> bookingList = onlineBookingFacade.findByJpql(sql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (bookingList == null || bookingList.isEmpty()) {
+            return null;
+        }
+
+        double totalBookings;
+
+        totalBookings = bookingList.size();
+
+        double hospitalCancelBookings = 0;
+        double agentCancelBookings = 0;
+        double absentPatientBookings = 0;
+        double activeBookings = 0;
+        double completedBookings = 0;
+        double totalEarningForOnlineBooking = 0;
+        double totalAgencyDeposits = 0;
+        double bookingsCancelByagentThroughHospital = 0;
+        double remainAmountNeedForHospitalCancelAndRepaidBills = 0;
+        double activeBookingEarning = 0;
+        double absentBookingPaymentTotal = 0;
+
+        for (OnlineBooking ob : bookingList) {
+            if (ob.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
+                totalEarningForOnlineBooking += ob.getAppoinmentTotalAmount();
+                completedBookings++;
+            } else if (ob.getOnlineBookingStatus() == OnlineBookingStatus.ACTIVE) {
+                activeBookingEarning += ob.getAppoinmentTotalAmount();
+                activeBookings++;
+            } else if (ob.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
+                if (ob.getBill().isCancelled()) {
+                    if (ob.getBill().getCancelledBill().getPaymentMethod() == PaymentMethod.OnlineBookingAgent) {
+                        bookingsCancelByagentThroughHospital++;
+                    } else {
+                        hospitalCancelBookings++;
+                        remainAmountNeedForHospitalCancelAndRepaidBills += ob.getAppoinmentTotalAmount();
+                    }
+                }
+
+            } else if (ob.getOnlineBookingStatus() == OnlineBookingStatus.PATIENT_CANCELED) {
+                agentCancelBookings++;
+            } else if (ob.getOnlineBookingStatus() == OnlineBookingStatus.ABSENT) {
+                absentPatientBookings++;
+                absentBookingPaymentTotal += ob.getAppoinmentTotalAmount();
+            }
+        }
+
+        SearchKeyword searchKeyword = new SearchKeyword();
+        searchKeyword.setFromInstitution(agency.getName());
+
+        List<Bill> billList = fetchAgentDirectFundBills(searchKeyword, fromDate, toDate, institution);
+
+        for (Bill b : billList) {
+            if (b.getBillType() == BillType.ChannelOnlineBookingAgentPaidToHospital) {
+                totalAgencyDeposits += b.getNetTotal();
+            } else if (b.getBillType() == BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation) {
+                totalAgencyDeposits -= b.getNetTotal();
+            }
+        }
+
+        dto.setActiveBookings(activeBookings);
+        dto.setAgentCancelBookings(agentCancelBookings);
+        dto.setCompletedBookings(completedBookings);
+        dto.setHospitalCancelBookings(hospitalCancelBookings);
+        dto.setTotalAgencyDeposits(totalAgencyDeposits);
+        dto.setTotalBookings(totalBookings);
+        dto.setTotalEarningForOnlineBooking(totalEarningForOnlineBooking);
+        dto.setAbsentPatientBookings(absentPatientBookings);
+        dto.setBookingsCancelByagentThroughHospital(bookingsCancelByagentThroughHospital);
+        dto.setRemainAmountNeedForHospitalCancelAndRepaidBills(remainAmountNeedForHospitalCancelAndRepaidBills);
+        dto.setAbsentBookingPaymentTotal(absentBookingPaymentTotal);
+        dto.setActiveBookingEarning(activeBookingEarning);
+
+        String sql2 = "select bill from Bill bill where"
+                + " bill.billType = :type "
+                + " and bill.retired = :retire"
+                + " order by bill.createdAt desc ";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("type", BillType.ChannelOnlineBookingAgentPaidToHospital);
+        parameters.put("retire", false);
+
+        Bill bill = billFacade.findFirstByJpql(sql2, parameters, TemporalType.DATE);
+
+        if (bill != null) {
+
+            dto.setLastPaidToHospitalDate(bill.getCreatedAt());
+        }
+
+        return dto;
 
     }
 

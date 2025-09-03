@@ -65,9 +65,7 @@
                         styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                         value="#{investigationMonthSummeryOwnController.bundle.bundles}" 
                         var="bd"
-                        paginator="true"
-                        rowIndexVar="i"
-                        paginatorPosition="bottom">
+                        rowIndexVar="i">
 
                         <f:facet name="header"  >
                             <div style="padding: 3px!important; margin: 0px!important;">
@@ -96,10 +94,13 @@
                             </div>
                         </f:facet>
 
-                        <p:subTable  var="row" class="mt-1" value="#{bd.rows}">
+                        <p:subTable 
+                            var="row" 
+                            class="mt-1" 
+                            value="#{bd.rows}">
                             <f:facet name="header">
                                 <h:outputText value="#{bd.name}" style="font-weight: 700; font-size: 19px; padding: 6px;"/>
-                                <h:outputText value="-" style="font-weight: 700; font-size: 19px; padding: 6px; width: 120px; text-align: center;"/>
+                                <h:outputText value="-" style="font-weight: 700; font-size: 19px; padding: 6px; width: 180px; text-align: center;"/>
                                 <h:outputText value="#{bd.rows.size()}" style="font-weight: 700; font-size: 19px; padding: 6px;"/>
                             </f:facet>
 

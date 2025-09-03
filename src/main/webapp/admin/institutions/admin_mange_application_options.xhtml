@@ -4,8 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
             <ui:define name="admin">
@@ -13,9 +12,34 @@
                     <p:panel styleClass="panel-header-right">
                         <f:facet name="header">
                             <h:outputText value="Application Options" style="float: left;"/>
+                            <!-- Import button -->
+                            <p:commandButton value="Import" icon="pi pi-upload" 
+                                             styleClass="ui-button-info"
+                                             onclick="PF('importDialog').show();"
+                                             style="float: right; margin-right: 0.5em;" />
+                            <!-- Export Selected button -->
+                            <p:commandButton value="Export Selected" icon="pi pi-download" 
+                                             ajax="false"
+                                             styleClass="ui-button-success"
+                                             style="float: right; margin-right: 0.5em;">
+                                <p:fileDownload value="#{configOptionController.exportSelectedOptions()}" />
+                            </p:commandButton>
+                            <!-- Bulk delete button -->
+                            <p:commandButton value="Delete Selected" 
+                                             icon="pi pi-trash" 
+                                             styleClass="ui-button-danger"
+                                             ajax="false"
+                                             action="#{configOptionController.bulkDeleteSelectedOptions}"
+                                             style="float: right; margin-right: 0.5em;"
+                                             onclick="if (!confirm('Are you sure you want to delete the selected options?'))
+                                                         return false;" />
                             <!-- Button to List Application Options, with an icon and aligned to the right -->
                             <p:commandButton value="List Application Options" icon="pi pi-list" action="#{configOptionController.listApplicationOptions}"
-                                             update="optionsTable" style="float: right;" />
+                                             update="optionsTable" style="float: right; margin-right: 0.5em;" />
+                            <!-- Excel export button -->
+                            <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel" style="float: right; margin-right: 0.5em;">
+                                <p:dataExporter type="xlsx" target="optionsTable" fileName="application_options" />
+                            </p:commandButton>
                         </f:facet>
                         <!-- Data Table for Options -->
                         <p:dataTable 
@@ -24,30 +48,40 @@
                             value="#{configOptionController.options}" 
                             id="optionsTable"
                             paginator="true"
+                            selectionMode="multiple"
                             rows="15" 
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="15,50,100"
-                            selection="#{configOptionController.option}"
+                            selection="#{configOptionController.selectedOptions}"
                             filteredValue="#{configOptionController.filteredOptions}">
-                            <p:column 
+
+                            <p:column selectionBox="true" style="width:16px;text-align:center"/>
+
+                            <p:column
                                 style="padding: 7px;"
-                                headerText="Key" 
-                                sortBy="#{option.optionKey}" 
+                                headerText="Key"
+                                sortBy="#{option.optionKey}"
                                 filterBy="#{option.optionKey}"
                                 filterFunction="#{configOptionController.filterByCustom}">
                                 <h:outputText value="#{option.optionKey}"/>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.optionKey}"/>
+                                </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column
                                 rendered="#{webUserController.hasPrivilege('Developers')}"
-                                headerText="Type" 
-                                width="10em" 
-                                sortBy="#{option.valueType}" 
+                                headerText="Type"
+                                width="10em"
+                                sortBy="#{option.valueType}"
                                 filterBy="#{option.valueType}"
                                 filterFunction="#{configOptionController.filterByCustom}"
                                 style="padding: 7px;">
                                 <h:outputText value="#{option.valueType}"/>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.valueType}"/>
+                                </f:facet>
                             </p:column>
 
                             <p:column
@@ -71,30 +105,35 @@
                                         <h:outputText value="#{option.optionValue}" />
                                     </h:panelGroup>
                                 </h:panelGroup>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.optionValue eq 'true' ? 'Yes' : (option.optionValue eq 'false' ? 'No' : option.optionValue)}" />
+                                </f:facet>
 
-                            </p:column >
+                            </p:column>
 
                             <p:column width="14em" style="padding: 7px;" >
                                 <div class="text-center w-100">
-                                    <p:commandButton 
-                                        icon="pi pi-pencil" 
-                                        styleClass="ui-button-success mx-1" 
-                                        oncomplete="PF('optionEditDialog').show()" 
+                                    <p:commandButton
+                                        icon="pi pi-pencil"
+                                        styleClass="ui-button-success mx-1"
+                                        oncomplete="PF('optionEditDialog').show()"
                                         update=":editForm"
                                         title="Edit Option">
                                         <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        icon="pi pi-trash" 
-                                        styleClass="ui-button-danger mx-1" 
+                                    <p:commandButton
+                                        icon="pi pi-trash"
+                                        styleClass="ui-button-danger mx-1"
                                         ajax="false"
                                         onclick="if (!confirm('Are you Sure you want to Delete this Option?'))
                                                     return false;"
-                                        action="#{configOptionController.deleteOption(option)}" 
-                                        update=":optionTable"
+                                        action="#{configOptionController.deleteOption(option)}"
                                         title="Delete Option">
                                     </p:commandButton>
                                 </div>
+                                <f:facet name="exportable">
+                                    <h:outputText value="" />
+                                </f:facet>
 
                             </p:column>
 
@@ -210,6 +249,54 @@
                             </div>
                         </p:panel>
 
+                    </h:form>
+                </p:dialog>
+
+                <!-- Import Dialog -->
+                <p:dialog header="Import Configuration Options" widgetVar="importDialog" modal="true" 
+                          style="min-width: 50%; min-height: 300px;">
+                    <h:form id="importForm" enctype="multipart/form-data">
+                        <p:panel class="w-100">
+                            <f:facet name="header">
+                                <p:outputPanel styleClass="header-style">Import Options from CSV</p:outputPanel>
+                            </f:facet>
+
+                            <div class="mb-3">
+                                <p>Upload a CSV file with the following format:</p>
+                                <p><strong>Option Key, Option Value, Value Type, Enum Type</strong></p>
+                                <p class="text-muted">Note: If an option key already exists, its value will be replaced with the imported value.</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <p:fileUpload 
+                                    value="#{configOptionController.uploadedFile}"
+                                    mode="simple" 
+                                    allowTypes="/(\.|\/)(csv)$/"
+                                    sizeLimit="1000000"
+                                    label="Choose CSV File" />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p:commandButton 
+                                    value="Import CSV" 
+                                    icon="pi pi-upload"
+                                    ajax="false"
+                                    action="#{configOptionController.importOptionsFromCsv}"
+                                    styleClass="ui-button-success" />
+                                <p:commandButton 
+                                    value="Cancel" 
+                                    icon="pi pi-times"
+                                    onclick="PF('importDialog').hide();"
+                                    styleClass="ui-button-secondary ml-2" />
+                            </div>
+
+                            <div class="mt-3">
+                                <p class="text-info">
+                                    <i class="pi pi-info-circle"></i>
+                                    Supported Value Types: SHORT_TEXT, LONG_TEXT, BOOLEAN, LONG, DOUBLE, ENUM, COLOR
+                                </p>
+                            </div>
+                        </p:panel>
                     </h:form>
                 </p:dialog>
 

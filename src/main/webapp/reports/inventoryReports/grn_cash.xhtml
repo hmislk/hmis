@@ -231,9 +231,26 @@
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="#{bi.qty}" />
+                                <h:outputText value="#{bi.qty}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="RATE">
+                            <p:column headerText="FREE QTY">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="COST RATE" width="5em">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="COST VALUE" width="5em">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate * bi.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="PURCHASE RATE">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

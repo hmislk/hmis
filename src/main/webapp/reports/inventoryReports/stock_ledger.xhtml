@@ -86,6 +86,7 @@
                                 <f:selectItem itemLabel="Consumption" itemValue="consumptionDoc"/>
                                 <f:selectItem itemLabel="Purchase" itemValue="purchaseDoc"/>
                                 <f:selectItem itemLabel="GRN" itemValue="grnDoc"/>
+                                <f:selectItem itemLabel="Return Without Receipt" itemValue="returnWithoutReceiptDoc"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -306,11 +307,13 @@
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
-                                <h:outputText value="#{f.createdAt}" />
+                                <h:outputText value="#{f.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
-                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
                                     value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
@@ -318,17 +321,36 @@
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
+                                    value="#{f.pbItem.billItem.bill.billedBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.billedBill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
-
+                           
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
-                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
+                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                                <h:outputText 
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
+                                              value="#{f.pbItem.billItem.bill.billedBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
 
                             </p:column>
                             <p:column headerText="From Store" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
                             </p:column>
                             <p:column headerText="To Store" width="5em">
+                                <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
+                            </p:column>
+                            <p:column headerText="Consumption Department" width="5em">
                                 <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
                             </p:column>
                             <p:column headerText="Document Type" width="5em">
@@ -344,15 +366,17 @@
                                 <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
-                                <h:outputText value="#{f.itemStock}" />
+                                <h:outputText value="#{f.totalItemStock}" />
                             </p:column>
                             <p:column headerText="Rate" width="5em">
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                             </p:column>
                             <p:column headerText="Cost Rate" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.billItemFinanceDetails.totalCostRate / f.pbItem.billItem.billItemFinanceDetails.unitsPerPack}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                <h:outputText value="#{f.itemBatch.costRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Closing Stock Value" width="15em">
                                 <h:outputText value="#{f.itemStock * f.pbItem.purchaseRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
@@ -365,13 +389,19 @@
                                 <h:outputText value="#{f.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="MRP" width="5em">
-                                <h:outputText value="#{f.pbItem.retailRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                <h:outputText value="#{f.pbItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Expiry Date" width="5em">
-                                <h:outputText value="#{f.pbItem.doe}" />
+                                <h:outputText value="#{f.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.createdAt}" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="UserName" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />

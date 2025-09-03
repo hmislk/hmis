@@ -1966,5 +1966,149 @@ public class PdfController {
         document.add(lineSeparator);
     }
 
+    // New method for DTO-based bundles
+    public StreamedContent createPdfForDtoBundle(com.divudi.core.data.dto.DailyReturnBundleDTO rootBundle) throws IOException {
+        if (rootBundle == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            addDtoDataToPdf(document, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (com.divudi.core.data.dto.DailyReturnBundleDTO childBundle : rootBundle.getBundles()) {
+                addDtoDataToPdf(document, childBundle, childBundle.getBundleType());
+            }
+        }
+
+        document.close();
+
+        // Create a ByteArrayInputStream from the byte array
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        // Create and return StreamedContent
+        StreamedContent pdfSc = DefaultStreamedContent.builder()
+                .name("daily_return_dto_" + new Date().getTime() + ".pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
+
+        return pdfSc;
+    }
+    
+    private void addDtoDataToPdf(Document document, com.divudi.core.data.dto.DailyReturnBundleDTO addingBundle, String type) {
+        if (addingBundle == null) {
+            return;
+        }
+
+        try {
+            PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ROMAN);
+            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.TIMES_BOLD);
+
+            // Add bundle title
+            Paragraph title = new Paragraph(addingBundle.getName())
+                    .setFont(boldFont)
+                    .setFontSize(14)
+                    .setMarginBottom(5)
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(title);
+
+            // Only add data table if there are rows to display
+            if (addingBundle.getRows() != null && !addingBundle.getRows().isEmpty()) {
+                // Create table with 7 columns
+                Table table = new Table(UnitValue.createPercentArray(new float[]{2, 3, 1.5f, 2, 2, 1.5f, 2}));
+                table.setWidth(UnitValue.createPercentValue(100));
+
+                // Add header row
+                String[] headers = {"Category", "Item / Service", "Count", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
+                for (String header : headers) {
+                    Cell headerCell = new Cell()
+                            .add(new Paragraph(header).setFont(boldFont).setFontSize(10))
+                            .setTextAlignment(TextAlignment.CENTER)
+                            .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                    table.addHeaderCell(headerCell);
+                }
+
+                // Add data rows
+                for (com.divudi.core.data.dto.DailyReturnRowDTO row : addingBundle.getRows()) {
+                    // Category
+                    table.addCell(new Cell().add(new Paragraph(row.getCategoryName() != null ? row.getCategoryName() : "").setFont(font).setFontSize(9)));
+                    // Item
+                    table.addCell(new Cell().add(new Paragraph(row.getItemName() != null ? row.getItemName() : "").setFont(font).setFontSize(9)));
+                    // Count
+                    table.addCell(new Cell().add(new Paragraph(String.valueOf(row.getItemCount() != null ? row.getItemCount() : 0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Hospital Fee
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Professional Fee
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Discount
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Net Amount
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                }
+
+                document.add(table);
+            } else {
+                // If no data, add a message
+                Paragraph noData = new Paragraph("No Data for " + addingBundle.getName())
+                        .setFont(font)
+                        .setFontSize(10)
+                        .setMarginBottom(5)
+                        .setTextAlignment(TextAlignment.LEFT);
+                document.add(noData);
+            }
+
+            // Add bundle total
+            addDtoBundleTotal(document, addingBundle);
+
+        } catch (IOException e) {
+            // Handle font creation error
+            System.err.println("Error creating PDF fonts: " + e.getMessage());
+        }
+    }
+    
+    private void addDtoBundleTotal(Document document, com.divudi.core.data.dto.DailyReturnBundleDTO addingBundle) {
+        try {
+            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.TIMES_BOLD);
+            
+            // Line separator before the total
+            LineSeparator lineSeparator = new LineSeparator(new SolidLine());
+            document.add(lineSeparator);
+
+            // Create a table with 2 columns for the total (left aligned title, right aligned value)
+            Table table = new Table(UnitValue.createPercentArray(new float[]{80, 20}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            // Left-aligned cell (empty or can contain additional info)
+            Cell titleCell = new Cell()
+                    .add(new Paragraph("Total for " + addingBundle.getName()).setBold().setTextAlignment(TextAlignment.LEFT));
+            titleCell.setBorder(Border.NO_BORDER);
+            table.addCell(titleCell);
+
+            // Right-aligned cell (Total)
+            Cell totalCell = new Cell()
+                    .add(new Paragraph("Total  : " + String.format("%.2f", addingBundle.getTotal() != null ? addingBundle.getTotal() : 0.0)).setFont(boldFont).setTextAlignment(TextAlignment.RIGHT));
+            totalCell.setBorder(Border.NO_BORDER);
+            table.addCell(totalCell);
+            table.setMarginBottom(8);
+            table.setMarginTop(8);
+            table.setBorder(Border.NO_BORDER);
+
+            // Add the table to the document
+            document.add(table);
+
+            // Visual separator after the total
+            document.add(lineSeparator);
+        } catch (IOException e) {
+            // Handle font creation error
+            System.err.println("Error creating PDF fonts for total: " + e.getMessage());
+        }
+    }
+
 
 }

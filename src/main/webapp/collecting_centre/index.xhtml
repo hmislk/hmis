@@ -12,7 +12,7 @@
 
                 <p:panel header="Collecting Centre Management">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <h:form>
                                 <p:accordionPanel activeIndex="#{collectingCentreController.ccManagementIndex}">
                                     <p:ajax process="@this"></p:ajax>
@@ -80,7 +80,25 @@
                                                 action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
                                                 actionListener="#{searchController.makeListNull}">
                                             </p:commandButton>
-                                            
+
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <!-- CC Payment Section -->
+                                    <p:tab  title="Collecting Centre Payment">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="CC Payment"
+                                                action="#{collectingCentrePaymentController.navigateToCCPayment()}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Search CC Payments"
+                                                action="#{collectingCentrePaymentController.navigateToSearchCCPaymentBills()}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
                                         </h:panelGrid>
                                     </p:tab>
 
@@ -183,7 +201,7 @@
                             </h:form>
                         </div>
 
-                        <div class="col-md-9">
+                        <div class="col-md-10">
                             <ui:insert name="subcontent">
                             </ui:insert>
                         </div>

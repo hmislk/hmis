@@ -330,6 +330,13 @@ public class EnumController implements Serializable {
 //                ReportViewType.BY_ITEM
         );
     }
+    
+    public List<ReportViewType> getPharmacyProcurementByBillItemViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM
+        );
+    }
 
     public List<ReportViewType> getPharmacyIncomeCostReportViewTypes() {
         return Arrays.asList(
@@ -722,6 +729,19 @@ public class EnumController implements Serializable {
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,
             BillType.PharmacyBhtPre};
+
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypes4() {
+        BillType[] b = {
+                BillType.PharmacyPre,
+                BillType.PharmacyWholesalePre,
+                BillType.PharmacyAdjustment,
+                BillType.PharmacyTransferIssue,
+                BillType.PharmacyIssue,
+                BillType.PharmacyBhtPre,
+                BillType.PharmacyDisposalIssue};
 
         return b;
     }

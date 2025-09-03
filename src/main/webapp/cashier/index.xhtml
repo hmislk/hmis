@@ -312,11 +312,16 @@
 
                                         <p:commandButton 
                                             class="my-1 w-100"
-                                            value="My Department All Cashier SUmmary"
+                                            value="My Department All Cashier Summary"
                                             icon=""
                                             ajax="false" 
                                             action="#{searchController.navigateToMyDepartmentAllCashierSummary}" >
                                         </p:commandButton>
+
+                                        <p:commandButton ajax="false"  class="my-1 w-100"
+                                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
+                                                         value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                                         action="lab_daily_summary_by_department?faces-redirect=true" />
 
                                         <p:commandButton 
                                             class="my-1 w-100"

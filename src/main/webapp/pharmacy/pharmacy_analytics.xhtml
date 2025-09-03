@@ -103,16 +103,22 @@
 
                                     <p:tab title="Stock Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Stock Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch')}" 
-                                                             class="w-100" 
-                                                             icon="fa fa-cubes" 
-                                                             value="Stock Report by Batch" 
-                                                             action="#{reportsStock.navigateToStockReportByBatch()}" 
-                                                             ajax="false" />
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                                <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch')}"
+                                                                 class="w-100"
+                                                                 icon="fa fa-cubes"
+                                                                 value="Stock Report by Batch for Developers to cross check"
+                                                                 action="#{reportsStock.navigateToStockReportByBatch()}"
+                                                                 ajax="false" />
+                                            </h:panelGroup>
 
-
-
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch')}" class="w-100" value="Stock Report by Batch" action="pharmacy_report_department_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch', true)}"
+                                                             class="w-100 ui-button-success"
+                                                             icon="fa fa-rocket"
+                                                             value="Stock Report by Batch"
+                                                             action="#{reportsStock.navigateToStockReportByBatchDto()}"
+                                                             ajax="false"
+                                                             title="High-performance DTO-based report - Recommended" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiring Stock Report by Batch')}" class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}" class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Zero Stock Item Report')}"
@@ -126,6 +132,12 @@
                                                              class="w-100"
                                                              value="Stock Report by Item"
                                                              action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
+                                                             ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
+                                                             class="w-100"
+                                                             style="background-color:green;border-color: green"
+                                                             value="Stock Report by Item - DTO"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
                                                              ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item - Order by VMP')}" 
                                                              class="w-100"
@@ -147,10 +159,12 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Taking Report(New)')}" class="w-100 ui-button-warning" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock With Movement')}" class="w-100 ui-button-warning" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" />
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Summary (with Suppliers)')}" 
+                                            
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Summary (with Suppliers)')}"
                                                              class="w-100"
-                                                             value="Stock Summary (with Suppliers)" 
-                                                             action="pharmacy_stock_summary_with_supplier?faces-redirect=true" 
+                                                             value="Stock Summary (with Suppliers)"
+                                                             action="pharmacy_stock_summary_with_supplier?faces-redirect=true"
                                                              ajax="false" >
                                             </p:commandButton>   
 
@@ -292,12 +306,27 @@
                                                              style="text-align: left" 
                                                              value="Pharmacy Procurement Report"
                                                              action="#{pharmacySummaryReportController.navigateToPharmacyProcurementReport()}"/>
+                                            
+                                            <p:commandButton 
+                                                             class="w-100 ui-button-warning"
+                                                             ajax="false" 
+                                                             style="text-align: left" 
+                                                             value="Pharmacy Direct purchase Report"
+                                                             action="#{pharmacyReportController.navigateToDirectPurchaseSummeryReport()}"/>
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Summary')}" class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch')}" class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Orders Not Approved')}" class="w-100 ui-button-warning" value="Purchase Orders Not Approved" action="pharmacy_transfer_issued_list_not_approve_report?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch to Upload')}" class="w-100 ui-button-warning" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item - wise Purchase/Good Receive')}" class="w-100 ui-button-warning" value="Item - wise Purchase/Good Receive" action="/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton
+                                                id="btnItemWiseProcurement"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-wise Procurement', true)}"
+                                                styleClass="w-100 ui-button-success"
+                                                value="Item-wise Procurement"
+                                                icon="fa fa-clipboard-list"
+                                                action="#{pharmacyPurchaseController.navigateToItemWiseProcurementReport}"
+                                                ajax="false"/>
+
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purcharse Bill with Supplier')}" class="w-100 ui-button-warning" value="Purcharse Bill with Supplier" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy GRN Report')}" class="w-100 ui-button-warning" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy GRN and purchase Report')}" class="w-100 ui-button-warning" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" />
@@ -325,9 +354,6 @@
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary By Supplier (Credit / Cash)')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Summary By Supplier (Credit / Cash)" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Bill Item')}" class="w-100 ui-button-warning" ajax="false"
-                                                             value="Purchase Bill Item" 
-                                                             action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseBillItem()}" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Payment Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary By Supplier')}" class="w-100 ui-button-warning" ajax="false"
@@ -340,6 +366,11 @@
                                                              value="Procurement Bill Item List"
                                                              action="#{pharmacyProcurementReportController.navigateToPurchaseItemList()}" />
 
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Donation Bills', true) and webUserController.hasPrivilege('PharmacyDonation')}" class="w-100 ui-button-warning" ajax="false"
+                                                             value="Donation Bills"
+                                                             action="#{pharmacyProcurementReportController.navigateToDonationBillList()}" />
+
                                         </div>
                                     </p:tab>
 
@@ -349,52 +380,60 @@
                                         <div class="d-grid gap-2">
 
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue By Bill Item')}"
-                                                             value="Transfer Issue By Bill Item" 
-                                                             action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-file-invoice" 
-                                                             class="w-100"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue By Bill Item')}"
+                                                value="Transfer Issue By Bill Item" 
+                                                action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
+                                                ajax="false" 
+                                                icon="pi pi-file"
+                                                class="w-100 ui-button-success"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
-                                                             value="Transfer Receive By Bill Item" 
-                                                             action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-receipt" 
-                                                             class="w-100"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill', true)}" 
+                                                value="Transfer Issue by Bill" 
+                                                action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
+                                                ajax="false" 
+                                                icon="pi pi-chart-line"
+                                                class="w-100 ui-button-success"
+                                                title="High-performance DTO-based report - Recommended"/>
 
-                                            <!-- Transfer Issue by Bill - Entity Version -->
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill')}" 
-                                                             value="Transfer Issue by Bill (Entity)" 
-                                                             action="#{reportsTransfer.navigateToTransferIssueByBill}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-file-export" 
-                                                             class="w-100"/>
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill Summary',true)}"
+                                                class="w-100 ui-button-success"
+                                                value="Transfer Issue Summary"
+                                                action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
+                                                ajax="false"
+                                                icon="pi pi-list"/>
 
-                                            <!-- Transfer Issue by Bill - DTO Version (Recommended) -->
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill (DTO)', true)}" 
-                                                             value="Transfer Issue by Bill (DTO - Fast)" 
-                                                             action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
-                                                             ajax="false" 
-                                                             icon="fa fa-rocket" 
-                                                             class="w-100 ui-button-success"
-                                                             title="High-performance DTO-based report - Recommended"/>
+                                            <p:separator/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill')}"
-                                                             value="Transfer Receive by Bill" 
-                                                             action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-file-import" 
-                                                             class="w-100"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
+                                                value="Transfer Receive By Bill Item" 
+                                                action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
+                                                ajax="false" 
+                                                icon="pi pi-download"
+                                                class="w-100 ui-button-success"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill(Summary)')}"
-                                                             class="w-100" 
-                                                             value="Transfer Issue by Bill(Summary)"
-                                                             action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
-                                                             ajax="false" >                                                   
-                                            </p:commandButton>        
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill', true)}"
+                                                value="Transfer Receive by Bill" 
+                                                action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
+                                                ajax="false" 
+                                                icon="pi pi-inbox"
+                                                class="w-100 ui-button-success"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill(Summary)')}" class="w-100 ui-button-warning" value="Transfer Receive by Bill(Summary)" action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill Summary', true)}" 
+                                                class="w-100 ui-button-success" 
+                                                value="Transfer Receive Summary" 
+                                                action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery?faces-redirect=true"
+                                                ajax="false"
+                                                icon="pi pi-list"/>
+
+                                            <p:separator/>
+
+
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Report Transfer Issued not Recieved')}" class="w-100" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Staff Stock Report')}" class="w-100" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Report Summary')}" class="w-100 ui-button-warning" ajax="false"

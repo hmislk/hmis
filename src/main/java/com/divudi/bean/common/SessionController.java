@@ -50,6 +50,8 @@ import com.divudi.core.facade.WebUserDepartmentFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
 import com.divudi.core.facade.WebUserRoleFacade;
+import com.divudi.core.facade.WebUserPasswordHistoryFacade;
+import com.divudi.core.entity.WebUserPasswordHistory;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.cashTransaction.CashBook;
@@ -117,6 +119,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     PersonFacade pFacade;
     @EJB
     WebUserRoleFacade rFacade;
+    @EJB
+    private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -441,6 +445,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         if (configOptionApplicationController.getBooleanValueByKey("Allow Store Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
             availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Store);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Etu Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Etu);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Theatre Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
         }
     }
 
@@ -931,15 +941,21 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String loginActionWithoutDepartment() {
+        System.out.println("DEBUG: loginActionWithoutDepartment() called for user: " + userName + " at " + new Date());
+        long totalStartTime = System.currentTimeMillis();
+        
         department = null;
         institution = null;
         boolean l = checkUsersWithoutDepartment();
         if (l) {
             if (department != null) {
+                System.out.println("DEBUG: Login successful with department pre-selected, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                 return selectDepartment();
             }
+            System.out.println("DEBUG: Login successful, redirecting to department selection, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             return "/index1.xhtml?faces-redirect=true";
         } else {
+            System.out.println("DEBUG: Login failed, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
@@ -1053,9 +1069,19 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         boolean passwordRequirementsCorrect = passwordRequirementsCorrect();
         if (passwordRequirementsCorrect) {
-            user.setWebUserPassword(getSecurityController().hashAndCheck(password));
+            if (isPasswordReused(user, password)) {
+                JsfUtil.addErrorMessage("Cannot reuse previous password.");
+                return;
+            }
+            String hashed = getSecurityController().hashAndCheck(password);
+            user.setWebUserPassword(hashed);
             user.setNeedToResetPassword(false);
             uFacade.edit(user);
+            recordPasswordHistory(user, hashed);
+            
+            // Purge old password history entries beyond the configured limit
+            purgeOldPasswordHistory(user);
+            
             passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
         } else {
@@ -1078,8 +1104,18 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
+        if (isPasswordReused(user, newPassword)) {
+            JsfUtil.addErrorMessage("Cannot reuse previous password.");
+            return;
+        }
+
+        String hashed = getSecurityController().hashAndCheck(newPassword);
+        user.setWebUserPassword(hashed);
         uFacade.edit(user);
+        recordPasswordHistory(user, hashed);
+        
+        // Purge old password history entries beyond the configured limit
+        purgeOldPasswordHistory(user);
         JsfUtil.addSuccessMessage("Password changed");
     }
 
@@ -1093,6 +1129,64 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
         }
         return available;
+    }
+
+    private boolean isPasswordReused(WebUser user, String newPassword) {
+        if (!configOptionApplicationController.isPreventPasswordReuse()) {
+            return false;
+        }
+        
+        int historyLimit = configOptionApplicationController.getPasswordHistoryLimit();
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        
+        // Get recent password history entries within the limit, ordered by creation date descending
+        String jpql = "select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u order by h.createdAt desc";
+        List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql(jpql, m, historyLimit);
+        
+        for (WebUserPasswordHistory h : hs) {
+            if (SecurityController.matchPassword(newPassword, h.getPassword())) {
+                return true;
+            }
+        }
+        if (SecurityController.matchPassword(newPassword, user.getWebUserPassword())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private void recordPasswordHistory(WebUser user, String hashedPassword) {
+        WebUserPasswordHistory wh = new WebUserPasswordHistory();
+        wh.setWebUser(user);
+        wh.setPassword(hashedPassword);
+        wh.setCreater(getLoggedUser());
+        wh.setCreatedAt(new Date());
+        webUserPasswordHistoryFacade.create(wh);
+    }
+
+    private void purgeOldPasswordHistory(WebUser user) {
+        if (!configOptionApplicationController.isPreventPasswordReuse()) {
+            return;
+        }
+        
+        int historyLimit = configOptionApplicationController.getPasswordHistoryLimit();
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        
+        // Get all password history entries for this user, ordered by creation date descending
+        String jpql = "select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u order by h.createdAt desc";
+        List<WebUserPasswordHistory> allHistory = webUserPasswordHistoryFacade.findByJpql(jpql, m);
+        
+        // If we have more entries than the limit, retire the older ones
+        if (allHistory.size() > historyLimit) {
+            for (int i = historyLimit; i < allHistory.size(); i++) {
+                WebUserPasswordHistory oldEntry = allHistory.get(i);
+                oldEntry.setRetired(true);
+                oldEntry.setRetiredAt(new Date());
+                oldEntry.setRetirer(getLoggedUser());
+                webUserPasswordHistoryFacade.edit(oldEntry);
+            }
+        }
     }
 
     private boolean isFirstVisit() {
@@ -1306,11 +1400,17 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
+        System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
+        long startTime = System.currentTimeMillis();
+        
         String jpql;
         jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
+        
+        long queryStartTime = System.currentTimeMillis();
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
+        System.out.println("DEBUG: User lookup query took " + (System.currentTimeMillis() - queryStartTime) + "ms");
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk;
@@ -1320,7 +1420,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    System.out.println("DEBUG: Password verification successful, loading departments...");
+                    long deptStartTime = System.currentTimeMillis();
                     departments = listLoggableDepts(u);
+                    System.out.println("DEBUG: listLoggableDepts() took " + (System.currentTimeMillis() - deptStartTime) + "ms");
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         departments = departmentController.fillAllItems();
                     }
@@ -1349,18 +1452,32 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     setLoggedUsersDrawer(drawerController.getUsersDrawer(u));
+                    
+                    System.out.println("DEBUG: Loading loggable departments...");
+                    long fillDeptsStartTime = System.currentTimeMillis();
                     loggableDepartments = fillLoggableDepts();
+                    System.out.println("DEBUG: fillLoggableDepts() took " + (System.currentTimeMillis() - fillDeptsStartTime) + "ms");
+                    
+                    System.out.println("DEBUG: Loading loggable collecting centres...");
+                    long fillCCStartTime = System.currentTimeMillis();
                     loggableCollectingCentres = fillLoggableCollectingCentres();
+                    System.out.println("DEBUG: fillLoggableCollectingCentres() took " + (System.currentTimeMillis() - fillCCStartTime) + "ms");
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+                    System.out.println("DEBUG: Loading loggable institutions...");
+                    long fillInstStartTime = System.currentTimeMillis();
                     loggableInstitutions = fillLoggableInstitutions();
+                    System.out.println("DEBUG: fillLoggableInstitutions() took " + (System.currentTimeMillis() - fillInstStartTime) + "ms");
 
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
+                    System.out.println("DEBUG: Loading dashboards...");
+                    long dashboardStartTime = System.currentTimeMillis();
                     loadDashboards();
+                    System.out.println("DEBUG: loadDashboards() took " + (System.currentTimeMillis() - dashboardStartTime) + "ms");
                     setLogged(true);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -1386,6 +1503,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (departments.size() == 1) {
                         department = departments.get(0);
                     }
+                    System.out.println("DEBUG: checkUsersWithoutDepartment() completed in " + (System.currentTimeMillis() - startTime) + "ms");
                     return true;
                 }
             }
@@ -1423,6 +1541,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String selectDepartment() {
+        System.out.println("DEBUG: selectDepartment() started at " + new Date());
+        long selectDeptStartTime = System.currentTimeMillis();
+        
         if (loggedUser == null) {
             JsfUtil.addErrorMessage("No User logged");
             return "/login?faces-redirect=true";
@@ -1432,10 +1553,15 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
 
+        System.out.println("DEBUG: Setting department and institution...");
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
+        long editUserStartTime = System.currentTimeMillis();
         getFacede().edit(loggedUser);
+        System.out.println("DEBUG: User edit took " + (System.currentTimeMillis() - editUserStartTime) + "ms");
 
+        System.out.println("DEBUG: Setting up logged site...");
+        long siteStartTime = System.currentTimeMillis();
         if (department.getSite() == null) {
             Institution site;
             site = institutionController.findAndSaveInstitutionByName("site");
@@ -1443,17 +1569,38 @@ public class SessionController implements Serializable, HttpSessionListener {
         } else {
             setLoggedSite(department.getSite());
         }
+        System.out.println("DEBUG: Site setup took " + (System.currentTimeMillis() - siteStartTime) + "ms");
 
+        System.out.println("DEBUG: Setting up cash book...");
+        long cashBookStartTime = System.currentTimeMillis();
         CashBook cb = new CashBook();
         cb = cashBookController.findAndSaveCashBookBySite(loggedSite, institution, department);
         setLoggedCashbook(cb);
+        System.out.println("DEBUG: Cash book setup took " + (System.currentTimeMillis() - cashBookStartTime) + "ms");
 
+        System.out.println("DEBUG: Loading user icons...");
+        long userIconsStartTime = System.currentTimeMillis();
         userIcons = userIconController.fillUserIcons(loggedUser, department);
+        System.out.println("DEBUG: User icons loading took " + (System.currentTimeMillis() - userIconsStartTime) + "ms");
+        
+        System.out.println("DEBUG: Loading dashboards...");
+        long dashboardsStartTime = System.currentTimeMillis();
         dashboards = webUserController.listWebUserDashboards(loggedUser);
+        System.out.println("DEBUG: Dashboards loading took " + (System.currentTimeMillis() - dashboardsStartTime) + "ms");
 
+        System.out.println("DEBUG: Loading user privileges...");
+        long privilegesStartTime = System.currentTimeMillis();
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
+        System.out.println("DEBUG: User privileges loading took " + (System.currentTimeMillis() - privilegesStartTime) + "ms");
+        
+        System.out.println("DEBUG: Loading loggable sub-departments...");
+        long subDeptStartTime = System.currentTimeMillis();
         loggableSubDepartments = fillLoggableSubDepts(department);
+        System.out.println("DEBUG: Loggable sub-departments loading took " + (System.currentTimeMillis() - subDeptStartTime) + "ms");
 
+        System.out.println("DEBUG: Loading preferences...");
+        long preferencesStartTime = System.currentTimeMillis();
+        
         String sql;
         Map m;
 
@@ -1470,6 +1617,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
         applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
+        System.out.println("DEBUG: Preferences loading took " + (System.currentTimeMillis() - preferencesStartTime) + "ms");
 
         if (applicationPreference == null) {
             applicationPreference = new UserPreference();
@@ -1487,12 +1635,27 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
 
         setLoggedPreference(departmentPreference);
+        
+        System.out.println("DEBUG: Recording login...");
+        long recordLoginStartTime = System.currentTimeMillis();
         recordLogin();
+        System.out.println("DEBUG: Record login took " + (System.currentTimeMillis() - recordLoginStartTime) + "ms");
+        
+        System.out.println("DEBUG: Checking password requirements...");
+        long passwordCheckStartTime = System.currentTimeMillis();
         passwordRequirementsFulfilled = arePasswordRequirementsFulfilled();
+        System.out.println("DEBUG: Password requirements check took " + (System.currentTimeMillis() - passwordCheckStartTime) + "ms");
+        
         if (!passwordRequirementsFulfilled) {
             enforcedPasswordChange = true;
         }
-        return navigateToLoginPageByUsersDefaultLoginPage();
+        
+        System.out.println("DEBUG: Navigating to login page...");
+        long navStartTime = System.currentTimeMillis();
+        String result = navigateToLoginPageByUsersDefaultLoginPage();
+        System.out.println("DEBUG: Navigation took " + (System.currentTimeMillis() - navStartTime) + "ms");
+        System.out.println("DEBUG: selectDepartment() completed in " + (System.currentTimeMillis() - selectDeptStartTime) + "ms");
+        return result;
     }
 
     public String navigateToChangePasswordByUser() {

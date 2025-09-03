@@ -126,25 +126,25 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                                                     </p:column>
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
                                 
-                                <p:column headerText="Sale Rate" style="text-align: right;">
+                                <p:column headerText="Sale Rate" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Sale Value" style="text-align: right;">
+                                <p:column headerText="Sale Value" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate * i.pharmaceuticalBillItem.qty}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  

@@ -139,7 +139,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>
                                     </f:facet>
@@ -148,7 +148,7 @@
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
@@ -158,7 +158,7 @@
                                 </p:column>
                                 
                                 
-                                <p:column headerText="Sale Rate" style="text-align: right;">
+                                <p:column headerText="Sale Rate" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Rate"/>
                                     </f:facet>
@@ -167,7 +167,7 @@
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Sale Value" style="text-align: right;">
+                                <p:column headerText="Sale Value" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value"/>
                                     </f:facet>

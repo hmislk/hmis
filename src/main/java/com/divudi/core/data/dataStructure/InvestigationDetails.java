@@ -1,6 +1,7 @@
 package com.divudi.core.data.dataStructure;
 
 import com.divudi.core.data.Title;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,7 +9,8 @@ import java.util.Date;
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  * 
  */
-public class InvestigationDetails {
+public class InvestigationDetails implements Serializable  {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private Date billDate;
     private String billNumber;

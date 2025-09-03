@@ -793,15 +793,29 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             JsfUtil.addErrorMessage("Quentity Zero?");
             return;
         }
-
+        
+        // Populate billItem before allergy check
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+        billItem.setItem(getStock().getItemBatch().getItem());
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            if (patient != null && billItem != null && billItem.getItem() != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
+
         calculateBillItem();
         ////System.out.println("Rate*****" + billItem.getRate());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
-
-        billItem.setItem(getStock().getItemBatch().getItem());
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
@@ -1292,12 +1306,13 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (allergyListOfPatient == null) {
                 allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
             }
-            if (!pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
-                JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+            String allergyMsg = pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient);
+            if (!allergyMsg.isEmpty()) {
+                JsfUtil.addErrorMessage(allergyMsg);
                 billSettlingStarted = false;
                 return;
             }
@@ -1382,6 +1397,26 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
             return;
+        }
+
+        // Set billItem.item before allergy check
+        if (billItem.getPharmaceuticalBillItem().getStock() != null && 
+            billItem.getPharmaceuticalBillItem().getStock().getItemBatch() != null) {
+            billItem.setItem(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
+            billItem.getPharmaceuticalBillItem().setItemBatch(billItem.getPharmaceuticalBillItem().getStock().getItemBatch());
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            if (patient != null && billItem != null && billItem.getItem() != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
         }
 
         billItem.setBill(getPreBill());

@@ -23,6 +23,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -353,6 +354,19 @@ public class BillBhtController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
 
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
+        String batchBillId = "";
+        
+        if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
+            batchBillId = billNumberBean.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
+        }else{
+            batchBillId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+        }
+        
+        tmp.setDeptId(batchBillId);
+        tmp.setInsId(batchBillId);
+
         if (tmp.getId() == null) {
             getBillFacade().create(tmp);
         }
@@ -614,15 +628,14 @@ public class BillBhtController implements Serializable {
 
         boolean inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "Inpatient Service Bill Number Generate Strategy - FromDepartment ToDepartment BillTypes", false);
+                        "InpatientServiceBillNumberGenerateStrategy:FromDepartmentToDepartmentBillTypes", false);
 
         boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
-                = configOptionApplicationController.getBooleanValueByKey(
-                        "Inpatient Service Bill Number Generate Strategy - Single Number For Opd And Inpatient Investigations And Services", false);
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
         boolean inpatientServiceBillNumberGenerateStrategyDefault
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "Inpatient Service Bill Number Generate Strategy - Default", false);
+                        "InpatientServiceBillNumberGenerateStrategy:Default", false);
 
         String deptId;
         String insId;
@@ -634,8 +647,8 @@ public class BillBhtController implements Serializable {
                     bt, sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BILL);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            List<BillTypeAtomic> types = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBillTypes();
-            deptId = bnb.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), types);
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
+            deptId = bnb.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
             deptId = bnb.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
@@ -1320,20 +1333,42 @@ public class BillBhtController implements Serializable {
         return billNumberBean;
     }
 
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
+        this.billNumberBean = billNumberBean;
+
+    }
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
+    }
+
+    public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
+        this.billComponentFacade = billComponentFacade;
     }
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
 
+    public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
+        this.billFeeFacade = billFeeFacade;
+    }
+
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
     }
 
+    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
+        this.patientInvestigationFacade = patientInvestigationFacade;
+    }
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
+    }
+
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
+
     }
 
     public PatientEncounter getPatientEncounter() {
@@ -1342,14 +1377,23 @@ public class BillBhtController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+
     }
 
     public PriceMatrixFacade getPriceAdjustmentFacade() {
         return priceAdjustmentFacade;
     }
 
+    public void setPriceAdjustmentFacade(PriceMatrixFacade priceAdjustmentFacade) {
+        this.priceAdjustmentFacade = priceAdjustmentFacade;
+    }
+
     public FeeFacade getFeeFacade() {
         return feeFacade;
+    }
+
+    public void setFeeFacade(FeeFacade feeFacade) {
+        this.feeFacade = feeFacade;
     }
 
     public ItemFeeFacade getItemFeeFacade() {

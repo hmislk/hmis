@@ -52,7 +52,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Transfer Recieve Note"   />       
+                <h:outputLabel value="Transfer Receive Note"   />       
                 <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
             </div>
 
@@ -90,7 +90,8 @@
 
             <div >
 
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont compact-table" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip"
+                             style="line-height: 1.1;">
 
                     <p:column style="text-align: left;">
                         <f:facet name="header">
@@ -122,7 +123,8 @@
                         </h:outputLabel>
                     </p:column>
                     
-                    <p:column style="text-align: right;">
+                    <p:column style="text-align: right;"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
                         </f:facet>
@@ -135,19 +137,21 @@
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
+                        <h:outputLabel value="#{0-bip.qty}"/>
                     </p:column>                    
 
-                    <p:column style="text-align: right;">
+                    <p:column style="text-align: right;"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                         <f:facet name="header">
                             <h:outputLabel value="Gross Price"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossTotal}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:columnGroup type="footer">
+                    <p:columnGroup type="footer"
+                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                         <p:row>
                             <p:column colspan="6">
                                 <f:facet name="footer">

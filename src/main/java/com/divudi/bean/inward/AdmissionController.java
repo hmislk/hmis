@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.AppointmentController;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
@@ -48,6 +49,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
@@ -59,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -117,6 +120,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     BhtSummeryController bhtSummeryController;
     @Inject
     ClinicalFindingValueController clinicalFindingValueController;
+    @Inject
+    AppointmentController appointmentController;
 
     ////////////////////////////
     ///////////////////////
@@ -163,6 +168,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private PaymentMethod paymentMethod;
     private boolean admittingProcessStarted;
+    private Reservation latestfoundReservation;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -287,6 +293,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void dateChangeListen() {
         getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
+    }
+    
+    public boolean onRoomFacilityChargeSelected(){
+        List<Reservation> foundReservations = appointmentController.checkAppointmentsForRoom(patientRoom.getRoomFacilityCharge());
+        System.out.println("foundReservations = " + foundReservations.size());
+        if(foundReservations == null || foundReservations.isEmpty()){
+            latestfoundReservation = new Reservation();
+            return false;
+        }else{
+            latestfoundReservation = foundReservations.get(0);
+            String warnMessage = "You have an upcoming reservation for this room from " + CommonFunctions.getDateFormat(latestfoundReservation.getReservedFrom(), sessionController.getApplicationPreference().getLongDateFormat()) + " to " + CommonFunctions.getDateFormat(latestfoundReservation.getReservedTo(), sessionController.getApplicationPreference().getLongDateFormat());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", warnMessage));
+            return true;
+        }
     }
 
     public void admissionPaymentMethodChange() {
@@ -1374,6 +1394,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getBillFacade().edit(getAppointmentBill());
 
     }
+    
+    public void listnerForAppoimentSelect(Bill ap){
+        System.out.println("ap = " + ap);
+        if(ap == null){
+            return;
+        }
+        setPatient(ap.getPatient());
+    }
 
     @Inject
     private InwardBeanController inwardBean;
@@ -2123,6 +2151,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
         this.admissionTypeForSearch = admissionTypeForSearch;
+    }
+
+    public Reservation getLatestfoundReservation() {
+        return latestfoundReservation;
+    }
+
+    public void setLatestfoundReservation(Reservation latestfoundReservation) {
+        this.latestfoundReservation = latestfoundReservation;
     }
 
     /**

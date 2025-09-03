@@ -8,9 +8,9 @@
     <body>
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
-                <div class='row' >
-                    <div class="col-12 col-md-12 col-lg-12 p-1">
-                        <h:form>
+                <h:form>
+                    <div class='row' >
+                        <div class="col-12 col-md-12 col-lg-12 p-1">
                             <p:panelGrid layout="tabular" columns="5" class="w-100">
                                 <f:facet name="header" >
                                     <h:outputText value="Period for Adjustments" ></h:outputText>
@@ -31,21 +31,17 @@
                                     <p:ajax event="dateSelect" process="calTo" />
                                 </p:calendar>
                             </p:panelGrid>
-
-                        </h:form>
+                        </div>
                     </div>
-                </div>
 
-                <p:accordionPanel >
+                    <p:accordionPanel >
                     <p:tab title="Admin">
                         <div class="d-grid gap-2">
-                            <h:form>
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Bill DeptId Editor"
-                                    action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
-                                    class="w-100 m-1" />
-                            </h:form>
+                            <p:commandButton
+                                ajax="false"
+                                value="Bill DeptId Editor"
+                                action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
+                                class="w-100 m-1" />
                         </div>
                     </p:tab>
                     <p:tab title="Pharmacy" >
@@ -66,12 +62,10 @@
                                     </td>
 
                                     <td>
-                                        <h:form>
-                                            <p:commandButton 
-                                                action="#{billController.fixReferancesInPharmacyGrnReturns()}"
-                                                ajax="false"
-                                                value="Correct Reference Bill in GRN Returns"  />
-                                        </h:form>
+                                        <p:commandButton 
+                                            action="#{billController.fixReferancesInPharmacyGrnReturns()}"
+                                            ajax="false"
+                                            value="Correct Reference Bill in GRN Returns"  />
                                     </td>
                                     <td>
                                         #{billController.output}
@@ -87,17 +81,13 @@
                                     </td>
 
                                     <td>
-                                        <h:form>
-
-                                            <p:commandButton 
-                                                value="Calculate Bill Finance Details for Pharmacy Sale Bills" 
-                                                ajax="false"
-                                                styleClass="ui-button-warning m-1"
-                                                icon="pi pi-cog"
-                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
-                                            </p:commandButton>
-
-                                        </h:form>
+                                        <p:commandButton 
+                                            value="Calculate Bill Finance Details for Pharmacy Sale Bills" 
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1"
+                                            icon="pi pi-cog"
+                                            action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
+                                        </p:commandButton>
                                     </td>
                                     <td>
                                         #{billController.output}
@@ -110,14 +100,12 @@
                                         Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.
                                     </td>
                                     <td>
-                                        <h:form>
-                                            <p:commandButton 
-                                                action="#{dataAdministrationController.assignPharmacyDepartmentTypeToPharmaceuticalItems()}"
-                                                ajax="false"
-                                                value="Assign Pharmacy Department Type"
-                                                styleClass="ui-button-info m-1"
-                                                icon="pi pi-tag" />
-                                        </h:form>
+                                        <p:commandButton 
+                                            action="#{dataAdministrationController.assignPharmacyDepartmentTypeToPharmaceuticalItems()}"
+                                            ajax="false"
+                                            value="Assign Pharmacy Department Type"
+                                            styleClass="ui-button-info m-1"
+                                            icon="pi pi-tag" />
                                     </td>
                                     <td>
                                         #{billController.output}
@@ -130,15 +118,13 @@
                                         Fixes issue #13419: Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal from BillItem.netValue. This ensures disbursement reports show correct transfer rates when "Pharmacy Transfer is by Retail Rate" option is enabled. Only affects bills missing proper financial details - safe to run multiple times.
                                     </td>
                                     <td>
-                                        <h:form>
-                                            <p:commandButton 
-                                                action="#{dataAdministrationController.migrateTransferBillItemFinanceDetails()}"
-                                                ajax="false"
-                                                value="Migrate Transfer Finance Details"
-                                                styleClass="ui-button-success m-1"
-                                                icon="pi pi-database"
-                                                onclick="return confirm('This will migrate financial details for existing transfer bills. Proceed?');" />
-                                        </h:form>
+                                        <p:commandButton 
+                                            action="#{dataAdministrationController.migrateTransferBillItemFinanceDetails()}"
+                                            ajax="false"
+                                            value="Migrate Transfer Finance Details"
+                                            styleClass="ui-button-success m-1"
+                                            icon="pi pi-database"
+                                            onclick="return confirm('This will migrate financial details for existing transfer bills. Proceed?');" />
                                     </td>
                                     <td>
                                         #{dataAdministrationController.executionFeedback}
@@ -455,7 +441,8 @@
                     </p:tab>
 
 
-                </p:accordionPanel>
+                    </p:accordionPanel>
+                </h:form>
 
 
 

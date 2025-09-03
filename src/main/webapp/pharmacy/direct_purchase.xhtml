@@ -8,750 +8,849 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy">
-
     <ui:define name="content">
-        <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
         <h:form id="bill">
             <p:growl id="msg"/>
-            <p:panel rendered="#{!pharmacyDirectPurchaseController.printPreview}" style="height: 100vh">
-                <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <div>
-                            <h:outputText styleClass="fas fa-shopping-bag"/>
-                            <h:outputText class="mx-4" value="Pharmacy Direct Purchase" />
+            <h:panelGroup rendered="#{!pharmacyDirectPurchaseController.printPreview}">
+                <p:panel  >
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div>
+                                <h:outputText styleClass="fas fa-shopping-bag"/>
+                                <h:outputText class="mx-4" value="Pharmacy Direct Purchase" />
+                            </div>
+                            <div>
+                                <p:commandButton
+                                    value="Settle"
+                                    action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
+                                    styleClass="ui-button-success"
+                                    ajax="false"
+                                    icon="pi pi-check-circle"
+                                    style="margin-right: 8px;">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="New Direct Purchase Bill"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="pi pi-plus"
+                                    action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill()}"
+                                    style="margin-right: 8px;">
+                                </p:commandButton>
+                            </div>
                         </div>
-                        <div>
-                            <p:commandButton
-                                value="Settle"
-                                action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
-                                styleClass="ui-button-success"
-                                ajax="false"
-                                icon="pi pi-check-circle"
-                                style="margin-right: 8px;">
-                            </p:commandButton>
-                            <p:commandButton
-                                value="New Direct Purchase Bill"
-                                ajax="false"
-                                styleClass="ui-button-warning"
-                                icon="pi pi-plus"
-                                action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill()}"
-                                style="margin-right: 8px;">
-                            </p:commandButton>
+                    </f:facet>
+
+                    <div class="row" >
+                        <div class="col-12" >
+                            <h:panelGroup
+                                rendered="#{pharmacyDirectPurchaseController.warningMessage ne null}" >
+                                <h:inputTextarea
+                                    class="text-warning w-100"
+                                    readonly="true"
+                                    value="#{pharmacyDirectPurchaseController.warningMessage}" >
+                                </h:inputTextarea>
+                            </h:panelGroup>
                         </div>
                     </div>
-                </f:facet>
-                <h:panelGroup
-                    rendered="#{pharmacyDirectPurchaseController.warningMessage ne null}" >
-                    <h:inputTextarea
-                        class="text-warning w-100"
-                        readonly="true"
-                        value="#{pharmacyDirectPurchaseController.warningMessage}" >
-                    </h:inputTextarea>
-                </h:panelGroup>
-                <div class="row">
-                    <div class="col-8">
-                        <p:panel
-                            id="itemselectgrid"
-                            class="m-1 w-100"
-                            header="Add New Item" >
-                            <f:facet name="header" >
-                                <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                <h:outputText  class="mx-4" value="Add New Item" />
-                            </f:facet>
-                            <p:focus id="focusItem" for="acItem" ></p:focus>
-                            <div class="row w-100">
-                                <div class="col-4">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        value="Select Item"/><br/>
-                                    <p:autoComplete
-                                        class="w-100 m-1"
-                                        inputStyleClass="w-100"
-                                        id="acItem"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.item}"
-                                        forceSelection="true"
-                                        completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
-                                        var="vt"
-                                        maxResults="20"
-                                        itemLabel="#{vt.name}"
-                                        itemValue="#{vt}" >
-                                        <p:column headerText="Item" style="padding: 6px;">
-                                            <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Code" style="padding: 6px;">
-                                            <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                        </p:column>
-                                        <p:ajax
-                                            event="itemSelect"
-                                            process="acItem"
-                                            listener="#{pharmacyDirectPurchaseController.onItemSelect}"
-                                            update="txtQty txtFreeQty txtPrate txtLineDiscountRate txtLineDiscountValue 
-                                            txtRetailRate txtRetailValue txtUnitsPerPack txtPackOrUnit txtCostValue
-                                            txtPurchaseValueMinusLineDiscountValue txtPurchaseValue" />
 
-                                    </p:autoComplete>
-                                </div>
-                                <div class="col-1">
-                                    <h:outputLabel 
-                                        value="Quantity"
-                                        class="w-100 m-1"/><br/>
-                                    <p:inputText
-                                        id="txtQty"
-                                        class="w-100 m-1 text-end"
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
-                                        <p:ajax 
-                                            event="blur"
+                    <div class="row">
+                        <div class="col-8">
+                            <p:panel
+                                id="itemselectgrid"
+                                class="m-1 w-100"
+                                header="Add New Item" >
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                    <h:outputText  class="mx-4" value="Add New Item" />
+                                </f:facet>
+                                <p:focus id="focusItem" for="acItem" ></p:focus>
+                                <div class="row w-100">
+                                    <div class="col-4">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            value="Select Item"/><br/>
+                                        <p:autoComplete
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            id="acItem"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.item}"
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
+                                            var="vt"
+                                            maxResults="20"
+                                            itemLabel="#{vt.name}"
+                                            itemValue="#{vt}" >
+                                            <p:column headerText="Item" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Code" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                            </p:column>
+                                            <p:ajax
+                                                event="itemSelect"
+                                                process="acItem"
+                                                listener="#{pharmacyDirectPurchaseController.onItemSelect}"
+                                                update="txtQty txtFreeQty txtPrate txtLineDiscountRate txtLineDiscountValue 
+                                                txtRetailRate txtRetailValue txtUnitsPerPack txtPackOrUnit txtCostValue
+                                                txtPurchaseValueMinusLineDiscountValue txtPurchaseValue" />
+
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-1">
+                                        <h:outputLabel 
+                                            value="Quantity"
+                                            class="w-100 m-1"/><br/>
+                                        <p:inputText
+                                            id="txtQty"
+                                            class="w-100 m-1 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
+                                            <p:ajax 
+                                                event="blur"
+                                                process="@this" 
+                                                listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
+                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
+                                                txtRetailValue txtCostValue
+                                                txtPurchaseValue txtUnitsPerPack txtPackOrUnit
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-1">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            value="Free Quantity"/>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtFreeQty"
+                                            class="w-100 m-1 text-end"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
+                                            <p:ajax 
+                                                event="blur"
+                                                process="@this"
+                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                                listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            value="Purchase Rate" /><br/>
+                                        <p:inputText
+                                            id="txtPrate"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
+                                            <p:ajax 
+                                                event="blur"
+                                                process="@this"
+                                                listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
+                                                update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
+                                                txtRetailValue txtCostValue
+                                                txtPackOrUnit txtUnitsPerPack
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+
+                                        </p:inputText>
+
+                                    </div>
+                                    <div class="col-1">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Discount Rate" /><br/>
+                                        <p:inputText
+                                            id="txtLineDiscountRate"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineDiscountRate}">
+                                            <p:ajax 
+                                                event="blur"
+                                                process="@this"
+                                                listener="#{pharmacyDirectPurchaseController.onLineDiscountRateChange}"
+                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
+                                                txtRetailValue txtCostValue
+                                                txtPurchaseValue txtUnitsPerPack txtPackOrUnit
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                        </p:inputText>
+                                    </div>
+
+
+                                    <div class="col-1">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Retail Rate" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtRetailRate"
+                                            onfocus="this.select()"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax 
+                                                event="blur"
+                                                process="@this"
+                                                listener="#{pharmacyDirectPurchaseController.onRetailSaleRateChange}"
+                                                update="txtRetailValue txtPackOrUnit txtUnitsPerPack
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1">
+                                        <p:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Date of Expiry"/>
+                                        <p:calendar
+                                            navigator="true"
+                                            class="w-100 m-1 text-end"
+                                            inputStyleClass="w-100 my-1"
+                                            id="calDoe"
+                                            pattern="dd MM yy"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
+                                            <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{pharmacyDirectPurchaseController.setBatch()}"/>
+                                        </p:calendar>
+                                    </div>
+                                    <div class="col-1">
+                                        <h:outputLabel
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Batch No"/>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            class="w-100 m-1"
+                                            id="tmp"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
+                                    </div>
+
+                                    <div class="col-1">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            value="&nbsp;"></h:outputLabel>
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            value="Add"
+                                            class="ui-button-success w-100"
+                                            icon="fas fa-plus"
+                                            action="#{pharmacyDirectPurchaseController.addItem}"
                                             process="@this" 
-                                            listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
-                                            txtRetailValue txtCostValue
-                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit
-                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
-                                    </p:inputText>
+                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
+
+                                    </div>
+
+
+
+
+
+
+
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Pack or Unit" />
+                                        <p:inputText
+                                            id="txtPackOrUnit"
+                                            disabled="true"
+                                            autocomplete="off"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Ampp' ? 'Pack' : 'Unit'}" />
+
+                                    </div>
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Units per pack" />
+                                        <h:panelGroup  id="txtUnitsPerPack" >
+                                            <p:inputText
+                                                rendered="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Ampp'}"
+                                                disabled="true"
+                                                autocomplete="off"
+                                                class="w-100 m-1 text-end"
+                                                value="#{pharmacyDirectPurchaseController.currentBillItem.item.dblValue}">
+                                            </p:inputText>
+                                            <p:inputText
+                                                rendered="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Amp'}"
+                                                disabled="true"
+                                                autocomplete="off"
+                                                class="w-100 m-1 text-end"
+                                                value="1">
+                                            </p:inputText>
+                                        </h:panelGroup>
+                                    </div>
+
+                                    <div class="col-2">
+                                    </div>
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Purchase Value" /><br/>
+                                        <p:inputText
+                                            id="txtPurchaseValue"
+                                            disabled="true"
+                                            autocomplete="off"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Discount" /><br/>
+                                        <p:inputText
+                                            id="txtLineDiscountValue"
+                                            autocomplete="off"
+                                            disabled="true"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineDiscount}">
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Net Value" /><br/>
+                                        <p:inputText
+                                            id="txtPurchaseValueMinusLineDiscountValue"
+                                            autocomplete="off"
+                                            disabled="true"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Retail Value"></h:outputLabel>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtRetailValue"
+                                            disabled="true"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantityByUnits}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1 text-end">
+                                        <h:outputLabel 
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Cost Value"></h:outputLabel>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtCostValue"
+                                            disabled="true"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineCost}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+
+
+
                                 </div>
-                                <div class="col-1">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        value="Free Quantity"/>
-                                    <p:inputText
-                                        autocomplete="off"
-                                        id="txtFreeQty"
-                                        class="w-100 m-1 text-end"
-                                        onfocus="this.select()"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
-                                        <p:ajax 
-                                            event="blur"
-                                            process="@this"
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue
-                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
-                                            listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
-                                    </p:inputText>
-                                </div>
+                            </p:panel>
 
-                                <div class="col-1">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        value="Purchase Rate" /><br/>
-                                    <p:inputText
-                                        id="txtPrate"
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
-                                        <p:ajax 
-                                            event="blur"
-                                            process="@this"
-                                            listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
-                                            update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
-                                            txtRetailValue txtCostValue
-                                            txtPackOrUnit txtUnitsPerPack
-                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                            <p:dataTable
+                                class="m-1 w-100"
+                                rowIndexVar="i"
+                                var="ph"
+                                value="#{pharmacyDirectPurchaseController.billItems}"
+                                id="itemList">
 
-                                    </p:inputText>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-shopping-cart" />
+                                    <h:outputText class="mx-4" value="Added Items" />
+                                </f:facet>
 
-                                </div>
-                                <div class="col-1">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Discount Rate" /><br/>
-                                    <p:inputText
-                                        id="txtLineDiscountRate"
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineDiscountRate}">
-                                        <p:ajax 
-                                            event="blur"
-                                            process="@this"
-                                            listener="#{pharmacyDirectPurchaseController.onLineDiscountRateChange}"
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
-                                            txtRetailValue txtCostValue
-                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit
-                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
-                                    </p:inputText>
-                                </div>
+                                <p:column headerText="No" width="2em">
+                                    <h:outputLabel value="#{i + 1}" />
+                                </p:column>
 
+                                <p:column
+                                    id="colItem"
+                                    headerText="Item" width="10em">
+                                    <h:outputText value="#{ph.item.name}" />
+                                    <p:commandButton id="btnViewSelectedItemDetails"
+                                                     icon="pi pi-search"
+                                                     title="View Item Details"
+                                                     action="#{pharmacyDirectPurchaseController.displayItemDetails(ph)}"
+                                                     update=":bill:tot :bill:purchaseHistory"
+                                                     process="@this"
+                                                     styleClass="ui-button-icon-only mx-3"/>
+                                    <p:commandLink
+                                        id="btnViewFinanceDetails"
+                                        styleClass="mx-2"
+                                        title="View Finance Details"
+                                        oncomplete="PF('dialog#{i}').show()"
+                                        process="@this"
+                                        update="@none">
+                                        <i class="fas fa-info-circle" />
+                                    </p:commandLink>
+                                    <p:dialog id="dialog"
+                                              widgetVar="dialog#{i}"
+                                              header="Details"
+                                              modal="true"
+                                              closable="true"
+                                              resizable="false"
+                                              class="w-75"
+                                              dynamic="true">
+                                        <ph:bill_item_finance_details pbi="#{ph}"/>
+                                    </p:dialog>
+                                </p:column>
 
-                                <div class="col-1">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Retail Rate" />
-                                    <p:inputText
-                                        autocomplete="off"
-                                        id="txtRetailRate"
-                                        onfocus="this.select()"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
+                                <p:column headerText="Qty"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.quantity}" class="w-100"/>
+                                </p:column>
+
+                                <p:column headerText="Free"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" />
+                                </p:column>
+
+                                <p:column headerText="P. Rate"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.grossRate}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                        <p:ajax 
-                                            event="blur"
-                                            process="@this"
-                                            listener="#{pharmacyDirectPurchaseController.onRetailSaleRateChange}"
-                                            update="txtRetailValue txtPackOrUnit txtUnitsPerPack
-                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
-                                    </p:inputText>
-                                </div>
+                                    </h:outputLabel>
+                                </p:column>
 
-                                <div class="col-1">
-                                    <p:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Date of Expiry"/>
-                                    <p:calendar
-                                        navigator="true"
-                                        class="w-100 m-1 text-end"
-                                        inputStyleClass="w-100 my-1"
-                                        id="calDoe"
-                                        pattern="dd MM yy"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
-                                        <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{pharmacyDirectPurchaseController.setBatch()}"/>
+                                <p:column headerText="Dis. Rate"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="RR"  styleClass="text-end">
+                                    <h:outputLabel 
+                                        value="#{ph.billItemFinanceDetails.retailSaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="DOE" styleClass="text-end">
+                                    <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Batch" styleClass="text-end">
+                                    <h:outputLabel value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                                </p:column>
+                                <p:column headerText="Gross"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.lineGrossTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discount"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Net"  styleClass="text-end">
+                                    <h:outputLabel value="#{ph.billItemFinanceDetails.lineNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Profit %"  styleClass="text-end">
+                                    <h:outputText
+                                        id="profMargin"
+                                        value="#{pharmacyDirectPurchaseController.calculateProfitMargin(ph)}"
+                                        styleClass="#{pharmacyDirectPurchaseController.isProfitMarginExcessive(ph) ? 'ui-messages-fatal' : ''}">
+                                        <f:convertNumber pattern="0.0" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                                </p:column>
+                            </p:dataTable>
+
+                            <h:panelGroup id="purchaseHistory">
+                                <pharmacy:history/>
+                            </h:panelGroup>
+
+                            <p:separator ></p:separator>
+
+                            <p:panel header="Bill Expenses" class="my-3" >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill-wave" />
+                                    <h:outputText class="mx-4" value="Bill Expenses" />
+                                </f:facet>
+                                <h:panelGroup id="billExpenseGrid">
+                                    <div class="row w-100">
+                                        <div class="col-4">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Select Expense"/><br/>
+                                            <p:autoComplete
+                                                id="acExpense"
+                                                class="w-100 m-1"
+                                                inputStyleClass="w-100"
+                                                value="#{pharmacyDirectPurchaseController.currentExpense.item}"
+                                                forceSelection="true"
+                                                completeMethod="#{itemController.completeExpenseItem}"
+                                                var="ex"
+                                                itemLabel="#{ex.name}"
+                                                itemValue="#{ex}">
+                                                <p:ajax
+                                                    event="itemSelect"
+                                                    process="acExpense"
+                                                    listener="#{pharmacyDirectPurchaseController.onExpenseItemSelect}"
+                                                    update="billExpenseGrid" />
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Value"/><br/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtExpense"
+                                                class="w-100 m-1 text-end"
+                                                onfocus="this.select()"
+                                                styleClass="numericTxt"
+                                                value="#{pharmacyDirectPurchaseController.currentExpense.rate}" />
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Description"/><br/>
+                                            <p:inputText 
+                                                class="w-100 m-1"
+                                                maxlength="250" 
+                                                value="#{pharmacyDirectPurchaseController.currentExpense.descreption}" />
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Considered for Costing"/><br/>
+                                            <div class="w-100 m-1 d-flex align-items-center justify-content-center" style="height: 38px;">
+                                                <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.currentExpense.consideredForCosting}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="&nbsp;"/><br/>
+                                            <p:commandButton
+                                                id="btnAddExpense"
+                                                value="Add"
+                                                icon="fas fa-plus"
+                                                class="ui-button-warning w-100"
+                                                action="#{pharmacyDirectPurchaseController.addExpense()}"
+                                                ajax = "false"
+                                                process="billExpenseGrid btnAddExpense @this"
+                                                update=" billExpenseGrid @all"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable 
+                                    id="tblExpenses"
+                                    value="#{pharmacyDirectPurchaseController.billExpenses}" 
+                                    var="be" 
+                                    class="mt-2"
+                                    emptyMessage="No Bill Expenses" >
+                                    <p:column headerText="Expense" >
+                                        <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value" >
+                                        <h:outputLabel value="#{be.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Description" >
+                                        <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Considered for Costing" >
+                                        <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
+                                            <p:ajax event="change"
+                                                    listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
+                                                    update="@parent" />
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column headerText="Delete" >
+                                        <p:commandButton
+                                            id="btnRemoveExpense"
+                                            title="Delete expense"
+                                            styleClass="ui-button-danger"
+                                            icon="pi pi-trash"
+                                            action="#{pharmacyDirectPurchaseController.removeExpense(be)}"
+                                            process="@this"
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
+
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <p:commandButton
+                                id="nullButton"
+                                value="No Action"
+                                action="#"
+                                style="display: none;" ></p:commandButton>
+
+                            <p:defaultCommand  target="btnAdd" />
+
+                        </div>
+                        <div class="col-4">
+                            <p:panel header="Purchasing Details" class="m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-shopping-basket"/>
+                                    <h:outputText class="mx-4" value="Purchasing Details"/>
+                                </f:facet>
+                                <h:panelGrid class="w-100">
+                                    <p:outputLabel value="Select Supplier"/>
+                                    <p:autoComplete
+                                        class=" w-100 my-2"
+                                        inputStyleClass="w-100"
+                                        converter="deal"
+                                        value="#{pharmacyDirectPurchaseController.bill.fromInstitution}"
+                                        forceSelection="true"
+                                        completeMethod="#{dealerController.completeActiveDealor}"
+                                        var="vt"
+                                        maxResults="10"
+                                        itemLabel="#{vt.name}"
+                                        itemValue="#{vt}" />
+                                    <h:outputLabel value="Purchasing Institution"/>
+                                    <p:autoComplete
+                                        class=" w-100 my-2"
+                                        inputStyleClass="w-100"
+                                        value="#{pharmacyDirectPurchaseController.bill.referenceInstitution}"
+                                        completeMethod="#{institutionController.completeCompany}"
+                                        forceSelection="true"
+                                        var="vt"
+                                        itemLabel="#{vt.name}"
+                                        itemValue="#{vt}" />
+
+                                    <p:outputLabel value="Invoice No"/>
+                                    <p:inputText class="w-100" autocomplete="off" value="#{pharmacyDirectPurchaseController.bill.invoiceNumber}" >
+                                        <p:ajax process="@this" event="keyup"></p:ajax>
+                                    </p:inputText>
+                                    <p:outputLabel value="Invoice Date"/>
+                                    <p:calendar class="w-100" 
+                                                inputStyleClass="w-100" 
+                                                value="#{pharmacyDirectPurchaseController.bill.invoiceDate}"  
+                                                navigator="true"
+                                                pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                        <p:ajax process="@this" ></p:ajax>
                                     </p:calendar>
-                                </div>
-                                <div class="col-1">
-                                    <h:outputLabel
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Batch No"/>
-                                    <p:inputText
-                                        autocomplete="off"
-                                        class="w-100 m-1"
-                                        id="tmp"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
-                                </div>
 
-                                <div class="col-1">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        value="&nbsp;"></h:outputLabel>
-                                    <p:commandButton
-                                        id="btnAdd"
-                                        value="Add"
-                                        class="ui-button-success w-100"
-                                        icon="fas fa-plus"
-                                        action="#{pharmacyDirectPurchaseController.addItem}"
-                                        process="@this" 
-                                        update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
+                                    <h:outputLabel value="Payment Method" class="mb-2"/>
+                                    <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyDirectPurchaseController.bill.paymentMethod}">
+                                        <f:selectItem itemLabel="Select Payment Method" />
+                                        <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
+                                        <p:ajax event="change" process="cmbPs" ></p:ajax>
+                                    </p:selectOneMenu>
 
-                                </div>
-
-
-
-
-
-
-
-
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Pack or Unit" />
-                                    <p:inputText
-                                        id="txtPackOrUnit"
-                                        disabled="true"
-                                        autocomplete="off"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Ampp' ? 'Pack' : 'Unit'}" />
-
-                                </div>
-
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Units per pack" />
-                                    <h:panelGroup  id="txtUnitsPerPack" >
-                                        <p:inputText
-                                            rendered="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Ampp'}"
-                                            disabled="true"
-                                            autocomplete="off"
-                                            class="w-100 m-1 text-end"
-                                            value="#{pharmacyDirectPurchaseController.currentBillItem.item.dblValue}">
-                                        </p:inputText>
-                                        <p:inputText
-                                            rendered="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Amp'}"
-                                            disabled="true"
-                                            autocomplete="off"
-                                            class="w-100 m-1 text-end"
-                                            value="1">
-                                        </p:inputText>
+                                    <p:spacer class="my-1"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"></p:spacer>
+                                    <h:panelGroup class="my-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                        <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.bill.consignment}" itemLabel="Consignment"/>
                                     </h:panelGroup>
-                                </div>
 
-                                <div class="col-2">
-                                </div>
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fas fa-receipt"/>
+                                    <h:outputText  class="mx-4" value="Bill Details" />
+                                </f:facet>
+                                <p:tabView id="tot">
+                                    <!-- Legacy Summary -->
+                                    <p:tab title="Bill Summary">
+                                        <p:panelGrid columns="2" >
+                                            <p:outputLabel value="Gross Total" />
+                                            <p:outputLabel 
+                                                id="gro" 
+                                                value="#{pharmacyDirectPurchaseController.bill.total}" 
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                />
 
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Purchase Value" /><br/>
-                                    <p:inputText
-                                        id="txtPurchaseValue"
-                                        disabled="true"
-                                        autocomplete="off"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:inputText>
-                                </div>
+                                            <p:outputLabel value="Tax" />
+                                            <p:inputText 
+                                                autocomplete="off" 
+                                                id="tx" 
+                                                class="w-100 text-end"
+                                                value="#{pharmacyDirectPurchaseController.bill.tax}">
+                                                <p:ajax 
+                                                    process="tx" 
+                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    event="keyup"
+                                                    listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                                <p:ajax 
+                                                    process="tx" 
+                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    event="blur"
+                                                    listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
 
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Discount" /><br/>
-                                    <p:inputText
-                                        id="txtLineDiscountValue"
-                                        autocomplete="off"
-                                        disabled="true"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineDiscount}">
-                                    </p:inputText>
-                                </div>
+                                            <p:outputLabel value="Discount" />
+                                            <p:inputText 
+                                                class="w-100 text-end"
+                                                id="dis" 
+                                                autocomplete="off" 
+                                                value="#{pharmacyDirectPurchaseController.bill.discount}">
+                                                <p:ajax 
+                                                    process="dis" 
+                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    event="keyup"
+                                                    listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                                <p:ajax 
+                                                    process="dis" 
+                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    event="blur"
+                                                    listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
 
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Net Value" /><br/>
-                                    <p:inputText
-                                        id="txtPurchaseValueMinusLineDiscountValue"
-                                        autocomplete="off"
-                                        disabled="true"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:inputText>
-                                </div>
+                                            <p:outputLabel value="Net Total" />
 
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Retail Value"></h:outputLabel>
-                                    <p:inputText
-                                        autocomplete="off"
-                                        id="txtRetailValue"
-                                        disabled="true"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantityByUnits}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:inputText>
-                                </div>
+                                            <h:outputLabel 
+                                                id="net"
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                value="#{pharmacyDirectPurchaseController.bill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
 
-                                <div class="col-1 text-end">
-                                    <h:outputLabel 
-                                        class="w-100 m-1"
-                                        style="white-space: nowrap;"
-                                        value="Cost Value"></h:outputLabel>
-                                    <p:inputText
-                                        autocomplete="off"
-                                        id="txtCostValue"
-                                        disabled="true"
-                                        class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineCost}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:inputText>
-                                </div>
+                                            <p:outputLabel value="Bill Expenses" />
+                                            <h:outputLabel 
+                                                id="billExpensesTotal"
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                value="#{pharmacyDirectPurchaseController.billExpensesTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Bill Expenses (Considered for Costing)" />
+                                            <h:outputLabel 
+                                                id="expensesConsidered"
+                                                class="w-100 text-end ui-inputfield bg-info text-white"
+                                                value="#{pharmacyDirectPurchaseController.bill.expensesTotalConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
+                                            <h:outputLabel 
+                                                id="expensesNotConsidered"
+                                                class="w-100 text-end ui-inputfield bg-warning text-dark"
+                                                value="#{pharmacyDirectPurchaseController.bill.expensesTotalNotConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Sale Value" />
+                                            <h:outputLabel 
+                                                id="saleValue"
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                value="#{pharmacyDirectPurchaseController.bill.saleValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:tab>
+
+                                    <!-- Detailed Finance Tab -->
+                                    <p:tab title="Financial Summary">
+                                        <h:panelGroup id="billFinanceDetails" >
+                                            <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
+                                        </h:panelGroup>
+
+                                    </p:tab>
+
+                                </p:tabView>
+
+
+                            </p:panel>
+                        </div>
+                    </div>
 
 
 
+
+
+
+
+
+
+                </p:panel>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{pharmacyDirectPurchaseController.printPreview}">
+                <p:panel >
+                    <f:facet name="header" >
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
+                            </div>
+                            <div>
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    action="#"
+                                    class="ui-button-info mx-2"
+                                    icon="fas fa-print">
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="#{pharmacyDirectPurchaseController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                                    icon="fas fa-eye"
+                                    id="btnTogglePrintAll"
+                                    class="ui-button-secondary mx-1"
+                                    ajax="false"
+                                    action="#{pharmacyDirectPurchaseController.toggleShowAllBillFormats}"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    title="Toggle visibility of all bill formats for development" />
+                                <p:commandButton
+                                    ajax="false"
+                                    class="ui-button-success"
+                                    icon="fa fa-plus"
+                                    action="#{pharmacyDirectPurchaseController.prepareForNewDIrectPurchaseBill()}"
+                                    value="New Bill"/>
 
                             </div>
-                        </p:panel>
+                        </div>
+                    </f:facet>
 
-                        <p:dataTable
-                            class="m-1 w-100"
-                            rowIndexVar="i"
-                            var="ph"
-                            value="#{pharmacyDirectPurchaseController.billItems}"
-                            id="itemList">
+                    <h:panelGroup id="gpBillPreview" >
+                        <!-- Main receipt format - always shown -->
+                        <h:panelGroup rendered="true">
+                            <pharmacy:direct_purhcase_with_costing
+                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:direct_purhcase_with_costing>
+                        </h:panelGroup>
 
-                            <f:facet name="header">
-                                <h:outputText styleClass="fas fa-shopping-cart" />
-                                <h:outputText class="mx-4" value="Added Items" />
-                            </f:facet>
+                        <!-- Additional formats for development - shown only when toggle is enabled -->
+                        <h:panelGroup rendered="#{pharmacyDirectPurchaseController.showAllBillFormats}">
+                            <pharmacy:direct_purhcase
+                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:direct_purhcase>
+                        </h:panelGroup>
+                    </h:panelGroup>
 
-                            <p:column headerText="No" width="2em">
-                                <h:outputLabel value="#{i + 1}" />
-                            </p:column>
-
-                            <p:column headerText="Item" width="10em">
-                                <p:commandLink
-                                    class="w-100"
-                                    title="#{ph.item.name} - Click to view details"
-                                    value="#{ph.item.name}"
-                                    oncomplete="PF('dialog#{i}').show()"
-                                    update="itemList"
-                                    process="itemList">
-                                </p:commandLink>
-                                <p:dialog id="dialog"
-                                          widgetVar="dialog#{i}"
-                                          header="Details"
-                                          modal="true"
-                                          closable="true"
-                                          resizable="false"
-                                          class="w-75"
-                                          dynamic="true">
-                                    <ph:bill_item_finance_details pbi="#{ph}"/>
-                                </p:dialog>
-                            </p:column>
-
-                            <p:column headerText="Qty"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.quantity}" class="w-100"/>
-                            </p:column>
-
-                            <p:column headerText="Free"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" />
-                            </p:column>
-
-                            <p:column headerText="P. Rate"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.grossRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Dis. Rate"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="RR"  styleClass="text-end">
-                                <h:outputLabel 
-                                    value="#{ph.billItemFinanceDetails.retailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="DOE" styleClass="text-end">
-                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Batch" styleClass="text-end">
-                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.stringValue}" />
-                            </p:column>
-                            <p:column headerText="Gross"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineGrossTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Discount"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscount}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Net"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineNetTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Profit %"  styleClass="text-end">
-                                <h:outputText
-                                    id="profMargin"
-                                    value="#{pharmacyDirectPurchaseController.calculateProfitMargin(ph)}"
-                                    styleClass="#{pharmacyDirectPurchaseController.isProfitMarginExcessive(ph) ? 'ui-messages-fatal' : ''}">
-                                    <f:convertNumber pattern="0.0" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column>
-                                <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
-                            </p:column>
-                        </p:dataTable>
-
-                    </div>
-                    <div class="col-4">
-                        <p:panel header="Purchasing Details" class="m-1">
-                            <f:facet name="header">
-                                <h:outputText styleClass="fas fa-shopping-basket"/>
-                                <h:outputText class="mx-4" value="Purchasing Details"/>
-                            </f:facet>
-                            <h:panelGrid class="w-100">
-                                <p:outputLabel value="Select Supplier"/>
-                                <p:autoComplete
-                                    class=" w-100 my-2"
-                                    inputStyleClass="w-100"
-                                    converter="deal"
-                                    value="#{pharmacyDirectPurchaseController.bill.fromInstitution}"
-                                    forceSelection="true"
-                                    completeMethod="#{dealerController.completeActiveDealor}"
-                                    var="vt"
-                                    maxResults="10"
-                                    itemLabel="#{vt.name}"
-                                    itemValue="#{vt}" />
-                                <h:outputLabel value="Purchasing Institution"/>
-                                <p:autoComplete
-                                    class=" w-100 my-2"
-                                    inputStyleClass="w-100"
-                                    value="#{pharmacyDirectPurchaseController.bill.referenceInstitution}"
-                                    completeMethod="#{institutionController.completeCompany}"
-                                    forceSelection="true"
-                                    var="vt"
-                                    itemLabel="#{vt.name}"
-                                    itemValue="#{vt}" />
-
-                                <p:outputLabel value="Invoice No"/>
-                                <p:inputText class="w-100" autocomplete="off" value="#{pharmacyDirectPurchaseController.bill.invoiceNumber}" >
-                                    <p:ajax process="@this" event="keyup"></p:ajax>
-                                </p:inputText>
-                                <p:outputLabel value="Invoice Date"/>
-                                <p:calendar class="w-100" 
-                                            inputStyleClass="w-100" 
-                                            value="#{pharmacyDirectPurchaseController.bill.invoiceDate}"  
-                                            navigator="true"
-                                            pattern="#{sessionController.applicationPreference.shortDateFormat}" >
-                                    <p:ajax process="@this" ></p:ajax>
-                                </p:calendar>
-
-                                <h:outputLabel value="Payment Method" class="mb-2"/>
-                                <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyDirectPurchaseController.bill.paymentMethod}">
-                                    <f:selectItem itemLabel="Select Payment Method" />
-                                    <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
-                                    <p:ajax event="change" process="cmbPs" ></p:ajax>
-                                </p:selectOneMenu>
-
-                            </h:panelGrid>
-                        </p:panel>
-
-                        <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
-                            <f:facet name="header" >
-                                <h:outputText styleClass="fas fa-receipt"/>
-                                <h:outputText  class="mx-4" value="Bill Details" />
-                            </f:facet>
-                            <p:tabView id="tot">
-                                <!-- Legacy Summary -->
-                                <p:tab title="Bill Summary">
-                                    <p:panelGrid columns="2" >
-                                        <p:outputLabel value="Gross Total" />
-                                        <p:outputLabel 
-                                            id="gro" 
-                                            value="#{pharmacyDirectPurchaseController.bill.total}" 
-                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
-                                            />
-
-                                        <p:outputLabel value="Tax" />
-                                        <p:inputText 
-                                            autocomplete="off" 
-                                            id="tx" 
-                                            class="w-100 text-end"
-                                            value="#{pharmacyDirectPurchaseController.bill.tax}">
-                                            <p:ajax 
-                                                process="tx" 
-                                                update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
-                                                event="blur"
-                                                listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
-                                        </p:inputText>
-
-                                        <p:outputLabel value="Discount" />
-                                        <p:inputText 
-                                            class="w-100 text-end"
-                                            id="dis" 
-                                            autocomplete="off" 
-                                            value="#{pharmacyDirectPurchaseController.bill.discount}">
-                                            <p:ajax 
-                                                process="@this" 
-                                                update=":#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} net testBillDiscount" 
-                                                event="blur"
-                                                listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
-                                        </p:inputText>
-
-                                        <p:outputLabel value="Net Total" />
-
-                                        <h:outputLabel 
-                                            id="net"
-                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
-                                            value="#{pharmacyDirectPurchaseController.bill.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <p:outputLabel value="Bill Expenses" />
-                                        <h:outputLabel 
-                                            id="billExpensesTotal"
-                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
-                                            value="#{pharmacyDirectPurchaseController.billExpensesTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <p:outputLabel value="Bill Expenses (Considered for Costing)" />
-                                        <h:outputLabel 
-                                            id="expensesConsidered"
-                                            class="w-100 text-end ui-inputfield bg-info text-white"
-                                            value="#{pharmacyDirectPurchaseController.bill.expensesTotalConsideredForCosting}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
-                                        <h:outputLabel 
-                                            id="expensesNotConsidered"
-                                            class="w-100 text-end ui-inputfield bg-warning text-dark"
-                                            value="#{pharmacyDirectPurchaseController.bill.expensesTotalNotConsideredForCosting}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <p:outputLabel value="Sale Value" />
-                                        <h:outputLabel 
-                                            id="saleValue"
-                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
-                                            value="#{pharmacyDirectPurchaseController.bill.saleValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:panelGrid>
-                                </p:tab>
-
-                                <!-- Detailed Finance Tab -->
-                                <p:tab title="Financial Summary">
-                                    <h:panelGroup id="billFinanceDetails" >
-                                        <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
-                                    </h:panelGroup>
-
-                                </p:tab>
-
-                            </p:tabView>
-
-
-                        </p:panel>
-
-
-
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-12">
-
-
-                    </div>
-                </div>
-
-
-
-
-                <p:panel header="Bill Expenses" class="my-3" >
-                    <h:panelGrid id="billExpenseGrid" columns="5" style="min-width: 100%;">
-                        <h:outputLabel value="Select Expense"/>
-                        <h:outputLabel value="Value"/>
-                        <h:outputLabel value="Description"/>
-                        <h:outputLabel value="Considered for Costing"/>
-                        <h:outputLabel ></h:outputLabel>
-                        <p:autoComplete
-                            id="acExpense"
-                            value="#{pharmacyDirectPurchaseController.currentExpense.item}"
-                            forceSelection="true"
-                            completeMethod="#{itemController.completeExpenseItem}"
-                            var="ex"
-                            itemLabel="#{ex.name}"
-                            itemValue="#{ex}"
-                            inputStyleClass="w-100"
-                            class="w-75">
-                            <p:ajax
-                                event="itemSelect"
-                                process="acExpense"
-                                listener="#{pharmacyDirectPurchaseController.onExpenseItemSelect}"
-                                update="billExpenseGrid" />
-                        </p:autoComplete>
-                        <p:inputText
-                            autocomplete="off"
-                            id="txtExpense"
-                            onfocus="this.select()"
-                            styleClass="numericTxt"
-                            value="#{pharmacyDirectPurchaseController.currentExpense.rate}"
-                            style="width:50%" />
-                        <p:inputText maxlength="250" value="#{pharmacyDirectPurchaseController.currentExpense.descreption}" style="width:75%" ></p:inputText>
-                        <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.currentExpense.consideredForCosting}" />
-                        <p:commandButton
-                            id="btnAddExpense"
-                            value="Add Expense"
-                            icon="fas fa-plus"
-                            class="ui-button-Warning mx-2"
-                            action="#{pharmacyDirectPurchaseController.addExpense()}"
-                            ajax = "false"
-                            process="billExpenseGrid btnAddExpense @this"
-                            update=" billExpenseGrid @all"/>
-                    </h:panelGrid>
-                    <p:dataTable id="tblExpenses" value="#{pharmacyDirectPurchaseController.billExpenses}" var="be" class="mt-2"
-                                 emptyMessage="No Bill Expenses" >
-                        <p:column headerText="Expense" >
-                            <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Value" >
-                            <h:outputLabel value="#{be.netValue}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Description" >
-                            <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Considered for Costing" >
-                            <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
-                                <p:ajax event="change" 
-                                       listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
-                                       update="@parent" />
-                            </p:selectBooleanCheckbox>
-                        </p:column>
-                    </p:dataTable>
                 </p:panel>
+            </h:panelGroup>
 
-                <p:commandButton
-                    id="nullButton"
-                    value="No Action"
-                    action="#"
-                    style="display: none;" ></p:commandButton>
 
-                <p:defaultCommand  target="btnAdd" />
 
-                <h:panelGroup rendered="#{not empty pharmacyItemExcelManager.itemNamesFailedToImport}" >
-                    <p:dataTable value="#{pharmacyItemExcelManager.itemNamesFailedToImport}"
-                                 var="f">
-                        <p:column >
-                            #{f}
-                        </p:column>
-                    </p:dataTable>
-                </h:panelGroup>
-            </p:panel>
 
-            <p:panel rendered="#{pharmacyDirectPurchaseController.printPreview}">
-                <f:facet name="header" >
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h:outputText styleClass="fa-solid fa-circle-plus" />
-                            <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
-                        </div>
-                        <div>
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                action="#"
-                                class="ui-button-info mx-2"
-                                icon="fas fa-print">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton
-                                ajax="false"
-                                class="ui-button-success"
-                                icon="fa fa-plus"
-                                action="#{pharmacyDirectPurchaseController.prepareForNewDIrectPurchaseBill()}"
-                                value="New Bill"/>
 
-                        </div>
-                    </div>
-                </f:facet>
-
-                <h:panelGroup id="gpBillPreview" >
-                    <pharmacy:direct_purhcase_with_costing
-                        bill="#{pharmacyDirectPurchaseController.bill}"
-                        ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                        ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                    </pharmacy:direct_purhcase_with_costing>
-                </h:panelGroup>
-
-            </p:panel>
         </h:form>
     </ui:define>
 </ui:composition>

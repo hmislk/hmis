@@ -212,7 +212,9 @@
 
 
                             <p:column headerText="Date">
-                                <h:outputText value="#{f.bill.createdAt}" />
+                                <h:outputText value="#{f.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Net Amount" />
                                 </f:facet>
@@ -251,7 +253,17 @@
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Rate">
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Sale Rate">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

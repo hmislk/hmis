@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -228,15 +228,41 @@
                             </p:column>
 
                             <p:column headerText="Doc No">
-                                <h:outputText value="#{row.bill.deptId}" />
+                                <p:commandLink 
+                                    value="#{row.bill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{row.bill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Ref Doc No">
-                                <h:outputText value="#{row.bill.referenceBill.deptId}" />
+                                <p:commandLink 
+                                    value="#{row.bill.referenceBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{row.bill.referenceBill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="QTY">
                                 <h:outputText value="#{row.qty}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cost Rate" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cost Value" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
