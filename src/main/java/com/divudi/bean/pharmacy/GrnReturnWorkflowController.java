@@ -103,29 +103,10 @@ public class GrnReturnWorkflowController implements Serializable {
     private List<Bill> grnReturnsToApprove;
     private List<Bill> filteredGrnReturnsToFinalize;
     private List<Bill> filteredGrnReturnsToApprove;
-    // Navigation flags to track when lists should be cleared
-    private boolean grnReturnsToFinalizeCleared = false;
-    private boolean grnReturnsToApproveCleared = false;
 
     @Inject
     PharmacyCalculation pharmacyBillBean;
 
-    // Page initialization methods - called once when page loads
-    public void initGrnReturnFinalizePage() {
-        if (grnReturnsToFinalize != null && !grnReturnsToFinalizeCleared) {
-            grnReturnsToFinalize = null;
-            filteredGrnReturnsToFinalize = null;
-            grnReturnsToFinalizeCleared = true;
-        }
-    }
-    
-    public void initGrnReturnApprovePage() {
-        if (grnReturnsToApprove != null && !grnReturnsToApproveCleared) {
-            grnReturnsToApprove = null;
-            filteredGrnReturnsToApprove = null;
-            grnReturnsToApproveCleared = true;
-        }
-    }
 
     // Navigation methods
     public String navigateToCreateGrnReturn() {
@@ -158,12 +139,16 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public String navigateToFinalizeGrnReturn() {
         makeListNull();
+        grnReturnsToFinalize = null;
+        filteredGrnReturnsToFinalize = null;
         printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_list_to_finalize?faces-redirect=true";
     }
 
     public String navigateToApproveGrnReturn() {
         makeListNull();
+        grnReturnsToApprove = null;
+        filteredGrnReturnsToApprove = null;
         printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_list_to_approve?faces-redirect=true";
     }
@@ -1780,7 +1765,6 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Methods to populate bill lists for workflow steps
     public void fillGrnReturnsToFinalize() {
-        grnReturnsToFinalizeCleared = false;  // Reset flag since we're populating the list
         // Find draft/saved bills that need to be finalized
         // Draft = no checkedBy (not yet finalized)
         // Need finalization = ready to be checked and finalized
