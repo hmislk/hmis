@@ -264,14 +264,16 @@
                                     value="Save" 
                                     action="#{purchaseOrderRequestController.saveRequest}"
                                     icon="pi pi-save" 
-                                    class="ui-button-success m-1"/>
+                                    class="ui-button-success m-1"
+                                    disabled="#{purchaseOrderRequestController.currentBill.checked}"/>
                                 <p:commandButton 
                                     id="btnFinalize"
                                     ajax="false" 
                                     value="Finalize" 
                                     action="#{purchaseOrderRequestController.finalizeRequest()}"
                                     icon="pi pi-check" 
-                                    class="ui-button-warning m-1"/>
+                                    class="ui-button-warning m-1"
+                                    disabled="#{purchaseOrderRequestController.currentBill.checked}"/>
                                 <p:commandButton 
                                     ajax="false"  
                                     value="New Order" 

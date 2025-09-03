@@ -534,6 +534,10 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveRequest() {
+        if (getCurrentBill().isChecked()) {
+            JsfUtil.addErrorMessage("Cannot save a finalized bill");
+            return;
+        }
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return;
@@ -565,6 +569,10 @@ public class PurchaseOrderRequestController implements Serializable {
     public void finalizeRequest() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (getCurrentBill().isChecked()) {
+            JsfUtil.addErrorMessage("Cannot finalize an already finalized bill");
             return;
         }
         if (getCurrentBill().getPaymentMethod() == null) {
