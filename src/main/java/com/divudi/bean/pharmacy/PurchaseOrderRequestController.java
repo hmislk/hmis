@@ -426,6 +426,7 @@ public class PurchaseOrderRequestController implements Serializable {
     public void finalizeBill() {
         getCurrentBill().setEditedAt(new Date());
         getCurrentBill().setEditor(sessionController.getLoggedUser());
+        getCurrentBill().setChecked(true);
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
