@@ -251,13 +251,6 @@
                 </p:panel>
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <p:commandButton 
-                        value="New Bill" 
-                        ajax="false" 
-                        action="#{cashRecieveBillController.prepareNewBill()}"  
-                        icon="fa fa-plus"
-                        class="ui-button-warning">
-                    </p:commandButton>
                     <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
 
