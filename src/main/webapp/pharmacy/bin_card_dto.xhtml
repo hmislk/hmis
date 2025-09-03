@@ -120,10 +120,8 @@
 
                     <!-- Transaction Type -->
                     <p:column headerText="Transaction Type" width="18rem">
-                        <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
+                        <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}" />
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
-                        <br />
-                        <small style="color: #666;">Bill ID: #{sh.billId}</small>
                         <p:commandButton 
                             ajax="false" 
                             action="#{billController.navigateToBillById(sh.billId)}"
