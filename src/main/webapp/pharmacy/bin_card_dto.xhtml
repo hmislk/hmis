@@ -11,9 +11,9 @@
     <ui:define name="subcontent">
 
         <h:form>
-            <p:panel header="Pharmacy Bin Card (DTO Enhanced)" >
+            <p:panel header="Pharmacy Bin Card" >
                 <f:facet name="header" >
-                    <h:outputLabel value="Pharmacy Bin Card (DTO Enhanced)" ></h:outputLabel>
+                    <h:outputLabel value="Pharmacy Bin Card" ></h:outputLabel>
                 </f:facet>
                 <h:panelGrid columns="7" class="w-100">
                     <h:outputLabel value="From" ></h:outputLabel>
@@ -78,7 +78,7 @@
                         class="m-1 ui-button-warning" 
                         ajax="false" 
                         icon="fas fa-arrows-rotate"
-                        value="Process (DTO)"
+                        value="Generate Report"
                         action="#{pharmacyErrorChecking.processBinCardWithDTO()}" >
                     </p:commandButton>
 
@@ -129,8 +129,8 @@
                         </h:outputText>
                     </p:column>
 
-                    <!-- Bill Type -->
-                    <p:column headerText="Bill Type">
+                    <!-- Transaction Type -->
+                    <p:column headerText="Transaction Type">
                         <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
                     </p:column>
@@ -141,7 +141,7 @@
                     </p:column>
 
                     <!-- Quantity In -->
-                    <p:column headerText="Qty In" class="text-end">
+                    <p:column headerText="Quantity In" class="text-end">
                         <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
                                       rendered="#{sh.transThisIsStockIn}"
                                       styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
@@ -150,7 +150,7 @@
                     </p:column>
 
                     <!-- Quantity Out -->
-                    <p:column headerText="Qty Out" class="text-end">
+                    <p:column headerText="Quantity Out" class="text-end">
                         <h:outputText 
                             value="#{sh.transAbsoluteQtyPlusFreeQty}" 
                             rendered="#{sh.transThisIsStockOut}"
@@ -159,14 +159,29 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Balance Qty (Item)" class="text-end">
+                    <!-- Stock Before Transaction (Item) -->
+                    <p:column headerText="Stock Before (Item)" class="text-end">
+                        <h:outputText value="#{sh.transThisIsStockIn ? sh.itemStock - sh.transAbsoluteQtyPlusFreeQty : sh.itemStock + sh.transAbsoluteQtyPlusFreeQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Stock After Transaction (Item) -->
+                    <p:column headerText="Stock After (Item)" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    
-                     <p:column headerText="Balance Qty (Batch)" class="text-end">
+                    <!-- Stock Before Transaction (Batch) -->
+                    <p:column headerText="Stock Before (Batch)" class="text-end">
+                        <h:outputText value="#{sh.transThisIsStockIn ? sh.stockQty - sh.transAbsoluteQtyPlusFreeQty : sh.stockQty + sh.transAbsoluteQtyPlusFreeQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Stock After Transaction (Batch) -->
+                    <p:column headerText="Stock After (Batch)" class="text-end">
                          <h:outputText value="#{sh.stockQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
