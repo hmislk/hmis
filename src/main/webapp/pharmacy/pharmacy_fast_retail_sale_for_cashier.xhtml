@@ -894,12 +894,14 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
-                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                                        <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" />
-                                    </p:selectOneMenu>
-                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                    </h:panelGroup>
 
                                     <p:commandButton
                                         accesskey="p"
@@ -933,7 +935,7 @@
                                         icon="fa fa-print"
                                         class="ui-button-info m-1"
                                         action="#" >
-                                        <p:printer target="gpBillPreviewTokenAndBill" ></p:printer>
+                                        <p:printer target="billAndTokenPrint" ></p:printer>
                                     </p:commandButton>
                                     <p:commandButton
 
@@ -1001,7 +1003,7 @@
                                 </div>
                             </div>
 
-                            <h:panelGroup id="gpBillPreviewTokenAndBill">
+                            <h:panelGroup id="billAndTokenPrint">
                                 <h:panelGroup  rendered="#{pharmacyFastRetailSaleForCashierController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"  id="TokenPreview" class="m-2">
                                     <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                         <div >

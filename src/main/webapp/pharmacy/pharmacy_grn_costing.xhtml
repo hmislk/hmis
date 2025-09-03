@@ -18,14 +18,23 @@
                     class="w-100">
                     <f:facet name="header">
                         <h:outputLabel value="Goods Receive" />
-                        <p:commandButton  
-                            value="Settle" 
+                        <p:commandButton
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            actionListener="#{searchController.makeListNull()}"
+                            class="ui-button-warning"
+                            icon="fa fa-arrow-left"
+                            style="float: right; margin-right: 0.5em;"
+                            value="Back to PO List">
+                        </p:commandButton>
+                        <p:commandButton
+                            value="Settle"
                             action="#{grnCostingController.settle}"
                             class="ui-button-success"
                             icon="fas fa-check"
-                            ajax="false"  
+                            ajax="false"
                             style="float: right;">
-                        </p:commandButton> 
+                        </p:commandButton>
                     </f:facet>
 
 
@@ -388,7 +397,7 @@
                                             action="#{grnCostingController.removeExpense(be)}"
                                             process="@this"
                                             update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
-                                        
+
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -432,14 +441,22 @@
                                         <p:ajax process="@this" update="grn" event="change"/>
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
                                     </p:selectOneMenu>
-                                    <h:panelGroup rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
-                                        <p:inputText  
-                                            value="#{grnCostingController.grnBill.creditDuration}"
-                                            style="width: 5em;"
-                                            class="ms-1">
-                                        </p:inputText>
-                                        <p:outputLabel class="ms-2" value="Days"></p:outputLabel>
-                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                                <p:spacer  rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" ></p:spacer>
+                                <h:panelGroup rendered="#{grnCostingController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
+                                    <p:inputText  
+                                        value="#{grnCostingController.grnBill.creditDuration}"
+                                        style="width: 5em;"
+                                        class="ms-1">
+                                    </p:inputText>
+                                    <p:outputLabel class="ms-2" value="Days"></p:outputLabel>
+                                </h:panelGroup>
+
+                                <p:spacer  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"></p:spacer>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                    <p:selectBooleanCheckbox value="#{grnCostingController.grnBill.consignment}" itemLabel="Consignment"/>
                                 </h:panelGroup>
 
                                 <h:outputLabel value="Comment"/>
@@ -599,14 +616,14 @@
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="GRN Preview " class="mt-2"/>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    action="pharmacy_purchase_order_list_for_recieve"
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-warning"
                                     icon="fa fa-arrow-left"
-                                    actionListener="#{grnCostingController.viewPoList()}" 
-                                    value="Back to PO List"> 
-                                </p:commandButton>                   
+                                    value="Back to PO List">
+                                </p:commandButton>
                                 <p:commandButton 
                                     value="Print" 
                                     ajax="false" 

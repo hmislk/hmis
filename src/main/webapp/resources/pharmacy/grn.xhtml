@@ -219,7 +219,7 @@
                             </td>
                             <td style="text-align: right;">
                                 <h:outputText
-                                        value="#{bip.billItemFinanceDetails.retailSaleRate * bip.billItemFinanceDetails.totalQuantity}">
+                                        value="#{bip.billItemFinanceDetails.retailSaleRatePerUnit * bip.billItemFinanceDetails.totalQuantityByUnits}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </td>
@@ -417,7 +417,7 @@
                     <tr style="font-size: 15px">
                         <td colspan="9" style="text-align: left; font-weight: bold!important;">Net Total</td>
                         <td colspan="2" style="text-align: right; font-weight: bold!important;">
-                            <h:outputText value="#{cc.attrs.bill.netTotal}">
+                            <h:outputText value="#{0-cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </td>

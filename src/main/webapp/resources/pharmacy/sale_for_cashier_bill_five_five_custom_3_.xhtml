@@ -169,7 +169,7 @@
                             <td >Balance :</td>
                             <td style="text-align: right;">
                                 <h:outputLabel value="#{cc.attrs.bill.balance}">
-                                    <f:convertNumber integerOnly="true" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>

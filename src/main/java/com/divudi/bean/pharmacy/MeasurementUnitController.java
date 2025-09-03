@@ -63,17 +63,17 @@ public class MeasurementUnitController implements Serializable {
 
     public String navigateToAddMeasurementUnit() {
         current = new MeasurementUnit();
-        return "/pharmacy/admin/unit";
+        return "/pharmacy/admin/unit?faces-redirect=true";
     }
 
     public String navigateToManageMeasurementUnit() {
         current = new MeasurementUnit();
-        return "/pharmacy/admin/manage_unit";
+        return "/pharmacy/admin/manage_unit?faces-redirect=true";
     }
 
     public String navigateToListAllMeasurementUnit() {
 
-        return "/pharmacy/admin/units";
+        return "/pharmacy/admin/units?faces-redirect=true";
     }
 
     public String navigateToEditMeasurementUnit() {
@@ -81,7 +81,7 @@ public class MeasurementUnitController implements Serializable {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
-        return "/pharmacy/admin/unit";
+        return "/pharmacy/admin/unit?faces-redirect=true";
     }
 
     public void fillAllUnits() {
@@ -102,24 +102,32 @@ public class MeasurementUnitController implements Serializable {
         if (allUnits == null) {
             return;
         }
+        Set<MeasurementUnit> doseUnitSet = new HashSet<>();
+        Set<MeasurementUnit> durationUnitSet = new HashSet<>();
         for (MeasurementUnit mu : allUnits) {
             if (mu.isIssueUnit()) {
                 issueUnits.add(mu);
-                doseUnits.add(mu);
-                durationUnits.add(mu);
-            } else if (mu.isPackUnit()) {
-                doseUnits.add(mu);
+                doseUnitSet.add(mu);
+                durationUnitSet.add(mu);
+            }
+            if (mu.isPackUnit()) {
                 packUnits.add(mu);
-                durationUnits.add(mu);
-            } else if (mu.isStrengthUnit()) {
+                doseUnitSet.add(mu);
+                durationUnitSet.add(mu);
+            }
+            if (mu.isStrengthUnit()) {
                 strengthUnits.add(mu);
-                doseUnits.add(mu);
-            } else if (mu.isDurationUnit()) {
-                durationUnits.add(mu);
-            } else if (mu.isFrequencyUnit()) {
+                doseUnitSet.add(mu);
+            }
+            if (mu.isDurationUnit()) {
+                durationUnitSet.add(mu);
+            }
+            if (mu.isFrequencyUnit()) {
                 frequencyUnits.add(mu);
             }
         }
+        doseUnits.addAll(doseUnitSet);
+        durationUnits.addAll(durationUnitSet);
     }
 
     public MeasurementUnit findAndSaveMeasurementUnitByName(String name) {

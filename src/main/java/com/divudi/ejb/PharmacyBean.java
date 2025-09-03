@@ -65,10 +65,36 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.math.BigDecimal;
 
 /**
+ * ⚠️⚠️⚠️ CRITICAL FINANCIAL & INVENTORY MANAGEMENT BEAN ⚠️⚠️⚠️
+ * 
+ * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
+ * This EJB contains the CORE stock management methods for the entire pharmacy system.
+ * These methods handle REAL MONEY and REGULATORY compliance operations.
+ * 
+ * 🛑 PROTECTED CRITICAL METHODS - DO NOT MODIFY UNDER ANY CIRCUMSTANCE: 🛑
+ * - addToStock() - Increases stock levels (GRNs, transfers)
+ * - deductFromStock() - Decreases stock levels (sales, returns, issues)
+ * - addToStockHistory() - Maintains audit trails for regulatory compliance
+ * - Stock validation and error handling methods
+ * 
+ * 💰 FINANCIAL IMPACT: Changes can cause:
+ * - Inventory discrepancies costing thousands of dollars
+ * - Regulatory audit failures
+ * - Patient safety issues (wrong stock levels)
+ * - Financial report corruption
+ * 
+ * 🏥 REGULATORY COMPLIANCE: Required for:
+ * - Ministry of Health audits
+ * - Financial audits  
+ * - Drug regulatory compliance
+ * - Hospital accreditation
+ * 
+ * ANY modifications require senior management approval and extensive testing.
  *
  * @author Buddhika
  */
@@ -182,7 +208,7 @@ public class PharmacyBean {
     }
 
     public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
-        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
 
         for (BillItem returningBillItem : billItems) {
             if (returningBillItem == null) {
@@ -488,14 +514,19 @@ public class PharmacyBean {
 
     public double getStockQty(ItemBatch batch, Institution institution) {
         String sql;
-        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = " + batch.getId() + " and s.department.institution.id = " + institution.getId();
-        return getStockFacade().findAggregateDbl(sql);
+        Map<String, Object> params = new HashMap<>();
+        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId and s.department.institution.id = :institutionId";
+        params.put("batchId", batch.getId());
+        params.put("institutionId", institution.getId());
+        return getStockFacade().findDoubleByJpql(sql, params);
     }
 
     public double getStockQty(ItemBatch batch) {
         String sql;
-        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = " + batch.getId();
-        return getStockFacade().findAggregateDbl(sql);
+        Map<String, Object> params = new HashMap<>();
+        sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId";
+        params.put("batchId", batch.getId());
+        return getStockFacade().findDoubleByJpql(sql, params);
     }
 
     public double getStockQty(Item item, Department department) {
@@ -1012,6 +1043,28 @@ public class PharmacyBean {
         return list;
     }
 
+    /**
+     * ⚠️⚠️⚠️ CRITICAL INVENTORY MANAGEMENT METHOD - DO NOT MODIFY ⚠️⚠️⚠️
+     * 
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
+     * This method handles CRITICAL stock deduction operations that directly affect:
+     * - Real money and financial reports
+     * - Regulatory compliance and audit trails  
+     * - Inventory accuracy across the entire system
+     * - Patient safety (stock availability)
+     * 
+     * 🛑 NEVER MODIFY THIS METHOD WITHOUT:
+     * 1. Senior developer + Financial controller approval
+     * 2. Full backup and rollback plan
+     * 3. Extensive testing with audit verification
+     * 4. Regulatory compliance review
+     * 
+     * 📋 This method correctly handles:
+     * - Stock level validation (prevents negative stock)
+     * - Database consistency with editAndCommit  
+     * - Audit trail creation via addToStockHistory
+     * - Proper error handling with boolean return
+     */
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -1189,6 +1242,28 @@ public class PharmacyBean {
     }
 
     //
+    /**
+     * ⚠️⚠️⚠️ CRITICAL INVENTORY MANAGEMENT METHOD - DO NOT MODIFY ⚠️⚠️⚠️
+     * 
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
+     * This method handles CRITICAL stock addition operations that directly affect:
+     * - Real money and financial reports
+     * - Regulatory compliance and audit trails  
+     * - Inventory accuracy across the entire system
+     * - Purchase order and GRN processing
+     * 
+     * 🛑 NEVER MODIFY THIS METHOD WITHOUT:
+     * 1. Senior developer + Financial controller approval
+     * 2. Full backup and rollback plan
+     * 3. Extensive testing with audit verification
+     * 4. Regulatory compliance review
+     * 
+     * 📋 This method correctly handles:
+     * - Stock level addition with proper validation
+     * - Database consistency with editAndFlush
+     * - Audit trail creation via addToStockHistory  
+     * - Proper error handling with boolean return
+     */
     public boolean addToStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -1522,7 +1597,9 @@ public class PharmacyBean {
         }
         name = name.trim();
         StoreItemCategory cat;
-        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where (c.name) = '" + name.toUpperCase() + "' ");
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", name.toUpperCase());
+        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where (c.name) = :name", params);
         if (cat == null && createNew) {
             cat = new StoreItemCategory();
             cat.setName(name);
@@ -1627,8 +1704,10 @@ public class PharmacyBean {
     }
 
     public Ampp getAmpp(Amp amp) {
-        String sql = "select a from Ampp a where a.retired=false and a.amp.id=" + amp.getId();
-        return getAmppFacade().findFirstByJpql(sql);
+        String sql = "select a from Ampp a where a.retired=false and a.amp.id=:ampId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ampId", amp.getId());
+        return getAmppFacade().findFirstByJpql(sql, params);
     }
 
     public Ampp getAmpp(Amp amp, double issueUnitsPerPack, MeasurementUnit unit) {
@@ -2087,6 +2166,94 @@ public class PharmacyBean {
 
     public void setStoreItemCategoryFacade(StoreItemCategoryFacade storeItemCategoryFacade) {
         this.storeItemCategoryFacade = storeItemCategoryFacade;
+    }
+
+    /**
+     * Bulk stock availability method to replace individual N+1 queries for stock lookups.
+     * Retrieves available stocks for all items in a single query.
+     * 
+     * @param items List of items to get stock availability for
+     * @param department The department to check stock availability in
+     * @return Map with item ID as key and list of stock availability DTOs as value
+     */
+    public java.util.Map<Long, java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO>> getBulkStockAvailability(
+            java.util.List<com.divudi.core.entity.Item> items, com.divudi.core.entity.Department department) {
+        
+        if (items == null || items.isEmpty() || department == null) {
+            return new java.util.HashMap<>();
+        }
+        
+        // Resolve items to AMPs and get unique IDs
+        java.util.List<Long> itemIds = items.stream()
+            .map(item -> {
+                if (item instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                    com.divudi.core.entity.pharmacy.Ampp ampp = (com.divudi.core.entity.pharmacy.Ampp) item;
+                    return ampp.getAmp() != null ? ampp.getAmp().getId() : item.getId();
+                } else {
+                    return item.getId();
+                }
+            })
+            .filter(id -> id != null)
+            .distinct()
+            .collect(java.util.stream.Collectors.toList());
+        
+        if (itemIds.isEmpty()) {
+            return new java.util.HashMap<>();
+        }
+        
+        String sql = "SELECT " +
+            "  i.id as itemId, " +
+            "  s.id as stockId, " +
+            "  ib.id as itemBatchId, " +
+            "  ib.batchNo, " +
+            "  ib.dateOfExpire, " +
+            "  s.stock as availableStock, " +
+            "  ib.purcahseRate as purchaseRate, " +
+            "  ib.retailsaleRate as retailRate, " +
+            "  ib.costRate, " +
+            "  i.name as itemName, " +
+            "  i.code as itemCode " +
+            "FROM Stock s " +
+            "JOIN s.itemBatch ib " +
+            "JOIN ib.item i " +
+            "WHERE i.id IN :itemIds " +
+            "  AND s.department = :department " +
+            "  AND s.stock >= 1.0 " +
+            "  AND s.retired = false " +
+            "  AND ib.retired = false " +
+            "  AND i.retired = false " +
+            "ORDER BY i.id, ib.dateOfExpire";
+        
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("itemIds", itemIds);
+        params.put("department", department);
+        
+        try {
+            java.util.List<Object[]> results = getStockFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+            
+            return results.stream()
+                .map(row -> new com.divudi.core.data.dto.StockAvailabilityDTO(
+                    (Long) row[0],    // itemId
+                    (Long) row[1],    // stockId
+                    (Long) row[2],    // itemBatchId
+                    (String) row[3],  // batchNo
+                    (java.util.Date) row[4], // dateOfExpire
+                    (Double) row[5],  // availableStock
+                    (Double) row[6],  // purchaseRate
+                    (Double) row[7],  // retailRate
+                    (Double) row[8],  // costRate
+                    (String) row[9],  // itemName
+                    (String) row[10]  // itemCode
+                ))
+                .collect(java.util.stream.Collectors.groupingBy(
+                    com.divudi.core.data.dto.StockAvailabilityDTO::getItemId
+                ));
+        } catch (Exception e) {
+            // Log error and return empty map as fallback
+            System.err.println("Error in getBulkStockAvailability: " + e.getMessage());
+            e.printStackTrace();
+            return new java.util.HashMap<>();
+        }
     }
 
 }

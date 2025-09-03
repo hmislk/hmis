@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyGrnApprove')}">You are NOT authorized</h:panelGroup>
+        <h:panelGroup id="gpGrnApprove" rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}">
+        <h:form>
+            <p:panel styleClass="shadow-sm border-0">
+                <f:facet name="header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <h4 class="mb-0 text-success">GRN List - To Approve</h4>
+                    </div>
+                </f:facet>
+
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>From Date
+                                </label>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">      
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>To Date
+                                </label>
+                                <p:calendar 
+                                    id="toDate"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">                                                                              
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-hashtag me-1"></i>GRN Number
+                                </label>
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    class="form-control" 
+                                    value="#{searchController.searchKeyword.billNo}" 
+                                    placeholder="Enter GRN number" />
+                            </div>
+                            
+                            <!-- Search Button positioned for better visibility -->
+                            <div class="mb-4">
+                                <p:commandButton 
+                                    class="ui-button-success w-100" 
+                                    icon="fas fa-search"
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search GRNs" 
+                                    action="#{searchController.createGrnTableToApprove}"
+                                    style="min-height: 45px;"/>  
+                            </div>
+
+                            <!-- Collapsible Advanced Filters -->
+                            <p:panel header="Advanced Filters" toggleable="true" collapsed="true" styleClass="mb-3">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-building me-1"></i>Distributor
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.toInstitution}" 
+                                        placeholder="Enter distributor name" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-coins me-1"></i>GRN Value
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.netTotal}" 
+                                        placeholder="Enter GRN value" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-pills me-1"></i>Item Name
+                                    </label>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="form-control" 
+                                        value="#{searchController.searchKeyword.itemName}" 
+                                        placeholder="Enter item name" />
+                                </div>
+                            </p:panel>
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <p:panel header="GRNs Pending Approval" styleClass="shadow-sm">
+                            <p:dataTable 
+                                value="#{searchController.bills}" 
+                                var="g"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="table-striped"
+                                emptyMessage="No GRNs found matching your criteria"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
+
+                            <p:column headerText="Completed On" width="8em">
+                                <h:outputLabel value="#{g.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputLabel>
+                            </p:column> 
+
+                            <p:column headerText="Department" width="6em">
+                                <h:outputLabel value="#{g.fromDepartment.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Completed By" width="8em">
+                                <h:outputLabel value="#{g.creater.webUserPerson.name}"/>
+                            </p:column>    
+
+                            <p:column headerText="Distributor" width="12em">
+                                <h:outputLabel value="#{g.toInstitution.name}"/>
+                            </p:column>
+
+                            <p:column headerText="GRN Number" width="8em">                   
+                                <h:outputLabel value="#{g.deptId}"/>
+                            </p:column>              
+
+                            <p:column headerText="GRN Value" width="8em" styleClass="text-end" sortBy="#{g.netTotal}">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-success me-2"></i>
+                                    <span class="fw-bold text-success fs-6">
+                                        <h:outputLabel value="#{g.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Related PO" width="8em">
+                                <h:outputLabel value="#{g.referenceBill.deptId}" rendered="#{g.referenceBill ne null}"/>
+                            </p:column>
+
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                                <div class="d-flex justify-content-center align-items-center gap-1">
+                                    <p:commandButton  
+                                        class="ui-button-success"  
+                                        icon="fas fa-check"
+                                        value="Approve"
+                                        title="Edit and Approve GRN" 
+                                        ajax="false"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrn()}"
+                                        style="min-width: 80px;">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
+                                    </p:commandButton>
+                                    <p:commandButton  
+                                        class="ui-button-success"  
+                                        icon="fas fa-check"
+                                        value="Approve"
+                                        title="Edit and Approve GRN with Costing" 
+                                        ajax="false"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}"
+                                        style="min-width: 80px;">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
+                                    </p:commandButton>
+                                </div>
+                            </p:column>
+                        </p:dataTable>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+        </h:form>
+        </h:panelGroup>
+    </ui:define>  
+
+</ui:composition>

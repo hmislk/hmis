@@ -29,6 +29,16 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import com.divudi.service.AuditService;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import javax.faces.application.FacesMessage;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -56,7 +66,9 @@ public class ConfigOptionController implements Serializable {
     private WebUser webUser;
     private List<ConfigOption> options;
     private List<ConfigOption> filteredOptions;
+    private List<ConfigOption> selectedOptions = new ArrayList<>();
     private List<ConfigOptionDuplicateGroup> duplicateGroups;
+    private UploadedFile uploadedFile;
 
     private String key;
     private String value;
@@ -100,7 +112,7 @@ public class ConfigOptionController implements Serializable {
     }
 
     public void deleteOption(ConfigOption delo) {
-        if (delo==null) {
+        if (delo == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
@@ -112,6 +124,7 @@ public class ConfigOptionController implements Serializable {
         delo.setRetired(true);
         delo.setRetiredAt(new Date());
         delo.setRetirer(sessionController.getLoggedUser());
+
         saveOption(delo);
 
         Map<String, Object> after = new HashMap<>();
@@ -120,7 +133,232 @@ public class ConfigOptionController implements Serializable {
 
         auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Delete Config Option");
         configOptionApplicationController.loadApplicationOptions();
+        listApplicationOptions();
         JsfUtil.addSuccessMessage("Deleted");
+    }
+
+    public void bulkDeleteSelectedOptions() {
+        if (selectedOptions == null || selectedOptions.isEmpty()) {
+            JsfUtil.addErrorMessage("No options selected for deletion");
+            return;
+        }
+
+        int deletedCount = 0;
+        for (ConfigOption option : selectedOptions) {
+            if (option != null) {
+                Map<String, Object> before = new HashMap<>();
+                before.put("optionKey", option.getOptionKey());
+                before.put("optionValue", option.getOptionValue());
+
+                option.setRetireComments("bulk del");
+                option.setRetired(true);
+                option.setRetiredAt(new Date());
+                option.setRetirer(sessionController.getLoggedUser());
+
+                saveOption(option);
+
+                Map<String, Object> after = new HashMap<>();
+                after.put("optionKey", option.getOptionKey());
+                after.put("retired", true);
+
+                auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Bulk Delete Config Option");
+                deletedCount++;
+            }
+        }
+
+        selectedOptions.clear();
+        configOptionApplicationController.loadApplicationOptions();
+        listApplicationOptions();
+        JsfUtil.addSuccessMessage("Deleted " + deletedCount + " options");
+    }
+
+    public StreamedContent exportSelectedOptions() {
+        if (selectedOptions == null || selectedOptions.isEmpty()) {
+            JsfUtil.addErrorMessage("No options selected for export");
+            return null;
+        }
+
+        StringBuilder csvContent = new StringBuilder();
+        csvContent.append("Option Key,Option Value,Value Type,Enum Type\n");
+
+        for (ConfigOption option : selectedOptions) {
+            if (option != null) {
+                csvContent.append("\"").append(escapeQuotes(option.getOptionKey())).append("\",");
+                csvContent.append("\"").append(escapeQuotes(option.getOptionValue())).append("\",");
+                csvContent.append("\"").append(option.getValueType().toString()).append("\",");
+                csvContent.append("\"").append(option.getEnumType() != null ? escapeQuotes(option.getEnumType()) : "").append("\"\n");
+            }
+        }
+
+        InputStream stream = new ByteArrayInputStream(csvContent.toString().getBytes(StandardCharsets.UTF_8));
+        return DefaultStreamedContent.builder()
+                .name("config_options_export.csv")
+                .contentType("text/csv")
+                .stream(() -> stream)
+                .build();
+    }
+
+    private String escapeQuotes(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\"", "\"\"");
+    }
+
+    public String importOptionsFromCsv() {
+        if (uploadedFile == null || uploadedFile.getSize() == 0) {
+            JsfUtil.addErrorMessage("Please select a CSV file to import");
+            return null;
+        }
+        
+        try (InputStream in = uploadedFile.getInputStream()) {
+            importOptionsFromFile(in);
+            return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading uploaded file: " + e.getMessage());
+            return null;
+        } finally {
+            uploadedFile = null;
+        }
+    }
+
+    public void handleFileUpload(FileUploadEvent event) {
+        try {
+            UploadedFile file = event.getFile();
+            if (file != null) {
+                importOptionsFromFile(file.getInputStream());
+            }
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading uploaded file: " + e.getMessage());
+        }
+    }
+
+    public void importOptionsFromFile(InputStream inputStream) {
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[1024];
+            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+
+            String content = new String(buffer.toByteArray(), StandardCharsets.UTF_8);
+            String[] lines = content.split("\n");
+
+            if (lines.length < 2) {
+                JsfUtil.addErrorMessage("Invalid file format. Expected CSV with headers.");
+                return;
+            }
+
+            int importedCount = 0;
+            int updatedCount = 0;
+
+            for (int i = 1; i < lines.length; i++) {
+                String line = lines[i].trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = parseCsvLine(line);
+                if (parts.length >= 3) {
+                    String optionKey = parts[0];
+                    String optionValue = parts[1];
+                    String valueTypeStr = parts[2];
+                    String enumType = parts.length > 3 ? parts[3] : null;
+
+                    if (optionKey != null && !optionKey.trim().isEmpty()) {
+                        OptionValueType valueType;
+                        try {
+                            valueType = OptionValueType.valueOf(valueTypeStr);
+                        } catch (IllegalArgumentException e) {
+                            valueType = OptionValueType.SHORT_TEXT;
+                        }
+
+                        ConfigOption existingOption = getOptionValueByKey(optionKey, OptionScope.APPLICATION, null, null, null);
+
+                        if (existingOption != null) {
+                            Map<String, Object> before = new HashMap<>();
+                            before.put("optionKey", existingOption.getOptionKey());
+                            before.put("optionValue", existingOption.getOptionValue());
+
+                            existingOption.setOptionValue(optionValue);
+                            existingOption.setValueType(valueType);
+                            if (enumType != null && !enumType.trim().isEmpty()) {
+                                existingOption.setEnumType(enumType);
+                            }
+                            saveOption(existingOption);
+
+                            Map<String, Object> after = new HashMap<>();
+                            after.put("optionKey", existingOption.getOptionKey());
+                            after.put("optionValue", existingOption.getOptionValue());
+
+                            auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Update Config Option");
+                            updatedCount++;
+                        } else {
+                            ConfigOption newOption = new ConfigOption();
+                            newOption.setOptionKey(optionKey);
+                            newOption.setOptionValue(optionValue);
+                            newOption.setValueType(valueType);
+                            newOption.setScope(OptionScope.APPLICATION);
+                            if (enumType != null && !enumType.trim().isEmpty()) {
+                                newOption.setEnumType(enumType);
+                            }
+                            newOption.setCreatedAt(new Date());
+                            newOption.setCreater(sessionController.getLoggedUser());
+                            optionFacade.create(newOption);
+
+                            Map<String, Object> after = new HashMap<>();
+                            after.put("optionKey", newOption.getOptionKey());
+                            after.put("optionValue", newOption.getOptionValue());
+
+                            auditService.logAudit(null, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Create Config Option");
+                            importedCount++;
+                        }
+                    }
+                }
+            }
+
+            configOptionApplicationController.loadApplicationOptions();
+            listApplicationOptions();
+
+            String message = "Import completed. ";
+            if (importedCount > 0) {
+                message += importedCount + " new options created. ";
+            }
+            if (updatedCount > 0) {
+                message += updatedCount + " options updated.";
+            }
+            JsfUtil.addSuccessMessage(message);
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error processing file: " + e.getMessage());
+        }
+    }
+
+    private String[] parseCsvLine(String line) {
+        List<String> result = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder field = new StringBuilder();
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    field.append('"');
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == ',' && !inQuotes) {
+                result.add(field.toString());
+                field = new StringBuilder();
+            } else {
+                field.append(c);
+            }
+        }
+        result.add(field.toString());
+
+        return result.toArray(new String[0]);
     }
 
     public void saveDepartmentOption() {
@@ -184,7 +422,7 @@ public class ConfigOptionController implements Serializable {
     }
 
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
-        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
+        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope AND COALESCE(o.retired, false) = false");
         Map<String, Object> params = new HashMap<>();
         params.put("key", key);
         params.put("scope", scope);
@@ -237,18 +475,10 @@ public class ConfigOptionController implements Serializable {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
 
         if (option == null || option.getValueType() != OptionValueType.ENUM || !option.getEnumType().equals(enumClass.getName())) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setCreater(sessionController.getLoggedUser());
-            option.setOptionKey(key);
-            option.setScope(scope);
-            option.setInstitution(institution);
-            option.setDepartment(department);
-            option.setWebUser(webUser);
-            option.setValueType(OptionValueType.ENUM);
+            option = optionFacade.createOptionIfNotExists(key, scope, institution, department, webUser, OptionValueType.ENUM, "");
             option.setEnumType(enumClass.getName());
-            optionFacade.create(option); // Persist the new ConfigOption entity
-
+            option.setCreater(sessionController.getLoggedUser());
+            optionFacade.edit(option);
         }
 
         return getEnumValue(option, enumClass);
@@ -257,19 +487,12 @@ public class ConfigOptionController implements Serializable {
     public Double getDoubleValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
         if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
+            option = optionFacade.createOptionIfNotExists(key, scope, institution, department, webUser, OptionValueType.DOUBLE, "0.0");
             option.setCreater(sessionController.getLoggedUser());
-            option.setOptionKey(key);
-            option.setScope(scope);
-            option.setInstitution(institution);
-            option.setDepartment(department);
-            option.setWebUser(webUser);
-            option.setValueType(OptionValueType.DOUBLE);
-            optionFacade.create(option);
+            optionFacade.edit(option);
         }
         try {
-            return Double.parseDouble(option.getEnumValue());
+            return Double.parseDouble(option.getOptionValue());
         } catch (NumberFormatException e) {
             return null;
         }
@@ -278,17 +501,9 @@ public class ConfigOptionController implements Serializable {
     public String getLongTextValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
         if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
+            option = optionFacade.createOptionIfNotExists(key, scope, institution, department, webUser, OptionValueType.LONG_TEXT, "");
             option.setCreater(sessionController.getLoggedUser());
-            option.setOptionKey(key);
-            option.setScope(scope);
-            option.setInstitution(institution);
-            option.setDepartment(department);
-            option.setWebUser(webUser);
-            option.setValueType(OptionValueType.LONG_TEXT);
-            option.setOptionValue(""); // Assuming an empty string is an appropriate default. Adjust as necessary.
-            optionFacade.create(option);
+            optionFacade.edit(option);
         }
         return option.getOptionValue();
     }
@@ -296,17 +511,9 @@ public class ConfigOptionController implements Serializable {
     public String getShortTextValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
+            option = optionFacade.createOptionIfNotExists(key, scope, institution, department, webUser, OptionValueType.SHORT_TEXT, "");
             option.setCreater(sessionController.getLoggedUser());
-            option.setOptionKey(key);
-            option.setScope(scope);
-            option.setInstitution(institution);
-            option.setDepartment(department);
-            option.setWebUser(webUser);
-            option.setValueType(OptionValueType.SHORT_TEXT);
-            option.setOptionValue("");
-            optionFacade.create(option);
+            optionFacade.edit(option);
         }
         return option.getOptionValue();
     }
@@ -314,19 +521,9 @@ public class ConfigOptionController implements Serializable {
     public Long getLongValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
         if (option == null || option.getValueType() != OptionValueType.LONG) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
+            option = optionFacade.createOptionIfNotExists(key, scope, institution, department, webUser, OptionValueType.LONG, "0");
             option.setCreater(sessionController.getLoggedUser());
-            option.setOptionKey(key);
-            option.setScope(scope);
-            option.setInstitution(institution);
-            option.setDepartment(department);
-            option.setWebUser(webUser);
-            option.setValueType(OptionValueType.LONG);
-            // Assuming a default Long value is needed; adjust as necessary.
-            // For instance, you might default to 0L if that makes sense for your use case.
-            option.setOptionValue("0");
-            optionFacade.create(option);
+            optionFacade.edit(option);
         }
 
         try {
@@ -341,18 +538,9 @@ public class ConfigOptionController implements Serializable {
     public Boolean getBooleanValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
+            option = optionFacade.createOptionIfNotExists(key, scope, institution, department, webUser, OptionValueType.BOOLEAN, "false");
             option.setCreater(sessionController.getLoggedUser());
-            option.setOptionKey(key);
-            option.setScope(scope);
-            option.setInstitution(institution);
-            option.setDepartment(department);
-            option.setWebUser(webUser);
-            option.setValueType(OptionValueType.BOOLEAN);
-            // Set a default Boolean value; adjust based on your application's default needs.
-            option.setOptionValue("false"); // Defaulting to false. Adjust as necessary.
-            optionFacade.create(option);
+            optionFacade.edit(option);
         }
         return Boolean.parseBoolean(option.getOptionValue());
     }
@@ -397,25 +585,25 @@ public class ConfigOptionController implements Serializable {
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {
-        String jpql = "SELECT o FROM ConfigOption o WHERE o.retired = false"; // Assuming there's a 'retired' field.
+        String jpql = "SELECT o FROM ConfigOption o WHERE COALESCE(o.retired, false) = false";
         Map<String, Object> params = new HashMap<>();
 
         if (entity == null) {
-            // Fetch options that are not associated with any specific department, institution, or user.
             jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL";
         } else if (entity instanceof Department) {
-            jpql += " AND o.department = :entity";
-            params.put("entity", entity);
+            jpql += " AND o.department = :dept AND o.institution IS NULL AND o.webUser IS NULL";
+            params.put("dept", (Department) entity);
         } else if (entity instanceof Institution) {
-            jpql += " AND o.institution = :entity";
-            params.put("entity", entity);
+            jpql += " AND o.institution = :ins AND o.department IS NULL AND o.webUser IS NULL";
+            params.put("ins", (Institution) entity);
         } else if (entity instanceof WebUser) {
-            jpql += " AND o.webUser = :entity";
-            params.put("entity", entity);
+            jpql += " AND o.webUser = :usr AND o.department IS NULL AND o.institution IS NULL";
+            params.put("usr", (WebUser) entity);
         } else {
-            // This could be adjusted if there are more entity types to consider or removed if all types are accounted for.
             throw new IllegalArgumentException("Unsupported entity type provided.");
         }
+
+        jpql += " ORDER BY o.optionKey";
 
         return getFacade().findByJpql(jpql, params);
     }
@@ -551,7 +739,6 @@ public class ConfigOptionController implements Serializable {
     }
 
     public void listApplicationOptions() {
-        configOptionApplicationController.isPreventPasswordReuse();
         options = getApplicationOptions();
     }
 
@@ -619,6 +806,22 @@ public class ConfigOptionController implements Serializable {
         this.filteredOptions = filteredOptions;
     }
 
+    public List<ConfigOption> getSelectedOptions() {
+        return selectedOptions;
+    }
+
+    public void setSelectedOptions(List<ConfigOption> selectedOptions) {
+        this.selectedOptions = selectedOptions;
+    }
+
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
+    }
+
     public List<ConfigOptionDuplicateGroup> getDuplicateGroups() {
         return duplicateGroups;
     }
@@ -631,10 +834,10 @@ public class ConfigOptionController implements Serializable {
     public void detectDuplicateOptions() {
         String jpql = "SELECT o FROM ConfigOption o WHERE o.retired=false ORDER BY o.optionKey, o.scope, o.id";
         List<ConfigOption> all = optionFacade.findByJpql(jpql);
-        Map<String, List<ConfigOption>> grouped = all.stream().collect(Collectors.groupingBy(o -> o.getOptionKey() + "|" + o.getScope() + "|" +
-                (o.getInstitution()==null?"null":o.getInstitution().getId()) + "|" +
-                (o.getDepartment()==null?"null":o.getDepartment().getId()) + "|" +
-                (o.getWebUser()==null?"null":o.getWebUser().getId())));
+        Map<String, List<ConfigOption>> grouped = all.stream().collect(Collectors.groupingBy(o -> o.getOptionKey() + "|" + o.getScope() + "|"
+                + (o.getInstitution() == null ? "null" : o.getInstitution().getId()) + "|"
+                + (o.getDepartment() == null ? "null" : o.getDepartment().getId()) + "|"
+                + (o.getWebUser() == null ? "null" : o.getWebUser().getId())));
         duplicateGroups = grouped.values().stream()
                 .filter(l -> l.size() > 1)
                 .map(l -> new ConfigOptionDuplicateGroup(l))
@@ -645,9 +848,9 @@ public class ConfigOptionController implements Serializable {
         if (g == null || g.getOptions() == null || g.getOptions().size() < 2) {
             return;
         }
-        g.getOptions().sort((a,b) -> a.getId().compareTo(b.getId()));
+        g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));
         ConfigOption keep = g.getOptions().get(0);
-        for(int i=1;i<g.getOptions().size();i++){
+        for (int i = 1; i < g.getOptions().size(); i++) {
             ConfigOption o = g.getOptions().get(i);
             o.setRetired(true);
             o.setRetiredAt(new Date());
@@ -660,6 +863,7 @@ public class ConfigOptionController implements Serializable {
     }
 
     public static class ConfigOptionDuplicateGroup {
+
         private List<ConfigOption> options;
 
         public ConfigOptionDuplicateGroup(List<ConfigOption> options) {

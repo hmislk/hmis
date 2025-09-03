@@ -236,7 +236,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Online Settlement" rendered="#{cc.attrs.bundle.hasOnCallTransaction}" >
+                <p:column  class="text-end"  headerText="Online Settlement" rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" >
                     <h:outputText value="#{row.onlineSettlementValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>

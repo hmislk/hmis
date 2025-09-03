@@ -911,6 +911,9 @@ public class WebUserController implements Serializable {
         getUserPrivilageController().init();
         getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         getUserPrivilageController().setPrivilegesLoaded(false);
+        if (getUserPrivilageController().getDepartment() == null) {
+            getUserPrivilageController().setDepartment(getSessionController().getDepartment());
+        }
         return "/admin/users/user_privileges?faces-redirect=true";
     }
 

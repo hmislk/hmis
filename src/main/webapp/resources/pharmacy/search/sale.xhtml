@@ -27,7 +27,13 @@
             <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
         </p:commandButton>
         
-        <p:dataTable rowIndexVar="i" id="tbl"  value="#{searchController.bills}" var="bill"  >
+        <p:dataTable rowIndexVar="i" id="tbl" widgetVar="tbl" value="#{searchController.bills}" var="bill"  
+                     paginator="true"
+                     rows="10"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="10,20,50,100"
+                     emptyMessage="No Bills Found"
+                     filteredValue="#{searchController.filteredBills}">
             <f:facet name="header">
                 <h:outputLabel value="SALE BILL SEARCH"/>
             </f:facet>
@@ -45,7 +51,7 @@
                 </h:commandLink>
             </p:column>    
 
-            <p:column headerText="Billed At"  >
+            <p:column headerText="Billed At" sortBy="#{bill.createdAt}"  >
                 <h:commandLink action="pharmacy_reprint_bill_sale" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -66,7 +72,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Billed By" >
+            <p:column headerText="Billed By" sortBy="#{bill.creater.webUserPerson.name}" filterBy="#{bill.creater.webUserPerson.name}" filterMatchMode="contains">
                 <h:commandLink action="pharmacy_reprint_bill_sale" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -85,7 +91,13 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>   
-            <p:column headerText="Payment Method"  >
+            <p:column headerText="Payment Method" sortBy="#{bill.paymentMethod}" filterBy="#{bill.paymentMethod}" filterMatchMode="exact" >
+                 <f:facet name="filter">
+                        <p:selectOneMenu onchange="PF('tbl').filter()" styleClass="custom-filter">
+                            <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{enumController.paymentMethods}" />
+                        </p:selectOneMenu>
+                    </f:facet>
                 <h:commandLink action="pharmacy_reprint_bill_sale" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

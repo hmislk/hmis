@@ -1224,6 +1224,14 @@ public class ChannelApi {
 
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingDetails);
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings editing after session is started.", true)) {
+            if (temporarySavedBill != null && temporarySavedBill.getSingleBillSession().getSessionInstance().isStarted()) {
+                JSONObject response = commonFunctionToErrorResponse("Can't edit the appointment due to hospital restriction. Please contact hospital.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
+        }
+
         try {
             validateBillForCompleteBooking(temporarySavedBill);
             validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
@@ -1776,6 +1784,9 @@ public class ChannelApi {
             } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.PATIENT_CANCELED || bookingData.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
                 JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " is already cancelled");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
+                JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " patient alredy visited and completed the appoinment");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
         }
 
@@ -1789,8 +1800,11 @@ public class ChannelApi {
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings cancellation after session is started.", true)) {
-            JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            if (completedSaveBill != null && completedSaveBill.getSingleBillSession().getSessionInstance().isStarted()) {
+                JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
         }
 
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);

@@ -13,7 +13,7 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:commandButton value="Print" ajax="false" action="#" icon="pi pi-print"  styleClass="ui-button-secondary m-1" >
-                        <p:printer target="gpBillPreview" ></p:printer>
+                        <p:printer target="gpBillPreview" />
                     </p:commandButton>
                     <h:panelGroup rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}">
                         <p:selectBooleanCheckbox value="#{supplierPaymentController.acPayeeOnly}"
@@ -22,7 +22,7 @@
                             <p:ajax process="@this" update="@all"/>
                         </p:selectBooleanCheckbox>
                         <p:commandButton value="Print Cheque" class="mx-2" ajax="false" action="#" icon="pi pi-print" >
-                            <p:printer target="gpBillPreview1" ></p:printer>
+                            <p:printer target="gpBillPreview1"/>
                         </p:commandButton>
                     </h:panelGroup>
                     <p:panel   id="gpBillPreview">

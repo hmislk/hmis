@@ -9,7 +9,8 @@
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
-                xmlns:ia="http://xmlns.jcp.org/jsf/composite/inward/bht_1">
+                xmlns:ia="http://xmlns.jcp.org/jsf/composite/inward/bht_1"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
 
 
@@ -51,7 +52,7 @@
                                         class="ui-button-secondary mx-1 ">
                                         <f:setPropertyActionListener 
                                             target="#{patientController.current}" 
-                                            value="#{appointmentController.searchedPatient}">
+                                            value="#{appointmentController.patient}">
 
                                         </f:setPropertyActionListener>
                                     </p:commandButton>
@@ -76,8 +77,8 @@
                                                 <h:outputText styleClass="fa fa-user-circle" />
                                                 <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-
-                                            <ez:patientDetail   patient="#{appointmentController.searchedPatient}"/>
+                                            <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
+<!--                                            <ez:patientDetail   patient="#{appointmentController.searchedPatient}"/>-->
 
                                         </p:panel>
                                     </h:panelGroup>

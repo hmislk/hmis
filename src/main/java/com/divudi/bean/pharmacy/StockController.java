@@ -15,6 +15,7 @@ import com.divudi.bean.store.StoreBean;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.StockLight;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -31,6 +32,7 @@ import com.divudi.service.StockService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -209,9 +211,8 @@ public class StockController implements Serializable {
         }
 
         // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        
         Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
-        
+
         if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
             List<Stock> additionalStocks = completeAvailableStocksContains(qry);
             if (additionalStocks != null) {
@@ -242,6 +243,60 @@ public class StockController implements Serializable {
         addItemStockToStocks(stockSet);
 
         return new ArrayList<>(stockSet);
+    }
+
+    public List<StockDTO> completeAvailableStocksWithItemStockDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        // First, get stocks with individual stock quantities
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        List<StockDTO> stockDtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        // Calculate total stock quantities per item
+        addItemStockToStockDtos(stockDtos);
+
+        return stockDtos;
     }
 
     public List<Stock> completeAvailableStocksForAllowedDepartments(String qry) {
@@ -289,6 +344,49 @@ public class StockController implements Serializable {
             }
             Item item = s.getItemBatch().getItem();
             s.setTransItemStockQty(itemStockTotals.get(item));
+        }
+    }
+
+    public void addItemStockToStockDtos(List<StockDTO> inputStockDtos) {
+        if (inputStockDtos == null || inputStockDtos.isEmpty()) {
+            return;
+        }
+        if (inputStockDtos.size() > 20) {
+            return;
+        }
+
+        Map<String, Double> itemStockTotals = new HashMap<>();
+
+        // First pass: calculate the total stock quantity for each item
+        for (StockDTO dto : inputStockDtos) {
+            if (dto == null || dto.getItemName() == null) {
+                continue;
+            }
+            String itemKey = dto.getItemName() + "_" + dto.getCode();
+            itemStockTotals.put(itemKey, itemStockTotals.getOrDefault(itemKey, 0.0) + (dto.getStockQty() != null ? dto.getStockQty() : 0.0));
+        }
+
+        // Calculate total stock for each item across all departments
+        for (StockDTO dto : inputStockDtos) {
+            if (dto == null || dto.getItemName() == null) {
+                continue;
+            }
+
+            // Get total stock for this item across all departments
+            Map<String, Object> params = new HashMap<>();
+            params.put("itemName", dto.getItemName());
+            params.put("stockMin", 0.0);
+
+            String sql = "SELECT COALESCE(SUM(s.stock), 0) FROM Stock s "
+                    + "WHERE s.itemBatch.item.name = :itemName "
+                    + "AND s.stock > :stockMin";
+
+            try {
+                Double totalStock = (Double) getStockFacade().findDoubleByJpql(sql, params);
+                dto.setTotalStockQty(totalStock != null ? totalStock : 0.0);
+            } catch (Exception e) {
+                dto.setTotalStockQty(0.0);
+            }
         }
     }
 
@@ -475,7 +573,6 @@ public class StockController implements Serializable {
             return 0.0;
         }
     }
-    
 
     @Deprecated
     public double findSiteStock(Institution site, Item item) {
@@ -523,7 +620,7 @@ public class StockController implements Serializable {
         }
         return 0.0;
     }
-    
+
     public double findSiteStock(Institution site, List<Amp> amps) {
         Double stock;
         String jpql;

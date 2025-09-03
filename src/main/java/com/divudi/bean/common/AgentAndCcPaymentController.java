@@ -89,6 +89,8 @@ public class AgentAndCcPaymentController implements Serializable {
     String comment;
     double amount;
     boolean ccDepositSettlingStarted = false;
+    
+    private Institution collectingCentre;
 
     public void createAndAddBillItemToCcPaymentReceiptBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
@@ -627,6 +629,7 @@ public class AgentAndCcPaymentController implements Serializable {
         billItems = null;
         comment = null;
         amount = 0.0;
+        collectingCentre = null;
     }
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
@@ -905,6 +908,14 @@ public class AgentAndCcPaymentController implements Serializable {
 
     public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
         this.billNumberGenerator = billNumberGenerator;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 
 }
