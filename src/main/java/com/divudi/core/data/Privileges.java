@@ -212,6 +212,7 @@ public enum Privileges {
     PharmacyOrderCancellation("Pharmacy Order Cancellation"),
     PharmacySaleWithoutStock("Pharmacy Sale Without Stock"),
     PharmacySaleReprint("Pharmacy Sale Reprint"),
+    PrintOriginalPharmacyBillFromReprint("Print Original Pharmacy Bill From Reprint"),
     PharmacySaleCancel("Pharmacy Sale Cancel"),
     PharmacySaleReturn("Pharmacy Sale Return"),
     // Wholesale
