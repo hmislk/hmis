@@ -2656,7 +2656,10 @@ public class PatientReportController implements Serializable {
         List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(pi);
         if (pscs != null) {
             for (PatientSampleComponant psc : pscs) {
-                sampleIDs += psc.getPatientSample().getIdStr() + " ";
+                if(! psc.getPatientSample().getSampleRejected()){
+                    sampleIDs += psc.getPatientSample().getIdStr() + " ";
+                }
+                
             }
         }
         return createNewPatientReport(pi, ix, sampleIDs);
