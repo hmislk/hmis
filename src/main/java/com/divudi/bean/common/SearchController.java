@@ -256,6 +256,9 @@ public class SearchController implements Serializable {
     private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
     // DTO list for pharmacy purchase orders
     private List<PharmacyPurchaseOrderDTO> pharmacyPurchaseOrderDtos;
+    // Navigation flags to track when lists should be cleared
+    private boolean pharmacyPurchaseOrderDtosCleared = false;
+    private boolean billsCleared = false;
     private List<Payment> payments;
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
@@ -5369,17 +5372,59 @@ public class SearchController implements Serializable {
 
     }
 
-    // Methods to clear lists for pharmacy procurement pages
-    public void clearPharmacyPurchaseOrderDtoList() {
-        pharmacyPurchaseOrderDtos = null;
+    // Page initialization methods - called once when page loads
+    public void initPharmacyPurchaseOrderFinalizePage() {
+        if (pharmacyPurchaseOrderDtos != null && !pharmacyPurchaseOrderDtosCleared) {
+            pharmacyPurchaseOrderDtos = null;
+            pharmacyPurchaseOrderDtosCleared = true;
+        }
     }
     
-    public void clearBillsList() {
-        bills = null;
+    public void initPharmacyPurchaseOrderApprovePage() {
+        if (pharmacyPurchaseOrderDtos != null && !pharmacyPurchaseOrderDtosCleared) {
+            pharmacyPurchaseOrderDtos = null;
+            pharmacyPurchaseOrderDtosCleared = true;
+        }
+    }
+    
+    public void initPharmacyPurchaseOrderReceivePage() {
+        if (bills != null && !billsCleared) {
+            bills = null;
+            billsCleared = true;
+        }
+    }
+    
+    public void initPharmacyGrnFinalizePage() {
+        if (bills != null && !billsCleared) {
+            bills = null;
+            billsCleared = true;
+        }
+    }
+    
+    public void initPharmacyGrnApprovePage() {
+        if (bills != null && !billsCleared) {
+            bills = null;
+            billsCleared = true;
+        }
+    }
+    
+    public void initPharmacyGrnListForReturnPage() {
+        if (bills != null && !billsCleared) {
+            bills = null;
+            billsCleared = true;
+        }
+    }
+    
+    public void initPharmacyGrnReturnRequestPage() {
+        if (bills != null && !billsCleared) {
+            bills = null;
+            billsCleared = true;
+        }
     }
 
     public void fillOnlySavedPharmacyPo() {
         pharmacyPurchaseOrderDtos = null;
+        pharmacyPurchaseOrderDtosCleared = false;  // Reset flag since we're populating the list
         HashMap tmp = new HashMap();
         String sql;
         sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
@@ -5465,6 +5510,7 @@ public class SearchController implements Serializable {
 
     public void fillOnlyFinalizedPharmacyPoDto() {
         pharmacyPurchaseOrderDtos = null;
+        pharmacyPurchaseOrderDtosCleared = false;  // Reset flag since we're populating the list
         HashMap tmp = new HashMap();
         String sql;
         sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
@@ -5686,6 +5732,7 @@ public class SearchController implements Serializable {
 
     public void fillOnlyFinalizedGrnReturns() {
         bills = null;
+        billsCleared = false;  // Reset flag since we're populating the list
         HashMap tmp = new HashMap();
         String sql;
         sql = "Select b From RefundBill b where "
@@ -6096,6 +6143,7 @@ public class SearchController implements Serializable {
 
     public void createGrnTable() {
         bills = null;
+        billsCleared = false;  // Reset flag since we're populating the list
         String jpql;
         HashMap params = new HashMap();
 
@@ -6159,6 +6207,7 @@ public class SearchController implements Serializable {
 
     public void createGrnTableToFinalize() {
         bills = null;
+        billsCleared = false;  // Reset flag since we're populating the list
         String jpql = "Select b From Bill b "
                 + " where b.retired=false "
                 + " and b.billTypeAtomic = :bTp "
@@ -6177,6 +6226,7 @@ public class SearchController implements Serializable {
 
     public void createGrnTableToApprove() {
         bills = null;
+        billsCleared = false;  // Reset flag since we're populating the list
         String jpql;
         HashMap params = new HashMap();
         
@@ -6256,6 +6306,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPoTablePharmacy() {
+        billsCleared = false;  // Reset flag since we're populating the list
         List<BillTypeAtomic> billTypesToList = new ArrayList<>();
         billTypesToList.add(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         List<BillTypeAtomic> billTypesToAttachedToEachBillInTheList = new ArrayList<>();

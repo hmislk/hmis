@@ -7,7 +7,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <f:event type="preRenderView" listener="#{searchController.clearPharmacyPurchaseOrderDtoList}"/>
+                <f:event type="preRenderView" listener="#{searchController.initPharmacyPurchaseOrderApprovePage}"/>
         <h:panelGroup rendered="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
             You are NOT authorized
         </h:panelGroup>
