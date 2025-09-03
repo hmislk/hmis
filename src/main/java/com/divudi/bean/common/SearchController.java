@@ -5369,6 +5369,15 @@ public class SearchController implements Serializable {
 
     }
 
+    // Methods to clear lists for pharmacy procurement pages
+    public void clearPharmacyPurchaseOrderDtoList() {
+        pharmacyPurchaseOrderDtos = null;
+    }
+    
+    public void clearBillsList() {
+        bills = null;
+    }
+
     public void fillOnlySavedPharmacyPo() {
         pharmacyPurchaseOrderDtos = null;
         HashMap tmp = new HashMap();

@@ -7,6 +7,7 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
+        <f:event type="preRenderView" listener="#{grnReturnWorkflowController.clearGrnReturnsToApproveList}"/>
         <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveGrnReturn')}">
             You are NOT authorized
         </h:panelGroup>

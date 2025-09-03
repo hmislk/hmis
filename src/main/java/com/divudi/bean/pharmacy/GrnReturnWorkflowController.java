@@ -107,6 +107,17 @@ public class GrnReturnWorkflowController implements Serializable {
     @Inject
     PharmacyCalculation pharmacyBillBean;
 
+    // Methods to clear lists for GRN return pages
+    public void clearGrnReturnsToFinalizeList() {
+        grnReturnsToFinalize = null;
+        filteredGrnReturnsToFinalize = null;
+    }
+    
+    public void clearGrnReturnsToApproveList() {
+        grnReturnsToApprove = null;
+        filteredGrnReturnsToApprove = null;
+    }
+
     // Navigation methods
     public String navigateToCreateGrnReturn() {
         resetBillValues();
@@ -138,12 +149,14 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public String navigateToFinalizeGrnReturn() {
         makeListNull();
+        clearGrnReturnsToFinalizeList();
         printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_list_to_finalize?faces-redirect=true";
     }
 
     public String navigateToApproveGrnReturn() {
         makeListNull();
+        clearGrnReturnsToApproveList();
         printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_list_to_approve?faces-redirect=true";
     }

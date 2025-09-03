@@ -6,6 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
+        <f:event type="preRenderView" listener="#{searchController.clearBillsList}"/>
         <h:form>
             <p:panel> 
                 <f:facet name="header">

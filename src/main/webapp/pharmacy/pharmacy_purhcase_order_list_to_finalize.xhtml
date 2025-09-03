@@ -8,6 +8,7 @@
     
     <ui:define name="title">Purchase Orders - Finalization</ui:define>
         <ui:define name="content">
+        <f:event type="preRenderView" listener="#{searchController.clearPharmacyPurchaseOrderDtoList}"/>
         <h:panelGroup rendered="#{!(webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder'))}">
             <div class="alert alert-warning text-center py-3">
                 <i class="fas fa-exclamation-triangle text-warning me-2"></i>
