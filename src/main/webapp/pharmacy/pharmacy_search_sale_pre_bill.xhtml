@@ -361,7 +361,7 @@
                                                         <h:outputText value="#{bill.paymentMethod}" 
                                                                      styleClass="fw-bold small d-block text-success"/>
                                                         <h:outputText value="#{bill.paymentScheme.name}" 
-                                                                     rendered="#{bill.paymentScheme.name ne null and bill.paymentScheme.name ne ''}"
+                                                                     rendered="#{bill.paymentScheme ne null and bill.paymentScheme.name ne null and bill.paymentScheme.name ne ''}"
                                                                      styleClass="text-muted small d-block"/>
                                                     </div>
                                                 </div>

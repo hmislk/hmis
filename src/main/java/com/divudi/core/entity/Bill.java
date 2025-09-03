@@ -267,6 +267,7 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
     //Checking Property
+    private boolean checked=false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -3015,6 +3016,8 @@ public class Bill implements Serializable, RetirableEntity {
     public void setIndication(String indication) {
         this.indication = indication;
     }
+    
+    
 
     public Institution getTransientSupplier() {
         if (this.getBillTypeAtomic() == null) {
@@ -3028,5 +3031,13 @@ public class Bill implements Serializable, RetirableEntity {
                 transientSupplier = this.getFromInstitution();
         }
         return transientSupplier;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 }
