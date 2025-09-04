@@ -94,42 +94,42 @@
                                 var="dto">
 
                                 <f:facet name="header">
-                                    <f:facet name="header">
-                                        <h:panelGrid columns="5" style="width: 100%; text-align: left;">
-                                            <h:outputLabel value="Name:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
-                                            <h:outputLabel value="" />
-                                            <h:outputLabel value="Age:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+                                                                    <f:facet name="header">
+                                    <h:panelGrid columns="5" style="width: 100%; text-align: left;">
+                                        <h:outputLabel value="Name:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Age:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
 
-                                            <h:outputLabel value="Gender:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
-                                            <h:outputLabel value="" />
-                                            <h:outputLabel value="Room Number:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
+                                        <h:outputLabel value="Gender:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Room Number:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
 
-                                            <h:outputLabel value="Date of Admission:" />
-                                            <h:outputLabel>
-                                                <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </h:outputText>
-                                            </h:outputLabel>
-                                            <h:outputLabel value="" />
-                                            <h:outputLabel value="Date of Discharge:" />
-                                            <h:outputLabel>
-                                                <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </h:outputText>
-                                            </h:outputLabel>
+                                        <h:outputLabel value="Date of Admission:" />
+                                        <h:outputLabel>
+                                            <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Date of Discharge:" />
+                                        <h:outputLabel>
+                                            <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </h:outputLabel>
 
-                                            <h:outputLabel value="BHT:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
-                                            <h:outputLabel value="" />
-                                            <h:outputLabel value="Phone Number:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+                                        <h:outputLabel value="BHT:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Phone Number:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
 
-                                        </h:panelGrid>
-                                    </f:facet>
+                                    </h:panelGrid>
+                                </f:facet>
 
                                 </f:facet>
 

@@ -281,8 +281,10 @@
                                     <p:calendar
                                         autocomplete="off"
                                         value="#{pharmacyAdjustmentController.exDate}"
-                                        rendererType="true"
+                                        required="true"
                                         requiredMessage="Add Expiry Date.."
+                                        pattern="#{configOptionApplicationController.getShortTextValueByKey('Expiry Date Pattern', 'MMM yyyy')}"
+                                        locale="#{configOptionApplicationController.getShortTextValueByKey('Default Locale', 'en')}"
                                         navigator="true" inputStyleClass="form-control"
                                         class="w-100">
                                     </p:calendar>
