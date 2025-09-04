@@ -178,6 +178,36 @@ public class PharmacyBillSearch implements Serializable {
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
+    public String navigateToReversePharmacyDirectIssueToInpatients() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/dataAdmin/pharmacy_bill_reverse_bht?faces-redirect=true";
+    }
+
+    public String navigateToReversePharmacyDirectIssueToInpatientsById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill ID Provided");
+            return null;
+        }
+        
+        Bill selectedBill = billService.fetchBillById(billId);
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Bill Not Found");
+            return null;
+        }
+        
+        if (selectedBill.getBillType() != BillType.PharmacyBhtPre) {
+            JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return null;
+        }
+        
+        bill = selectedBill;
+        printPreview = false;
+        return "/dataAdmin/pharmacy_bill_reverse_bht?faces-redirect=true";
+    }
+
     public String navigateToReprintPharmacyPurchaseOrder() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No purchase order is selected to view");
@@ -2498,6 +2528,128 @@ public class PharmacyBillSearch implements Serializable {
 
         printPreview = true;
 
+    }
+
+    private Bill createReversalBillWithCorrectStockAdjustment(Bill originalBill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
+        // Create a new reversal bill using built-in copy method
+        Bill reversalBill = new Bill();
+        reversalBill.copy(originalBill);
+        
+        // Set reversal-specific properties
+        reversalBill.setCreatedAt(new Date());
+        reversalBill.setCreater(user);
+        reversalBill.setDepartment(department);
+        
+        // Set reference relationships
+        reversalBill.setReferenceBill(originalBill);
+        reversalBill.setBilledBill(originalBill);
+        
+        // Initialize bill items collection
+        reversalBill.setBillItems(new ArrayList<>());
+        
+        // Create reversal bill items using built-in methods
+        for (BillItem originalItem : originalBill.getBillItems()) {
+            // Create new bill item using copy method
+            BillItem reversalItem = new BillItem();
+            reversalItem.copy(originalItem);
+            reversalItem.setBill(reversalBill);
+            reversalItem.setCreatedAt(new Date());
+            reversalItem.setCreater(user);
+            
+            // Use built-in invert method
+            reversalItem.invertValue(originalItem);
+            
+            // Handle pharmaceutical bill item if it exists
+            if (originalItem.getPharmaceuticalBillItem() != null) {
+                PharmaceuticalBillItem originalPbi = originalItem.getPharmaceuticalBillItem();
+                
+                // Create new PBI using copy method
+                PharmaceuticalBillItem reversalPbi = new PharmaceuticalBillItem();
+                reversalPbi.copy(originalPbi);
+                reversalPbi.setBillItem(reversalItem);
+                reversalPbi.setCreatedAt(new Date());
+                reversalPbi.setCreater(user);
+                
+                // Use built-in invert method
+                reversalPbi.invertValue(originalPbi);
+                
+                reversalItem.setPharmaceuticalBillItem(reversalPbi);
+                
+                // Apply correct stock adjustment using the reversed quantity
+                if (reversalPbi.getQty() != 0 && reversalPbi.getStock() != null) {
+                    getPharmacyBean().addToStock(reversalPbi.getStock(), reversalPbi.getQty(), reversalPbi, department);
+                }
+            }
+            
+            // Add the bill item to the reversal bill
+            reversalBill.getBillItems().add(reversalItem);
+        }
+        
+        return reversalBill;
+    }
+
+    public void reversePharmacyDirectIssueToBht() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return;
+        }
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("This Bill Already Discharged");
+            return;
+        }
+        if (getBill().getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Checked Bill. Can not reverse");
+            return;
+        }
+        if (getBill().checkActiveReturnBhtIssueBills()) {
+            JsfUtil.addErrorMessage("There are some return bills for this. Please cancel those bills first");
+            return;
+        }
+        if (checkDepartment(getBill())) {
+            return;
+        }
+        if (getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Bill is already cancelled. Cannot reverse cancelled bills");
+            return;
+        }
+
+        // Generate new bill number for reversal
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+            sessionController.getDepartment(), 
+            getBill().getBillTypeAtomic() // Keep the same bill type atomic
+        );
+        
+        // Create reversal bill using custom logic to handle proper stock adjustments
+        Bill reversalBill = createReversalBillWithCorrectStockAdjustment(
+            getBill(), 
+            getSessionController().getLoggedUser(), 
+            getSessionController().getDepartment(), 
+            BillNumberSuffix.PHISSCAN
+        );
+        
+        // Set reversal bill properties - keep original bill type and bill type atomic
+        reversalBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
+        reversalBill.setBillType(getBill().getBillType()); // Keep same bill type
+        reversalBill.setBillTypeAtomic(getBill().getBillTypeAtomic()); // Keep same bill type atomic
+        reversalBill.setDeptId(deptId);
+        reversalBill.setReferenceBill(getBill()); // Reference to original bill
+        reversalBill.setBilledBill(getBill()); // Reference as billedBill
+        
+        // Save the reversal bill
+        getBillFacade().edit(reversalBill);
+        billService.createBillFinancialDetailsForPharmacyBill(reversalBill);
+
+        // Update original bill to mark as reversed
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(reversalBill);
+        getBillFacade().edit(getBill());
+        
+        JsfUtil.addSuccessMessage("Bill Reversed Successfully. Reversal Bill No: " + reversalBill.getDeptId());
+        printPreview = true;
     }
 
     public void cancelPharmacyRequestIssueToBht() {

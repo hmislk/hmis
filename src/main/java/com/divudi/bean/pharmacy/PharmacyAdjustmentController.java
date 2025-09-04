@@ -1724,6 +1724,9 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        // Normalize selected expiry to end-of-month when month-year pattern is used
+        exDate = normalizeToEndOfMonth(exDate);
+
         if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
@@ -1740,6 +1743,24 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Expiry Date Adjustment Successfully..");
 
+    }
+
+    /**
+     * Ensure the expiry date reflects the last instant of the selected month.
+     * Useful when UI captures only month-year (e.g., pattern "MMM yyyy").
+     */
+    private Date normalizeToEndOfMonth(Date date) {
+        if (date == null) {
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
     }
 
     public void adjustRetailRate() {
