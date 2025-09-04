@@ -129,6 +129,13 @@ public class GrnReturnWorkflowController implements Serializable {
             JsfUtil.addErrorMessage("No GRN selected");
             return "";
         }
+        
+        // Check for existing unapproved GRN returns
+        if (hasUnapprovedGrnReturns()) {
+            JsfUtil.addErrorMessage("Cannot create new return. Please approve pending GRN returns first.");
+            return "";
+        }
+        
         // Follow legacy pattern - create return bill from selected GRN
         createReturnBillFromGrn(selectedGrn);
         printPreview = false;  // Ensure no print preview when creating new return
@@ -1953,6 +1960,23 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     // Utility methods
+    private boolean hasUnapprovedGrnReturns() {
+        String jpql = "SELECT COUNT(b) FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.checkedBy IS NOT NULL "
+                + "AND (b.completed = false OR b.completed IS NULL) "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+
+        Long count = billFacade.findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+    
     public void displayItemDetails(BillItem bi) {
          if (bi == null || bi.getItem() == null) {
             return;
