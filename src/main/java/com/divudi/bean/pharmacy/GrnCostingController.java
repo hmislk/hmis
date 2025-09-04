@@ -155,6 +155,7 @@ public class GrnCostingController implements Serializable {
         currentGrnBillPre = null; // Clear both bills since they should be the same object
         printPreview = false;
         // billItems removed - using bill's collection directly
+        currentExpense = null; // Clear current expense to prevent duplication
         difference = 0;
         insTotal = 0;
     }
@@ -1823,6 +1824,17 @@ public class GrnCostingController implements Serializable {
         return currentExpense;
     }
 
+    public void setCurrentExpense(BillItem currentExpense) {
+        this.currentExpense = currentExpense;
+    }
+    
+    /**
+     * Clear the current expense form completely
+     */
+    public void clearCurrentExpense() {
+        this.currentExpense = null;
+    }
+
     // Method called when expense item is selected from autocomplete
     public void onExpenseItemSelect() {
         // This method is called when an expense item is selected from the autocomplete
@@ -1874,6 +1886,19 @@ public class GrnCostingController implements Serializable {
         // Distribute proportional bill values (including expenses considered for costing) to line items
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
+        // Save the bill with the new expense to ensure it's persisted
+        if (getGrnBill().getId() != null) {
+            // Persist the expense item directly before clearing currentExpense
+            if (currentExpense.getId() == null) {
+                getBillItemFacade().create(currentExpense);
+            } else {
+                getBillItemFacade().edit(currentExpense);
+            }
+            
+            // Update the bill to maintain consistency
+            getBillFacade().edit(getGrnBill());
+        }
+
         currentExpense = null;
     }
 
@@ -1916,21 +1941,6 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    // Method to get total bill expenses for display
-    public double getBillExpensesTotal() {
-        if (getGrnBill() == null || getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
-            return 0.0;
-        }
-
-        double total = 0.0;
-        for (BillItem expense : getGrnBill().getBillExpenses()) {
-            // Skip retired expenses
-            if (!expense.isRetired()) {
-                total += expense.getNetValue();
-            }
-        }
-        return total;
-    }
 
     // Method to get expenses considered for costing total
     public double getExpensesTotalConsideredForCosting() {
@@ -2319,7 +2329,24 @@ public class GrnCostingController implements Serializable {
     }
 
     public String navigateToResiveCostingWithSaveApprove() {
+        // Check if there are existing unapproved GRNs for this purchase order
+        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
+            for (Bill existingGrn : getApproveBill().getListOfBill()) {
+                if (existingGrn != null && 
+                    existingGrn.getBillTypeAtomic() != null &&
+                    existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE") &&
+                    !existingGrn.isRetired() && 
+                    !existingGrn.isCancelled()) {
+                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
+                    return "";
+                }
+            }
+        }
+        
         clear();
+
+        // Ensure current expense is cleared for fresh start
+        setCurrentExpense(null);
 
         // Prepare bill and items without saving - like createGrn() but without persistence
         setFromInstitution(getApproveBill().getToInstitution());
@@ -2359,6 +2386,9 @@ public class GrnCostingController implements Serializable {
         clear();
         // Restore the bill reference after clearing
         setCurrentGrnBillPre(savedBill);
+        
+        // Ensure current expense is cleared when loading existing bill
+        setCurrentExpense(null);
 
         // Explicitly fetch bill items from database to avoid lazy loading issues
         if (getCurrentGrnBillPre().getId() != null) {

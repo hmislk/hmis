@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
@@ -82,6 +83,10 @@ public class GrnReturnWorkflowController implements Serializable {
     EnumController enumController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PharmacyController pharmacyController;
+    @Inject
+    private SearchController searchController;
 
     // Main properties
     private Bill currentBill;
@@ -112,6 +117,9 @@ public class GrnReturnWorkflowController implements Serializable {
     public String navigateToCreateGrnReturn() {
         resetBillValues();
         makeListNull();
+        if (searchController != null) {
+            searchController.makeListNull();
+        }
         printPreview = false;  // Ensure no print preview when navigating
         return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
     }
@@ -1724,7 +1732,10 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Utility methods
     public void displayItemDetails(BillItem bi) {
-        // Implementation for displaying item details
+         if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        pharmacyController.fillItemDetails(bi.getItem());
     }
 
     public double getOriginalPurchaseRate(Item item) {
@@ -1787,9 +1798,6 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public void fillGrnReturnsToApprove() {
-        grnReturnsToApproveCleared = false;  // Reset flag since we're populating the list
-        // Find finalized bills that are ready for approval
-        // Finalized = has checkedBy (finalized by someone)
         // Ready for approval = completed = false (not yet approved)
         String jpql = "SELECT b FROM RefundBill b "
                 + "WHERE b.billType = :bt "

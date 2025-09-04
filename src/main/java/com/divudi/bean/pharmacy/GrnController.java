@@ -160,6 +160,20 @@ public class GrnController implements Serializable {
     }
 
     public String navigateToResiveWithSaveApprove() {
+        // Check if there are existing unapproved GRNs for this purchase order
+        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
+            for (Bill existingGrn : getApproveBill().getListOfBill()) {
+                if (existingGrn != null && 
+                    existingGrn.getBillTypeAtomic() != null &&
+                    existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE") &&
+                    !existingGrn.isRetired() && 
+                    !existingGrn.isCancelled()) {
+                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
+                    return "";
+                }
+            }
+        }
+        
         clear();
         createGrn();
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());

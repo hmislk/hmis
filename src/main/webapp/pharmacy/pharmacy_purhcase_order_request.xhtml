@@ -143,16 +143,12 @@
                                         width="6em" 
                                         style="padding: 0;" 
                                         class="text-end px-1">
-                                        <p:commandLink 
-                                            value="#{stockController.findStock(bi.item)}"
-                                            oncomplete="PF('stockDetailsDialog').show();"
-                                            process="itemList"
-                                            update="stockDetailsForm"
-                                            actionListener="#{stockController.listStocksOfSelectedItem(bi.item)}">
-                                        </p:commandLink>
+                                        <h:outputText 
+                                            value="#{stockController.findStock(bi.item)}">
+                                        </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Expiring" 
+<!--                                    <p:column headerText="Expiring" 
                                               width="6em" 
                                               style="padding: 0;" 
                                               class="text-end px-1">
@@ -164,6 +160,7 @@
                                                        style="#{stockController.findExpiaringStock(bi.item) > 0 ? 'color: red;' : 'color: #02e05f;'}">
                                         </p:commandLink>
                                     </p:column>
+                                    -->
 
                                     <p:column 
                                         headerText="Usage" width="6em" 
