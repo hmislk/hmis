@@ -84,10 +84,17 @@
                                 </p:column>
                                 <p:column 
                                     headerText="Current Stock" 
-                                    width="5em" >
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
-                                        <f:convertNumber pattern="#.#" ></f:convertNumber>
-                                    </h:outputText>
+                                    width="5em" 
+                                    styleClass="text-center">
+                                    <div class="badge #{ph.pharmaceuticalBillItem.stock.stock lt 10 ? 'bg-warning text-dark' : 'bg-info text-white'}">
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
+                                            <f:convertNumber pattern="#.#" ></f:convertNumber>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="small text-muted mt-1" 
+                                         rendered="#{ph.pharmaceuticalBillItem.stock.stock lt 5}">
+                                        Low Stock!
+                                    </div>
                                 </p:column>
 
                                 <p:column
@@ -181,7 +188,7 @@
                                         <p:ajax 
                                             event="blur" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal" 
+                                            update="txtLineReturnValue returnTotal messages @form" 
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -200,7 +207,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
-                                            update="txtLineReturnValue returnTotal" 
+                                            update="txtLineReturnValue returnTotal messages @form" 
                                             listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -217,7 +224,7 @@
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
-                                            update="txtLineReturnValue returnTotal"
+                                            update="txtLineReturnValue returnTotal messages @form"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
@@ -292,7 +299,7 @@
                                     </div>
                                     <div class="row" >
                                         <div class="col-12 text-center" >
-                                            <p:messages id="messages" showDetail="true" closable="true" />
+                                            <p:messages id="messages" showDetail="true" closable="true" globalOnly="false" />
                                         </div>
                                     </div>
                                 </f:facet>

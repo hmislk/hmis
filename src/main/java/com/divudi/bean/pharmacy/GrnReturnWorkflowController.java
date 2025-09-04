@@ -215,6 +215,12 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
+        // Validate stock availability before saving
+        if (!validateAllItemsStockAvailability(true)) {
+            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
+            return;
+        }
+        
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
         ensureBillItemsForPreview();
@@ -234,6 +240,12 @@ public class GrnReturnWorkflowController implements Serializable {
         // Check if comments are provided for finalization
         if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a reason for return to finalize");
+            return;
+        }
+        
+        // Validate stock availability before finalizing
+        if (!validateAllItemsStockAvailability(true)) {
+            JsfUtil.addErrorMessage("Cannot finalize: Stock validation failed. Please correct the quantities and try again.");
             return;
         }
 
@@ -261,6 +273,12 @@ public class GrnReturnWorkflowController implements Serializable {
         
         if (sessionController == null || sessionController.getLoggedUser() == null) {
             JsfUtil.addErrorMessage("User session invalid");
+            return;
+        }
+        
+        // Validate stock availability before approving
+        if (!validateAllItemsStockAvailability(true)) {
+            JsfUtil.addErrorMessage("Cannot approve: Stock validation failed. Please correct the quantities and try again.");
             return;
         }
         
@@ -1353,6 +1371,11 @@ public class GrnReturnWorkflowController implements Serializable {
         double remainingTotalQty = getRemainingTotalQtyToReturn(billItem.getReferanceBillItem());
         double remainingQty = getRemainingQtyToReturn(billItem.getReferanceBillItem());
         double remainingFreeQty = getRemainingFreeQtyToReturn(billItem.getReferanceBillItem());
+        
+        // Validate stock availability - critical check
+        if (!validateStockAvailability(billItem, true)) {
+            isValid = false;
+        }
 
         // Check configuration options
         boolean returnByTotalQty = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
@@ -1428,6 +1451,177 @@ public class GrnReturnWorkflowController implements Serializable {
 
         return isValid;
     }
+    
+    /**
+     * Comprehensive stock validation for GRN return items
+     * Handles multiple rows using the same stock scenario
+     * @param billItem The return bill item being validated
+     * @param showMessages Whether to show error messages to user
+     * @return true if stock is sufficient, false otherwise
+     */
+    public boolean validateStockAvailability(BillItem billItem, boolean showMessages) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null || 
+            billItem.getPharmaceuticalBillItem().getStock() == null) {
+            if (showMessages) {
+                JsfUtil.addErrorMessage("Stock information not available for item: " + 
+                    (billItem != null && billItem.getItem() != null ? billItem.getItem().getName() : "Unknown"));
+            }
+            return false;
+        }
+
+        PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
+        BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+        
+        if (fd == null) {
+            return true; // No quantities to validate
+        }
+
+        double currentStock = phi.getStock().getStock();
+        double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+        double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+        
+        // Convert to units if AMPP item
+        boolean isAmppItem = billItem.getItem() instanceof Ampp;
+        double unitsPerPack = 1.0;
+        if (isAmppItem && fd.getUnitsPerPack() != null) {
+            unitsPerPack = fd.getUnitsPerPack().doubleValue();
+        }
+        
+        double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
+        double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
+        double totalReturnQtyInUnits = returnQtyInUnits + returnFreeQtyInUnits;
+        
+        // Calculate total stock usage by this item AND other items in the same return using the same stock
+        double totalStockUsageFromCurrentReturn = calculateTotalStockUsageFromCurrentReturn(phi.getStock(), billItem);
+        
+        // Check if total usage exceeds current stock
+        if (totalStockUsageFromCurrentReturn > currentStock) {
+            if (showMessages) {
+                String itemName = billItem.getItem() != null ? billItem.getItem().getName() : "Unknown";
+                String stockBatch = phi.getStock().getItemBatch() != null ? 
+                    phi.getStock().getItemBatch().getBatchNo() : "Unknown Batch";
+                
+                JsfUtil.addErrorMessage("Insufficient stock for " + itemName + " (Batch: " + stockBatch + "). " +
+                    "Current stock: " + String.format("%.2f", currentStock) + 
+                    ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn));
+                
+                // Reset quantity to available stock minus other usages
+                double availableForThisItem = Math.max(0, currentStock - (totalStockUsageFromCurrentReturn - totalReturnQtyInUnits));
+                
+                if (isAmppItem) {
+                    double availableInPacks = availableForThisItem / unitsPerPack;
+                    fd.setQuantity(BigDecimal.valueOf(availableInPacks));
+                    fd.setFreeQuantity(BigDecimal.ZERO);
+                } else {
+                    fd.setQuantity(BigDecimal.valueOf(availableForThisItem));
+                    fd.setFreeQuantity(BigDecimal.ZERO);
+                }
+            }
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Calculate total stock usage from current return for the same stock
+     * This handles the scenario where multiple items in the return use the same stock
+     */
+    private double calculateTotalStockUsageFromCurrentReturn(com.divudi.core.entity.pharmacy.Stock stock, BillItem excludeItem) {
+        if (billItems == null || billItems.isEmpty() || stock == null) {
+            return 0.0;
+        }
+        
+        double totalUsage = 0.0;
+        
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired() || bi.equals(excludeItem)) {
+                continue;
+            }
+            
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+            if (phi == null || phi.getStock() == null || !phi.getStock().equals(stock)) {
+                continue; // Different stock
+            }
+            
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
+                continue;
+            }
+            
+            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            
+            // Convert to units if AMPP item
+            boolean isAmppItem = bi.getItem() instanceof Ampp;
+            double unitsPerPack = 1.0;
+            if (isAmppItem && fd.getUnitsPerPack() != null) {
+                unitsPerPack = fd.getUnitsPerPack().doubleValue();
+            }
+            
+            double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
+            double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
+            
+            totalUsage += (returnQtyInUnits + returnFreeQtyInUnits);
+        }
+        
+        // Add the current item's usage
+        if (excludeItem != null && excludeItem.getBillItemFinanceDetails() != null) {
+            BillItemFinanceDetails fd = excludeItem.getBillItemFinanceDetails();
+            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            
+            boolean isAmppItem = excludeItem.getItem() instanceof Ampp;
+            double unitsPerPack = 1.0;
+            if (isAmppItem && fd.getUnitsPerPack() != null) {
+                unitsPerPack = fd.getUnitsPerPack().doubleValue();
+            }
+            
+            double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
+            double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
+            
+            totalUsage += (returnQtyInUnits + returnFreeQtyInUnits);
+        }
+        
+        return totalUsage;
+    }
+    
+    /**
+     * Validate stock availability for all return items
+     * Called before Save, Finalize, and Approve operations
+     */
+    public boolean validateAllItemsStockAvailability(boolean showMessages) {
+        if (billItems == null || billItems.isEmpty()) {
+            return true;
+        }
+        
+        boolean allValid = true;
+        
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+            
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
+                continue;
+            }
+            
+            // Skip items with zero quantities
+            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            
+            if (returnQty <= 0 && returnFreeQty <= 0) {
+                continue;
+            }
+            
+            if (!validateStockAvailability(bi, showMessages)) {
+                allValid = false;
+            }
+        }
+        
+        return allValid;
+    }
 
     // Comprehensive finalization validation
     public boolean validateFinalization() {
@@ -1438,6 +1632,12 @@ public class GrnReturnWorkflowController implements Serializable {
 
         boolean isValid = true;
         boolean hasItemsWithQuantities = false;
+
+        // Validate stock availability first - this is critical
+        if (!validateAllItemsStockAvailability(true)) {
+            JsfUtil.addErrorMessage("Stock validation failed during finalization");
+            isValid = false;
+        }
 
         // Validate each item
         for (BillItem bi : billItems) {
