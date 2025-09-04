@@ -74,8 +74,8 @@
                                         icon="pi pi-search"
                                         id="btnViewSelectedItemDetails"
                                         title="View Item Details"
-                                        action="#{pharmacyController.displayItemDetails(ph.item)}"
-                                        update="historyPanel"
+                                        action="#{grnReturnWorkflowController.displayItemDetails(ph)}"
+                                        update=":#{p:resolveFirstComponentWithId('historyPanel',view).clientId}"
                                         process="@this"
                                         class="ui-button-icon-only mx-3"/>
                                 </p:column>
