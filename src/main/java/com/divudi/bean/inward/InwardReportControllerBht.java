@@ -249,7 +249,9 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     private List<InpatientPharmacyIssueDTO> fetchPharmacyIssueDtos(List<BillTypeAtomic> billTypes) {
-        System.out.println("Fetching DTOs for bill types: " + billTypes);
+        if (debug) {
+            System.out.println("Fetching DTOs for bill types: " + billTypes);
+        }
         String jpql = "SELECT new com.divudi.core.data.dto.InpatientPharmacyIssueDTO("
                 + "bi.id, "
                 + "bi.item.name, "
@@ -258,10 +260,13 @@ public class InwardReportControllerBht implements Serializable {
                 + "bi.bill.createdAt, "
                 + "bi.bill.billTypeAtomic, "
                 + "COALESCE(bi.bill.department.name, 'N/A'), "
-                + "bi.referanceBillItem.id) "
-                + "FROM BillItem bi "
+                + "refBi.id) "
+                + "FROM BillItem bi LEFT JOIN bi.referanceBillItem refBi "
                 + "WHERE bi.bill.patientEncounter = :patientEncounter "
-                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics ";
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE "
+                + "AND bi.bill.cancelled = FALSE ";
 
         // Removed department filter to show all pharmacy items for the patient encounter
         // regardless of which department issued them
@@ -273,47 +278,51 @@ public class InwardReportControllerBht implements Serializable {
         params.put("patientEncounter", patientEncounter);
         // Removed department parameter since we're not filtering by department anymore
 
-        System.out.println("Executing JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
-        
-        // Debug query to check what's filtering out records
-        String debugJpql = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter";
-        Map<String, Object> debugParams = new HashMap<>();
-        debugParams.put("patientEncounter", patientEncounter);
-        Long debugCount = billItemFacade.countByJpql(debugJpql, debugParams);
-        System.out.println("Total BillItems for this PatientEncounter: " + debugCount);
-        
-        String debugJpql2 = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        Map<String, Object> debugParams2 = new HashMap<>();
-        debugParams2.put("patientEncounter", patientEncounter);
-        debugParams2.put("billTypeAtomics", billTypes);
-        Long debugCount2 = billItemFacade.countByJpql(debugJpql2, debugParams2);
-        System.out.println("BillItems matching bill types: " + debugCount2);
-        
-        // Test individual fields to find the problematic one
-        String testJpql1 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult1 = billItemFacade.findAggregates(testJpql1, debugParams2);
-        System.out.println("Test 1 (basic fields): " + (testResult1 != null ? testResult1.size() : 0) + " results");
-        
-        String testJpql2 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult2 = billItemFacade.findAggregates(testJpql2, debugParams2);
-        System.out.println("Test 2 (+ createdAt): " + (testResult2 != null ? testResult2.size() : 0) + " results");
-        
-        String testJpql3 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult3 = billItemFacade.findAggregates(testJpql3, debugParams2);
-        System.out.println("Test 3 (+ billTypeAtomic): " + (testResult3 != null ? testResult3.size() : 0) + " results");
-        
-        String testJpql4 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A') FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult4 = billItemFacade.findAggregates(testJpql4, debugParams2);
-        System.out.println("Test 4 (+ department): " + (testResult4 != null ? testResult4.size() : 0) + " results");
-        
-        String testJpql5 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A'), bi.referanceBillItem.id FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult5 = billItemFacade.findAggregates(testJpql5, debugParams2);
-        System.out.println("Test 5 (+ referanceBillItem.id): " + (testResult5 != null ? testResult5.size() : 0) + " results");
+        if (debug) {
+            System.out.println("Executing JPQL: " + jpql);
+            System.out.println("Parameters: " + params);
+
+            // Debug query to check what's filtering out records
+            String debugJpql = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter";
+            Map<String, Object> debugParams = new HashMap<>();
+            debugParams.put("patientEncounter", patientEncounter);
+            Long debugCount = billItemFacade.countByJpql(debugJpql, debugParams);
+            System.out.println("Total BillItems for this PatientEncounter: " + debugCount);
+
+            String debugJpql2 = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
+            Map<String, Object> debugParams2 = new HashMap<>();
+            debugParams2.put("patientEncounter", patientEncounter);
+            debugParams2.put("billTypeAtomics", billTypes);
+            Long debugCount2 = billItemFacade.countByJpql(debugJpql2, debugParams2);
+            System.out.println("BillItems matching bill types: " + debugCount2);
+
+            // Test individual fields to find the problematic one
+            String testJpql1 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
+            List<Object[]> testResult1 = billItemFacade.findAggregates(testJpql1, debugParams2);
+            System.out.println("Test 1 (basic fields): " + (testResult1 != null ? testResult1.size() : 0) + " results");
+
+            String testJpql2 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
+            List<Object[]> testResult2 = billItemFacade.findAggregates(testJpql2, debugParams2);
+            System.out.println("Test 2 (+ createdAt): " + (testResult2 != null ? testResult2.size() : 0) + " results");
+
+            String testJpql3 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
+            List<Object[]> testResult3 = billItemFacade.findAggregates(testJpql3, debugParams2);
+            System.out.println("Test 3 (+ billTypeAtomic): " + (testResult3 != null ? testResult3.size() : 0) + " results");
+
+            String testJpql4 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A') FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
+            List<Object[]> testResult4 = billItemFacade.findAggregates(testJpql4, debugParams2);
+            System.out.println("Test 4 (+ department): " + (testResult4 != null ? testResult4.size() : 0) + " results");
+
+            String testJpql5 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A'), bi.referanceBillItem.id FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
+            List<Object[]> testResult5 = billItemFacade.findAggregates(testJpql5, debugParams2);
+            System.out.println("Test 5 (+ referanceBillItem.id): " + (testResult5 != null ? testResult5.size() : 0) + " results");
+        }
 
         List<InpatientPharmacyIssueDTO> result = (List<InpatientPharmacyIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
 
-        System.out.println("Query returned: " + (result != null ? result.size() : 0) + " results");
+        if (debug) {
+            System.out.println("Query returned: " + (result != null ? result.size() : 0) + " results");
+        }
 
         return result != null ? result : new ArrayList<>();
     }
