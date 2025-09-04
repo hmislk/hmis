@@ -6074,6 +6074,12 @@ public class SearchController implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method has been deprecated for security reasons.
+     * The "All Institution Search" functionality has been removed from pharmacy pages
+     * to prevent cross-institution access and maintain data security boundaries.
+     */
+    @Deprecated
     public void createGrnTableAllIns() {
         bills = null;
         String jpql;
@@ -6123,18 +6129,21 @@ public class SearchController implements Serializable {
                     + " where  b.retired=false "
                     + " and b.billTypeAtomic = :bTp "
                     + " and b.institution=:ins "
+                    + " and b.department = :dept "
                     + " and b.createdAt between :fromDate and :toDate ";
             jpql += keysForGrnReturn(params);
             jpql += " order by b.createdAt desc  ";
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         } else {
             jpql = "Select DISTINCT(bi.bill) From BillItem bi"
                     + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
                     + " and bi.bill.institution=:ins "
+                    + " and bi.bill.department = :dept "
                     + " and bi.createdAt between :fromDate and :toDate "
                     + " and bi.item=:item ";
             jpql += keysForGrnReturnByBillItem(params);
@@ -6142,6 +6151,7 @@ public class SearchController implements Serializable {
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("item", getSearchKeyword().getItem());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
@@ -6182,12 +6192,14 @@ public class SearchController implements Serializable {
                 + " where b.retired=false "
                 + " and b.billTypeAtomic = :bTp "
                 + " and b.completed = :completed "
+                + " and b.department = :dept "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.createdAt desc";
         
         HashMap params = new HashMap();
         params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
         params.put("completed", false);
+        params.put("dept", sessionController.getDepartment());
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
         
@@ -6205,6 +6217,7 @@ public class SearchController implements Serializable {
                     + " where  b.retired=false "
                     + " and b.billTypeAtomic = :bTp "
                     + " and b.institution=:ins "
+                    + " and b.department = :dept "
                     + " and b.completed = :completed "
                     + " and b.createdAt between :fromDate and :toDate ";
             jpql += keysForGrnReturn(params);
@@ -6212,19 +6225,21 @@ public class SearchController implements Serializable {
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
             params.put("completed", true);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         } else {
             jpql = "Select DISTINCT(bi.bill) From BillItem bi"
                     + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
-                    + " and bi.bill.institution=:ins and bi.bill.completed = :completed "
+                    + " and bi.bill.institution=:ins and bi.bill.department = :dept and bi.bill.completed = :completed "
                     + " and bi.bill.createdAt between :fromDate and :toDate "
                     + " and bi.item=:item ";
             jpql += " order by bi.bill.createdAt desc  ";
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
             params.put("completed", true);
             params.put("item", sk.getItem());
@@ -6353,6 +6368,7 @@ public class SearchController implements Serializable {
                 + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
                 + " and b.referenceBill.institution = :ins "
+                + " and b.department = :dept "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword() != null) {
@@ -6388,6 +6404,7 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
         params.put("btas", billTypeAtomicToList);
 
         if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {

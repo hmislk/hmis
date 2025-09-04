@@ -2031,11 +2031,13 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "AND b.checkedBy IS NULL "
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
+                + "AND b.department = :dept "
                 + "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("dept", sessionController.getDepartment());
 
         grnReturnsToFinalize = billFacade.findByJpql(jpql, params);
         if (grnReturnsToFinalize == null) {
@@ -2052,11 +2054,13 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "AND (b.completed = false OR b.completed IS NULL) "
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
+                + "AND b.department = :dept "
                 + "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("dept", sessionController.getDepartment());
 
         grnReturnsToApprove = billFacade.findByJpql(jpql, params);
         if (grnReturnsToApprove == null) {
