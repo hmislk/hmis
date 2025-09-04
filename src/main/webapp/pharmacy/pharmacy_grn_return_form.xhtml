@@ -13,6 +13,7 @@
                 You are NOT authorized
             </h:panelGroup>
             <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn') and !grnReturnWorkflowController.printPreview}" >
+
                 <p:panel 
                     header="GRN Return - Workflow Process" 
                     class="w-100">
@@ -60,7 +61,8 @@
                             <p:dataTable 
                                 var="ph" 
                                 value="#{grnReturnWorkflowController.billItems}"
-                                id="itemList" >
+                                id="itemList" 
+                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}" >
 
                                 <f:facet name="header">
                                     <h:outputText value="Returning Items" ></h:outputText>
@@ -237,13 +239,14 @@
 
                                 <p:column headerText="Action" width="3em" styleClass="text-center" exportable="false">
                                     <p:commandButton
+                                        id="btnRemoveReturnItem"
                                         icon="fas fa-trash-alt"
                                         class="ui-button-danger ui-button-outlined"
                                         title="Remove this item from return"
                                         action="#{grnReturnWorkflowController.deleteReturnItem(ph)}"
                                         ajax="true"
                                         process="@this"
-                                        update="itemList returnTotal @form"
+                                        update="itemList returnTotal messages"
                                         style="padding: 0.2rem 0.4rem;">
                                         <p:confirm header="Confirm Delete" 
                                                    message="Are you sure you want to remove this item from the return?" 
@@ -272,10 +275,10 @@
                                         </div>
                                         <div class="text-end col-9" >
                                             <p:commandButton 
-                                                value="Save" 
+                                                value="#{grnReturnWorkflowController.currentBill.id != null ? 'Update' : 'Save'}" 
                                                 action="#{grnReturnWorkflowController.saveRequest}"
                                                 ajax="false"
-                                                icon="pi pi-save" 
+                                                icon="#{grnReturnWorkflowController.currentBill.id != null ? 'pi pi-refresh' : 'pi pi-save'}" 
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>

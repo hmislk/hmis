@@ -602,14 +602,17 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public void deleteReturnItem(BillItem bi) {
         if (bi == null) {
+            JsfUtil.addErrorMessage("No item selected for deletion");
             return;
         }
 
         try {
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
+
             // If the item is not saved (no ID), simply remove it from the list
             if (bi.getId() == null) {
                 billItems.remove(bi);
-                JsfUtil.addSuccessMessage("Item removed from return list");
+                JsfUtil.addSuccessMessage("Item removed from return list: " + itemName);
             } else {
                 // If already saved, mark as retired and remove from database
                 bi.setRetired(true);
@@ -631,7 +634,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 // Remove from current list to refresh the display
                 billItems.remove(bi);
-                JsfUtil.addSuccessMessage("Item retired and removed from return");
+                JsfUtil.addSuccessMessage("Item retired and removed from return: " + itemName);
             }
 
             // Recalculate total after removal
@@ -639,6 +642,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error removing item: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -1254,10 +1258,28 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
         currentBill.setReferenceBill(grn);
         currentBill.setToInstitution(grn.getFromInstitution());
+        
+        // Set bill creation metadata
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setDepartment(sessionController.getDepartment());
 
         // Generate items from GRN (similar to legacy prepareReturnBill)
         // generateItemsFromGrn(); commendted out as this method is NOT working correctl
         prepareBillItems(grn, currentBill);
+        
+        // Save the return bill immediately to generate IDs for all items
+        // This will make item deletion much more reliable
+        try {
+            saveBill(false); // Save but don't finalize
+            // Ensure bill items are properly associated for any subsequent operations
+            ensureBillItemsForPreview();
+            JsfUtil.addSuccessMessage("GRN Return created successfully. You can now modify quantities and remove items as needed.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error creating GRN Return: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // GRN Return specific methods (matching legacy pattern)
