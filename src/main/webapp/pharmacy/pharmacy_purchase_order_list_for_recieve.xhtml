@@ -259,9 +259,10 @@
                                                     
                                                     -->
                                                     <p:commandButton
+                                                        id="btnCreteGrnWithCosting"
                                                         ajax="false"
                                                         value="Create GRN"
-                                                        class="ui-button-info w-100"
+                                                        class="ui-button-success w-100"
                                                         icon="fas fa-plus-circle"
                                                         title="Create a GRN for Selected Approved PO with costing"
                                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
@@ -286,7 +287,7 @@
                                                     <p:commandButton 
                                                         id="btnPoClose"
                                                         ajax="false" 
-                                                        class="ui-button-success w-100"
+                                                        class="ui-button-warning w-100"
                                                         icon="fas fa-lock"
                                                         value="PO Close" 
                                                         title="Close Purchase Order"

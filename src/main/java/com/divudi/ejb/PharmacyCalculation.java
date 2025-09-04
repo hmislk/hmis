@@ -975,13 +975,13 @@ public class PharmacyCalculation implements Serializable {
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Cheque) {
-            if (b.getBank().getId() == null || b.getChequeRefNo() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getChequeRefNo() == null) {
                 msg = "Please select Cheque Number and Bank";
             }
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Slip) {
-            if (b.getBank().getId() == null || b.getComments() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getComments() == null) {
                 msg = "Please Fill Memo and Bank";
             }
         }
