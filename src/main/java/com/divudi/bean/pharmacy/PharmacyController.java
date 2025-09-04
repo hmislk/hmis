@@ -291,6 +291,20 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/bin_card_dto?faces-redirect=true";
     }
 
+    public String navigateToItemBinCard() {
+        if (pharmacyErrorChecking.getDepartment() == null) {
+            pharmacyErrorChecking.setDepartment(getSessionController().getDepartment());
+        }
+        return "/pharmacy/bin_card_item?faces-redirect=true";
+    }
+
+    public String navigateToBatchBinCard() {
+        if (pharmacyErrorChecking.getDepartment() == null) {
+            pharmacyErrorChecking.setDepartment(getSessionController().getDepartment());
+        }
+        return "/pharmacy/bin_card_batch?faces-redirect=true";
+    }
+
     public String navigateToItemsList() {
         return "/pharmacy/list_amps?faces-redirect=true";
     }

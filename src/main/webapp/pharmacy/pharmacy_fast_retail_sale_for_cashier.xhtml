@@ -1013,7 +1013,7 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                    <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Bill is Pos paper',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                                 <phi:saleBillToken id="saleBillTokenPos" bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBillToken>
@@ -1023,7 +1023,7 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup styleClass="billPrint"   id="gpBillPreview">
-                                    <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
+                                    <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Bill is Pos paper',false)}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                                 <phi:saleBill_for_Cashier bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_for_Cashier>

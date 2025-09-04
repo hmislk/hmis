@@ -993,7 +993,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("ps", ps);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
-    
+
     public List<PatientInvestigation> getPatientInvestigationsFromBill(Bill bill) {
         String j = "select pi from PatientInvestigation pi where pi.retired = :ret and pi.billItem.bill =:bill";
 
@@ -1002,7 +1002,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("ret", false);
         return ejbFacade.findByJpql(j, m);
     }
-    
+
     public List<PatientInvestigation> getPatientInvestigationsFromBillItem(BillItem billItem) {
         String j = "select pi from PatientInvestigation pi where pi.retired = :ret and pi.billItem =:billItem";
 
@@ -2037,14 +2037,17 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Samples reject reason is Missing..");
             return;
         }
-        
+
         List<PatientSample> canRejectSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED || 
+                    ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED || 
+                    ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING ||
+                    ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE ) {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Rejected");
                 return;
             }
@@ -2178,7 +2181,10 @@ public class PatientInvestigationController implements Serializable {
         // Update sample collection details and gather associated patient investigations
         for (PatientSample ps : canReGenarateSamples) {
             PatientSample newlySample = createNewPatientSampleFromAnotherSample(ps);
-
+            
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING);
+            patientSampleFacade.edit(ps);
+            
             for (PatientInvestigation pi : getPatientInvestigationsBySample(newlySample)) {
                 collectedPtixs.putIfAbsent(pi.getId(), pi);
             }
@@ -2234,7 +2240,7 @@ public class PatientInvestigationController implements Serializable {
         regeneratedPatientSamples = new ArrayList<>();
         regeneratedPatientSamples.add(patientSample);
     }
-    
+
     public void navigateToThePatientSampleList() {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         searchPatientSamples();
@@ -2280,9 +2286,6 @@ public class PatientInvestigationController implements Serializable {
         } else {
             patientSampleFacade.edit(newlyGeneratedSample);
         }
-
-        pts.setStatus(PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING);
-        patientSampleFacade.edit(pts);
 
         List<PatientSampleComponant> oldSamplePatientSampleComponant;
         String jpql = "select ps from PatientSampleComponant ps where ps.patientSample=:pts ";
