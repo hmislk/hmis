@@ -70,6 +70,14 @@
 
                                 <p:column headerText="Item Name"  >
                                     <h:outputLabel value="#{ph.item.name}"/>
+                                    <p:commandButton
+                                        icon="pi pi-search"
+                                        id="btnViewSelectedItemDetails"
+                                        title="View Item Details"
+                                        action="#{pharmacyController.displayItemDetails(ph.item)}"
+                                        update="historyPanel"
+                                        process="@this"
+                                        class="ui-button-icon-only mx-3"/>
                                 </p:column>
                                 <p:column 
                                     headerText="Date of Expiry" 
@@ -256,9 +264,9 @@
 
                             </p:dataTable>
 
-                            <div >
+                            <h:panelGroup id="historyPanel">
                                 <ph:history/>
-                            </div>
+                            </h:panelGroup>
 
                         </div>
                         <div class="col-3" >
