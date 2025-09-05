@@ -985,52 +985,13 @@
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
+                            id="mnuPurchaseReturnsAndCancellations"
                             ajax="false" 
-                            action="#{searchController.navigateToReturnReceivedGoods()}"  
-                            value="Return Received Goods (Legacy)" 
-                            title="Return Received Goods - Direct Process"
+                            action="/pharmacy/purchase_returns_and_cancellations_index?faces-redirect=true"  
+                            value="Purchase Returns and Cancellations" 
+                            title="Purchase Returns and Cancellations"
                             icon="fas fa-undo-alt"
-                            actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{grnReturnWorkflowController.navigateToCreateGrnReturn()}"  
-                            value="Create GRN Return" 
-                            title="Create a new GRN Return Request"
-                            icon="fas fa-plus-circle"
-                            actionListener="#{grnReturnWorkflowController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{grnReturnWorkflowController.navigateToFinalizeGrnReturn()}"  
-                            value="Finalize GRN Return" 
-                            title="Finalize GRN Return Requests"
-                            icon="fas fa-tasks"
-                            actionListener="#{grnReturnWorkflowController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{grnReturnWorkflowController.navigateToApproveGrnReturn()}"  
-                            value="Approve GRN Return" 
-                            title="Approve GRN Return Requests"
-                            icon="fas fa-check-circle"
-                            actionListener="#{grnReturnWorkflowController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}" ></p:menuitem>  
-                        <p:menuitem  
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"  
-                            value="Return without Receipt" 
-                            title="Return without Receipt"
-                            icon="fas fa-exchange-alt"
-                            rendered="#{webUserController.hasPrivilege('ReturnWithoutRecipt')}" 
-                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{searchController.navigateToCancelPurchaseOrder()}"  
-                            value="Multiple Purchase Order Cancellation" 
-                            title="Multiple Purchase Order Cancellation"
-                            rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" 
-                            icon="fas fa-cancel"></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods') or webUserController.hasPrivilege('CreateGrnReturn') or webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('ApproveGrnReturn') or webUserController.hasPrivilege('CreateDirectPurchaseReturn') or webUserController.hasPrivilege('FinalizeDirectPurchaseReturn') or webUserController.hasPrivilege('ApproveDirectPurchaseReturn') or webUserController.hasPrivilege('ReturnWithoutRecipt') or webUserController.hasPrivilege('PharmacyOrderCancellation')}" ></p:menuitem>
                     </p:submenu>
 
 

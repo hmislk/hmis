@@ -7,16 +7,16 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveGrnReturn')}">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}">
             You are NOT authorized
         </h:panelGroup>
-        <h:panelGroup id="gpReturnApprove" rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}">
+        <h:panelGroup id="gpReturnApprove" rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}">
         <h:form>
             <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-check-circle text-success me-2"></i>
-                        <h4 class="mb-0 text-success">Approve GRN Return Requests</h4>
+                        <h4 class="mb-0 text-success">Approve Direct Purchase Return Requests</h4>
                     </div>
                 </f:facet>
                 <div class="row g-3">
@@ -67,7 +67,7 @@
                                     class="ui-button-info w-100 mb-2" 
                                     icon="fas fa-search" 
                                     value="Search All Requests" 
-                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
+                                    action="#{directPurchaseReturnWorkflowController.fillDirectPurchaseReturnsToApprove()}" 
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
@@ -75,7 +75,7 @@
                                     class="ui-button-success w-100 mb-2" 
                                     icon="fas fa-check" 
                                     value="Search Approved Requests" 
-                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
+                                    action="#{directPurchaseReturnWorkflowController.fillApprovedDirectPurchaseReturns()}" 
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
@@ -83,7 +83,7 @@
                                     class="ui-button-warning w-100" 
                                     icon="fas fa-clock" 
                                     value="Search To Approve Requests" 
-                                    action="#{searchController.fillOnlyFinalizedGrnReturns()}" 
+                                    action="#{searchController.fillOnlyFinalizedDirectPurchaseReturns()}" 
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
@@ -155,10 +155,10 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="GRN Return Requests for Approval" styleClass="shadow-sm">
+                        <p:panel header="Direct Purchase Return Requests for Approval" styleClass="shadow-sm">
                             <p:dataTable 
                                 id="tbl" 
-                                value="#{grnReturnWorkflowController.grnReturnsToApprove}" 
+                                value="#{directPurchaseReturnWorkflowController.directPurchaseReturnsToApprove}" 
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -166,13 +166,13 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
-                                emptyMessage="No GRN return requests found matching your criteria"
-                                filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToApprove}"
+                                emptyMessage="No Direct Purchase return requests found matching your criteria"
+                                filteredValue="#{directPurchaseReturnWorkflowController.filteredDirectPurchaseReturnsToApprove}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
                             <p:column headerText="Requested At">
-                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     <h:outputLabel value="#{b.createdAt}">
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
@@ -189,7 +189,7 @@
                             </p:column> 
 
                             <p:column headerText="Requested By">
-                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}">                                      
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
@@ -204,7 +204,7 @@
                             </p:column>    
 
                             <p:column headerText="Supplier">
-                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
@@ -214,12 +214,12 @@
                                 <h:outputText value="#{b.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Original GRN">
+                            <p:column headerText="Original Purchase">
                                 <h:outputText value="#{b.referenceBill.deptId}"></h:outputText>
                             </p:column>
 
                             <p:column headerText="Requested Department">
-                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     #{b.department.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
@@ -238,7 +238,7 @@
 
                             <p:column headerText="Approved Person">
                                 <h:commandLink 
-                                    action="pharmacy_reprint_grn_return_request" 
+                                    action="pharmacy_reprint_direct_purchase_return_request" 
                                     value="#{b.completedBy.webUserPerson.nameWithTitle}"
                                     rendered="#{b.completed eq true}">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
@@ -276,11 +276,11 @@
                                         icon="fas fa-check-circle"
                                         class="ui-button-success"
                                         value="Approve"
-                                        title="To Approve GRN Return"
-                                        action="#{grnReturnWorkflowController.navigateToGrnReturnApproval}"
-                                        disabled="#{b.checkedBy eq null or b.completed eq true or b.cancelled eq true or !webUserController.hasPrivilege('ApproveGrnReturn')}"
+                                        title="To Approve Direct Purchase Return"
+                                        action="#{directPurchaseReturnWorkflowController.navigateToDirectPurchaseReturnApproval}"
+                                        disabled="#{b.checkedBy eq null or b.completed eq true or b.cancelled eq true or !webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}"
                                         style="min-width: 70px;">
-                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>
                                     <p:commandButton 
                                         id="view"
@@ -288,11 +288,11 @@
                                         icon="fas fa-eye"
                                         class="ui-button-info"
                                         value="View"
-                                        title="To View GRN Return"
-                                        action="#{grnReturnWorkflowController.navigateToViewGrnReturn}" 
+                                        title="To View Direct Purchase Return"
+                                        action="#{directPurchaseReturnWorkflowController.navigateToViewDirectPurchaseReturn}" 
                                         disabled="#{b.referenceBill eq null}"
                                         style="min-width: 60px;">
-                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>
                                 </div>
                             </p:column>

@@ -571,6 +571,9 @@ public enum Privileges {
     CreateGrnReturn("Create GRN Return"),
     FinalizeGrnReturn("Finalize GRN Return"),
     ApproveGrnReturn("Approve GRN Return"),
+    CreateDirectPurchaseReturn("Create Direct Purchase Return"),
+    FinalizeDirectPurchaseReturn("Finalize Direct Purchase Return"),
+    ApproveDirectPurchaseReturn("Approve Direct Purchase Return"),
     ReturnWithoutRecipt("Return without Receipt"),
     PharmacyGrnSave("Pharmacy GRN Save"),
     PharmacyGrnFinalize("Pharmacy GRN Finalize"),
@@ -839,6 +842,9 @@ public enum Privileges {
             case CreateGrnReturn:
             case FinalizeGrnReturn:
             case ApproveGrnReturn:
+            case CreateDirectPurchaseReturn:
+            case FinalizeDirectPurchaseReturn:
+            case ApproveDirectPurchaseReturn:
             case ReturnWithoutRecipt:
             // Disbursement
             case PharmacyDisburesementMenu:

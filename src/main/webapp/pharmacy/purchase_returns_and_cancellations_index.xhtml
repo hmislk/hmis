@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Purchase Returns and Cancellations" class="w-100 m-1">
+                
+                <div class="row">
+                    <div class="col-12">
+                        <p:messages id="messages" showDetail="true" closable="true" />
+                    </div>
+                </div>
+
+                <ui:insert name="subcontent">
+                    <!-- Default content when no specific page is loaded -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h:outputText value="Select a function from the menu below:" class="h5 mb-4" />
+                        </div>
+                    </div>
+
+                    <!-- GRN Returns Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h:outputText value="GRN Returns" class="h6 mb-3" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Return Received Goods (Legacy)" 
+                                ajax="false"
+                                action="#{searchController.navigateToReturnReceivedGoods()}"
+                                class="ui-button-info w-100"
+                                icon="fas fa-undo-alt"
+                                rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" />
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Create GRN Return" 
+                                ajax="false"
+                                action="#{grnReturnWorkflowController.navigateToCreateGrnReturn()}"
+                                class="ui-button-success w-100"
+                                icon="fas fa-plus-circle"
+                                rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}" />
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Finalize GRN Return" 
+                                ajax="false"
+                                action="#{grnReturnWorkflowController.navigateToFinalizeGrnReturn()}"
+                                class="ui-button-warning w-100"
+                                icon="fas fa-tasks"
+                                rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}" />
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Approve GRN Return" 
+                                ajax="false"
+                                action="#{grnReturnWorkflowController.navigateToApproveGrnReturn()}"
+                                class="ui-button-info w-100"
+                                icon="fas fa-check-circle"
+                                rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}" />
+                        </div>
+                    </div>
+
+                    <!-- Direct Purchase Returns Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h:outputText value="Direct Purchase Returns" class="h6 mb-3" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Create Direct Purchase Return" 
+                                ajax="false"
+                                action="#{directPurchaseReturnWorkflowController.navigateToCreateDirectPurchaseReturn()}"
+                                class="ui-button-success w-100"
+                                icon="fas fa-plus-circle"
+                                rendered="#{webUserController.hasPrivilege('CreateDirectPurchaseReturn')}" />
+                        </div>
+                        <div class="col-md-4 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Finalize Direct Purchase Return" 
+                                ajax="false"
+                                action="#{directPurchaseReturnWorkflowController.navigateToFinalizeDirectPurchaseReturn()}"
+                                actionListener="#{directPurchaseReturnWorkflowController.makeListNull()}"
+                                class="ui-button-warning w-100"
+                                icon="fas fa-tasks"
+                                rendered="#{webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}" />
+                        </div>
+                        <div class="col-md-4 col-sm-6 mb-2">
+                            <p:commandButton 
+                                value="Approve Direct Purchase Return" 
+                                ajax="false"
+                                action="#{directPurchaseReturnWorkflowController.navigateToApproveDirectPurchaseReturn()}"
+                                class="ui-button-info w-100"
+                                icon="fas fa-check-circle"
+                                rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}" />
+                        </div>
+                    </div>
+
+                    <!-- Other Functions Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h:outputText value="Other Functions" class="h6 mb-3" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12 mb-2">
+                            <p:commandButton 
+                                value="Return without Receipt" 
+                                ajax="false"
+                                action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                                class="ui-button-secondary w-100"
+                                icon="fas fa-exchange-alt"
+                                rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutReceiptBill')}" />
+                        </div>
+                        <div class="col-md-6 col-sm-12 mb-2">
+                            <p:commandButton 
+                                value="Multiple Purchase Order Cancellation" 
+                                ajax="false"
+                                action="#{searchController.navigateToCancelPurchaseOrder()}"
+                                class="ui-button-danger w-100"
+                                icon="fas fa-times-circle"
+                                rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}"
+                                actionListener="#{pharmacyPurchaseController.makeNull()}" />
+                        </div>
+                    </div>
+                </ui:insert>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
