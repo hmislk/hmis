@@ -169,7 +169,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             // For AMPP, grossRate should be per unit, lineGrossRate is per pack
             BigDecimal packRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
-            f.setGrossRate(packRate.divide(unitsPerPack, 4, BigDecimal.ROUND_HALF_UP));
+            f.setGrossRate(packRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP));
 
             // Set retail rates
             if (f.getRetailSaleRatePerUnit() != null) {
@@ -505,16 +505,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        BigDecimal purchaseRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal grossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
         BigDecimal retailRate = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        
+        // Calculate per-unit purchase rate by dividing gross rate by quantity
+        BigDecimal purchaseRate;
+        if (bi.getQty() != null && bi.getQty() > 0) {
+            purchaseRate = grossRate.divide(BigDecimal.valueOf(bi.getQty()), 4, RoundingMode.HALF_UP);
+        } else {
+            purchaseRate = grossRate; // fallback to gross rate if quantity is invalid
+        }
 
         if (purchaseRate.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
         }
 
         // Profit Margin = ((Retail Rate - Purchase Rate) / Purchase Rate) * 100
-        BigDecimal profit = BigDecimalUtil.subtract(retailRate, purchaseRate);
-        BigDecimal margin = profit.divide(purchaseRate, 4, BigDecimal.ROUND_HALF_UP);
+        BigDecimal profit = retailRate.subtract(purchaseRate);
+        BigDecimal margin = profit.divide(purchaseRate, 4, RoundingMode.HALF_UP);
         return margin.multiply(BigDecimal.valueOf(100)).doubleValue();
     }
 
@@ -1009,7 +1017,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Set line net rate (safe division)
         if (qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
-            f.setLineNetRate(itemNet.divide(qty, 4, BigDecimal.ROUND_HALF_UP));
+            f.setLineNetRate(itemNet.divide(qty, 4, RoundingMode.HALF_UP));
         } else {
             f.setLineNetRate(BigDecimal.ZERO);
         }

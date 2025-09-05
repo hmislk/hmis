@@ -437,6 +437,10 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true";
     }
 
+    public String navigateToPharmacyReturnWithoutReceipt() {
+        return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
+    }
+
     public String navigateToMyDepartmentAllCashierSummary() {
         department = sessionController.getDepartment();
         institution = sessionController.getInstitution();

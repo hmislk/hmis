@@ -88,7 +88,7 @@
                                 <p:commandButton 
                                     value="Return without Receipt" 
                                     ajax="false"
-                                    action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                                    action="#{searchController.navigateToPharmacyReturnWithoutReceipt()}"
                                     class="ui-button-secondary w-100"
                                     icon="fas fa-exchange-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutReceiptBill')}" />
