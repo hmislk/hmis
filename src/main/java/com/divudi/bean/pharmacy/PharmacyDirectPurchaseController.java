@@ -1247,7 +1247,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             totalTaxLines = totalTaxLines.add(BigDecimalUtil.valueOrZero(f.getLineTax()));
             totalLineCosts = totalLineCosts.add(BigDecimalUtil.valueOrZero(f.getLineCost()));
 
-            BigDecimal freeItemValue = costPerUnit.multiply(freeQty);
+            BigDecimal freeItemValue = costPerUnit.multiply(freeUnits);
             totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
 
             // Totals at different rates
