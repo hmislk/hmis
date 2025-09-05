@@ -240,16 +240,8 @@
                                             icon="fas fa-plus"
                                             action="#{pharmacyDirectPurchaseController.addItem}"
                                             process="@this" 
-                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
-
+                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
                                     </div>
-
-
-
-
-
-
-
 
                                     <div class="col-1 text-end">
                                         <h:outputLabel 

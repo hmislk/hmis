@@ -90,7 +90,7 @@
                             </p:column>
 
                             <p:column 
-                                headerText="PO No" 
+                                headerText="Purchase No" 
                                 width="8em" 
                                 sortBy="#{p.deptId}" 
                                 filterBy="#{p.deptId}" 
@@ -149,18 +149,6 @@
                                         </div>
                                     </h:panelGroup>
                                 </div>
-                            </p:column>
-
-                            <p:column 
-                                headerText="PO Value" 
-                                width="10em" 
-                                sortBy="#{p.referenceBill.netTotal}" 
-                                filterBy="#{p.referenceBill.netTotal}" 
-                                filterMatchMode="equals"
-                                styleClass="text-end">
-                                <h:outputText value="#{p.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
                             </p:column>
 
                             <p:column 
