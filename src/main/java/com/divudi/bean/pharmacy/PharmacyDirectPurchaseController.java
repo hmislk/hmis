@@ -1134,58 +1134,203 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     /**
-     * Calculates bill-level totals from all items
+     * Calculates bill-level totals from all items for Direct Purchase workflow.
+     * Populates BillFinanceDetails (purchase/retail/cost/gross/net, quantities, discounts, taxes, expenses).
      */
     public void calculateBillTotalsFromItems() {
         if (getBill() == null || getBillItems() == null || getBillItems().isEmpty()) {
             return;
         }
 
-        BigDecimal billGrossTotal = BigDecimal.ZERO;
-        BigDecimal billNetTotal = BigDecimal.ZERO;
-        BigDecimal billSaleValue = BigDecimal.ZERO;
+        // Initialize aggregates
+        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
+        BigDecimal totalLineExpenses = BigDecimal.ZERO;
+        BigDecimal totalLineCosts = BigDecimal.ZERO;
+        BigDecimal totalTaxLines = BigDecimal.ZERO;
 
-        // Calculate totals from all items
-        for (BillItem item : getBillItems()) {
-            if (item.getBillItemFinanceDetails() != null) {
-                BillItemFinanceDetails f = item.getBillItemFinanceDetails();
+        BigDecimal totalFreeItemValue = BigDecimal.ZERO;
+        BigDecimal totalPurchase = BigDecimal.ZERO;
+        BigDecimal totalRetail = BigDecimal.ZERO;
+        BigDecimal totalWholesale = BigDecimal.ZERO;
 
-                // Sum up gross totals (should be sum of line net totals)
-                billGrossTotal = BigDecimalUtil.add(billGrossTotal,
-                        BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+        BigDecimal totalQty = BigDecimal.ZERO;
+        BigDecimal totalFreeQty = BigDecimal.ZERO;
+        BigDecimal totalQtyAtomic = BigDecimal.ZERO;
+        BigDecimal totalFreeQtyAtomic = BigDecimal.ZERO;
 
-                // Sum up net totals  
-                billNetTotal = BigDecimalUtil.add(billNetTotal,
-                        BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+        // Free/Non-free breakdowns
+        BigDecimal purchaseValueFree = BigDecimal.ZERO;
+        BigDecimal purchaseValueNonFree = BigDecimal.ZERO;
+        BigDecimal costValueFree = BigDecimal.ZERO;
+        BigDecimal costValueNonFree = BigDecimal.ZERO;
+        BigDecimal retailValueFree = BigDecimal.ZERO;
+        BigDecimal retailValueNonFree = BigDecimal.ZERO;
+        BigDecimal wholesaleValueFree = BigDecimal.ZERO;
+        BigDecimal wholesaleValueNonFree = BigDecimal.ZERO;
 
-                // Sum up sale values
-                billSaleValue = BigDecimalUtil.add(billSaleValue, calculateSaleValue(item));
+        BigDecimal grossTotalLines = BigDecimal.ZERO;      // Sum of line gross totals
+        BigDecimal netTotalLines = BigDecimal.ZERO;        // Sum of line net totals
+
+        // Walk through items and aggregate
+        for (BillItem bi : getBillItems()) {
+            BillItemFinanceDetails f = (bi != null) ? bi.getBillItemFinanceDetails() : null;
+            if (f == null) {
+                continue;
+            }
+
+            BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+            BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
+            BigDecimal totalQtyPacks = qty.add(freeQty);
+
+            // Fallbacks for missing computed fields
+            BigDecimal lineGrossRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+            if (f.getLineGrossTotal() == null) {
+                f.setLineGrossTotal(lineGrossRate.multiply(qty));
+            }
+            if (f.getGrossTotal() == null || f.getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setGrossTotal(lineGrossRate.multiply(qty));
+            }
+            if (f.getLineNetTotal() == null) {
+                BigDecimal lineDiscount = BigDecimalUtil.valueOrZero(f.getLineDiscount());
+                f.setLineNetTotal(BigDecimalUtil.subtract(f.getLineGrossTotal(), lineDiscount));
+            }
+            if (f.getNetTotal() == null) {
+                f.setNetTotal(f.getLineNetTotal());
+            }
+
+            // Use unit-quantities for value-at-rate fields when available
+            BigDecimal qtyUnits = BigDecimalUtil.valueOrZero(f.getQuantityByUnits());
+            BigDecimal freeUnits = BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits());
+            BigDecimal totalUnits = BigDecimalUtil.add(qtyUnits, freeUnits);
+            BigDecimal retailPerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+            BigDecimal grossPerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            BigDecimal costPerUnit = BigDecimalUtil.valueOrZero(f.getLineCostRate());
+            if (BigDecimalUtil.isNullOrZero(costPerUnit) && totalUnits.compareTo(BigDecimal.ZERO) > 0 && f.getValueAtCostRate() != null) {
+                // Derive if not set
+                costPerUnit = f.getValueAtCostRate().divide(totalUnits, 4, RoundingMode.HALF_UP);
+                f.setLineCostRate(costPerUnit);
+            }
+
+            // Compute value-at-rate fields if missing
+            if (f.getValueAtRetailRate() == null) {
+                f.setValueAtRetailRate(totalUnits.multiply(retailPerUnit));
+            }
+            if (f.getValueAtPurchaseRate() == null) {
+                f.setValueAtPurchaseRate(totalUnits.multiply(grossPerUnit));
+            }
+            if (f.getValueAtCostRate() == null) {
+                f.setValueAtCostRate(totalUnits.multiply(costPerUnit));
+            }
+
+            // Compute free/non-free breakdowns per item
+            purchaseValueNonFree = purchaseValueNonFree.add(grossPerUnit.multiply(qtyUnits));
+            purchaseValueFree = purchaseValueFree.add(grossPerUnit.multiply(freeUnits));
+            costValueNonFree = costValueNonFree.add(costPerUnit.multiply(qtyUnits));
+            costValueFree = costValueFree.add(costPerUnit.multiply(freeUnits));
+            retailValueNonFree = retailValueNonFree.add(retailPerUnit.multiply(qtyUnits));
+            retailValueFree = retailValueFree.add(retailPerUnit.multiply(freeUnits));
+            BigDecimal wholesalePerUnit = BigDecimalUtil.valueOrZero(f.getWholesaleRatePerUnit());
+            wholesaleValueNonFree = wholesaleValueNonFree.add(wholesalePerUnit.multiply(qtyUnits));
+            wholesaleValueFree = wholesaleValueFree.add(wholesalePerUnit.multiply(freeUnits));
+
+            // Aggregate line-level components
+            totalLineDiscounts = totalLineDiscounts.add(BigDecimalUtil.valueOrZero(f.getLineDiscount()));
+            totalLineExpenses = totalLineExpenses.add(BigDecimalUtil.valueOrZero(f.getLineExpense()));
+            totalTaxLines = totalTaxLines.add(BigDecimalUtil.valueOrZero(f.getLineTax()));
+            totalLineCosts = totalLineCosts.add(BigDecimalUtil.valueOrZero(f.getLineCost()));
+
+            BigDecimal freeItemValue = costPerUnit.multiply(freeQty);
+            totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
+
+            // Totals at different rates
+            totalPurchase = totalPurchase.add(BigDecimalUtil.valueOrZero(f.getValueAtPurchaseRate()));
+            totalRetail = totalRetail.add(BigDecimalUtil.valueOrZero(f.getValueAtRetailRate()));
+            totalWholesale = totalWholesale.add(BigDecimalUtil.valueOrZero(f.getValueAtWholesaleRate()));
+
+            // Quantities
+            totalQty = totalQty.add(qty);
+            totalFreeQty = totalFreeQty.add(freeQty);
+            totalQtyAtomic = totalQtyAtomic.add(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()));
+            totalFreeQtyAtomic = totalFreeQtyAtomic.add(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()));
+
+            // Line totals
+            grossTotalLines = grossTotalLines.add(BigDecimalUtil.valueOrZero(f.getLineGrossTotal()));
+            netTotalLines = netTotalLines.add(BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+        }
+
+        // Sum current bill-level expenses (from expense bill items)
+        double billExpensesTotal = 0.0;
+        if (getBill().getBillExpenses() != null) {
+            for (BillItem expense : getBill().getBillExpenses()) {
+                if (expense != null && !expense.isRetired()) {
+                    billExpensesTotal += expense.getNetValue();
+                }
             }
         }
 
-        // Set bill totals (negative for purchase transactions)
-        getBill().setTotal(-billGrossTotal.doubleValue());
+        // Bill-level values directly entered by user
+        BigDecimal billDiscount = BigDecimal.valueOf(getBill().getDiscount());
+        BigDecimal billTax = BigDecimal.valueOf(getBill().getTax());
+        BigDecimal billExpenseConsidered = BigDecimal.valueOf(getBill().getExpensesTotalConsideredForCosting());
+        BigDecimal billCost = billDiscount.subtract(billExpenseConsidered.add(billTax));
 
-        // Get bill-level adjustments
-        double billTax = getBill().getTax();
-        double billDiscount = getBill().getDiscount();
-        double expensesConsideredForCosting = getBill().getExpensesTotalConsideredForCosting();
+        // For purchase bills, legacy controller logic keeps totals negative.
+        // Compute final net as line net + bill expense items, then set negative on Bill.
+        BigDecimal finalNet = netTotalLines.add(BigDecimal.valueOf(billExpensesTotal));
+        getBill().setTotal(-grossTotalLines.doubleValue());
+        getBill().setNetTotal(-finalNet.doubleValue());
+        getBill().setSaleValue(totalRetail.doubleValue());
 
-        // Bill Net Total = Bill Gross + Tax - Bill Discount + Expenses (only those considered for costing)
-        double finalNetTotal = billGrossTotal.doubleValue() + billTax - billDiscount + Math.abs(expensesConsideredForCosting);
-        getBill().setNetTotal(-finalNetTotal); // Negative for purchases
-
-        // Set sale value
-        getBill().setSaleValue(billSaleValue.doubleValue());
-
-        // Update BillFinanceDetails if exists
-        if (getBill().getBillFinanceDetails() != null) {
-            BillFinanceDetails bf = getBill().getBillFinanceDetails();
-            bf.setBillGrossTotal(BigDecimal.valueOf(-billGrossTotal.doubleValue()));
-            bf.setBillNetTotal(BigDecimal.valueOf(-finalNetTotal));
-            bf.setBillTaxValue(BigDecimal.valueOf(billTax));
-            bf.setBillDiscount(BigDecimal.valueOf(billDiscount));
+        // Ensure and populate BillFinanceDetails
+        BillFinanceDetails bfd = getBill().getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(getBill());
+            getBill().setBillFinanceDetails(bfd);
         }
+
+        bfd.setBillDiscount(billDiscount);
+        bfd.setBillExpense(billExpenseConsidered);
+        bfd.setBillTaxValue(billTax);
+        bfd.setBillCostValue(billCost);
+
+        bfd.setLineDiscount(totalLineDiscounts);
+        bfd.setLineExpense(totalLineExpenses);
+        bfd.setItemTaxValue(totalTaxLines);
+        bfd.setLineCostValue(totalLineCosts);
+
+        // Totals (line totals + bill-level where applicable)
+        bfd.setTotalDiscount(totalLineDiscounts.add(billDiscount));
+        bfd.setTotalExpense(totalLineExpenses.add(billExpenseConsidered));
+        // Total Tax should include both line-level tax and bill-level tax
+        bfd.setTotalTaxValue(totalTaxLines.add(billTax));
+        bfd.setTotalCostValue(totalLineCosts);
+
+        // Values at purchase/retail/cost
+        bfd.setTotalOfFreeItemValues(totalFreeItemValue);
+        bfd.setTotalPurchaseValue(totalPurchase);
+        bfd.setTotalRetailSaleValue(totalRetail);
+        bfd.setTotalWholesaleValue(totalWholesale);
+        // Set free/non-free breakdowns used by UI panels
+        bfd.setTotalPurchaseValueFree(purchaseValueFree);
+        bfd.setTotalPurchaseValueNonFree(purchaseValueNonFree);
+        bfd.setTotalCostValueFree(costValueFree);
+        bfd.setTotalCostValueNonFree(costValueNonFree);
+        bfd.setTotalRetailSaleValueFree(retailValueFree);
+        bfd.setTotalRetailSaleValueNonFree(retailValueNonFree);
+        bfd.setTotalWholesaleValueFree(wholesaleValueFree);
+        bfd.setTotalWholesaleValueNonFree(wholesaleValueNonFree);
+
+        // Quantities
+        bfd.setTotalQuantity(totalQty);
+        bfd.setTotalFreeQuantity(totalFreeQty);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
+
+        // Gross/Net totals snapshot (positive numbers inside BFD)
+        bfd.setGrossTotal(grossTotalLines);
+        bfd.setLineGrossTotal(grossTotalLines);
+        bfd.setNetTotal(finalNet);
+        bfd.setLineNetTotal(netTotalLines);
     }
 
     /**
