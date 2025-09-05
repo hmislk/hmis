@@ -74,15 +74,8 @@
                             filterBy="#{p}"
                             widgetVar="billTable"
                             >
-
                             <p:column 
-                                headerText="No" 
-                                width="2em" 
-                                styleClass="text-center">
-                                <h:outputText value="#{n+1}" />
-                            </p:column>
-
-                            <p:column 
+                                width="10em"
                                 headerText="Distributor" 
                                 sortBy="#{p.fromInstitution.name}" 
                                 filterBy="#{p.fromInstitution.name}" 

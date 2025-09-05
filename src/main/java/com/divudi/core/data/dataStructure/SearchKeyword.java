@@ -61,6 +61,7 @@ public class SearchKeyword {
     private Investigation investigation;
     private List<BillType> billTypes;
     private Long id;
+    private Institution distributor;
 
 
 
@@ -455,6 +456,14 @@ public class SearchKeyword {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Institution getDistributor() {
+        return distributor;
+    }
+
+    public void setDistributor(Institution distributor) {
+        this.distributor = distributor;
     }
 
 
