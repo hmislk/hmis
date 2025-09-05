@@ -1018,6 +1018,30 @@
                             rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}" ></p:menuitem>  
                         <p:menuitem  
                             ajax="false" 
+                            action="#{directPurchaseReturnWorkflowController.navigateToCreateDirectPurchaseReturn()}"  
+                            value="Create Direct Purchase Return" 
+                            title="Create a new Direct Purchase Return Request"
+                            icon="fas fa-plus-circle"
+                            actionListener="#{directPurchaseReturnWorkflowController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('CreateDirectPurchaseReturn')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{directPurchaseReturnWorkflowController.navigateToFinalizeDirectPurchaseReturn()}"  
+                            value="Finalize Direct Purchase Return" 
+                            title="Finalize Direct Purchase Return Requests"
+                            icon="fas fa-tasks"
+                            actionListener="#{directPurchaseReturnWorkflowController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{directPurchaseReturnWorkflowController.navigateToApproveDirectPurchaseReturn()}"  
+                            value="Approve Direct Purchase Return" 
+                            title="Approve Direct Purchase Return Requests"
+                            icon="fas fa-check-circle"
+                            actionListener="#{directPurchaseReturnWorkflowController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
                             action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"  
                             value="Return without Receipt" 
                             title="Return without Receipt"
