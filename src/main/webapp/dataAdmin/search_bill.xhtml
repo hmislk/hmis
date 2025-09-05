@@ -249,6 +249,18 @@
                                 </p:commandButton>
 
                                 <p:commandButton 
+                                    title="Reverse Bill" 
+                                    value="Reverse" 
+                                    icon="fa fa-exchange-alt" 
+                                    class="m-1 ui-button-warning" 
+                                    style="width: 100px;"
+                                    action="#{pharmacyBillSearch.navigateToReversePharmacyDirectIssueToInpatientsById(bill.id)}" 
+                                    ajax="false"
+                                    onclick="return confirm('Are you sure you want to proceed to reverse this Pharmacy BHT bill? This action will create a reverse bill with negative quantities.');"
+                                    rendered="#{bill.billType.toString() == 'PharmacyBhtPre' and !bill.cancelled}">
+                                </p:commandButton>
+
+                                <p:commandButton 
                                     rendered="false"
                                     id="viewBill"
                                     icon="fa fa-fw fa-file-invoice-dollar"

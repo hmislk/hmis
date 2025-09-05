@@ -1951,6 +1951,10 @@
                                              ajax="false"
                                              action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
                         </h:panelGroup>
+                        <!-- User Notifications UI disabled: caused TransactionRolledback errors during render.
+                             Once the JPQL/transaction issues are fixed, remove the comment markers below
+                             to re-enable the bell badge, polling, and refresh actions. -->
+                        <!--
                         <div class="mx-4">
                             <h:panelGroup>
                                 <p:poll
@@ -1970,6 +1974,7 @@
                                     title="Refresh Notifications" style="margin-left: 10px;"/>
                             </h:panelGroup>
                         </div>
+                        -->
 
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />

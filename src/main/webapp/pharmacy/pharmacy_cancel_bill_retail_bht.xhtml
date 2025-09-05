@@ -13,7 +13,10 @@
                 <h:form>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">                            
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStockBht()}" >
+                            <h:commandButton 
+                                value="Cancel" 
+                                onclick="return confirm('Are you sure you want to cancel the bill?');"
+                                action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStockBht()}" >
                             </h:commandButton>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">

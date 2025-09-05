@@ -7,48 +7,77 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
-
     <ui:define name="subcontent">
+        <style>
+            .batch-color-0 {
+                background-color: #f8f9fa !important;
+            }
+            .batch-color-1 {
+                background-color: #e3f2fd !important;
+            }
+            .batch-color-2 {
+                background-color: #f3e5f5 !important;
+            }
+            .batch-color-3 {
+                background-color: #e8f5e8 !important;
+            }
+            .batch-color-4 {
+                background-color: #fff3e0 !important;
+            }
+            .batch-color-5 {
+                background-color: #fce4ec !important;
+            }
+            .batch-color-6 {
+                background-color: #f1f8e9 !important;
+            }
+            .batch-color-7 {
+                background-color: #e0f2f1 !important;
+            }
+            .batch-color-8 {
+                background-color: #fafafa !important;
+            }
+            .batch-color-9 {
+                background-color: #eceff1 !important;
+            }
+        </style>
 
         <h:form>
-            <p:panel header="Pharmacy Bin Card" >
-                <f:facet name="header" >
-                    <h:outputLabel value="Pharmacy Bin Card" ></h:outputLabel>
+            <p:panel header="Pharmacy Batch Bin Card">
+                <f:facet name="header">
+                    <h:outputLabel value="Pharmacy Batch Bin Card"></h:outputLabel>
                 </f:facet>
+
                 <h:panelGrid columns="7" class="w-100">
-                    <h:outputLabel value="From" ></h:outputLabel>
-                    <p:datePicker 
-                        class="w-100 m-1" 
+                    <h:outputLabel value="From"></h:outputLabel>
+                    <p:datePicker
+                        class="w-100 m-1"
                         showTime="true"
-                        inputStyleClass="w-100" 
-                        value="#{pharmacyErrorChecking.fromDate}" 
+                        inputStyleClass="w-100"
+                        value="#{pharmacyErrorChecking.fromDate}"
                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
-                    <p:spacer width="10" ></p:spacer>
-                    <h:outputLabel value="To" ></h:outputLabel>
-                    <p:datePicker 
-                        class="w-100 m-1" 
-                        inputStyleClass="w-100" 
-                        value="#{pharmacyErrorChecking.toDate}" 
+                    <p:spacer width="10"></p:spacer>
+                    <h:outputLabel value="To"></h:outputLabel>
+                    <p:datePicker
+                        class="w-100 m-1"
+                        inputStyleClass="w-100"
+                        value="#{pharmacyErrorChecking.toDate}"
                         showTime="true"
                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                     </p:datePicker>
-                    <p:spacer width="10" ></p:spacer>
-                    <p:commandButton class="m-1 ui-button-success" icon="fa fa-file-excel" ajax="false" value="Download" >
-                        <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
+                    <p:spacer width="10"></p:spacer>
+                    <p:commandButton class="m-1 ui-button-success" icon="fa fa-file-excel" ajax="false" value="Download">
+                        <p:dataExporter fileName="Batch Bin Card" target="tbl" type="xlsx"></p:dataExporter>
                     </p:commandButton>
 
-
-
-                    <p:outputLabel 
-                        value="Department" ></p:outputLabel>
-                    <p:autoComplete 
-                        value="#{pharmacyErrorChecking.department}"  
+                    <p:outputLabel value="Department"></p:outputLabel>
+                    <p:autoComplete
+                        value="#{pharmacyErrorChecking.department}"
                         inputStyleClass="w-100"
                         class="w-100 m-1"
                         required="true"
-                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
-                        forceSelection="true" rendered="true" 
-                        requiredMessage="You must select a department" >
+                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
+                        forceSelection="true" rendered="true"
+                        requiredMessage="You must select a department">
                         <p:column headerText="Department">
                             <h:outputLabel value="#{dept.name}"/>
                         </p:column>
@@ -56,16 +85,16 @@
                             <h:outputLabel value="#{dept.institution.name}"/>
                         </p:column>
                     </p:autoComplete>
-                    <p:spacer width="10" ></p:spacer>
+                    <p:spacer width="10"></p:spacer>
 
-                    <p:outputLabel value="Item" ></p:outputLabel>
-                    <p:autoComplete value="#{pharmacyErrorChecking.item}" 
+                    <p:outputLabel value="Item"></p:outputLabel>
+                    <p:autoComplete value="#{pharmacyErrorChecking.item}"
                                     inputStyleClass="w-100"
                                     class="w-100 m-1"
                                     required="true"
-                                    completeMethod="#{itemController.completeAmpItemAll}" 
-                                    var="item" itemValue="#{item}" itemLabel="#{item.name}" 
-                                    forceSelection="true"  >
+                                    completeMethod="#{itemController.completeAmpItemAll}"
+                                    var="item" itemValue="#{item}" itemLabel="#{item.name}"
+                                    forceSelection="true">
                         <p:column headerText="Item">
                             <h:outputLabel value="#{item.name}"/>
                         </p:column>
@@ -73,16 +102,14 @@
                             <h:outputLabel value="#{item.code}"/>
                         </p:column>
                     </p:autoComplete>
-                    <p:spacer width="10" ></p:spacer>
-                    <p:commandButton 
-                        class="m-1 ui-button-warning" 
-                        ajax="false" 
+                    <p:spacer width="10"></p:spacer>
+                    <p:commandButton
+                        class="m-1 ui-button-warning"
+                        ajax="false"
                         icon="fas fa-arrows-rotate"
                         value="Generate Report"
-                        action="#{pharmacyErrorChecking.processBinCardWithDTO()}" >
+                        action="#{pharmacyErrorChecking.processBatchBinCardWithDTO()}" >
                     </p:commandButton>
-
-
                 </h:panelGrid>
 
                 <p:dataTable value="#{pharmacyErrorChecking.binCardEntries}"
@@ -94,33 +121,29 @@
                              rowKey="#{sh.id}"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,20,50,100,500,1000">
+                             rowsPerPageTemplate="10,20,50,100,500,1000"
+                             rowStyleClass="#{pharmacyErrorChecking.getBatchColorClass(sh.batchNo)}">
 
-
-                    <p:column 
-                        headerText="Stock Hx ID"
-                        rendered="#{webUserController.hasPrivilege('Developers')}"
-                        width="10rem">
-                        <p:commandLink 
-                            ajax="false"
-                            action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
-                            value="#{sh.id}" 
-                            ></p:commandLink>
+                    <p:column headerText="Stock Hx ID"
+                              rendered="#{webUserController.hasPrivilege('Developers')}"
+                              width="10rem">
+                        <p:commandLink ajax="false"
+                                       action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
+                                       value="#{sh.id}">
+                        </p:commandLink>
                         <f:facet name="footer">
                             <h:outputText value="Total"/>
                         </f:facet>
                     </p:column>
 
-                    <!-- Date & Time with Format -->
                     <p:column headerText="Date &amp; Time">
                         <h:outputText value="#{sh.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputText>
                     </p:column>
 
-                    <!-- Transaction Type -->
-                    <p:column headerText="Transaction Type" width="18rem">
-                        <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}" />
+                    <p:column headerText="Transaction Type" width="15rem">
+                        <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
                         <p:commandButton 
                             ajax="false" 
@@ -128,70 +151,48 @@
                             rendered="#{sh.billId ne null and sh.billId gt 0}"
                             icon="fa fa-eye"
                             styleClass="ui-button-sm ui-button-info"
-                            title="View Bill (ID: #{sh.billId})"
+                            title="View Bill"
                             style="margin-left: 5px;">
                         </p:commandButton>
                     </p:column>
 
-                    <!-- Batch Number -->
                     <p:column headerText="Batch Number" class="text-end">
                         <h:outputText value="#{sh.batchNo}" />
                     </p:column>
 
-                    <!-- Quantity In -->
                     <p:column headerText="Quantity In" class="text-end">
-                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}"
                                       rendered="#{sh.transThisIsStockIn}"
                                       styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <!-- Quantity Out -->
                     <p:column headerText="Quantity Out" class="text-end">
-                        <h:outputText 
-                            value="#{sh.transAbsoluteQtyPlusFreeQty}" 
-                            rendered="#{sh.transThisIsStockOut}"
-                            styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}"
+                                      rendered="#{sh.transThisIsStockOut}"
+                                      styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <!-- Stock Before Transaction (Item) -->
-                    <p:column headerText="Stock Before (Item)" class="text-end">
-                        <h:outputText value="#{sh.transThisIsStockIn ? sh.itemStock - sh.transAbsoluteQtyPlusFreeQty : sh.itemStock + sh.transAbsoluteQtyPlusFreeQty}">
-                            <f:convertNumber pattern="#.#"/>
-                        </h:outputText>
-                    </p:column>
-
-                    <!-- Stock After Transaction (Item) -->
-                    <p:column headerText="Stock After (Item)" class="text-end">
-                        <h:outputText value="#{sh.itemStock}">
-                            <f:convertNumber pattern="#.#"/>
-                        </h:outputText>
-                    </p:column>
-
-                    <!-- Stock Before Transaction (Batch) -->
                     <p:column headerText="Stock Before (Batch)" class="text-end">
                         <h:outputText value="#{sh.transThisIsStockIn ? sh.stockQty - sh.transAbsoluteQtyPlusFreeQty : sh.stockQty + sh.transAbsoluteQtyPlusFreeQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <!-- Stock After Transaction (Batch) -->
                     <p:column headerText="Stock After (Batch)" class="text-end">
-                         <h:outputText value="#{sh.stockQty}">
+                        <h:outputText value="#{sh.stockQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
 
                 </p:dataTable>
-
             </p:panel>
-
         </h:form>
-
     </ui:define>
 
 </ui:composition>
+
