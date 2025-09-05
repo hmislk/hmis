@@ -141,6 +141,24 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         return "/pharmacy/pharmacy_direct_purchase_return_form?faces-redirect=true";
     }
 
+    public String navigateToCreateDirectPurchaseReturnFromPurchase() {
+        if (selectedDirectPurchase == null) {
+            JsfUtil.addErrorMessage("No Direct Purchase selected");
+            return "";
+        }
+        
+        // Check for existing unapproved Direct Purchase returns
+        if (hasUnapprovedDirectPurchaseReturns()) {
+            JsfUtil.addErrorMessage("Cannot create new return. Please approve pending Direct Purchase returns first.");
+            return "";
+        }
+        
+        // Follow legacy pattern - create return bill from selected Direct Purchase
+        createReturnBillFromDirectPurchase(selectedDirectPurchase);
+        printPreview = false;  // Ensure no print preview when creating new return
+        return "/pharmacy/pharmacy_direct_purchase_return_form?faces-redirect=true";
+    }
+
     public String navigateToUpdateDirectPurchaseReturn() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Direct Purchase Return selected");
