@@ -16,7 +16,7 @@
                     <h:outputLabel value="Select GRN for Return"/>
                 </f:facet>
                 <div class="row">
-                    <div class="col-3">
+                    <div class="col-2">
                         <h:panelGrid columns="1" class="w-100" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
@@ -64,7 +64,7 @@
 
                         </h:panelGrid>
                     </div>
-                    <div class="col-9">
+                    <div class="col-10">
                         <p:dataTable 
                             value="#{searchController.bills}" 
                             var="p"
@@ -80,10 +80,12 @@
                             >
 
                             <p:column 
-                                headerText="No" 
-                                width="2em" 
-                                styleClass="text-center">
-                                <h:outputText value="#{n+1}" />
+                                headerText="Supplier" 
+                                width="12em" 
+                                sortBy="#{p.fromInstitution.name}" 
+                                filterBy="#{p.fromInstitution.name}" 
+                                filterMatchMode="contains">
+                                <h:outputText value="#{p.fromInstitution.name}" />
                             </p:column>
 
                             <p:column 
@@ -96,7 +98,7 @@
 
                             <p:column 
                                 headerText="PO No" 
-                                width="8em" 
+                                width="10em" 
                                 sortBy="#{p.referenceBill.deptId}" 
                                 filterBy="#{p.referenceBill.deptId}" 
                                 filterMatchMode="contains">
@@ -105,13 +107,47 @@
 
                             <p:column 
                                 headerText="GRN No" 
-                                width="8em" 
+                                width="10em" 
                                 sortBy="#{p.deptId}" 
                                 filterBy="#{p.deptId}" 
                                 filterMatchMode="contains">
                                 <h:outputText value="#{p.deptId}" />
                             </p:column>
+                            
+                              <p:column 
+                                headerText="Invoice No" 
+                                width="10em" 
+                                sortBy="#{p.invoiceNumber}" 
+                                filterBy="#{p.invoiceNumber}" 
+                                filterMatchMode="contains">
+                                  <h:outputText value="#{p.invoiceNumber}" />
+                            </p:column>
 
+
+                            <p:column 
+                                headerText="PO Details" 
+                                width="16em">
+                                <div class="d-flex flex-column">
+                                    <div class="mb-1">
+                                        <h:outputText styleClass="fw-bold text-primary" value="#{p.referenceBill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                        <br/>
+                                        <h:outputText styleClass="text-muted small" value="by #{p.referenceBill.creater.webUserPerson.name}" />
+                                    </div>
+                                    <h:panelGroup rendered="#{p.referenceBill.cancelled}">
+                                        <div class="mb-1">
+                                            <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
+                                            <h:outputText styleClass="text-danger" value="#{p.referenceBill.cancelledBill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                            <br/>
+                                            <h:outputText styleClass="text-danger small" value="by #{p.referenceBill.cancelledBill.creater.webUserPerson.name}" />
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column>
+                            
                             <p:column 
                                 headerText="GRN Details" 
                                 width="16em">
@@ -195,7 +231,7 @@
 
                             <p:column 
                                 headerText="Previous Returns" 
-                                width="32em">
+                                width="40em">
                                 <h:dataTable 
                                     value="#{p.listOfBill}" 
                                     var="b" 

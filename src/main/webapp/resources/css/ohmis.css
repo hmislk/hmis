@@ -790,3 +790,12 @@ th.align-right-header .ui-column-title {
     color: #3c763d !important; /* Dark green text */
     border-color: #d6e9c6 !important; /* Green border */
 }
+
+/* Align all table cell contents to top */
+.ui-datatable-data tr td,
+.ui-datatable-thead tr th,
+.ui-datatable-tfoot tr td,
+table td,
+table th {
+    vertical-align: top !important;
+}

@@ -56,6 +56,7 @@ import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
@@ -226,6 +227,9 @@ public class SearchController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
+
+    @Inject
+    private GrnReturnWorkflowController grnReturnWorkflowController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -427,6 +431,7 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToReturnReceivedGoods() {
+        grnReturnWorkflowController.setActiveIndex(2);
         searchKeyword = new SearchKeyword();
         bills = new ArrayList<>();
         return "/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true";
@@ -14938,6 +14943,7 @@ public class SearchController implements Serializable {
 //
 //    }
     public String navigateToCancelPurchaseOrder() {
+        grnReturnWorkflowController.setActiveIndex(2);
         makeNull();
         Calendar c1 = Calendar.getInstance();
         c1.set(Calendar.MONTH, c1.get(Calendar.MONTH) - 2);

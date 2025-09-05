@@ -108,6 +108,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private List<Bill> grnReturnsToApprove;
     private List<Bill> filteredGrnReturnsToFinalize;
     private List<Bill> filteredGrnReturnsToApprove;
+    
+    private Integer activeIndex;
 
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -115,6 +117,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Navigation methods
     public String navigateToCreateGrnReturn() {
+        activeIndex = 0;
         resetBillValues();
         makeListNull();
         if (searchController != null) {
@@ -153,6 +156,7 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String navigateToFinalizeGrnReturn() {
+        activeIndex = 0;
         makeListNull();
         grnReturnsToFinalize = null;
         filteredGrnReturnsToFinalize = null;
@@ -161,6 +165,7 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String navigateToApproveGrnReturn() {
+        activeIndex = 0;
         makeListNull();
         grnReturnsToApprove = null;
         filteredGrnReturnsToApprove = null;
@@ -2327,6 +2332,14 @@ public class GrnReturnWorkflowController implements Serializable {
         }
         
         return true;
+    }
+
+    public Integer getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(Integer activeIndex) {
+        this.activeIndex = activeIndex;
     }
    
 }

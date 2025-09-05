@@ -88,6 +88,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     @Inject
     private SearchController searchController;
 
+    @Inject
+    private GrnReturnWorkflowController grnReturnWorkflowController;
+
     // Main properties
     private Bill currentBill;
     private Bill requestedBill;  // For approval process
@@ -114,6 +117,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
     // Navigation methods
     public String navigateToCreateDirectPurchaseReturn() {
+        grnReturnWorkflowController.setActiveIndex(1);
         resetBillValues();
         makeListNull();
         if (searchController != null) {
@@ -170,6 +174,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     }
 
     public String navigateToFinalizeDirectPurchaseReturn() {
+        grnReturnWorkflowController.setActiveIndex(1);
         makeListNull();
         directPurchaseReturnsToFinalize = null;
         filteredDirectPurchaseReturnsToFinalize = null;
@@ -178,6 +183,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     }
 
     public String navigateToApproveDirectPurchaseReturn() {
+        grnReturnWorkflowController.setActiveIndex(1);
         makeListNull();
         directPurchaseReturnsToApprove = null;
         filteredDirectPurchaseReturnsToApprove = null;
