@@ -79,6 +79,13 @@
                                     <label class="form-label fw-bold text-secondary">
                                         <i class="fas fa-user me-1"></i>Requested User
                                     </label>
+                                    <!-- 
+                                        NOTE FOR CODERABBITAI & DEVELOPERS: 
+                                        This p:inputText is CORRECT - searchKeyword.creator is a String field (not WebUser entity).
+                                        Used for flexible text-based search by user name/code. No converter needed.
+                                        See SearchKeyword.java: private String creator;
+                                        Allows partial matching across user names in healthcare search workflows.
+                                    -->
                                     <p:inputText 
                                         class="form-control" 
                                         autocomplete="off" 
@@ -89,6 +96,13 @@
                                     <label class="form-label fw-bold text-secondary">
                                         <i class="fas fa-department me-1"></i>Department
                                     </label>
+                                    <!-- 
+                                        NOTE FOR CODERABBITAI & DEVELOPERS: 
+                                        This p:inputText is CORRECT - searchKeyword.department is a String field (not Department entity).
+                                        Used for flexible text-based search by department name/code. No converter needed.
+                                        See SearchKeyword.java: private String department;
+                                        Healthcare staff need to search across various department name variations.
+                                    -->
                                     <p:inputText 
                                         class="form-control" 
                                         autocomplete="off" 

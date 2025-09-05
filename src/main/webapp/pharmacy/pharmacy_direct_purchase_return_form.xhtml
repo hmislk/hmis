@@ -288,7 +288,8 @@
                                                 ajax="false"
                                                 icon="#{directPurchaseReturnWorkflowController.currentBill.id != null ? 'pi pi-refresh' : 'pi pi-save'}" 
                                                 class="ui-button-success mx-1"
-                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null}">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
+                                                            and webUserController.hasPrivilege('CreateDirectPurchaseReturn')}">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Finalize" 
@@ -296,7 +297,8 @@
                                                 ajax="false"
                                                 icon="pi pi-check" 
                                                 class="ui-button-warning mx-1"
-                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null}">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
+                                                            and webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Approve" 

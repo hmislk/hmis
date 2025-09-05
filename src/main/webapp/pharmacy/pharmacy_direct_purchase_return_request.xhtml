@@ -48,8 +48,20 @@
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                 </p:column>
                             </p:autoComplete>
-                            <h:outputLabel value="Distributor"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.fromInstitution}" />
+                              <h:outputLabel value="Distributor"/>
+                              <p:autoComplete 
+                                  id="distributor"
+                                  class="w-100"
+                                  inputStyleClass="w-100"
+                                  value="#{searchController.searchKeyword.distributor}"
+                                  completeMethod="#{searchController.completeDistributors}"
+                                  var="ins"
+                                  itemLabel="#{ins.name}"
+                                  itemValue="#{ins}"
+                                  dropdown="true"
+                                  forceSelection="true"
+                                  maxResults="50"
+                                  scrollHeight="600"/>
                             <h:outputLabel value="Po Value"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.total}"/>
                             <h:outputLabel value="Purchase Value"/>
