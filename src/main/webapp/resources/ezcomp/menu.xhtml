@@ -956,27 +956,24 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem
+                        <p:menuitem 
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
                             value="GRN"
                             title="Goods Receipt (GRN)"
                             icon="fas fa-dolly-flatbed"
-                            actionListener="#{searchController.makeListNull()}"
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"  
+                            action="#{searchController.navigateToGrnListToFinalize()}"  
                             value="GRN Finalize"  
                             icon="fas fa-clipboard-check"
-                            actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"  
+                            action="#{searchController.navigateToGrnListToApprove()}"  
                             value="GRN Approval"  
                             icon="fas fa-check-circle"
-                            actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" ></p:menuitem>
 
                         <p:menuitem  
