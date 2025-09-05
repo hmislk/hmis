@@ -635,17 +635,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         
     }
 
-    public double getBillExpensesTotal() {
-        if (getBill().getBillExpenses() == null || getBill().getBillExpenses().isEmpty()) {
-            return 0.0;
-        }
-        
-        double total = 0.0;
-        for (BillItem expense : getBill().getBillExpenses()) {
-            total += expense.getNetValue();
-        }
-        return total;
-    }
 
 // ChatGPT contributed - Calculates true profit margin (%) based on unit sale and cost rates
     // ChatGPT contributed - Calculates profit margin (%) correctly based on item type (Amp or Ampp)
