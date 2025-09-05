@@ -274,11 +274,11 @@ th.align-right-header .ui-column-title {
 }
 
 .custom-col-28 {
-    width: 38%;
+    width: 28%;
 }
 
 .custom-col-68 {
-    width: 58%;
+    width: 68%;
 }
 
 .custom-col-25 {
@@ -293,9 +293,7 @@ th.align-right-header .ui-column-title {
     width: 20%;
 }
 
-.custom-col-40 {
-    width: 58%;
-}
+
 
 .compact-panelgrid.ui-panelgrid,
 .compact-panelgrid.ui-panelgrid tr,
