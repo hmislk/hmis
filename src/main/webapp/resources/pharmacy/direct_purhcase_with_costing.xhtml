@@ -150,7 +150,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row style="padding: 4px; width: 8em;">
-                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Total"/>
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Gross Total"/>
                             <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.total}"  class="text-end">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">
@@ -161,6 +161,18 @@
                             <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}"  class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{cc.attrs.bill.saleValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+
+                        <!-- Expense Total considered for costing -->
+                        <p:row>
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Expense Total considered for costing"/>
+                            <p:column style="padding: 4px; width: 6em;" class="text-end">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{cc.attrs.bill.expensesTotalConsideredForCosting}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -179,7 +191,7 @@
 
                         </p:row>
 
-                        <p:row rendered="#{cc.attrs.bill.tax!=0}">
+                        <p:row>
                             <p:column  style="padding: 4px; width: 6em;" colspan="6" footerText="Tax"/>
                             <p:column style="padding: 4px; width: 6em;" footerText="#{cc.attrs.bill.tax}" class="text-end">
                                 <f:facet name="footer">
@@ -190,7 +202,7 @@
                             </p:column>
 
                         </p:row>
-                        <p:row rendered="#{cc.attrs.bill.discount!=0}">
+                        <p:row>
                             <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Discount"/>
                             <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.discount}" class="text-end">
                                 <f:facet name="footer">
@@ -201,11 +213,23 @@
                             </p:column>
 
                         </p:row>
-                        <p:row rendered="#{cc.attrs.bill.total!=cc.attrs.bill.netTotal}">
+                        <p:row>
                             <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Net Total"/>
                             <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.netTotal}" class="text-end">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+
+                        <!-- Expense Total Not considered for Costing -->
+                        <p:row>
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Expense Total Not considered for Costing"/>
+                            <p:column style="padding: 4px; width: 6em;" class="text-end">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{cc.attrs.bill.expensesTotalNotConsideredForCosting}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
