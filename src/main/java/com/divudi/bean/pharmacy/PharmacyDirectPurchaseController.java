@@ -1285,7 +1285,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // For purchase bills, legacy controller logic keeps totals negative.
         // Compute final net as line net + bill expense items, then set negative on Bill.
         BigDecimal finalNet = netTotalLines.add(BigDecimal.valueOf(billExpensesTotal));
-        getBill().setTotal(-grossTotalLines.doubleValue());
+        getBill().setTotal(-netTotalLines.doubleValue());
         getBill().setNetTotal(-finalNet.doubleValue());
         getBill().setSaleValue(totalRetail.doubleValue());
 
