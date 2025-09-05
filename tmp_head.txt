@@ -791,8 +791,11 @@ th.align-right-header .ui-column-title {
     border-color: #d6e9c6 !important; /* Green border */
 }
 
-/* Utility: opt-in top alignment for tables */
-.va-top td,
-.va-top th {
-    vertical-align: top;
+/* Align all table cell contents to top */
+.ui-datatable-data tr td,
+.ui-datatable-thead tr th,
+.ui-datatable-tfoot tr td,
+table td,
+table th {
+    vertical-align: top !important;
 }
