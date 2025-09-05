@@ -21,6 +21,7 @@
                             </div>
                             <div>
                                 <p:commandButton
+                                    id="btnSettle"
                                     value="Settle"
                                     action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
                                     styleClass="ui-button-success"
@@ -239,16 +240,8 @@
                                             icon="fas fa-plus"
                                             action="#{pharmacyDirectPurchaseController.addItem}"
                                             process="@this" 
-                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
-
+                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
                                     </div>
-
-
-
-
-
-
-
 
                                     <div class="col-1 text-end">
                                         <h:outputLabel 
@@ -674,9 +667,10 @@
                                     <!-- Legacy Summary -->
                                     <p:tab title="Bill Summary">
                                         <p:panelGrid columns="2" >
-                                            <p:outputLabel value="Gross Total" />
                                             <p:outputLabel 
-                                                id="gro" 
+                                                value="Gross Total" />
+                                            <p:outputLabel 
+                                                id="lblGrossTotal" 
                                                 value="#{pharmacyDirectPurchaseController.bill.total}" 
                                                 class="w-100 text-end ui-inputfield bg-secondary text-white"
                                                 />
@@ -689,12 +683,12 @@
                                                 value="#{pharmacyDirectPurchaseController.bill.tax}">
                                                 <p:ajax 
                                                     process="tx" 
-                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
                                                     event="keyup"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <p:ajax 
                                                     process="tx" 
-                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -708,12 +702,12 @@
                                                 value="#{pharmacyDirectPurchaseController.bill.discount}">
                                                 <p:ajax 
                                                     process="dis" 
-                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
                                                     event="keyup"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <p:ajax 
                                                     process="dis" 
-                                                    update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId}" 
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -722,7 +716,7 @@
                                             <p:outputLabel value="Net Total" />
 
                                             <h:outputLabel 
-                                                id="net"
+                                                id="lblNetTotal"
                                                 class="w-100 text-end ui-inputfield bg-secondary text-white"
                                                 value="#{pharmacyDirectPurchaseController.bill.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -844,7 +838,11 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
+                    <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
+                    
                 </p:panel>
+                
+                
             </h:panelGroup>
 
 

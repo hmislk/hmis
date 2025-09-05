@@ -53,7 +53,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
+import java.math.RoundingMode;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -148,212 +151,78 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBillFacade().create(getBill());
         }
 
-        // Custom financial calculations instead of using service (to avoid override issues)
-        // We'll calculate everything manually for proper AMP/AMPP handling
-        
+        // Setup basic quantity and rate fields for AMP/AMPP handling
         BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
-        
-        
-        // Calculate basic financial fields first
+
         if (item instanceof Ampp) {
-            // AMPP: User enters packs, but we need both pack and unit calculations
+            // AMPP: User enters packs, need to set units per pack and quantity by units
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack()).orElse(BigDecimal.ONE);
-            BigDecimal totalQtyUnits = BigDecimalUtil.multiply(qty, unitsPerPack);
-            BigDecimal totalFreeQtyUnits = BigDecimalUtil.multiply(freeQty, unitsPerPack);
-            
-            // Set quantity fields
-            f.setQuantityByUnits(totalQtyUnits);
-            f.setFreeQuantityByUnits(totalFreeQtyUnits);
-            f.setTotalQuantityByUnits(BigDecimalUtil.add(totalQtyUnits, totalFreeQtyUnits));
-            
-            // Set rates - lineGrossRate is per pack (user input), grossRate should be per unit
-            BigDecimal packRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
-            f.setGrossRate(packRate.divide(unitsPerPack, 4, BigDecimal.ROUND_HALF_UP));
-            
-            
-            // Calculate line totals using pack-based rates
-            f.setLineGrossTotal(BigDecimalUtil.multiply(qty, packRate));
-            
-            // Apply discount if any
-            BigDecimal discountRate = BigDecimalUtil.valueOrZero(f.getLineDiscountRate());
-            // For AMPP: discount is per pack, so multiply discountRate by quantity (packs)
-            BigDecimal lineDiscount = BigDecimalUtil.multiply(discountRate, qty);
-            f.setLineDiscount(lineDiscount);
-            f.setLineNetTotal(BigDecimalUtil.subtract(f.getLineGrossTotal(), lineDiscount));
-            f.setLineNetRate(f.getLineNetTotal().divide(qty, 4, BigDecimal.ROUND_HALF_UP));
-            
-            
-            // Set retail rates - convert to pack rate if needed
-            BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
-            f.setRetailSaleRate(BigDecimalUtil.multiply(retailRatePerUnit, unitsPerPack));
-            
-            // Calculate cost values
-            if (f.getLineCostRate() != null) {
-                BigDecimal packCostRate = BigDecimalUtil.multiply(f.getLineCostRate(), unitsPerPack);
-                f.setLineCost(BigDecimalUtil.multiply(qty, packCostRate));
-                f.setValueAtCostRate(f.getLineCost());
-                f.setTotalCostRate(packCostRate);  // Set per-pack cost rate for AMPP
-            } else {
-                // Set default cost rate to prevent NPE
-                f.setTotalCostRate(f.getGrossRate());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                unitsPerPack = BigDecimal.valueOf(item.getDblValue() > 0 ? item.getDblValue() : 1);
+                f.setUnitsPerPack(unitsPerPack);
             }
-            
-            // Calculate value fields
-            f.setValueAtPurchaseRate(f.getLineGrossTotal());
-            f.setValueAtRetailRate(BigDecimalUtil.multiply(qty, f.getRetailSaleRate()));
-            
+
+            f.setQuantityByUnits(BigDecimalUtil.multiply(qty, unitsPerPack));
+            f.setFreeQuantityByUnits(BigDecimalUtil.multiply(freeQty, unitsPerPack));
+            f.setTotalQuantityByUnits(BigDecimalUtil.add(f.getQuantityByUnits(), f.getFreeQuantityByUnits()));
+
+            // For AMPP, grossRate should be per unit, lineGrossRate is per pack
+            BigDecimal packRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+            f.setGrossRate(packRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP));
+
+            // Set retail rates
+            if (f.getRetailSaleRatePerUnit() != null) {
+                f.setRetailSaleRate(BigDecimalUtil.multiply(f.getRetailSaleRatePerUnit(), unitsPerPack));
+            }
         } else {
             // AMP: User enters units, everything is unit-based
+            f.setUnitsPerPack(BigDecimal.ONE);
             f.setQuantityByUnits(qty);
             f.setFreeQuantityByUnits(freeQty);
             f.setTotalQuantityByUnits(BigDecimalUtil.add(qty, freeQty));
-            
-            // Set rates - both lineGrossRate and grossRate should be per unit for AMP
+
+            // For AMP, both grossRate and lineGrossRate should be per unit
             f.setGrossRate(f.getLineGrossRate());
-            
-            
-            // Calculate line totals
-            f.setLineGrossTotal(BigDecimalUtil.multiply(qty, f.getLineGrossRate()));
-            
-            // Apply discount if any
-            BigDecimal discountRate = BigDecimalUtil.valueOrZero(f.getLineDiscountRate());
-            // For AMP: discount is per unit, so multiply discountRate by quantity (units)
-            BigDecimal lineDiscount = BigDecimalUtil.multiply(discountRate, qty);
-            f.setLineDiscount(lineDiscount);
-            f.setLineNetTotal(BigDecimalUtil.subtract(f.getLineGrossTotal(), lineDiscount));
-            f.setLineNetRate(f.getLineNetTotal().divide(qty, 4, BigDecimal.ROUND_HALF_UP));
-            
-            
-            // Retail rate is already per unit
             f.setRetailSaleRate(f.getRetailSaleRatePerUnit());
-            
-            // Calculate cost values
-            if (f.getLineCostRate() != null) {
-                f.setLineCost(BigDecimalUtil.multiply(qty, f.getLineCostRate()));
-                f.setValueAtCostRate(f.getLineCost());
-                f.setTotalCostRate(f.getLineCostRate());  // Set per-unit cost rate for AMP
-            } else {
-                // Set default cost rate to prevent NPE
-                f.setTotalCostRate(f.getGrossRate());
-            }
-            
-            // Calculate value fields
-            f.setValueAtPurchaseRate(f.getLineGrossTotal());
-            f.setValueAtRetailRate(BigDecimalUtil.multiply(qty, f.getRetailSaleRatePerUnit()));
         }
 
-        // Set PharmaceuticalBillItem values based on calculated finance details
+        // Set PharmaceuticalBillItem basic values - calculations will be done by calculateItemTotals()
+        pbi.setQty(f.getQuantityByUnits().doubleValue());
+        pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
+
         if (item instanceof Ampp) {
-            // AMPP: Quantities in units, rates as calculated
-            pbi.setQty(f.getQuantityByUnits().doubleValue());
             pbi.setQtyPacks(f.getQuantity().doubleValue());
-            pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
             pbi.setFreeQtyPacks(f.getFreeQuantity().doubleValue());
-
-            // Set rates - use per-unit rates for PharmaceuticalBillItem
-            pbi.setPurchaseRate(f.getGrossRate().doubleValue());  // per unit rate
-            pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());  // per pack rate
-            pbi.setRetailRate(f.getRetailSaleRatePerUnit().doubleValue());
-            pbi.setRetailRatePack(f.getRetailSaleRate().doubleValue());
-            pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
-
-            // Calculate values using unit quantities and unit rates
-            pbi.setPurchaseValue(f.getQuantityByUnits().doubleValue() * f.getGrossRate().doubleValue());
-            pbi.setRetailValue(f.getQuantityByUnits().doubleValue() * f.getRetailSaleRatePerUnit().doubleValue());
-
-        } else {
-            // AMP: Everything is unit-based
-            pbi.setQty(f.getQuantityByUnits().doubleValue());
-            pbi.setQtyPacks(f.getQuantityByUnits().doubleValue());
-            pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
-            pbi.setFreeQtyPacks(f.getFreeQuantityByUnits().doubleValue());
-
-            // Set rates - all per unit for AMP
-            pbi.setPurchaseRate(f.getLineGrossRate().doubleValue());
             pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());
-            pbi.setRetailRate(f.getRetailSaleRatePerUnit().doubleValue());
-            pbi.setRetailRatePack(f.getRetailSaleRatePerUnit().doubleValue());
-            pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
-
-            // Calculate values
-            pbi.setPurchaseValue(f.getQuantityByUnits().doubleValue() * f.getLineGrossRate().doubleValue());
-            pbi.setRetailValue(f.getQuantityByUnits().doubleValue() * f.getRetailSaleRatePerUnit().doubleValue());
+            pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
+        } else {
+            pbi.setQtyPacks(f.getQuantityByUnits().doubleValue());
+            pbi.setFreeQtyPacks(f.getFreeQuantityByUnits().doubleValue());
+            pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());
+            pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
         }
 
-        // Set BillItem rate and value fields
-        getCurrentBillItem().setRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
-        getCurrentBillItem().setNetRate(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
-        getCurrentBillItem().setNetValue(getCurrentBillItem().getNetRate() * getCurrentBillItem().getQty());
-        getCurrentBillItem().setGrossValue(BigDecimalUtil.valueOrZero(f.getLineGrossTotal()).doubleValue());
-        
+        // Set basic rates - will be recalculated by calculateItemTotals()
+        pbi.setPurchaseRate(f.getGrossRate().doubleValue());
+        pbi.setRetailRate(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+        pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+
+        // Set BillItem basic rate fields - calculations will be done by calculateItemTotals()
+        getCurrentBillItem().setRate(f.getLineGrossRate().doubleValue());
+        getCurrentBillItem().setQty(f.getQuantity().doubleValue());
+
+        // Calculate item totals using internal logic
+        calculateItemTotals(getCurrentBillItem());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
 
         currentBillItem = null;
-        // REMOVED: pharmacyCostingService.distributeProportionalBillValuesToItems() - was overriding our custom calculations
+        // Calculate bill totals using internal methods
         calculateBillTotalsFromItems();
-        
-        
-        // Apply proportional bill-level adjustments to grossRate for all items
-        distributeBillLevelAdjustmentsToGrossRates();
-        
+
 //        calulateTotalsWhenAddingItemsOldMethod();
-    }
-    
-    /**
-     * Distributes bill-level discount and tax proportionally to update grossRate for all bill items
-     * lineGrossRate remains unchanged (user input), but grossRate includes bill-level adjustments
-     */
-    private void distributeBillLevelAdjustmentsToGrossRates() {
-        if (getBillItems() == null || getBillItems().isEmpty()) {
-            return;
-        }
-        
-        // Get bill-level totals
-        BigDecimal billDiscount = BigDecimalUtil.valueOrZero(BigDecimal.valueOf(getBill().getDiscount()));
-        BigDecimal billTax = BigDecimalUtil.valueOrZero(BigDecimal.valueOf(getBill().getTax()));
-        
-        // Calculate total line gross value for all items (basis for proportion)
-        BigDecimal totalLineGrossValue = BigDecimal.ZERO;
-        for (BillItem item : getBillItems()) {
-            if (item.getBillItemFinanceDetails() != null) {
-                totalLineGrossValue = BigDecimalUtil.add(totalLineGrossValue, 
-                    BigDecimalUtil.valueOrZero(item.getBillItemFinanceDetails().getLineGrossTotal()));
-            }
-        }
-        
-        if (totalLineGrossValue.compareTo(BigDecimal.ZERO) == 0) {
-            return; // Avoid division by zero
-        }
-        
-        // Apply proportional adjustments to each item
-        for (BillItem item : getBillItems()) {
-            BillItemFinanceDetails f = item.getBillItemFinanceDetails();
-            if (f == null) continue;
-            
-            BigDecimal itemLineGrossTotal = BigDecimalUtil.valueOrZero(f.getLineGrossTotal());
-            BigDecimal itemQuantity = BigDecimalUtil.valueOrZero(f.getQuantity());
-            
-            if (itemQuantity.compareTo(BigDecimal.ZERO) == 0) continue;
-            
-            // Calculate proportional share of bill discount and tax
-            BigDecimal proportionOfBill = itemLineGrossTotal.divide(totalLineGrossValue, 6, BigDecimal.ROUND_HALF_UP);
-            BigDecimal itemBillDiscount = BigDecimalUtil.multiply(billDiscount, proportionOfBill);
-            BigDecimal itemBillTax = BigDecimalUtil.multiply(billTax, proportionOfBill);
-            
-            // Calculate per-unit adjustments
-            BigDecimal discountPerUnit = itemBillDiscount.divide(itemQuantity, 4, BigDecimal.ROUND_HALF_UP);
-            BigDecimal taxPerUnit = itemBillTax.divide(itemQuantity, 4, BigDecimal.ROUND_HALF_UP);
-            
-            // Update grossRate: lineGrossRate + tax per unit - discount per unit
-            BigDecimal adjustedGrossRate = f.getLineGrossRate();
-            adjustedGrossRate = BigDecimalUtil.add(adjustedGrossRate, taxPerUnit);
-            adjustedGrossRate = BigDecimalUtil.subtract(adjustedGrossRate, discountPerUnit);
-            
-            f.setGrossRate(adjustedGrossRate);
-        }
     }
 
 // ChatGPT contributed - Recalculates line-level financial values before adding BillItem to bill
@@ -362,8 +231,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
-        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        // Recalculate item totals when quantity changes
+        calculateItemTotals(bi);
     }
 
     public void onFreeQuantityChange() {
@@ -371,10 +240,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
-
-        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        // Recalculate item totals when free quantity changes
+        calculateItemTotals(bi);
     }
 
     public void onLineGrossRateChange() {
@@ -382,10 +249,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
-
-        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f); // Rate drives discount value
-
+        // Recalculate item totals when purchase rate changes
+        calculateItemTotals(bi);
     }
 
     public void onLineDiscountRateChange() {
@@ -393,9 +258,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
-
-        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        // Recalculate item totals when discount rate changes
+        calculateItemTotals(bi);
     }
 
     // ChatGPT contributed: Optimized for null-safety and readability
@@ -418,7 +282,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
         }
 
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        // Recalculate item totals when retail rate changes  
+        calculateItemTotals(currentBillItem);
     }
 
     // </editor-fold>  
@@ -439,8 +304,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
-    @EJB
-    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private AmpFacade ampFacade;
     @EJB
@@ -550,15 +413,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         PharmaceuticalBillItem pbi = current.getPharmaceuticalBillItem();
-        if (pbi != null) {
-            pbi.setPurchaseRate(pr);
-            pbi.setRetailRate(rr);
-        }
+        //pbi will never be null as it is initialized in the getter
+        pbi.setPurchaseRate(pr);
+        pbi.setRetailRate(rr);
 
         BillItemFinanceDetails f = current.getBillItemFinanceDetails();
-        if (f == null) {
-            return;
-        }
+        //f will never be null as it is created in the getter
 
         f.setLineGrossRate(BigDecimal.valueOf(pr));
 
@@ -574,7 +434,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setRetailSaleRatePerUnit(packRate);
         }
 
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        // Recalculate item totals after setting initial rates
+        calculateItemTotals(current);
     }
 
     public void onExpenseItemSelect(SelectEvent event) {
@@ -582,7 +443,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (current == null || current.getItem() == null) {
             return;
         }
-        
+
         // Set the consideredForCosting based on the selected expense item's default setting
         current.setConsideredForCosting(current.getItem().isConsideredForCosting());
     }
@@ -591,7 +452,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (expense == null) {
             return;
         }
-        
+
         // Use transactional EJB method to ensure atomicity
         billEjb.updateExpenseCosting(expense, getBill(), getBillItems(), pharmacyCostingService);
     }
@@ -606,7 +467,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         double billExpensesNotConsideredTotal = 0.0;
         double billExpensesTotal = 0.0;
 
-        
         // Calculate totals from bill-level expense BillItems (use Bill entity's list)
         if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
             for (BillItem expense : bill.getBillExpenses()) {
@@ -619,27 +479,51 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
         }
 
-
         // Update the bill's expense totals
         bill.setExpenseTotal(billExpensesTotal);
         bill.setExpensesTotalConsideredForCosting(billExpensesConsideredTotal);
         bill.setExpensesTotalNotConsideredForCosting(billExpensesNotConsideredTotal);
-        
-        
+
         // Also update BillFinanceDetails if it exists
         if (bill.getBillFinanceDetails() != null) {
             bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(billExpensesTotal));
             bill.getBillFinanceDetails().setBillExpensesConsideredForCosting(BigDecimal.valueOf(billExpensesConsideredTotal));
             bill.getBillFinanceDetails().setBillExpensesNotConsideredForCosting(BigDecimal.valueOf(billExpensesNotConsideredTotal));
         }
-        
-    }
 
+        // Recalculate bill totals and distribute adjustments to line items
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems();
+
+    }
 
 // ChatGPT contributed - Calculates true profit margin (%) based on unit sale and cost rates
     // ChatGPT contributed - Calculates profit margin (%) correctly based on item type (Amp or Ampp)
     public double calculateProfitMargin(BillItem bi) {
-        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        BigDecimal grossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal retailRate = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        
+        // Calculate per-unit purchase rate by dividing gross rate by quantity
+        BigDecimal purchaseRate;
+        if (bi.getQty() != null && bi.getQty() > 0) {
+            purchaseRate = grossRate.divide(BigDecimal.valueOf(bi.getQty()), 4, RoundingMode.HALF_UP);
+        } else {
+            purchaseRate = grossRate; // fallback to gross rate if quantity is invalid
+        }
+
+        if (purchaseRate.compareTo(BigDecimal.ZERO) == 0) {
+            return 0.0;
+        }
+
+        // Profit Margin = ((Retail Rate - Purchase Rate) / Purchase Rate) * 100
+        BigDecimal profit = retailRate.subtract(purchaseRate);
+        BigDecimal margin = profit.divide(purchaseRate, 4, RoundingMode.HALF_UP);
+        return margin.multiply(BigDecimal.valueOf(100)).doubleValue();
     }
 
     public boolean isProfitMarginExcessive(BillItem ph) {
@@ -767,23 +651,36 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void billDiscountChangedByUser() {
         ensureBillDiscountAndTaxSynchronization();
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        // Recalculate bill totals when bill discount changes
+        calculateBillTotalsFromItems();
+        // Distribute bill-level adjustments proportionally to line items
+        distributeProportionalBillValuesToItems();
     }
-    
+
+    public void billTaxChangedByUser() {
+        ensureBillDiscountAndTaxSynchronization();
+        // Recalculate bill totals when bill tax changes
+        calculateBillTotalsFromItems();
+        // Distribute bill-level adjustments proportionally to line items
+        distributeProportionalBillValuesToItems();
+    }
+
     /**
-     * Ensures that both bill.discount/tax and bill.billFinanceDetails.billDiscount/billTaxValue are synchronized
-     * The service method reads from billFinanceDetails, but UI may store in bill directly
+     * Ensures that both bill.discount/tax and
+     * bill.billFinanceDetails.billDiscount/billTaxValue are synchronized The
+     * service method reads from billFinanceDetails, but UI may store in bill
+     * directly
      */
     private void ensureBillDiscountAndTaxSynchronization() {
         if (getBill() == null) {
             return;
         }
-        
+
         // Ensure BillFinanceDetails exists
         if (getBill().getBillFinanceDetails() == null) {
             getBill().setBillFinanceDetails(new BillFinanceDetails(getBill()));
         }
-        
+
         // Synchronize discount and tax from bill to billFinanceDetails
         getBill().getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(getBill().getDiscount()));
         getBill().getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(getBill().getTax()));
@@ -812,24 +709,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
-        
+
         // IMPORTANT: Also add to the Bill entity's expense list
         getBill().getBillExpenses().add(currentExpense);
-        
+
         // Recalculate expense totals after adding new expense
         recalculateExpenseTotals();
-        
-        // Recalculate entire bill totals with updated expense categorization
-        calculateBillTotalsFromItems();
-        
-        // Distribute proportional bill values (including expenses considered for costing) to line items
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
-        
+
         // Persist the updated bill
         if (getBill().getId() != null) {
             getBillFacade().edit(getBill());
         }
-        
+
         currentExpense = null;
 
     }
@@ -852,8 +743,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         recalculateExpenseTotals();
-        calculateBillTotalsFromItems();
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
 
         if (getBill().getId() != null) {
             billFacade.edit(getBill());
@@ -922,10 +811,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
-            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
-
-
-            i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getBill());
@@ -936,13 +821,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 getBillItemFacade().edit(i);
             }
 
-            if (pbi.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(pbi);
-            } else {
-                getPharmaceuticalBillItemFacade().edit(pbi);
-            }
+            // CRITICAL: Calculate all item totals before final persistence
+            calculateItemTotals(i);
 
-            i.setPharmaceuticalBillItem(pbi);
+            // Save updated BillItem and PharmaceuticalBillItem with calculated values
             getBillItemFacade().edit(i);
 
             saveBillFee(i);
@@ -951,17 +833,28 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             double addingQty = BigDecimalUtil.valueOrZero(i.getBillItemFinanceDetails().getTotalQuantityByUnits()).doubleValue();
 
-            pbi.setItemBatch(itemBatch);
+            i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
 
             Stock stock = getPharmacyBean().addToStockForCosting(i, Math.abs(addingQty), getSessionController().getDepartment());
 
-            pbi.setLastPurchaseRate(lastPurchaseRate);
-            pbi.setStock(stock);
-
-            getPharmaceuticalBillItemFacade().edit(pbi);
+            i.getPharmaceuticalBillItem().setLastPurchaseRate(lastPurchaseRate);
+            i.getPharmaceuticalBillItem().setStock(stock);
 
             getBill().getBillItems().add(i);
         }
+
+        // CRITICAL: Calculate bill-level totals and update BillFinanceDetails after all items are processed
+        calculateBillTotalsFromItems();
+
+        // Distribute bill-level adjustments proportionally to items if needed
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+
+            for (BillItem item : getBillItems()) {
+                getBillItemFacade().edit(item);
+            }
+        }
+
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
@@ -977,7 +870,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             // Removed: getBill().setNetTotal(getBill().getNetTotal() + totalForExpenses);
         }
 
-        getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
+//        getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         getBillFacade().edit(getBill());
 
         JsfUtil.addSuccessMessage("Direct Purchase Successfully Completed.");
@@ -992,7 +885,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             it.setSearialNo(i++);
         }
 
-        pharmacyCostingService.distributeProportionalBillValuesToItems(billItems, bill);
         calculateBillTotalsFromItems();
         currentBillItem = null;
     }
@@ -1068,7 +960,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (getBill().getNetTotal() != 0.0) {
             return getBill().getNetTotal(); // Return the calculated value (negative for purchases)
         }
-        
+
         // Fallback calculation for cases where service hasn't calculated yet
         double tmp = getBill().getTotal() + getBill().getTax() - getBill().getDiscount();
         getBill().setNetTotal(0 - tmp);
@@ -1094,9 +986,491 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getBill().setSaleValue(saleValue);
     }
 
+    /**
+     * Calculates individual item totals (gross, discount, net)
+     *
+     * @param billItem the bill item to calculate
+     */
+    private void calculateItemTotals(BillItem billItem) {
+        if (billItem == null || billItem.getBillItemFinanceDetails() == null) {
+            return;
+        }
+
+        BillItemFinanceDetails f = billItem.getBillItemFinanceDetails();
+
+        // Safe null handling for all finance detail fields
+        BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+        BigDecimal purchaseRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+        BigDecimal discountRate = BigDecimalUtil.valueOrZero(f.getLineDiscountRate());
+
+        // Item Gross = Quantity × Purchase Rate
+        BigDecimal itemGross = BigDecimalUtil.multiply(qty, purchaseRate);
+        f.setLineGrossTotal(itemGross);
+
+        // Item Discount = Quantity × Discount Rate
+        BigDecimal itemDiscount = BigDecimalUtil.multiply(qty, discountRate);
+        f.setLineDiscount(itemDiscount);
+
+        // Item Net = Gross - Discount
+        BigDecimal itemNet = BigDecimalUtil.subtract(itemGross, itemDiscount);
+        f.setLineNetTotal(itemNet);
+
+        // Set line net rate (safe division)
+        if (qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
+            f.setLineNetRate(itemNet.divide(qty, 4, RoundingMode.HALF_UP));
+        } else {
+            f.setLineNetRate(BigDecimal.ZERO);
+        }
+
+        // Calculate cost value (line cost = net total for purchases)
+        f.setLineCost(itemNet);
+
+        // Ensure unit-based calculations are updated for UI display
+        BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
+        BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+
+        // Recalculate quantities by units based on current quantities and units per pack
+        BigDecimal qtyByUnits = BigDecimalUtil.multiply(qty, unitsPerPack);
+        BigDecimal freeQtyByUnits = BigDecimalUtil.multiply(freeQty, unitsPerPack);
+        BigDecimal totalQtyByUnits = BigDecimalUtil.add(qtyByUnits, freeQtyByUnits);
+
+        // Update all unit-based quantities
+        f.setQuantityByUnits(qtyByUnits);
+        f.setFreeQuantityByUnits(freeQtyByUnits);
+        f.setTotalQuantityByUnits(totalQtyByUnits);
+
+        // Calculate total cost rate per unit (needed for ItemBatch costing)
+        BigDecimal totalCostRate = totalQtyByUnits.compareTo(BigDecimal.ZERO) > 0
+                ? itemNet.divide(totalQtyByUnits, 6, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+        f.setTotalCostRate(totalCostRate);
+
+        // CRITICAL: Set missing BIFD fields identified by code reviewer
+        // 1. Set gross total (main field, not just lineGrossTotal)
+        f.setGrossTotal(itemGross);
+
+        // 2. Calculate and set gross rate (grossTotal divided by quantity)
+        if (qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
+            f.setGrossRate(itemGross.divide(qty, 4, RoundingMode.HALF_UP));
+        } else {
+            f.setGrossRate(BigDecimal.ZERO);
+        }
+
+        // 3. Calculate and set line cost rate per unit
+        if (totalQtyByUnits != null && totalQtyByUnits.compareTo(BigDecimal.ZERO) > 0) {
+            f.setLineCostRate(itemNet.divide(totalQtyByUnits, 4, RoundingMode.HALF_UP));
+        } else {
+            f.setLineCostRate(BigDecimal.ZERO);
+        }
+
+        // 4. Calculate value fields for all rate types using total quantity by units
+        BigDecimal totalUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
+        if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
+            // Value at retail rate
+            f.setValueAtRetailRate(BigDecimalUtil.multiply(totalUnits,
+                    BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())));
+
+            // Value at purchase rate (using gross rate)
+            f.setValueAtPurchaseRate(BigDecimalUtil.multiply(totalUnits,
+                    BigDecimalUtil.valueOrZero(f.getGrossRate())));
+
+            // Value at cost rate (using the calculated line cost rate)
+            f.setValueAtCostRate(BigDecimalUtil.multiply(totalUnits,
+                    BigDecimalUtil.valueOrZero(f.getLineCostRate())));
+
+            // Value at wholesale rate (if wholesale rate is set)
+            BigDecimal wholesaleRate = f.getWholesaleRatePerUnit();
+            if (wholesaleRate != null) {
+                f.setValueAtWholesaleRate(BigDecimalUtil.multiply(totalUnits, wholesaleRate));
+            }
+        } else {
+            // Set zero values if no quantity
+            f.setValueAtRetailRate(BigDecimal.ZERO);
+            f.setValueAtPurchaseRate(BigDecimal.ZERO);
+            f.setValueAtCostRate(BigDecimal.ZERO);
+            f.setValueAtWholesaleRate(BigDecimal.ZERO);
+        }
+
+        // Update BillItem values with safe null handling
+        billItem.setGrossValue(itemGross != null ? itemGross.doubleValue() : 0.0);
+        billItem.setNetValue(itemNet != null ? itemNet.doubleValue() : 0.0);
+        billItem.setRate(purchaseRate != null ? purchaseRate.doubleValue() : 0.0);
+        billItem.setNetRate(f.getLineNetRate() != null ? f.getLineNetRate().doubleValue() : 0.0);
+
+        // Update PharmaceuticalBillItem with calculated values in units
+        PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
+        // pbi will never be null as it is created in the getter
+        BigDecimal grossRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+
+        // Update quantities in units (important for stock calculations)
+        pbi.setQty(qtyByUnits.doubleValue()); // Paid quantity in units
+        pbi.setFreeQty(freeQtyByUnits.doubleValue()); // Free quantity in units
+
+        // Update rates per unit
+        pbi.setPurchaseRate(grossRatePerUnit.doubleValue()); // Purchase rate per unit
+        pbi.setRetailRate(retailRatePerUnit.doubleValue()); // Retail rate per unit
+
+        // Calculate values (quantity × rate)
+        BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, grossRatePerUnit);
+        BigDecimal pbiRetailValue = BigDecimalUtil.multiply(qtyByUnits, retailRatePerUnit);
+
+        pbi.setPurchaseValue(pbiPurchaseValue.doubleValue());
+        pbi.setRetailValue(pbiRetailValue.doubleValue());
+
+    }
+
+    /**
+     * Calculates sale value for an item: (Paid Qty + Free Qty) × Retail Rate
+     *
+     * @param billItem the bill item to calculate
+     * @return the calculated sale value
+     */
+    private BigDecimal calculateSaleValue(BillItem billItem) {
+        if (billItem == null || billItem.getBillItemFinanceDetails() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BillItemFinanceDetails f = billItem.getBillItemFinanceDetails();
+
+        // Use total quantity by units (includes both paid and free quantities in unit form)
+        BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
+        BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+
+        // Sale Value = Total Qty (in units) × Retail Rate Per Unit
+        return BigDecimalUtil.multiply(totalQtyByUnits, retailRatePerUnit);
+    }
+
+    /**
+     * Calculates bill-level totals from all items for Direct Purchase workflow.
+     * Populates BillFinanceDetails (purchase/retail/cost/gross/net, quantities, discounts, taxes, expenses).
+     */
     public void calculateBillTotalsFromItems() {
-        pharmacyCostingService.calculateBillTotalsFromItemsForPurchases(getBill(), getBillItems());
-        
+        if (getBill() == null || getBillItems() == null || getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Initialize aggregates
+        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
+        BigDecimal totalLineExpenses = BigDecimal.ZERO;
+        BigDecimal totalLineCosts = BigDecimal.ZERO;
+        BigDecimal totalTaxLines = BigDecimal.ZERO;
+
+        BigDecimal totalFreeItemValue = BigDecimal.ZERO;
+        BigDecimal totalPurchase = BigDecimal.ZERO;
+        BigDecimal totalRetail = BigDecimal.ZERO;
+        BigDecimal totalWholesale = BigDecimal.ZERO;
+
+        BigDecimal totalQty = BigDecimal.ZERO;
+        BigDecimal totalFreeQty = BigDecimal.ZERO;
+        BigDecimal totalQtyAtomic = BigDecimal.ZERO;
+        BigDecimal totalFreeQtyAtomic = BigDecimal.ZERO;
+
+        // Free/Non-free breakdowns
+        BigDecimal purchaseValueFree = BigDecimal.ZERO;
+        BigDecimal purchaseValueNonFree = BigDecimal.ZERO;
+        BigDecimal costValueFree = BigDecimal.ZERO;
+        BigDecimal costValueNonFree = BigDecimal.ZERO;
+        BigDecimal retailValueFree = BigDecimal.ZERO;
+        BigDecimal retailValueNonFree = BigDecimal.ZERO;
+        BigDecimal wholesaleValueFree = BigDecimal.ZERO;
+        BigDecimal wholesaleValueNonFree = BigDecimal.ZERO;
+
+        BigDecimal grossTotalLines = BigDecimal.ZERO;      // Sum of line gross totals
+        BigDecimal netTotalLines = BigDecimal.ZERO;        // Sum of line net totals
+
+        // Walk through items and aggregate
+        for (BillItem bi : getBillItems()) {
+            BillItemFinanceDetails f = (bi != null) ? bi.getBillItemFinanceDetails() : null;
+            if (f == null) {
+                continue;
+            }
+
+            BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+            BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
+            BigDecimal totalQtyPacks = qty.add(freeQty);
+
+            // Fallbacks for missing computed fields
+            BigDecimal lineGrossRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+            if (f.getLineGrossTotal() == null) {
+                f.setLineGrossTotal(lineGrossRate.multiply(qty));
+            }
+            if (f.getGrossTotal() == null || f.getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setGrossTotal(lineGrossRate.multiply(qty));
+            }
+            if (f.getLineNetTotal() == null) {
+                BigDecimal lineDiscount = BigDecimalUtil.valueOrZero(f.getLineDiscount());
+                f.setLineNetTotal(BigDecimalUtil.subtract(f.getLineGrossTotal(), lineDiscount));
+            }
+            if (f.getNetTotal() == null) {
+                f.setNetTotal(f.getLineNetTotal());
+            }
+
+            // Use unit-quantities for value-at-rate fields when available
+            BigDecimal qtyUnits = BigDecimalUtil.valueOrZero(f.getQuantityByUnits());
+            BigDecimal freeUnits = BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits());
+            BigDecimal totalUnits = BigDecimalUtil.add(qtyUnits, freeUnits);
+            BigDecimal retailPerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+            BigDecimal grossPerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            BigDecimal costPerUnit = BigDecimalUtil.valueOrZero(f.getLineCostRate());
+            if (BigDecimalUtil.isNullOrZero(costPerUnit) && totalUnits.compareTo(BigDecimal.ZERO) > 0 && f.getValueAtCostRate() != null) {
+                // Derive if not set
+                costPerUnit = f.getValueAtCostRate().divide(totalUnits, 4, RoundingMode.HALF_UP);
+                f.setLineCostRate(costPerUnit);
+            }
+
+            // Compute value-at-rate fields if missing
+            if (f.getValueAtRetailRate() == null) {
+                f.setValueAtRetailRate(totalUnits.multiply(retailPerUnit));
+            }
+            if (f.getValueAtPurchaseRate() == null) {
+                f.setValueAtPurchaseRate(totalUnits.multiply(grossPerUnit));
+            }
+            if (f.getValueAtCostRate() == null) {
+                f.setValueAtCostRate(totalUnits.multiply(costPerUnit));
+            }
+
+            // Compute free/non-free breakdowns per item
+            purchaseValueNonFree = purchaseValueNonFree.add(grossPerUnit.multiply(qtyUnits));
+            purchaseValueFree = purchaseValueFree.add(grossPerUnit.multiply(freeUnits));
+            costValueNonFree = costValueNonFree.add(costPerUnit.multiply(qtyUnits));
+            costValueFree = costValueFree.add(costPerUnit.multiply(freeUnits));
+            retailValueNonFree = retailValueNonFree.add(retailPerUnit.multiply(qtyUnits));
+            retailValueFree = retailValueFree.add(retailPerUnit.multiply(freeUnits));
+            BigDecimal wholesalePerUnit = BigDecimalUtil.valueOrZero(f.getWholesaleRatePerUnit());
+            wholesaleValueNonFree = wholesaleValueNonFree.add(wholesalePerUnit.multiply(qtyUnits));
+            wholesaleValueFree = wholesaleValueFree.add(wholesalePerUnit.multiply(freeUnits));
+
+            // Aggregate line-level components
+            totalLineDiscounts = totalLineDiscounts.add(BigDecimalUtil.valueOrZero(f.getLineDiscount()));
+            totalLineExpenses = totalLineExpenses.add(BigDecimalUtil.valueOrZero(f.getLineExpense()));
+            totalTaxLines = totalTaxLines.add(BigDecimalUtil.valueOrZero(f.getLineTax()));
+            totalLineCosts = totalLineCosts.add(BigDecimalUtil.valueOrZero(f.getLineCost()));
+
+            BigDecimal freeItemValue = costPerUnit.multiply(freeUnits);
+            totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
+
+            // Totals at different rates
+            totalPurchase = totalPurchase.add(BigDecimalUtil.valueOrZero(f.getValueAtPurchaseRate()));
+            totalRetail = totalRetail.add(BigDecimalUtil.valueOrZero(f.getValueAtRetailRate()));
+            totalWholesale = totalWholesale.add(BigDecimalUtil.valueOrZero(f.getValueAtWholesaleRate()));
+
+            // Quantities
+            totalQty = totalQty.add(qty);
+            totalFreeQty = totalFreeQty.add(freeQty);
+            totalQtyAtomic = totalQtyAtomic.add(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()));
+            totalFreeQtyAtomic = totalFreeQtyAtomic.add(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()));
+
+            // Line totals
+            grossTotalLines = grossTotalLines.add(BigDecimalUtil.valueOrZero(f.getLineGrossTotal()));
+            netTotalLines = netTotalLines.add(BigDecimalUtil.valueOrZero(f.getLineNetTotal()));
+        }
+
+        // Sum current bill-level expenses (from expense bill items)
+        double billExpensesTotal = 0.0;
+        if (getBill().getBillExpenses() != null) {
+            for (BillItem expense : getBill().getBillExpenses()) {
+                if (expense != null && !expense.isRetired()) {
+                    billExpensesTotal += expense.getNetValue();
+                }
+            }
+        }
+
+        // Bill-level values directly entered by user
+        BigDecimal billDiscount = BigDecimal.valueOf(getBill().getDiscount());
+        BigDecimal billTax = BigDecimal.valueOf(getBill().getTax());
+        BigDecimal billExpenseConsidered = BigDecimal.valueOf(getBill().getExpensesTotalConsideredForCosting());
+        BigDecimal billCost = billDiscount.subtract(billExpenseConsidered.add(billTax));
+
+        // For purchase bills, legacy controller logic keeps totals negative.
+        // Compute final net as line net + bill expense items, then set negative on Bill.
+        BigDecimal finalNet = netTotalLines.add(BigDecimal.valueOf(billExpensesTotal));
+        getBill().setTotal(-grossTotalLines.doubleValue());
+        getBill().setNetTotal(-finalNet.doubleValue());
+        getBill().setSaleValue(totalRetail.doubleValue());
+
+        // Ensure and populate BillFinanceDetails
+        BillFinanceDetails bfd = getBill().getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(getBill());
+            getBill().setBillFinanceDetails(bfd);
+        }
+
+        bfd.setBillDiscount(billDiscount);
+        bfd.setBillExpense(billExpenseConsidered);
+        bfd.setBillTaxValue(billTax);
+        bfd.setBillCostValue(billCost);
+
+        bfd.setLineDiscount(totalLineDiscounts);
+        bfd.setLineExpense(totalLineExpenses);
+        bfd.setItemTaxValue(totalTaxLines);
+        bfd.setLineCostValue(totalLineCosts);
+
+        // Totals (line totals + bill-level where applicable)
+        bfd.setTotalDiscount(totalLineDiscounts.add(billDiscount));
+        bfd.setTotalExpense(totalLineExpenses.add(billExpenseConsidered));
+        // Total Tax should include both line-level tax and bill-level tax
+        bfd.setTotalTaxValue(totalTaxLines.add(billTax));
+        bfd.setTotalCostValue(totalLineCosts);
+
+        // Values at purchase/retail/cost
+        bfd.setTotalOfFreeItemValues(totalFreeItemValue);
+        bfd.setTotalPurchaseValue(totalPurchase);
+        bfd.setTotalRetailSaleValue(totalRetail);
+        bfd.setTotalWholesaleValue(totalWholesale);
+        // Set free/non-free breakdowns used by UI panels
+        bfd.setTotalPurchaseValueFree(purchaseValueFree);
+        bfd.setTotalPurchaseValueNonFree(purchaseValueNonFree);
+        bfd.setTotalCostValueFree(costValueFree);
+        bfd.setTotalCostValueNonFree(costValueNonFree);
+        bfd.setTotalRetailSaleValueFree(retailValueFree);
+        bfd.setTotalRetailSaleValueNonFree(retailValueNonFree);
+        bfd.setTotalWholesaleValueFree(wholesaleValueFree);
+        bfd.setTotalWholesaleValueNonFree(wholesaleValueNonFree);
+
+        // Quantities
+        bfd.setTotalQuantity(totalQty);
+        bfd.setTotalFreeQuantity(totalFreeQty);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
+
+        // Gross/Net totals snapshot (positive numbers inside BFD)
+        bfd.setGrossTotal(grossTotalLines);
+        bfd.setLineGrossTotal(grossTotalLines);
+        bfd.setNetTotal(finalNet);
+        bfd.setLineNetTotal(netTotalLines);
+    }
+
+    /**
+     * Distributes bill-level adjustments (tax, discount, expenses)
+     * proportionally to line items based on their lineNetTotal values. This
+     * ensures that bill-level changes are allocated to individual bill items
+     * without affecting the line-level calculations.
+     *
+     * Copied and modified from PharmacyCostingService to avoid external
+     * dependencies.
+     */
+    private void distributeProportionalBillValuesToItems() {
+        BilledBill bill = getBill();
+        List<BillItem> billItems = getBillItems();
+
+        if (bill == null || billItems == null || billItems.isEmpty()) {
+            return;
+        }
+
+        if (bill.getBillFinanceDetails() == null) {
+            bill.setBillFinanceDetails(new BillFinanceDetails(bill));
+        }
+
+        // Get bill-level adjustments
+        BigDecimal billDiscount = BigDecimal.valueOf(bill.getDiscount());
+        BigDecimal billTax = BigDecimal.valueOf(bill.getTax());
+        BigDecimal billExpensesConsidered = BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting());
+
+        // Calculate total basis for proportional distribution (sum of all line net totals)
+        BigDecimal totalBasis = BigDecimal.ZERO;
+        Map<BillItem, BigDecimal> itemBases = new HashMap<>();
+
+        for (BillItem bi : billItems) {
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+            if (f == null) {
+                continue;
+            }
+
+            BigDecimal lineNetTotal = BigDecimalUtil.valueOrZero(f.getLineNetTotal());
+            itemBases.put(bi, lineNetTotal);
+            totalBasis = totalBasis.add(lineNetTotal);
+        }
+
+        if (BigDecimalUtil.isNullOrZero(totalBasis)) {
+            return;
+        }
+
+        // Distribute bill-level values proportionally to each item
+        for (BillItem bi : billItems) {
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+            if (f == null) {
+                continue;
+            }
+
+            BigDecimal basis = itemBases.get(bi);
+            BigDecimal ratio = basis.divide(totalBasis, 12, RoundingMode.HALF_UP);
+
+            // Calculate distributed amounts
+            BigDecimal distributedDiscount = billDiscount.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal distributedTax = billTax.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal distributedExpense = billExpensesConsidered.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+
+            // Set bill-level distribution values (these are additional to line values)
+            f.setBillDiscount(distributedDiscount);
+            f.setBillTax(distributedTax);
+            f.setBillExpense(distributedExpense);
+
+            // Calculate totals including both line and bill-level values
+            BigDecimal lineDiscount = BigDecimalUtil.valueOrZero(f.getLineDiscount());
+            BigDecimal lineTax = BigDecimalUtil.valueOrZero(f.getLineTax());
+            BigDecimal lineExpense = BigDecimalUtil.valueOrZero(f.getLineExpense());
+
+            BigDecimal totalDiscount = lineDiscount.add(distributedDiscount);
+            BigDecimal totalTax = lineTax.add(distributedTax);
+            BigDecimal totalExpense = lineExpense.add(distributedExpense);
+
+            f.setTotalDiscount(totalDiscount);
+            f.setTotalTax(totalTax);
+            f.setTotalExpense(totalExpense);
+
+            // Calculate final net total for the item
+            // Net Total = Line Gross - Total Discount + Total Tax + Total Expense
+            BigDecimal lineGrossTotal = BigDecimalUtil.valueOrZero(f.getLineGrossTotal());
+            BigDecimal finalNetTotal = lineGrossTotal.subtract(totalDiscount).add(totalTax).add(totalExpense);
+
+            f.setNetTotal(finalNetTotal);
+            f.setTotalCost(finalNetTotal);
+
+            // Calculate bill cost (the additional cost from bill-level adjustments)
+            BigDecimal lineNetTotal = BigDecimalUtil.valueOrZero(f.getLineNetTotal());
+            BigDecimal billCost = finalNetTotal.subtract(lineNetTotal);
+            f.setBillCost(billCost);
+        }
+    }
+
+    /**
+     * Calculate profit margin for purchases based on PharmacyCostingService
+     */
+    public BigDecimal calculateProfitMarginForPurchasesBigDecimal(BillItem bi) {
+        if (bi == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal purchaseRate = f.getLineNetRate();
+        BigDecimal retailRate = f.getRetailSaleRate();
+        BigDecimal qty = f.getQuantity();
+        BigDecimal freeQty = f.getFreeQuantity();
+
+        if (purchaseRate == null || retailRate == null || qty == null || freeQty == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal purchaseValue = purchaseRate.multiply(qty);
+        BigDecimal retailValue = retailRate.multiply(totalQty);
+
+        if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return retailValue.subtract(purchaseValue)
+                .divide(purchaseValue, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+    }
+
+    public double calculateProfitMarginForPurchases(BillItem bi) {
+        return calculateProfitMarginForPurchasesBigDecimal(bi).doubleValue();
     }
 
     public BilledBill getBill() {
@@ -1153,14 +1527,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
-    }
-
-    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
-        return pharmaceuticalBillItemFacade;
-    }
-
-    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
-        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
     public AmpFacade getAmpFacade() {
