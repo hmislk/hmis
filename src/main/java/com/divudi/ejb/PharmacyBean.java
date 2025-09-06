@@ -1077,6 +1077,18 @@ public class PharmacyBean {
         if (stock.getStock() < qty) {
             return false;
         }
+
+        // Resolve AMP if item is an AMPP - CRITICAL FIX for pharmaceutical inventory accuracy
+        if (pbi != null && pbi.getBillItem() != null && pbi.getBillItem().getItem() != null) {
+            Item originalItem = pbi.getBillItem().getItem();
+            if (originalItem instanceof Ampp) {
+                Item amp = ((Ampp) originalItem).getAmp();
+                if (amp != null) {
+                    pbi.getBillItem().setItem(amp);
+                }
+            }
+        }
+
         stock = getStockFacade().findWithoutCache(stock.getId());
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
