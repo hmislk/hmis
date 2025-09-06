@@ -1151,7 +1151,16 @@ public class GrnCostingController implements Serializable {
                     double unitsPerPack = pbiInApprovedOrder.getBillItem().getItem().getDblValue();
                     unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
                     lineGrossRateForBillItem = pr * unitsPerPack; // Convert unit rate to pack rate
-                    retailRateForBillItem = rr * unitsPerPack;
+                    
+                    // For retail rate, check if we have a pack rate, otherwise calculate from unit rate
+                    double retailRatePack = pbiInApprovedOrder.getRetailRatePack();
+                    if (retailRatePack > 0) {
+                        // Use the pack rate directly
+                        retailRateForBillItem = retailRatePack;
+                    } else {
+                        // Calculate pack rate from unit rate (rr is already unit rate from PO)
+                        retailRateForBillItem = rr * unitsPerPack;
+                    }
                 }
 
                 newlyCreatedBillItemForGrn.setPharmaceuticalBillItem(newlyCreatedPbiForGrn);
