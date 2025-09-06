@@ -25,6 +25,13 @@
                                         icon="fa fa-arrow-left"
                                         action="pharmacy_search_pre_bill?faces-redirect=true" />
                                     <p:commandButton 
+                                        ajax="false"
+                                        value="Search Bills" 
+                                        title="Search Sale Pre Bills"
+                                        class="ui-button-secondary m-1"
+                                        icon="fa fa-search"
+                                        action="#{pharmacyBillSearch.navigateToSearchSalePreBill()}" />
+                                    <p:commandButton 
                                         accesskey="n" 
                                         value="New Bill"  
                                         ajax="false" 
@@ -91,7 +98,7 @@
                                         icon="fa fa-cancel"
                                         class="ui-button-danger m-1"
                                         action="pharmacy_cancel_bill_retail?faces-redirect=true" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
                                         rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
                                     </p:commandButton>
                                 </div>
