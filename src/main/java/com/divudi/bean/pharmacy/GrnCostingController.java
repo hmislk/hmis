@@ -3112,18 +3112,9 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        // Add expenses that are NOT considered for costing (these were not distributed to line items)
-        if (bill.getBillExpenses() != null) {
-            for (BillItem expense : bill.getBillExpenses()) {
-                if (!expense.isRetired() && !expense.isConsideredForCosting()) {
-                    BigDecimal expenseNetValue = Optional.ofNullable(BigDecimal.valueOf(expense.getNetValue())).orElse(BigDecimal.ZERO);
-                    totalNetTotal = totalNetTotal.add(expenseNetValue);
-                }
-            }
-        }
-
         // Note: Expenses "considered for costing" are already included in line item netTotals
-        // from the distribution process, so they don't need to be added again here
+        // from the distribution process, so they don't need to be added again here.
+        // Expenses "NOT considered for costing" should NOT be included in net total.
         bill.setNetTotal(totalNetTotal.doubleValue());
         bill.setTotal(totalLineNetTotal.doubleValue()); // Total should be sum of line net totals for "Gross Total" display
     }
@@ -3276,8 +3267,8 @@ public class GrnCostingController implements Serializable {
         // Set legacy totals on Bill
         System.out.println("DEBUG: SERVICE - netTotal from line items: " + netTotal);
 
-        // Calculate current bill expenses total from bill expense items
-        double currentBillExpensesTotal = 0.0;
+        // Calculate bill expenses total ONLY for expenses considered for costing
+        double currentBillExpensesConsideredForCosting = 0.0;
         System.out.println("DEBUG: SERVICE - Bill expenses count: " + (bill.getBillExpenses() != null ? bill.getBillExpenses().size() : 0));
         if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
             for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
@@ -3285,14 +3276,20 @@ public class GrnCostingController implements Serializable {
                 if (expense.isRetired()) {
                     continue;
                 }
-                System.out.println("DEBUG: SERVICE - Adding expense: " + expense.getItem().getName() + ", value: " + expense.getNetValue());
-                currentBillExpensesTotal += expense.getNetValue();
+                // Only include expenses that are considered for costing in net total
+                if (expense.isConsideredForCosting()) {
+                    System.out.println("DEBUG: SERVICE - Adding expense (considered for costing): " + expense.getItem().getName() + ", value: " + expense.getNetValue());
+                    currentBillExpensesConsideredForCosting += expense.getNetValue();
+                } else {
+                    System.out.println("DEBUG: SERVICE - Skipping expense (NOT considered for costing): " + expense.getItem().getName() + ", value: " + expense.getNetValue());
+                }
             }
         }
-        System.out.println("DEBUG: SERVICE - currentBillExpensesTotal: " + currentBillExpensesTotal);
+        System.out.println("DEBUG: SERVICE - currentBillExpensesConsideredForCosting: " + currentBillExpensesConsideredForCosting);
 
         // Use line-level aggregation only (no bill-level distribution)
-        BigDecimal finalNetTotal = lineNetTotal.add(BigDecimal.valueOf(currentBillExpensesTotal));
+        // Net total should only include expenses considered for costing
+        BigDecimal finalNetTotal = lineNetTotal.add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting));
         System.out.println("DEBUG: SERVICE - finalNetTotal (lineNetTotal + expenses): " + finalNetTotal);
 
         bill.setTotal(lineNetTotal.doubleValue());
