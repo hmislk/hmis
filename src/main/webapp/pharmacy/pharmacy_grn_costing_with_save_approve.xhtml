@@ -557,109 +557,110 @@
 
                             </p:panelGrid>
 
-                            
+                            <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fas fa-receipt"/>
+                                    <h:outputText  class="mx-4" value="Bill Details" />
+                                </f:facet>
+                                <p:tabView id="tot">
+                                    <!-- Legacy Summary -->
+                                    <p:tab title="Bill Summary">
+                                        <p:panelGrid 
+                                            columns="2"
+                                            class="w-100"
+                                            layout="tabular">
 
-                            <p:panelGrid 
-                                id="panelBillDetails"
-                                columns="2"
-                                class="w-100"
-                                layout="tabular">
+                                            <p:outputLabel value="Gross Total" title="Sum of Line Net Totals is considered as Gross Total"/>
+                                            <p:outputLabel 
+                                                id="gro" 
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                value="#{grnCostingController.currentGrnBillPre.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
 
-                                <p:outputLabel value="Sum of Line Net Totals"/>
-                                <p:outputLabel 
-                                    id="gro" 
-                                    class="text-end w-100"
-                                    value="#{grnCostingController.currentGrnBillPre.total}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
-                                <p:outputLabel value="Bill Discount"/>
-                                <p:inputText
-                                    autocomplete="off"
-                                    id="txtBillDiscount"
-                                    class="text-end w-100"
-                                    onfocus="this.select()"
-                                    value="#{grnCostingController.currentGrnBillPre.discount}" >
-                                    <p:ajax
-                                        process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
-                                        event="keyup"
-                                        listener="#{grnCostingController.discountChangedLitener()}"/>
-                                    <p:ajax
-                                        process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
-                                        event="blur"
-                                        listener="#{grnCostingController.discountChangedLitener()}"/>
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:inputText>
+                                            <p:outputLabel value="Bill Tax"/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtBillTax"
+                                                class="text-end w-100"
+                                                onfocus="this.select()"
+                                                value="#{grnCostingController.currentGrnBillPre.tax}" >
+                                                <p:ajax
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    event="keyup"
+                                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
 
-                                <p:outputLabel value="Bill Tax"/>
-                                <p:inputText
-                                    autocomplete="off"
-                                    id="txtBillTax"
-                                    class="text-end w-100"
-                                    onfocus="this.select()"
-                                    value="#{grnCostingController.currentGrnBillPre.tax}" >
-                                    <p:ajax
-                                        process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
-                                        event="keyup"
-                                        listener="#{grnCostingController.discountChangedLitener()}"/>
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:inputText>
+                                            <p:outputLabel value="Bill Discount"/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtBillDiscount"
+                                                class="text-end w-100"
+                                                onfocus="this.select()"
+                                                value="#{grnCostingController.currentGrnBillPre.discount}" >
+                                                <p:ajax
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    event="keyup"
+                                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                                <p:ajax
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    event="blur"
+                                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
 
-                                <p:outputLabel value="Sum of Line Discounts"/>
-                                <p:outputLabel
-                                    id="txtLineDiscountTotal"
-                                    class="text-end w-100"
-                                    value="#{grnCostingController.currentGrnBillPre.billFinanceDetails.lineDiscount}" >
-                                </p:outputLabel>
+                                            <p:outputLabel value="Bill Expenses (Considered for Costing)" />
+                                            <h:outputLabel 
+                                                id="expensesConsidered"
+                                                class="w-100 text-end ui-inputfield bg-info text-white"
+                                                value="#{grnCostingController.currentGrnBillPre.expensesTotalConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
 
-                                <p:outputLabel value="Bill Expenses"/>
-                                <p:outputLabel
-                                    id="txtBillExpenses"
-                                    class="text-end w-100"
-                                    value="#{grnCostingController.grnBill.expenseTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                            <p:outputLabel value="Net Total"/>
+                                            <p:outputLabel
+                                                id="txtBillNetTotal"
+                                                value="#{grnCostingController.currentGrnBillPre.netTotal}"
+                                                class="w-100 text-end ui-inputfield bg-success text-dark">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
 
-                                <p:outputLabel value="Bill Expenses (Considered for Costing)"/>
-                                <p:outputLabel
-                                    id="expensesConsidered"
-                                    class="text-end w-100"
-                                    value="#{grnCostingController.currentGrnBillPre.expensesTotalConsideredForCosting}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                            <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
+                                            <h:outputLabel 
+                                                id="expensesNotConsidered"
+                                                class="w-100 text-end ui-inputfield bg-warning text-dark"
+                                                value="#{grnCostingController.currentGrnBillPre.expensesTotalNotConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
 
-                                <p:outputLabel value="Bill Expenses (Not Considered for Costing)"/>
-                                <p:outputLabel
-                                    id="expensesNotConsidered"
-                                    class="text-end w-100"
-                                    value="#{grnCostingController.currentGrnBillPre.expensesTotalNotConsideredForCosting}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                            <p:outputLabel value="Sale Value" />
+                                            <h:outputLabel 
+                                                id="saleValue"
+                                                class="w-100 text-end ui-inputfield bg-primary text-white"
+                                                value="#{grnCostingController.currentGrnBillPre.saleValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
 
-                                <p:outputLabel value="Total Discount"/>
-                                <p:outputLabel
-                                    id="txtBillTotalDiscount"
-                                    value="#{grnCostingController.currentGrnBillPre.billFinanceDetails.totalDiscount}"
-                                    class="text-end w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
 
-                                <p:outputLabel value="Net Total"/>
-                                <p:outputLabel
-                                    id="txtBillNetTotal"
-                                    value="#{grnCostingController.currentGrnBillPre.netTotal}"
-                                    class="text-end w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
-
-                            </p:panelGrid>
-                            <p:panel  id="billFinanceDetails"  header="Financial Summary">
-                                <ph:bill_finance_details
-                                    id="panelBillFinanceDetails"
-                                    bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
+                                        </p:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Financial Summary">
+                                        <p:panel  id="billFinanceDetails"  header="Financial Summary">
+                                            <ph:bill_finance_details
+                                                id="panelBillFinanceDetails"
+                                                bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
+                                        </p:panel>
+                                    </p:tab>
+                                </p:tabView>
                             </p:panel>
+
+
+
+
                         </div>
                     </div>
                     <div class="row">
@@ -676,7 +677,7 @@
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="GRN Preview " class="mt-2"/>
                             <div class="d-flex gap-2">
-                                
+
                                 <p:commandButton
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
@@ -701,8 +702,8 @@
                                     icon="fas fa-check-circle"
                                     value="To Approve GRNs">
                                 </p:commandButton>
-                                
-                               
+
+
                                 <p:commandButton 
                                     value="Print" 
                                     ajax="false" 

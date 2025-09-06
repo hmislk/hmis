@@ -167,9 +167,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setFreeQuantityByUnits(BigDecimalUtil.multiply(freeQty, unitsPerPack));
             f.setTotalQuantityByUnits(BigDecimalUtil.add(f.getQuantityByUnits(), f.getFreeQuantityByUnits()));
 
-            // For AMPP, grossRate should be per unit, lineGrossRate is per pack
-            BigDecimal packRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
-            f.setGrossRate(packRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP));
+            // For AMPP, only set grossRate from lineGrossRate if grossRate is null or zero
+            // grossRate will be calculated elsewhere from bill components
+            BigDecimal existingGrossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            if (existingGrossRate.compareTo(BigDecimal.ZERO) == 0) {
+                f.setGrossRate(f.getLineGrossRate());
+            }
 
             // Set retail rates
             if (f.getRetailSaleRatePerUnit() != null) {
@@ -182,8 +185,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setFreeQuantityByUnits(freeQty);
             f.setTotalQuantityByUnits(BigDecimalUtil.add(qty, freeQty));
 
-            // For AMP, both grossRate and lineGrossRate should be per unit
-            f.setGrossRate(f.getLineGrossRate());
+            // For AMP, only set grossRate from lineGrossRate if grossRate is null or zero
+            // grossRate will be calculated elsewhere from bill components
+            BigDecimal existingGrossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            if (existingGrossRate.compareTo(BigDecimal.ZERO) == 0) {
+                f.setGrossRate(f.getLineGrossRate());
+            }
             f.setRetailSaleRate(f.getRetailSaleRatePerUnit());
         }
 
@@ -505,8 +512,35 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        BigDecimal purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal purchaseRatePerUnit;
         BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        
+        // For AMPP items, convert pack rates to unit rates for profit calculation
+        if (bi.getItem() instanceof Ampp) {
+            BigDecimal packPurchaseRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                unitsPerPack = BigDecimal.ONE; // Avoid division by zero
+            }
+            
+            // Convert pack rate to unit rate for profit calculation
+            purchaseRatePerUnit = packPurchaseRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP);
+            
+            // DEBUG: Log the values to identify AMPP calculation issue
+            System.out.println("DEBUG - Item: " + bi.getItem().getName() + " (AMPP)");
+            System.out.println("DEBUG - Pack Purchase Rate (stored): " + packPurchaseRate);
+            System.out.println("DEBUG - Units Per Pack: " + unitsPerPack);
+            System.out.println("DEBUG - Purchase Rate Per Unit (calculated): " + purchaseRatePerUnit);
+            System.out.println("DEBUG - Retail Rate Per Unit: " + retailRatePerUnit);
+        } else {
+            // For AMP items, grossRate is already per unit
+            purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            
+            System.out.println("DEBUG - Item: " + bi.getItem().getName() + " (AMP)");
+            System.out.println("DEBUG - Purchase Rate Per Unit (stored): " + purchaseRatePerUnit);
+            System.out.println("DEBUG - Retail Rate Per Unit: " + retailRatePerUnit);
+        }
         
         if (purchaseRatePerUnit.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
@@ -515,7 +549,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Profit Margin = ((Retail Rate - Purchase Rate) / Purchase Rate) * 100
         BigDecimal profit = retailRatePerUnit.subtract(purchaseRatePerUnit);
         BigDecimal margin = profit.divide(purchaseRatePerUnit, 4, RoundingMode.HALF_UP);
-        return margin.multiply(BigDecimal.valueOf(100)).doubleValue();
+        double result = margin.multiply(BigDecimal.valueOf(100)).doubleValue();
+        
+        System.out.println("DEBUG - Calculated Profit Margin: " + result + "%");
+        System.out.println("DEBUG - =====================================");
+        
+        return result;
     }
 
     public boolean isProfitMarginExcessive(BillItem ph) {
