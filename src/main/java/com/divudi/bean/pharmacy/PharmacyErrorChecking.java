@@ -150,6 +150,22 @@ public class PharmacyErrorChecking implements Serializable {
         }, PharmacyReports.PHARMACY_BIN_CARD, sessionController.getLoggedUser());
     }
 
+    /**
+     * Process Item-only Bin Card using DTOs.
+     * Reuses the same data source, and the view limits to item-level fields.
+     */
+    public void processItemBinCardWithDTO() {
+        processBinCardWithDTO();
+    }
+
+    /**
+     * Process Batch-only Bin Card using DTOs.
+     * Reuses the same data source, and the view focuses on batch-level fields.
+     */
+    public void processBatchBinCardWithDTO() {
+        processBinCardWithDTO();
+    }
+
     public void listPharmacyMovementByDateRange() {
         billItems = getEjb().allBillItemsByDate(item, department, fromDate, toDate);
     }

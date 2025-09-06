@@ -56,6 +56,7 @@ import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
@@ -226,6 +227,9 @@ public class SearchController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
+
+    @Inject
+    private GrnReturnWorkflowController grnReturnWorkflowController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -427,9 +431,14 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToReturnReceivedGoods() {
+        grnReturnWorkflowController.setActiveIndex(2);
         searchKeyword = new SearchKeyword();
         bills = new ArrayList<>();
         return "/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyReturnWithoutReceipt() {
+        return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
     }
 
     public String navigateToMyDepartmentAllCashierSummary() {
@@ -1333,6 +1342,7 @@ public class SearchController implements Serializable {
     public void makeListNull() {
         maxResult = configOptionApplicationController.getIntegerValueByKey("Maximum Number of records for default search", 50);
         bills = null;
+        pharmacyPurchaseOrderDtos = null;
         aceptPaymentBills = null;
         selectedBills = null;
         billFees = null;
@@ -3974,6 +3984,7 @@ public class SearchController implements Serializable {
         paymentMethod = null;
         searchKeyword = null;
         bills = null;
+        pharmacyPurchaseOrderDtos = null;
         billSummaryRows = null;
         netTotal = 0.0;
         discount = 0.0;
@@ -5369,6 +5380,32 @@ public class SearchController implements Serializable {
 
     }
 
+    // Simple navigation methods with list clearing
+    public String navigateToPharmacyGrnFinalize() {
+        bills = null;
+        return "/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true";
+    }
+    
+    public String navigateToPharmacyGrnApprove() {
+        bills = null;
+        return "/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true";
+    }
+    
+    public String navigateToPharmacyGrnListForReturn() {
+        bills = null;
+        return "/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true";
+    }
+    
+    public String navigateToPharmacyGrnReturnRequest() {
+        bills = null;
+        return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
+    }
+    
+    public String navigateToPharmacyPurchaseOrderReceive() {
+        bills = null;
+        return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
     public void fillOnlySavedPharmacyPo() {
         pharmacyPurchaseOrderDtos = null;
         HashMap tmp = new HashMap();
@@ -5692,6 +5729,33 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("bTp", BillType.PharmacyGrnReturn);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+    }
+
+    public void fillOnlyFinalizedDirectPurchaseReturns() {
+        bills = null;
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "Select b From RefundBill b where "
+                + " b.referenceBill is not null "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType= :bTp  "
+                + " and b.checkedBy is not null"
+                + " and b.department = :dept"
+                + " and b.institution = :ins"
+                + " and b.billTypeAtomic = :billTypeAtomic";
+        sql += createKeySqlSearchForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", BillType.PurchaseReturn);
+        tmp.put("dept", sessionController.getDepartment());
+        tmp.put("ins", sessionController.getInstitution());
+        tmp.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
     }
@@ -6046,6 +6110,12 @@ public class SearchController implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method has been deprecated for security reasons.
+     * The "All Institution Search" functionality has been removed from pharmacy pages
+     * to prevent cross-institution access and maintain data security boundaries.
+     */
+    @Deprecated
     public void createGrnTableAllIns() {
         bills = null;
         String jpql;
@@ -6095,18 +6165,21 @@ public class SearchController implements Serializable {
                     + " where  b.retired=false "
                     + " and b.billTypeAtomic = :bTp "
                     + " and b.institution=:ins "
+                    + " and b.department = :dept "
                     + " and b.createdAt between :fromDate and :toDate ";
             jpql += keysForGrnReturn(params);
             jpql += " order by b.createdAt desc  ";
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         } else {
             jpql = "Select DISTINCT(bi.bill) From BillItem bi"
                     + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
                     + " and bi.bill.institution=:ins "
+                    + " and bi.bill.department = :dept "
                     + " and bi.createdAt between :fromDate and :toDate "
                     + " and bi.item=:item ";
             jpql += keysForGrnReturnByBillItem(params);
@@ -6114,6 +6187,7 @@ public class SearchController implements Serializable {
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("item", getSearchKeyword().getItem());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
@@ -6123,6 +6197,51 @@ public class SearchController implements Serializable {
             types.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             types.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             types.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+            b.setListOfBill(getReturnBill(b, types));
+        }
+
+    }
+
+    public void createDirectPurchaseTable() {
+        bills = null;
+        String jpql;
+        HashMap params = new HashMap();
+
+        if (getSearchKeyword().getItem() == null) {
+            jpql = "Select b From Bill b "
+                    + " where  b.retired=false "
+                    + " and b.billTypeAtomic = :bTp "
+                    + " and b.institution=:ins "
+                    + " and b.department = :dept "
+                    + " and b.createdAt between :fromDate and :toDate ";
+            jpql += keysForGrnReturn(params);
+            jpql += " order by b.createdAt desc  ";
+            params.put("toDate", getToDate());
+            params.put("fromDate", getFromDate());
+            params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
+            params.put("bTp", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        } else {
+            jpql = "Select DISTINCT(bi.bill) From BillItem bi"
+                    + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
+                    + " and bi.bill.institution=:ins "
+                    + " and bi.bill.department = :dept "
+                    + " and bi.createdAt between :fromDate and :toDate "
+                    + " and bi.item=:item ";
+            jpql += keysForGrnReturnByBillItem(params);
+            jpql += " order by bi.createdAt desc  ";
+            params.put("toDate", getToDate());
+            params.put("fromDate", getFromDate());
+            params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
+            params.put("item", getSearchKeyword().getItem());
+            params.put("bTp", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        }
+        for (Bill b : bills) {
+            List<BillTypeAtomic> types = new ArrayList<>();
+            types.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             b.setListOfBill(getReturnBill(b, types));
         }
 
@@ -6154,12 +6273,14 @@ public class SearchController implements Serializable {
                 + " where b.retired=false "
                 + " and b.billTypeAtomic = :bTp "
                 + " and b.completed = :completed "
+                + " and b.department = :dept "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.createdAt desc";
         
         HashMap params = new HashMap();
         params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
         params.put("completed", false);
+        params.put("dept", sessionController.getDepartment());
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
         
@@ -6177,6 +6298,7 @@ public class SearchController implements Serializable {
                     + " where  b.retired=false "
                     + " and b.billTypeAtomic = :bTp "
                     + " and b.institution=:ins "
+                    + " and b.department = :dept "
                     + " and b.completed = :completed "
                     + " and b.createdAt between :fromDate and :toDate ";
             jpql += keysForGrnReturn(params);
@@ -6184,19 +6306,21 @@ public class SearchController implements Serializable {
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
             params.put("completed", true);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         } else {
             jpql = "Select DISTINCT(bi.bill) From BillItem bi"
                     + " where bi.retired=false and bi.bill.billTypeAtomic = :bTp "
-                    + " and bi.bill.institution=:ins and bi.bill.completed = :completed "
+                    + " and bi.bill.institution=:ins and bi.bill.department = :dept and bi.bill.completed = :completed "
                     + " and bi.bill.createdAt between :fromDate and :toDate "
                     + " and bi.item=:item ";
             jpql += " order by bi.bill.createdAt desc  ";
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("ins", getSessionController().getInstitution());
+            params.put("dept", sessionController.getDepartment());
             params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
             params.put("completed", true);
             params.put("item", sk.getItem());
@@ -6325,6 +6449,7 @@ public class SearchController implements Serializable {
                 + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
                 + " and b.referenceBill.institution = :ins "
+                + " and b.department = :dept "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword() != null) {
@@ -6360,6 +6485,7 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
         params.put("btas", billTypeAtomicToList);
 
         if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
@@ -14821,6 +14947,7 @@ public class SearchController implements Serializable {
 //
 //    }
     public String navigateToCancelPurchaseOrder() {
+        grnReturnWorkflowController.setActiveIndex(2);
         makeNull();
         Calendar c1 = Calendar.getInstance();
         c1.set(Calendar.MONTH, c1.get(Calendar.MONTH) - 2);
@@ -14855,11 +14982,28 @@ public class SearchController implements Serializable {
      * </p:commandButton>
      */
     /**
-     *
-     * @return
+     * Navigate to the list of Purchase Orders available for receiving (GRN).
+     * Ensures any previous search state and bill lists are cleared.
      */
     public String navigateToListPurchaseOrdersToReceive() {
+        makeListNull();
         return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to GRN list to finalize and clear any existing lists/state.
+     */
+    public String navigateToGrnListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to GRN list to approve and clear any existing lists/state.
+     */
+    public String navigateToGrnListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true";
     }
 
     public String navigateToPurchaseOrderApprove() {

@@ -114,6 +114,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.bean.pharmacy.SaleReturnController;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
 import com.divudi.core.facade.PatientInvestigationFacade;
 
 import org.primefaces.event.RowEditEvent;
@@ -3978,6 +3979,9 @@ public class BillSearch implements Serializable {
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
 
             case PHARMACY_RETAIL_SALE_PRE:
+                return navigateToViewPharmacyPreBill();
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                return navigateToViewPharmacySettledPreBill();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -3997,7 +4001,6 @@ public class BillSearch implements Serializable {
 
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
-            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
             case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
@@ -4189,8 +4192,8 @@ public class BillSearch implements Serializable {
 
             case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
-
             case PHARMACY_RETAIL_SALE_PRE:
+                return navigateToViewPharmacyPreBill();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -4201,6 +4204,8 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_CANCELLED_PRE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyRetailCancellationPreBill();
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                return navigateToViewPharmacySettledPreBill();
 
             case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
@@ -4210,7 +4215,6 @@ public class BillSearch implements Serializable {
 
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
-            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
@@ -4356,6 +4360,25 @@ public class BillSearch implements Serializable {
         } else {
             return "/pharmacy/pharmacy_cancel_bill_unit_issue";
         }
+    }
+
+    public String navigateToViewPharmacyPreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        return "/pharmacy/view/pharmacy_pre_bill_view?faces-redirect=true";
+    }
+
+    public String navigateToViewPharmacySettledPreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
 
     public String navigateToPharmacyGrnCancellationBillView() {

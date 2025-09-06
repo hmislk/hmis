@@ -5092,4 +5092,19 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         this.netPlusVat = netPlusVat;
     }
 
+    public String navigateToBillById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+        
+        Bill foundBill = billFacade.find(billId);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        
+        return billSearch.navigateToViewBillByAtomicBillTypeByBillId(billId);
+    }
+
 }

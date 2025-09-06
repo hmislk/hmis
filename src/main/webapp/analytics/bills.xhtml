@@ -126,7 +126,7 @@
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
                                 <f:selectItems 
                                     var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic.label}"           
+                                    itemLabel="#{billTypeAtomic}"           
                                     itemValue="#{billTypeAtomic}" 
                                     value="#{enumController.billTypesAtomic}" ></f:selectItems>
                             </p:selectOneMenu>
@@ -154,21 +154,6 @@
                                 <f:selectItem itemLabel="All Class Types" ></f:selectItem>
                                 <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
                             </p:selectOneMenu>
-                            <p:toggleSwitch 
-                                value="#{searchController.cancelled}" 
-                                onIcon="pi pi-check" 
-                                offIcon="pi pi-times" 
-                                class="mt-2">
-                            </p:toggleSwitch>
-                            <h:outputLabel value="Select Cancelled Bills Only"/>
-                            <p:spacer ></p:spacer>
-                            <p:toggleSwitch 
-                                value="#{searchController.refunded}" 
-                                onIcon="pi pi-check" 
-                                offIcon="pi pi-times" 
-                                class="mt-2">
-                            </p:toggleSwitch>
-                            <h:outputLabel value="Select Refunded Bills Only"/>
 
                         </h:panelGrid>
 
@@ -223,9 +208,6 @@
                                 <p:column width="5em" headerText="Name" sortBy="#{bill.patient.person.nameWithTitle}" filterBy="#{bill.patient.person.nameWithTitle}" filterMatchMode="contains">                                
                                     <p:inputText readonly="true"  value="#{bill.patient.person.nameWithTitle}"/>
                                 </p:column>
-                                <p:column width="5em" headerText="BHT No" >                                
-                                    <p:inputText readonly="true"  value="#{bill.patientEncounter != null ? bill.patientEncounter.bhtNo : 'N/A'}"/>
-                                </p:column>
                                 <p:column headerText="Date/Time" width="5em">
                                     <p:inputText readonly="true"  value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
@@ -234,7 +216,7 @@
                                 <p:column headerText="User" width="5em">
                                     <p:inputText readonly="true"  value="#{bill.creater.name}" ></p:inputText>
                                 </p:column>
-                                <p:column headerText="Status" width="5em" exportable="false" sortBy="#{bill.cancelled}" filterBy="#{bill.cancelled}" filterMatchMode="contains">
+                                <p:column headerText="Status" width="5em" exportable="false">
                                     <h:panelGroup>
                                         <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
                                         <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />

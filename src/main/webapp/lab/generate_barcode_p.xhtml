@@ -1056,7 +1056,11 @@
 
                                             <h:panelGroup rendered="#{!ps.bill.cancelled}">
                                                 <h:outputLabel value=" #{ps.status}" /><br/>
-                                                <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/>
+                                                <h:panelGroup rendered="#{ps.sampleRejected}">
+                                                    <p:badge value="Reject" styleClass="ui-badge-danger" /> - <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/><br/>
+                                                </h:panelGroup>
+                                                
+                                                <p:badge value="Re-Collect Sample" styleClass="ui-badge-info" rendered="#{ps.referenceSample ne null}"/>
                                             </h:panelGroup>
 
                                         </p:column>
@@ -1274,12 +1278,12 @@
                                                     <div class="ui-g-12">
                                                         <i class="fa fa-vial text-primary"></i>
                                                         <span class="text-primary font-weight-bold">Sample ID : </span>
-                                                        <h:outputText value="#{psc.patientSample.id}" class="text-primary mx-2" />
+                                                        <h:outputText value="#{psc.patientSample.id}" class="#{psc.patientSample.sampleRejected ? 'text-danger mx-2' : 'text-primary  mx-2'}" />
                                                     </div>
                                                     <div class="ui-g-12">
                                                         <i class="fa fa-flask text-success"></i>
                                                         <span class="text-success font-weight-bold">Test Component : </span>
-                                                        <h:outputText value="#{psc.investigationComponant.name}" class="text-success mx-2" />
+                                                        <h:outputText value="#{psc.investigationComponant.name}" class="#{psc.patientSample.sampleRejected ? 'text-danger mx-2' : 'text-primary  mx-2'}" />
                                                     </div>
                                                 </div>
                                             </ui:repeat>
@@ -1769,7 +1773,7 @@
                                     </p:inputTextarea>
 
                                     <hr/>
-
+                                    
                                 </h:panelGrid>
                             </div>
 

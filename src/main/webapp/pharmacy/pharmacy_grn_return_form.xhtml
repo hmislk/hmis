@@ -13,6 +13,7 @@
                 You are NOT authorized
             </h:panelGroup>
             <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn') and !grnReturnWorkflowController.printPreview}" >
+
                 <p:panel 
                     header="GRN Return - Workflow Process" 
                     class="w-100">
@@ -60,7 +61,8 @@
                             <p:dataTable 
                                 var="ph" 
                                 value="#{grnReturnWorkflowController.billItems}"
-                                id="itemList" >
+                                id="itemList" 
+                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}" >
 
                                 <f:facet name="header">
                                     <h:outputText value="Returning Items" ></h:outputText>
@@ -68,6 +70,14 @@
 
                                 <p:column headerText="Item Name"  >
                                     <h:outputLabel value="#{ph.item.name}"/>
+                                    <p:commandButton
+                                        icon="pi pi-search"
+                                        id="btnViewSelectedItemDetails"
+                                        title="View Item Details"
+                                        action="#{grnReturnWorkflowController.displayItemDetails(ph)}"
+                                        update=":#{p:resolveFirstComponentWithId('historyPanel',view).clientId}"
+                                        process="@this"
+                                        class="ui-button-icon-only mx-3"/>
                                 </p:column>
                                 <p:column 
                                     headerText="Date of Expiry" 
@@ -84,10 +94,17 @@
                                 </p:column>
                                 <p:column 
                                     headerText="Current Stock" 
-                                    width="5em" >
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
-                                        <f:convertNumber pattern="#.#" ></f:convertNumber>
-                                    </h:outputText>
+                                    width="5em" 
+                                    styleClass="text-center">
+                                    <div class="badge #{ph.pharmaceuticalBillItem.stock.stock lt 10 ? 'bg-warning text-dark' : 'bg-info text-white'}">
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
+                                            <f:convertNumber pattern="#.#" ></f:convertNumber>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="small text-muted mt-1" 
+                                         rendered="#{ph.pharmaceuticalBillItem.stock.stock lt 5}">
+                                        Low Stock!
+                                    </div>
                                 </p:column>
 
                                 <p:column
@@ -181,7 +198,7 @@
                                         <p:ajax 
                                             event="blur" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal" 
+                                            update="txtLineReturnValue returnTotal messages @form" 
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -200,7 +217,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
-                                            update="txtLineReturnValue returnTotal" 
+                                            update="txtLineReturnValue returnTotal messages @form" 
                                             listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -217,7 +234,7 @@
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
-                                            update="txtLineReturnValue returnTotal"
+                                            update="txtLineReturnValue returnTotal messages @form"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
@@ -230,13 +247,14 @@
 
                                 <p:column headerText="Action" width="3em" styleClass="text-center" exportable="false">
                                     <p:commandButton
+                                        id="btnRemoveReturnItem"
                                         icon="fas fa-trash-alt"
                                         class="ui-button-danger ui-button-outlined"
                                         title="Remove this item from return"
                                         action="#{grnReturnWorkflowController.deleteReturnItem(ph)}"
                                         ajax="true"
                                         process="@this"
-                                        update="itemList returnTotal @form"
+                                        update="itemList returnTotal messages"
                                         style="padding: 0.2rem 0.4rem;">
                                         <p:confirm header="Confirm Delete" 
                                                    message="Are you sure you want to remove this item from the return?" 
@@ -246,9 +264,9 @@
 
                             </p:dataTable>
 
-                            <div >
+                            <h:panelGroup id="historyPanel">
                                 <ph:history/>
-                            </div>
+                            </h:panelGroup>
 
                         </div>
                         <div class="col-3" >
@@ -268,7 +286,7 @@
                                                 value="Save" 
                                                 action="#{grnReturnWorkflowController.saveRequest}"
                                                 ajax="false"
-                                                icon="pi pi-save" 
+                                                icon="#{grnReturnWorkflowController.currentBill.id != null ? 'pi pi-refresh' : 'pi pi-save'}" 
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
@@ -292,7 +310,7 @@
                                     </div>
                                     <div class="row" >
                                         <div class="col-12 text-center" >
-                                            <p:messages id="messages" showDetail="true" closable="true" />
+                                            <p:messages id="messages" showDetail="true" closable="true" globalOnly="false" />
                                         </div>
                                     </div>
                                 </f:facet>
