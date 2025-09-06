@@ -664,7 +664,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
 
             // Additional validation for payment method data completeness
-            if (currentBill.getNetTotal() == null || currentBill.getNetTotal() <= 0) {
+            if (currentBill.getNetTotal() <= 0) {
                 JsfUtil.addErrorMessage("Invalid bill total for payment creation");
                 return false;
             }
