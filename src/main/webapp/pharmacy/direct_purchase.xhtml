@@ -475,9 +475,7 @@
                                 </p:column>
                             </p:dataTable>
 
-                            <h:panelGroup id="purchaseHistory">
-                                <pharmacy:history/>
-                            </h:panelGroup>
+
 
                             <p:separator ></p:separator>
 
@@ -694,7 +692,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
 
-                                            <p:outputLabel value="Discount" />
+                                            <p:outputLabel value="Bill Discount" />
                                             <p:inputText 
                                                 class="w-100 text-end"
                                                 id="dis" 
@@ -725,7 +723,7 @@
 
                                             <h:outputLabel 
                                                 id="lblNetTotal"
-                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                class="w-100 text-end ui-inputfield bg-success text-white"
                                                 value="#{pharmacyDirectPurchaseController.bill.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -738,19 +736,10 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
 
-            
-                                            <p:outputLabel value="Total Bill Expenses" />
-                                            <h:outputLabel 
-                                                id="billExpensesTotal"
-                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
-                                                value="#{pharmacyDirectPurchaseController.bill.expenseTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-
                                             <p:outputLabel value="Sale Value" />
                                             <h:outputLabel 
                                                 id="saleValue"
-                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                class="w-100 text-end ui-inputfield bg-primary text-white"
                                                 value="#{pharmacyDirectPurchaseController.bill.saleValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -773,7 +762,13 @@
                     </div>
 
 
-
+                    <div class="row" >
+                        <div class="col-12" >
+                            <h:panelGroup id="purchaseHistory">
+                                <pharmacy:history/>
+                            </h:panelGroup>
+                        </div>
+                    </div>
 
 
 
@@ -840,10 +835,10 @@
                     </h:panelGroup>
 
                     <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
-                    
+
                 </p:panel>
-                
-                
+
+
             </h:panelGroup>
 
 
