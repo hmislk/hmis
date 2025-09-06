@@ -512,10 +512,18 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            // Deduct from stock for return
+            // For returns: make quantities negative before saving, use absolute value for stock deduction
+            double absQty = Math.abs(totalQty);
+            phi.setQty(-Math.abs(phi.getQty()));
+            phi.setFreeQty(-Math.abs(phi.getFreeQty()));
+            
+            // Save the pharmaceutical bill item with negative quantities
+            pharmaceuticalBillItemFacade.edit(phi);
+
+            // Deduct from stock for return (use absolute value)
             boolean returnFlag = pharmacyBean.deductFromStock(
                     phi.getStock(),
-                    Math.abs(totalQty),
+                    absQty,
                     phi,
                     sessionController.getDepartment()
             );
