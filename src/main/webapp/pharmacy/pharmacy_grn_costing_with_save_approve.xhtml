@@ -107,8 +107,7 @@
                                               modal="true"
                                               closable="true"
                                               resizable="false"
-                                              class="w-75"
-                                              dynamic="true">
+                                              class="w-75">
                                         <ph:bill_item_finance_details pbi="#{bi}"/>
                                     </p:dialog>
                                 </p:column>
@@ -587,7 +586,7 @@
                                                 value="#{grnCostingController.currentGrnBillPre.tax}" >
                                                 <p:ajax
                                                     process="@this"
-                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                                     event="keyup"
                                                     listener="#{grnCostingController.discountChangedLitener()}"/>
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -602,12 +601,12 @@
                                                 value="#{grnCostingController.currentGrnBillPre.discount}" >
                                                 <p:ajax
                                                     process="@this"
-                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                                     event="keyup"
                                                     listener="#{grnCostingController.discountChangedLitener()}"/>
                                                 <p:ajax
                                                     process="@this"
-                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                                     event="blur"
                                                     listener="#{grnCostingController.discountChangedLitener()}"/>
                                                 <f:convertNumber pattern="#,##0.00" />

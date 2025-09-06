@@ -141,7 +141,12 @@ public class GrnCostingController implements Serializable {
     BillItem currentExpense;
 
     public double calDifference() {
-        difference = Math.abs(insTotal) - Math.abs(getGrnBill().getNetTotal());
+        double netTotal = getGrnBill().getNetTotal();
+        System.out.println("DEBUG: calDifference() - insTotal: " + insTotal + ", netTotal: " + netTotal);
+        System.out.println("DEBUG: calDifference() - expenses considered for costing: " + getGrnBill().getExpensesTotalConsideredForCosting());
+        System.out.println("DEBUG: calDifference() - expenses NOT considered for costing: " + getGrnBill().getExpensesTotalNotConsideredForCosting());
+        difference = Math.abs(insTotal) - Math.abs(netTotal);
+        System.out.println("DEBUG: calDifference() - calculated difference: " + difference);
         return difference;
     }
 
@@ -151,7 +156,7 @@ public class GrnCostingController implements Serializable {
             for (Bill existingGrn : getApproveBill().getListOfBill()) {
                 if (existingGrn != null
                         && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE")
+                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
                         && !existingGrn.isRetired()
                         && !existingGrn.isCancelled()) {
                     JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
@@ -2348,7 +2353,7 @@ public class GrnCostingController implements Serializable {
             for (Bill existingGrn : getApproveBill().getListOfBill()) {
                 if (existingGrn != null
                         && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE")
+                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
                         && !existingGrn.isRetired()
                         && !existingGrn.isCancelled()) {
                     JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
@@ -2842,6 +2847,7 @@ public class GrnCostingController implements Serializable {
         BigDecimal billDiscountTotal = BigDecimalUtil.valueOrZero(bill.getBillFinanceDetails().getBillDiscount());
         BigDecimal billExpenseTotal = BigDecimalUtil.valueOrZero(bill.getBillFinanceDetails().getBillExpense());
         BigDecimal billTaxTotal = BigDecimalUtil.valueOrZero(bill.getBillFinanceDetails().getBillTaxValue());
+        
 
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
@@ -2862,16 +2868,11 @@ public class GrnCostingController implements Serializable {
             BigDecimal billExpense = billExpenseTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
             BigDecimal billTax = billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 
-            System.out.println("DEBUG: Item: " + bi.getItem().getName()
-                    + ", Basis (LineNetTotal): " + basis
-                    + ", Ratio: " + ratio
-                    + ", BillDiscount distributed: " + billDiscount
-                    + ", BillExpense distributed: " + billExpense
-                    + ", BillTax distributed: " + billTax);
 
             f.setBillDiscount(billDiscount);
             f.setBillExpense(billExpense);
             f.setBillTax(billTax);
+            
 
             BigDecimal totalDiscount = lineDiscount.add(billDiscount);
             BigDecimal totalExpense = lineExpense.add(billExpense);
@@ -2881,8 +2882,6 @@ public class GrnCostingController implements Serializable {
             f.setTotalExpense(totalExpense);
             f.setTotalTax(totalTax);
 
-            System.out.println("DEBUG: Item: " + bi.getItem().getName()
-                    + ", TotalExpense: " + totalExpense);
 
             BigDecimal quantity = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -2952,7 +2951,6 @@ public class GrnCostingController implements Serializable {
         // After distribution, update bill-level totals by aggregating from distributed line items
         aggregateBillTotalsFromDistributedItems(bill, billItems);
 
-        System.out.println("=== DEBUG: distributeProportionalBillValuesToItems() END ===");
     }
 
     /**

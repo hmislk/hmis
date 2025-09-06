@@ -211,7 +211,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         // Set basic rates - will be recalculated by calculateItemTotals()
-        pbi.setPurchaseRate(f.getGrossRate().doubleValue());
+        if (item instanceof Ampp) {
+            // For AMPP: grossRate is pack price, but purchaseRate should be unit price
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                unitsPerPack = BigDecimal.ONE; // Avoid division by zero
+            }
+            BigDecimal unitPurchaseRate = f.getGrossRate().divide(unitsPerPack, 4, RoundingMode.HALF_UP);
+            pbi.setPurchaseRate(unitPurchaseRate.doubleValue());
+        } else {
+            // For AMP: grossRate is already unit price
+            pbi.setPurchaseRate(f.getGrossRate().doubleValue());
+        }
         pbi.setRetailRate(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
         pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
