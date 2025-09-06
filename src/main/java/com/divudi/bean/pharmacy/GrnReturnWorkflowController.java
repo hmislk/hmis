@@ -30,6 +30,10 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.Payment;
+import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -74,6 +78,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private PharmacyCostingService pharmacyCostingService;
     @EJB
     BillService billService;
+    @EJB
+    PaymentService paymentService;
 
     @Inject
     private SessionController sessionController;
@@ -97,6 +103,7 @@ public class GrnReturnWorkflowController implements Serializable {
     private List<BillItem> billItems;
     private List<BillItem> selectedItems;  // For approval process
     private boolean printPreview;
+    private PaymentMethodData paymentMethodData;
 
     // GRN Return specific properties
     private Bill selectedGrn;
@@ -255,6 +262,11 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
+        // Validate payment method
+        if (!validatePaymentMethod()) {
+            return;
+        }
+        
         // Validate stock availability before finalizing
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot finalize: Stock validation failed. Please correct the quantities and try again.");
@@ -288,6 +300,11 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
+        // Validate payment method
+        if (!validatePaymentMethod()) {
+            return;
+        }
+        
         // Validate stock availability before approving
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot approve: Stock validation failed. Please correct the quantities and try again.");
@@ -312,6 +329,19 @@ public class GrnReturnWorkflowController implements Serializable {
             }
 
             updateStock();  // Stock handling happens only at approval stage
+
+            // Create payment for the return if payment method is specified
+            if (currentBill.getPaymentMethod() != null && !currentBill.getPaymentMethod().equals(PaymentMethod.Cash)) {
+                try {
+                    List<Payment> returnPayments = paymentService.createPayment(currentBill, getPaymentMethodData());
+                    if (returnPayments != null && !returnPayments.isEmpty()) {
+                        JsfUtil.addSuccessMessage("Payment created successfully for GRN return.");
+                    }
+                } catch (Exception e) {
+                    JsfUtil.addErrorMessage("Error creating payment: " + e.getMessage());
+                    LOGGER.log(Level.SEVERE, "Error creating payment for GRN return", e);
+                }
+            }
 
             // Check if the original GRN is fully returned and mark it as fullReturned
             Bill originalGrnBill = currentBill.getReferenceBill();
@@ -539,6 +569,51 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     // Validation methods
+    private boolean validatePaymentMethod() {
+        if (currentBill == null) {
+            return false;
+        }
+        
+        // Check if payment method is selected
+        if (currentBill.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment method");
+            return false;
+        }
+        
+        // If payment method is not Cash, validate payment method details
+        if (!currentBill.getPaymentMethod().equals(PaymentMethod.Cash)) {
+            PaymentMethodData pmd = getPaymentMethodData();
+            
+            if (currentBill.getPaymentMethod().equals(PaymentMethod.Card)) {
+                if (pmd.getCreditCard() == null || 
+                    pmd.getCreditCard().getNo() == null || pmd.getCreditCard().getNo().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please enter credit card details");
+                    return false;
+                }
+            } else if (currentBill.getPaymentMethod().equals(PaymentMethod.Cheque)) {
+                if (pmd.getCheque() == null || 
+                    pmd.getCheque().getNo() == null || pmd.getCheque().getNo().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please enter cheque details");
+                    return false;
+                }
+            } else if (currentBill.getPaymentMethod().equals(PaymentMethod.Slip)) {
+                if (pmd.getSlip() == null || 
+                    pmd.getSlip().getNo() == null || pmd.getSlip().getNo().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please enter slip details");
+                    return false;
+                }
+            } else if (currentBill.getPaymentMethod().equals(PaymentMethod.ewallet)) {
+                if (pmd.getEwallet() == null || 
+                    pmd.getEwallet().getNo() == null || pmd.getEwallet().getNo().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please enter e-wallet details");
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+
     private boolean validateGrnReturn() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No GRN Return Bill");
@@ -2093,6 +2168,7 @@ public class GrnReturnWorkflowController implements Serializable {
         billItems = new ArrayList<>();
         selectedBillItems = new ArrayList<>();
         selectedItems = new ArrayList<>();
+        paymentMethodData = new PaymentMethodData();
         printPreview = false;
         selectedGrn = null;
         originalGrn = null;
@@ -2114,6 +2190,17 @@ public class GrnReturnWorkflowController implements Serializable {
 
     public void setCurrentBill(Bill currentBill) {
         this.currentBill = currentBill;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
     public Bill getRequestedBill() {

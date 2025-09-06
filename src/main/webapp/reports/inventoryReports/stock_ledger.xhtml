@@ -286,13 +286,11 @@
                                 <h:outputText value="#{f.pbItem.billItem.item.name}" />
                             </p:column>
                             <p:column headerText="UOM" width="5em">
-                                Item : <h:outputText value="#{f.pbItem.billItem.item.name}" />
-                                PB Item : <h:outputText value="#{f.pbItem.item.name}" />
                                 <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
                             </p:column>
                             <p:column headerText="Transaction Type" width="8em">
                                 <h:outputText 
-                                    value="#{f.pbItem.qty gt 0.0}"
+                                    value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}"
                                     styleClass="#{f.pbItem.transThisIsStockIn ? 'stock-in-badge' : 'stock-out-badge'}" />
                             </p:column>
                             <p:column headerText="Doc No" width="15em">
@@ -359,10 +357,10 @@
                                              f.pbItem.billItem.bill.billType.label}" />
                             </p:column>
                             <p:column headerText="Stock In Quantity (Purchase + Free)" width="13em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" />
                             </p:column>
                             <p:column headerText="Stock Out Quantity" width="5em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
                                 <h:outputText value="#{f.totalItemStock}" />
