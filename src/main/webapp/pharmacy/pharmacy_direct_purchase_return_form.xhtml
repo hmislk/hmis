@@ -341,8 +341,7 @@
                                     <p:message for="txtReturnComments" />
                                 </h:panelGroup>
 
-                                <!-- Payment Method Section - Only show when ready for approval -->
-                                <h:panelGroup rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null)}">
+                                <h:panelGroup >
                                     <p:outputLabel value="Payment Method:" />
                                     <p:selectOneMenu   
                                         id="cmbPaymentMethod" 
@@ -356,8 +355,8 @@
                                 </h:panelGroup>
                             </p:panelGrid>
 
-                            <!-- Payment Method Details Section -->
-                            <h:panelGroup id="paymentMethodDetails" rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null)}">
+                            
+                            <h:panelGroup id="paymentMethodDetails" >
                                 <h:panelGroup
                                     class="row my-1"
                                     layout="block"  

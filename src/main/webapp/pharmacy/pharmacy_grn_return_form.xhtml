@@ -339,9 +339,8 @@
                                     <p:message for="txtReturnComments" />
                                 </h:panelGroup>
 
-                                <p:outputLabel value="Payment Method:" 
-                                               rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null)}" />
-                                <h:panelGroup rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null)}">
+                                <p:outputLabel value="Payment Method:" />
+                                <h:panelGroup >
                                     <p:selectOneMenu   
                                         id="cmbPaymentMethod" 
                                         value="#{grnReturnWorkflowController.currentBill.paymentMethod}"
@@ -355,8 +354,7 @@
                                 </h:panelGroup>
                             </p:panelGrid>
 
-                            <h:panelGroup id="paymentDetails" 
-                                          rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null)}">
+                            <h:panelGroup id="paymentDetails" >
                                 <h:panelGroup
                                     class="my-1"
                                     layout="block"  
