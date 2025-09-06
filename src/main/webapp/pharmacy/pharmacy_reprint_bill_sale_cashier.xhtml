@@ -21,9 +21,86 @@
                                     <p:commandButton 
                                         ajax="false"
                                         value="Back" 
-                                        class="ui-button-secondary"
+                                        class="ui-button-secondary m-1"
                                         icon="fa fa-arrow-left"
                                         action="pharmacy_search_pre_bill?faces-redirect=true" />
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Search Bills" 
+                                        title="Search Sale Pre Bills"
+                                        class="ui-button-secondary m-1"
+                                        icon="fa fa-search"
+                                        action="#{pharmacyBillSearch.navigateToSearchSalePreBill()}" />
+                                    <p:commandButton 
+                                        accesskey="n" 
+                                        value="New Bill"  
+                                        ajax="false" 
+                                        class="ui-button-success m-1"
+                                        action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"
+                                        actionListener="#{pharmacySaleController.resetAll()}"
+                                        icon="fa fa-plus"
+                                        >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        value="Reprint" 
+                                        icon="fa fa-print"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        class="ui-button-info m-1"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        value="Reprint" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        class="ui-button-info m-1"
+                                        icon="fa fa-print"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}"
+                                        value="Print Original" 
+                                        styleClass="ui-button-warning m-1"
+                                        icon="fa fa-print"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreviewOriginal" />
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Return Items Only"
+                                        title="Payment will be released at the cashier"
+                                        icon="fa fa-undo"
+                                        class="ui-button-warning m-1"
+                                        action="#{pharmacyBillSearch.navigateToReturnItemsOnly()}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Return Goods and Payment"
+                                        title="Will take goods and return payments"
+                                        icon="fa fa-exchange"
+                                        class="ui-button-info m-1"
+                                        action="#{pharmacyBillSearch.navigateToReturnGoodsAndPayment()}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel"
+                                        icon="fa fa-cancel"
+                                        class="ui-button-danger m-1"
+                                        action="pharmacy_cancel_bill_retail?faces-redirect=true" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
@@ -31,28 +108,12 @@
                         <div class="mb-3">
                             <!-- Standard Print Group (Primary actions) -->
                             <div class="d-inline-block mx-2">
-                                <p:commandButton 
-                                    value="Reprint" 
-                                    class="ui-button-info m-1"
-                                    icon="fa fa-print"
-                                    ajax="false" >
-                                    <p:printer target="gpBillPreview" />
-                                </p:commandButton>
+
                             </div>
 
                             <br/>
 
-                            <!-- Original Print Group (Secondary actions - for privileged users) -->
-                            <div class="d-inline-block mx-2 mt-2" style="border: 1px solid #f39c12; border-radius: 4px; padding: 4px;" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}">
-                                <small class="text-warning" style="font-weight: bold;">Original Print:</small>
-                                <p:commandButton 
-                                    value="Bill" 
-                                    styleClass="ui-button-warning m-1"
-                                    icon="fa fa-print"
-                                    ajax="false" >
-                                    <p:printer target="gpBillPreviewOriginal" />
-                                </p:commandButton>
-                            </div>
+
                         </div>
 
                         <!-- Original Print Section (No Duplicate Text) -->
