@@ -505,24 +505,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        BigDecimal grossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
-        BigDecimal retailRate = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        BigDecimal purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
         
-        // Calculate per-unit purchase rate by dividing gross rate by quantity
-        BigDecimal purchaseRate;
-        if (bi.getQty() != null && bi.getQty() > 0) {
-            purchaseRate = grossRate.divide(BigDecimal.valueOf(bi.getQty()), 4, RoundingMode.HALF_UP);
-        } else {
-            purchaseRate = grossRate; // fallback to gross rate if quantity is invalid
-        }
-
-        if (purchaseRate.compareTo(BigDecimal.ZERO) == 0) {
+        if (purchaseRatePerUnit.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
         }
 
         // Profit Margin = ((Retail Rate - Purchase Rate) / Purchase Rate) * 100
-        BigDecimal profit = retailRate.subtract(purchaseRate);
-        BigDecimal margin = profit.divide(purchaseRate, 4, RoundingMode.HALF_UP);
+        BigDecimal profit = retailRatePerUnit.subtract(purchaseRatePerUnit);
+        BigDecimal margin = profit.divide(purchaseRatePerUnit, 4, RoundingMode.HALF_UP);
         return margin.multiply(BigDecimal.valueOf(100)).doubleValue();
     }
 
@@ -1283,9 +1275,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal billCost = billDiscount.subtract(billExpenseConsidered.add(billTax));
 
         // For purchase bills, legacy controller logic keeps totals negative.
-        // Compute final net as line net + bill expense items, then set negative on Bill.
-        BigDecimal finalNet = netTotalLines.add(BigDecimal.valueOf(billExpensesTotal));
-        getBill().setTotal(-grossTotalLines.doubleValue());
+        // Compute final net as line net + tax - discount + bill expenses considered for costing, then set negative on Bill.
+        BigDecimal finalNet = netTotalLines.add(billTax).subtract(billDiscount).add(billExpenseConsidered);
+        getBill().setTotal(-netTotalLines.doubleValue());
         getBill().setNetTotal(-finalNet.doubleValue());
         getBill().setSaleValue(totalRetail.doubleValue());
 
