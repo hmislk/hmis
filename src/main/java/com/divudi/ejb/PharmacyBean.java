@@ -1180,6 +1180,15 @@ public class PharmacyBean {
         // Ensure AMP is used for item tracking
         sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
+        
+        // Record itemBatch rates
+        if (fetchedStock.getItemBatch() != null) {
+            sh.setCostRate(fetchedStock.getItemBatch().getCostRate());
+            sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
+            sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
+            sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
+        }
+        
         sh.setItemStock(getStockQty(amp, d));
         sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
         sh.setTotalItemStock(getStockQty(amp));
