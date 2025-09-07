@@ -206,6 +206,10 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
     private Vmp vmp;
+    @ManyToOne
+    private Amp amp;
+    @ManyToOne
+    private Vmpp vmpp;
 
     @ManyToOne
     private Machine machine;
@@ -988,6 +992,22 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
+    }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+
+    public Vmpp getVmpp() {
+        return vmpp;
+    }
+
+    public void setVmpp(Vmpp vmpp) {
+        this.vmpp = vmpp;
     }
 
     public Date getEffectiveTo() {
