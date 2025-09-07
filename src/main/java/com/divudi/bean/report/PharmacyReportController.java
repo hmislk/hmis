@@ -3172,7 +3172,6 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             } else if ("consumptionDoc".equals(documentType)) {
-                billTypes.add(BillType.PharmacyIssue);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
             } else if ("transferIssueDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyTransferIssue);
@@ -3196,6 +3195,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
 
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
