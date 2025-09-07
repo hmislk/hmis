@@ -1258,6 +1258,13 @@ public class PharmacyBean {
             return;
         }
 
+        // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack) for stock calculations
+        Item originalItem = phItem.getBillItem().getItem();
+        Item amp = originalItem;
+        if (amp instanceof Ampp) {
+            amp = ((Ampp) amp).getAmp();
+        }
+
         StockHistory sh = new StockHistory();
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
@@ -1272,12 +1279,13 @@ public class PharmacyBean {
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
 
         sh.setStockQty(fetchedStock.getStock());
-        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getDepartment()));
-        sh.setItem(phItem.getBillItem().getItem());
+        // Use AMP for stock calculations since stocks are stored for AMPs only
+        sh.setItemStock(getStockQty(amp, phItem.getBillItem().getBill().getDepartment()));
+        sh.setItem(originalItem); // Keep original item reference for history
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setCreatedAt(new Date());
-        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getFromDepartment().getInstitution()));
-        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
+        sh.setInstitutionItemStock(getStockQty(amp, phItem.getBillItem().getBill().getFromDepartment().getInstitution()));
+        sh.setTotalItemStock(getStockQty(amp));
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
         } else {
@@ -2305,9 +2313,8 @@ public class PharmacyBean {
                     com.divudi.core.data.dto.StockAvailabilityDTO::getItemId
                 ));
         } catch (Exception e) {
-            // Log error and return empty map as fallback
-            System.err.println("Error in getBulkStockAvailability: " + e.getMessage());
-            e.printStackTrace();
+// Log error and return empty map as fallback
+                        e.printStackTrace();
             return new java.util.HashMap<>();
         }
     }

@@ -851,6 +851,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 continue;
             }
 
+            System.out.println("DirectPurchase: Processing item '" + i.getItem().getName() + "' (Type: " + i.getItem().getClass().getSimpleName() + ")");
+
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
             i.setCreatedAt(Calendar.getInstance().getTime());
