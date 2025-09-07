@@ -24,12 +24,11 @@
             background-color: #f8f9fa;
         }
         .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
+            margin: 0;
             background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
         }
         .header-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -86,11 +85,6 @@
                     </h2>
                     <p class="mb-0 mt-2 opacity-75">Pharmacy Analytics - Single Item Summary</p>
                 </div>
-                <div class="non-printable">
-                    <button type="button" class="btn btn-light btn-sm" onclick="window.print();">
-                        <i class="fas fa-print"></i> Print
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -106,12 +100,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Select Item</label>
                             <p:autoComplete id="lstSelect"    
                                             value="#{pharmacyController.pharmacyItem}" 
                                             forceSelection="true"
                                             styleClass="w-100"
+                                            inputStyleClass="w-100"
                                             completeMethod="#{ampController.completeAmpByName}" 
                                             var="myItem" 
                                             itemValue="#{myItem}" 
@@ -128,22 +123,24 @@
                                 <p:ajax update="btnViewDetails messages"/>
                             </p:autoComplete>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">From Date</label>
                             <p:calendar id="frmDate" 
                                         value="#{pharmacyController.fromDate}" 
                                         navigator="true"
                                         styleClass="w-100"
+                                        inputStyleClass="w-100"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                 <p:ajax event="dateSelect" update="btnViewDetails"/>
                             </p:calendar>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">To Date</label>
                             <p:calendar id="toDate" 
                                         value="#{pharmacyController.toDate}" 
                                         navigator="true"
                                         styleClass="w-100"
+                                        inputStyleClass="w-100"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                 <p:ajax event="dateSelect" update="btnViewDetails"/>
                             </p:calendar>
