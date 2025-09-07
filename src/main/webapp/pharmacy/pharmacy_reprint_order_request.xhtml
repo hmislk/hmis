@@ -22,9 +22,16 @@
                                 <div>
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Back To PO List" 
+                                        value="Back To Pharmacy Bill Search" 
                                         action="pharmacy_search_by_bill_type_atomic" 
-                                        class="ui-button-warning" 
+                                        class="ui-button-warning mx-1" 
+                                        icon="fas fa-arrow-left">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To PO List to Approve" 
+                                        action="#{searchController.navigateToPurchaseOrderApprove}" 
+                                        class="ui-button-warning mx-1" 
                                         icon="fas fa-arrow-left">
                                     </p:commandButton>
                                     <p:commandButton  
@@ -32,10 +39,10 @@
                                         action="pharmacy_cancel_po_request" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.referenceBill.creater ne null}" 
                                         ajax="false"
-                                        class="ui-button-danger mx-2" icon="fas fa-ban">                           
+                                        class="ui-button-danger mx-1" icon="fas fa-ban">                           
                                     </p:commandButton> 
                                     <p:commandButton 
-                                        class="ui-button-info" 
+                                        class="ui-button-info mx-1" 
                                         icon="fas fa-print" 
                                         value="Reprint" 
                                         ajax="false" >
