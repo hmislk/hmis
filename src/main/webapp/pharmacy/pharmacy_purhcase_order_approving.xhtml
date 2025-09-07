@@ -24,10 +24,10 @@
                                              action="#{purchaseOrderController.approve}">
                             </p:commandButton>
                             <p:commandButton ajax="false"  
-                                             value="Back To Po List" 
+                                             value="Back To PO List to Approve" 
                                              class="ui-button-warning" 
                                              icon="fas fa-arrow-left" 
-                                             action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true">
+                                             action="#{searchController.navigateToPurchaseOrderApprove}">
                             </p:commandButton>
                         </div>
                     </f:facet>
