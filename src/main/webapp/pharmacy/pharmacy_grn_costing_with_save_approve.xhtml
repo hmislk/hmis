@@ -107,7 +107,8 @@
                                               modal="true"
                                               closable="true"
                                               resizable="false"
-                                              class="w-75">
+                                              class="w-75"
+                                              position="top">
                                         <ph:bill_item_finance_details pbi="#{bi}"/>
                                     </p:dialog>
                                 </p:column>
@@ -203,7 +204,7 @@
                                         <f:ajax 
                                             event="blur" 
                                             execute="dRate" 
-                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
                                             listener="#{grnCostingController.lineDiscountRateChangedListner(bi)}"></f:ajax>
                                     </p:inputText>
                                 </p:column>
