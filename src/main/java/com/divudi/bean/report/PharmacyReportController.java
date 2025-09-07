@@ -2996,11 +2996,11 @@ public class PharmacyReportController implements Serializable {
         if (department != null) {
             jpql.append("and bill.department = :dept ");
             params.put("dept", department);
+        }
 
-            if (site != null) {
-                jpql.append("and bill.department.site = :site ");
-                params.put("site", site);
-            }
+        if (site != null) {
+            jpql.append("and bill.department.site = :site ");
+            params.put("site", site);
         }
 
         if (amp != null) {
