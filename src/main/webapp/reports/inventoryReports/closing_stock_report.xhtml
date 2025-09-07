@@ -185,7 +185,7 @@
                         <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.amp}"
-                                completeMethod="#{ampController.getPharmaceuticalAndStoreItemAmp}"
+                                completeMethod="#{ampController.completeAmp}"
                                 var="item"
                                 class="w-100"
                                 minQueryLength="3"
@@ -219,7 +219,7 @@
                                          ajax="false"
                                          value="Print All"
                                          onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
+                            <p:printer target="printPanel" />
                         </p:commandButton>
                         <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
