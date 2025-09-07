@@ -3264,9 +3264,9 @@ public class PharmacyReportController implements Serializable {
                 jpql += "and s.item=:itm ";
                 m.put("itm", item);
             }
-            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
-                jpql += " and s.department IS NOT NULL ";
-            }
+//            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
+//                jpql += " and s.department IS NOT NULL ";
+//            }
 
             jpql += " order by s.createdAt ";
             stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);

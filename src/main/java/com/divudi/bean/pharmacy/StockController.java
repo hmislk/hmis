@@ -310,7 +310,7 @@ public class StockController implements Serializable {
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
-        parameters.put("barcode", qry.trim());
+        
 
         boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by item code", true);
@@ -339,6 +339,7 @@ public class StockController implements Serializable {
 
         if (searchByBarcode) {
             sql.append("OR i.itemBatch.item.barcode = :barcode ");
+            parameters.put("barcode", qry.trim());
         }
 
         if (searchByGeneric) {
