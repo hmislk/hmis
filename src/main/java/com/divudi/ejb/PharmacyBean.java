@@ -1183,7 +1183,8 @@ public class PharmacyBean {
         
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            sh.setCostRate(fetchedStock.getItemBatch().getCostRate());
+            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            sh.setCostRate(costRate != null ? costRate : 0.0);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
