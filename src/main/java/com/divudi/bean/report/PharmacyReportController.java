@@ -3600,7 +3600,7 @@ public class PharmacyReportController implements Serializable {
 
         if (amp != null) {
             item = amp;
-            jpql.append("and sh.itemBatch.item = :itm ");
+            jpql.append("and (sh.itemBatch.item = :itm or sh.itemBatch.item.amp = :itm) ");
             params.put("itm", item);
         }
 
