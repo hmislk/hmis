@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillClassType;
@@ -71,6 +72,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -127,7 +130,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
-    
+
     private int tabIndex = 0;
 
     private YearMonthDay yearMonthDay;
@@ -965,7 +968,6 @@ public class PharmacyAdjustmentController implements Serializable {
             throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
         }
 
-
         ph.setPurchaseRate(ib.getCostRate() != null ? ib.getCostRate() : 0.0);
         ph.setBeforeAdjustmentValue(oldCostRate);
         ph.setAfterAdjustmentValue(newCostRate);
@@ -1185,20 +1187,16 @@ public class PharmacyAdjustmentController implements Serializable {
     private void saveExDateAdjustmentBillItems() {
         billItem = null;
         BillItem tbi = getBillItem();
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
-        ph.setBillItem(null);
-//        ph.setPurchaseRate(itemBatch.getPurcahseRate());
-//        ph.setRetailRate(itemBatch.getRetailsaleRate());
-        ph.setDoe(itemBatch.getDateOfExpire());
+        tbi.getPharmaceuticalBillItem().setDoe(itemBatch.getDateOfExpire());
         // Set before and after adjustment expiry dates for the bill item
-        ph.setBeforeAdjustmentExpiry(itemBatch.getDateOfExpire());
-        ph.setAfterAdjustmentExpiry(exDate);
+        tbi.getPharmaceuticalBillItem().setBeforeAdjustmentExpiry(itemBatch.getDateOfExpire());
+        tbi.getPharmaceuticalBillItem().setAfterAdjustmentExpiry(exDate);
         //tbi.setItem(getStock().getItemBatch().getItem());
         //itemBatch.setDateOfExpire(exDate);
         //tbi.setRate(rsr);
         //pharmaceutical Bill Item
-        ph.setStock(stock);
+        tbi.getPharmaceuticalBillItem().setStock(stock);
         //Rates
         //Values
         tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
@@ -1210,20 +1208,11 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
-
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-        tbi.setPharmaceuticalBillItem(ph);
-
         if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        } else {
             getBillItemFacade().edit(tbi);
         }
-
-        ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-        getItemBatchFacade().edit(itemBatch);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
@@ -1772,8 +1761,10 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
         // Normalize selected expiry to end-of-month when month-year pattern is used
-        exDate = normalizeToEndOfMonth(exDate);
-
+        boolean expiryIsAlwaysMonthEnd = configOptionApplicationController.getBooleanValueByKey("Always Set Expiry Date to Month End", false);
+        if (expiryIsAlwaysMonthEnd) {
+            exDate = normalizeToEndOfMonth(exDate);
+        }
         if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
