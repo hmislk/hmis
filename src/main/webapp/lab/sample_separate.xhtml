@@ -91,7 +91,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                                     cellNavigation="true">
                                     <p:column selectionBox="true" style="width:16px;text-align:center"/>
                                     
-                                    <p:column headerText="Componant" width="12em;">
+                                    <p:column headerText="Component" width="12em;">
                                         <h:outputText value="#{psc.investigationComponant.name}" />
                                     </p:column>
                                     <p:column headerText="Investigation Name">
@@ -106,12 +106,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                             <div class="col-md-12 d-flex justify-content-end gap-3">
                                 <p:inputText
                                     style="width: 500px;"
-                                        placeholder="Sample Separate Reason"
+                                        placeholder="Sample Separation Reason"
                                         value="#{patientInvestigationController.comments}" >
                                     </p:inputText>
                                 <p:commandButton 
                                     ajax="false"
-                                    value="Separate and Crete New Sample"
+                                    value="Separate and Create New Sample"
                                     action="#{patientInvestigationController.sampleSeparateAndCreateNewSample()}"
                                     icon="fa fa-plus"
                                     class="ui-button-success">
