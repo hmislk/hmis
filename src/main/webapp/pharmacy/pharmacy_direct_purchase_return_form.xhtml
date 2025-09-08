@@ -10,47 +10,47 @@
 
     <ui:define name="content">
         <h:form>
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateGrnReturn')}" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateDirectPurchaseReturn')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn') and !grnReturnWorkflowController.printPreview}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateDirectPurchaseReturn') and !directPurchaseReturnWorkflowController.printPreview}" >
 
                 <p:panel 
-                    header="GRN Return - Workflow Process" 
+                    header="Direct Purchase Return - Workflow Process" 
                     class="w-100">
 
                     <f:facet name="header" >
                         <div class="row">
                             <div class="text-start col-3" >
-                                <h:outputLabel value="GRN Return" ></h:outputLabel>
+                                <h:outputLabel value="Direct Purchase Return" ></h:outputLabel>
                             </div>
                             <div class="text-end col-9" >
                                 <p:commandButton 
-                                    value="List GRNs To Create a new Return" 
-                                    action="#{grnReturnWorkflowController.navigateToCreateGrnReturn}"
+                                    value="List Purchases To Create a new Return" 
+                                    action="#{directPurchaseReturnWorkflowController.navigateToCreateDirectPurchaseReturn}"
                                     ajax="false"
                                     icon="fas fa-plus-circle" 
                                     class="ui-button-info ui-button-outlined mx-1"
-                                    rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}"
-                                    title="Create a new GRN Return Request">
+                                    rendered="#{webUserController.hasPrivilege('CreateDirectPurchaseReturn')}"
+                                    title="Create a new Direct Purchase Return Request">
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="List of GRN Returns to Finalize" 
-                                    action="#{grnReturnWorkflowController.navigateToFinalizeGrnReturn}"
+                                    value="List of Direct Purchase Returns to Finalize" 
+                                    action="#{directPurchaseReturnWorkflowController.navigateToFinalizeDirectPurchaseReturn}"
                                     ajax="false"
                                     icon="fas fa-tasks" 
                                     class="ui-button-info ui-button-outlined mx-1"
-                                    rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}"
-                                    title="Finalize GRN Return Requests">
+                                    rendered="#{webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}"
+                                    title="Finalize Direct Purchase Return Requests">
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="List of GRN Returns To Approve" 
-                                    action="#{grnReturnWorkflowController.navigateToApproveGrnReturn}"
+                                    value="List of Direct Purchase Returns To Approve" 
+                                    action="#{directPurchaseReturnWorkflowController.navigateToApproveDirectPurchaseReturn}"
                                     ajax="false"
                                     icon="fas fa-check-circle" 
                                     class="ui-button-info ui-button-outlined mx-1"
-                                    rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}"
-                                    title="Approve GRN Return Requests">
+                                    rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}"
+                                    title="Approve Direct Purchase Return Requests">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -61,7 +61,7 @@
                         <div class="col-9" >
                             <p:dataTable 
                                 var="ph" 
-                                value="#{grnReturnWorkflowController.billItems}"
+                                value="#{directPurchaseReturnWorkflowController.billItems}"
                                 id="itemList" 
                                 rowKey="#{ph.id != null ? ph.id : ph.hashCode()}" >
 
@@ -75,7 +75,7 @@
                                         icon="pi pi-search"
                                         id="btnViewSelectedItemDetails"
                                         title="View Item Details"
-                                        action="#{grnReturnWorkflowController.displayItemDetails(ph)}"
+                                        action="#{directPurchaseReturnWorkflowController.displayItemDetails(ph)}"
                                         update=":#{p:resolveFirstComponentWithId('historyPanel',view).clientId}"
                                         process="@this"
                                         class="ui-button-icon-only mx-3"/>
@@ -123,13 +123,13 @@
                                     headerText="Already Returned Qty" >
                                     <h:outputLabel
                                         id="lblAlreadyReturnedQty"
-                                        value="#{grnReturnWorkflowController.getAlreadyReturnedQuantity(ph.referanceBillItem)}" />
+                                        value="#{directPurchaseReturnWorkflowController.getAlreadyReturnedQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column 
                                     width="5em" 
                                     headerText="Already Returned Free Qty" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
-                                    <h:outputLabel  value="#{grnReturnWorkflowController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
+                                    <h:outputLabel  value="#{directPurchaseReturnWorkflowController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column 
                                     width="6em" 
@@ -137,7 +137,7 @@
                                     styleClass="text-center"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <div class="badge bg-info text-white">
-                                        <h:outputLabel value="#{grnReturnWorkflowController.getRemainingQtyToReturn(ph.referanceBillItem)}">
+                                        <h:outputLabel value="#{directPurchaseReturnWorkflowController.getRemainingQtyToReturn(ph.referanceBillItem)}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </div>
@@ -148,7 +148,7 @@
                                     styleClass="text-center"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <div class="badge bg-success text-white">
-                                        <h:outputLabel value="#{grnReturnWorkflowController.getRemainingFreeQtyToReturn(ph.referanceBillItem)}">
+                                        <h:outputLabel value="#{directPurchaseReturnWorkflowController.getRemainingFreeQtyToReturn(ph.referanceBillItem)}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </div>
@@ -159,14 +159,14 @@
                                     styleClass="text-center"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
                                     <div class="badge bg-warning text-dark">
-                                        <h:outputLabel value="#{grnReturnWorkflowController.getRemainingTotalQtyToReturn(ph.referanceBillItem)}">
+                                        <h:outputLabel value="#{directPurchaseReturnWorkflowController.getRemainingTotalQtyToReturn(ph.referanceBillItem)}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </div>
                                 </p:column>
                                 <p:column
                                     width="5em" 
-                                    headerText="Return rate (#{grnReturnWorkflowController.returnRateLabel})" >
+                                    headerText="Return rate (#{directPurchaseReturnWorkflowController.returnRateLabel})" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
@@ -179,7 +179,7 @@
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue returnTotal" listener="#{grnReturnWorkflowController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue returnTotal" listener="#{directPurchaseReturnWorkflowController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -200,7 +200,7 @@
                                             event="blur" 
                                             process="@this"
                                             update="txtLineReturnValue returnTotal messages @form" 
-                                            listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
+                                            listener="#{directPurchaseReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
@@ -219,7 +219,7 @@
                                             process="@this"
                                             event="blur" 
                                             update="txtLineReturnValue returnTotal messages @form" 
-                                            listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
+                                            listener="#{directPurchaseReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
                                 </p:column>
@@ -236,7 +236,7 @@
                                             event="blur" 
                                             process="@this" 
                                             update="txtLineReturnValue returnTotal messages @form"
-                                            listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
+                                            listener="#{directPurchaseReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>
 
@@ -252,7 +252,7 @@
                                         icon="fas fa-trash-alt"
                                         class="ui-button-danger ui-button-outlined"
                                         title="Remove this item from return"
-                                        action="#{grnReturnWorkflowController.deleteReturnItem(ph)}"
+                                        action="#{directPurchaseReturnWorkflowController.deleteReturnItem(ph)}"
                                         ajax="true"
                                         process="@this"
                                         update="itemList returnTotal messages"
@@ -285,27 +285,29 @@
                                         <div class="text-end col-9" >
                                             <p:commandButton 
                                                 value="Save" 
-                                                action="#{grnReturnWorkflowController.saveRequest}"
+                                                action="#{directPurchaseReturnWorkflowController.saveRequest}"
                                                 ajax="false"
-                                                icon="#{grnReturnWorkflowController.currentBill.id != null ? 'pi pi-refresh' : 'pi pi-save'}" 
+                                                icon="#{directPurchaseReturnWorkflowController.currentBill.id != null ? 'pi pi-refresh' : 'pi pi-save'}" 
                                                 class="ui-button-success mx-1"
-                                                rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
+                                                            and webUserController.hasPrivilege('CreateDirectPurchaseReturn')}">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Finalize" 
-                                                action="#{grnReturnWorkflowController.finalizeRequest}"
+                                                action="#{directPurchaseReturnWorkflowController.finalizeRequest}"
                                                 ajax="false"
                                                 icon="pi pi-check" 
                                                 class="ui-button-warning mx-1"
-                                                rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
+                                                            and webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Approve" 
-                                                action="#{grnReturnWorkflowController.approve}"
+                                                action="#{directPurchaseReturnWorkflowController.approve}"
                                                 ajax="false"
                                                 icon="fas fa-check-circle" 
                                                 class="ui-button-success mx-1"
-                                                rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveGrnReturn')}">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}">
                                             </p:commandButton>
                                         </div>
                                     </div>
@@ -317,12 +319,12 @@
                                 </f:facet>
 
                                 <p:outputLabel value="Supplier : " />
-                                <p:outputLabel value="#{grnReturnWorkflowController.currentBill.toInstitution.name}" />
+                                <p:outputLabel value="#{directPurchaseReturnWorkflowController.currentBill.toInstitution.name}" />
                                 <p:outputLabel  value="Return Amount : " />
                                 <p:outputLabel 
                                     id="returnTotal" 
                                     class="h3 text-success"
-                                    value="#{grnReturnWorkflowController.currentBill.billFinanceDetails.netTotal}" >
+                                    value="#{directPurchaseReturnWorkflowController.currentBill.billFinanceDetails.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
 
@@ -333,54 +335,53 @@
                                     <p:inputTextarea 
                                         id="txtReturnComments"
                                         class="w-100"
-                                        value="#{grnReturnWorkflowController.currentBill.comments}" 
+                                        value="#{directPurchaseReturnWorkflowController.currentBill.comments}" 
                                         placeholder="Enter reason for returning these items..."
                                         ></p:inputTextarea>
                                     <p:message for="txtReturnComments" />
                                 </h:panelGroup>
 
-                                <p:outputLabel value="Payment Method:" />
                                 <h:panelGroup >
+                                    <p:outputLabel value="Payment Method:" />
                                     <p:selectOneMenu   
                                         id="cmbPaymentMethod" 
-                                        value="#{grnReturnWorkflowController.currentBill.paymentMethod}"
+                                        value="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod}"
                                         required="true"
                                         requiredMessage="Please select a payment method">
                                         <f:selectItem itemLabel="Select payment method"/>
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                        <p:ajax process="cmbPaymentMethod" update="paymentDetails" />
+                                        <p:ajax process="cmbPaymentMethod" update="paymentMethodDetails" />
                                     </p:selectOneMenu>
-                                    <p:message for="cmbPaymentMethod" />
                                 </h:panelGroup>
                             </p:panelGrid>
 
-                            <h:panelGroup id="paymentDetails" >
+                            
+                            <h:panelGroup id="paymentMethodDetails" >
                                 <h:panelGroup
-                                    class="my-1"
+                                    class="row my-1"
                                     layout="block"  
-                                    id="creditCard" rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'Card'}" >
-                                    <pa:creditCard paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                    id="creditCard" rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'Card'}" >
+                                    <pa:creditCard paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
                                 </h:panelGroup>
                                 <h:panelGroup
-                                    class="my-1"
+                                    class="row my-1"
                                     layout="block" 
-                                    id="cheque"  rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'Cheque'}" >
-                                    <pa:cheque paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                    id="cheque"  rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'Cheque'}" >
+                                    <pa:cheque paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
                                 </h:panelGroup>
                                 <h:panelGroup 
-                                    class="my-1"
+                                    class="row my-1"
                                     layout="block" 
-                                    id="slip"  rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'Slip'}" >
-                                    <pa:slip paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                    id="slip"  rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'Slip'}" >
+                                    <pa:slip paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
                                 </h:panelGroup>
                                 <h:panelGroup 
-                                    class="my-1"
+                                    class="row my-1"
                                     layout="block" 
-                                    id="ewallet"  rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'ewallet'}" >
-                                    <pa:ewallet paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                    id="ewallet"  rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'ewallet'}" >
+                                    <pa:ewallet paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
                                 </h:panelGroup>
                             </h:panelGroup>
-
 
                             <p:panelGrid 
                                 columns="2"
@@ -388,30 +389,30 @@
                                 columnClasses="text-start, text-end"
                                 class="w-100 my-1">
                                 <f:facet name="header" >
-                                    <h:outputText value="GRN Details" ></h:outputText>
+                                    <h:outputText value="Purchase Details" ></h:outputText>
                                     <p:commandButton 
-                                        value="View GRN" 
+                                        value="View Purchase" 
                                         ajax="false" 
                                         class="ui-button-info" 
                                         icon="fa fa-eye"
                                         style="float: right;"
                                         action="pharmacy_reprint_purchase?faces-redirect=true">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{grnReturnWorkflowController.originalGrn}"/>
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{directPurchaseReturnWorkflowController.originalDirectPurchase}"/>
                                     </p:commandButton>
                                 </f:facet>
 
-                                <h:outputLabel value="GRN Bill No :"/>
-                                <h:outputLabel value="#{grnReturnWorkflowController.originalGrn.deptId}"/>
-                                <h:outputLabel value="GRN Net Total :"/>
-                                <h:outputLabel value="#{grnReturnWorkflowController.originalGrn.netTotal}">
+                                <h:outputLabel value="Purchase Bill No :"/>
+                                <h:outputLabel value="#{directPurchaseReturnWorkflowController.originalDirectPurchase.deptId}"/>
+                                <h:outputLabel value="Purchase Net Total :"/>
+                                <h:outputLabel value="#{directPurchaseReturnWorkflowController.originalDirectPurchase.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
-                                <h:outputLabel value="GRN Date :"/>
-                                <h:outputLabel value="#{grnReturnWorkflowController.originalGrn.invoiceDate}">
+                                <h:outputLabel value="Purchase Date :"/>
+                                <h:outputLabel value="#{directPurchaseReturnWorkflowController.originalDirectPurchase.invoiceDate}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="Supplier :"/>
-                                <h:outputLabel value="#{grnReturnWorkflowController.originalGrn.fromInstitution.name}"/>
+                                <h:outputLabel value="#{directPurchaseReturnWorkflowController.originalDirectPurchase.fromInstitution.name}"/>
                             </p:panelGrid>
 
 
@@ -422,11 +423,11 @@
 
             </h:panelGroup>
 
-            <p:panel rendered="#{grnReturnWorkflowController.printPreview}" class="w-100">
+            <p:panel rendered="#{directPurchaseReturnWorkflowController.printPreview}" class="w-100">
                 <f:facet name="header" >
                     <div class="row">
                         <div class="text-start col-3" >
-                            <h:outputLabel value="GRN Return - Print Preview" ></h:outputLabel>
+                            <h:outputLabel value="Direct Purchase Return - Print Preview" ></h:outputLabel>
                         </div>
                         <div class="text-end col-9" >
                             <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print" class="ui-button-success mx-1">
@@ -435,42 +436,42 @@
                             <p:commandButton
                                 ajax="false"
                                 value="New Return Request"
-                                action="#{grnReturnWorkflowController.resetBillValues}"
+                                action="#{directPurchaseReturnWorkflowController.resetBillValues}"
                                 icon="fas fa-plus"
                                 class="ui-button-success mx-1"/>
                             <p:commandButton 
-                                value="List GRNs To Create a new Return" 
-                                action="#{grnReturnWorkflowController.navigateToCreateGrnReturn}"
+                                value="List Purchases To Create a new Return" 
+                                action="#{directPurchaseReturnWorkflowController.navigateToCreateDirectPurchaseReturn}"
                                 ajax="false"
                                 icon="fas fa-plus-circle" 
                                 class="ui-button-info ui-button-outlined mx-1"
-                                rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}"
-                                title="Create a new GRN Return Request">
+                                rendered="#{webUserController.hasPrivilege('CreateDirectPurchaseReturn')}"
+                                title="Create a new Direct Purchase Return Request">
                             </p:commandButton>
                             <p:commandButton 
-                                value="List of GRN Returns to Finalize" 
-                                action="#{grnReturnWorkflowController.navigateToFinalizeGrnReturn}"
+                                value="List of Direct Purchase Returns to Finalize" 
+                                action="#{directPurchaseReturnWorkflowController.navigateToFinalizeDirectPurchaseReturn}"
                                 ajax="false"
                                 icon="fas fa-tasks" 
                                 class="ui-button-info ui-button-outlined mx-1"
-                                rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}"
-                                title="Finalize GRN Return Requests">
+                                rendered="#{webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}"
+                                title="Finalize Direct Purchase Return Requests">
                             </p:commandButton>
                             <p:commandButton 
-                                value="List of GRN Returns To Approve" 
-                                action="#{grnReturnWorkflowController.navigateToApproveGrnReturn}"
+                                value="List of Direct Purchase Returns To Approve" 
+                                action="#{directPurchaseReturnWorkflowController.navigateToApproveDirectPurchaseReturn}"
                                 ajax="false"
                                 icon="fas fa-check-circle" 
                                 class="ui-button-info ui-button-outlined mx-1"
-                                rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}"
-                                title="Approve GRN Return Requests">
+                                rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}"
+                                title="Approve Direct Purchase Return Requests">
                             </p:commandButton>
                         </div>
                     </div>
                 </f:facet>
 
                 <p:panel id="gpBillPreview">
-                    <ph:grn_return_receipt_with_costing bill="#{grnReturnWorkflowController.currentBill}"/>
+                    <ph:direct_purchase_return_receipt_with_costing bill="#{directPurchaseReturnWorkflowController.currentBill}"/>
                 </p:panel>
             </p:panel>
 

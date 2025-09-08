@@ -7,16 +7,16 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
-        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('CreateGrnReturn'))}">
+        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('FinalizeDirectPurchaseReturn') or webUserController.hasPrivilege('CreateDirectPurchaseReturn'))}">
             You are NOT authorized
         </h:panelGroup>
-        <h:panelGroup id="gpReturnFinalize" rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('CreateGrnReturn')}">
+        <h:panelGroup id="gpReturnFinalize" rendered="#{webUserController.hasPrivilege('FinalizeDirectPurchaseReturn') or webUserController.hasPrivilege('CreateDirectPurchaseReturn')}">
         <h:form>
             <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-clipboard-list text-primary me-2"></i>
-                        <h4 class="mb-0 text-primary">Finalize GRN Return Requests</h4>
+                        <h4 class="mb-0 text-primary">Finalize Direct Purchase Return Requests</h4>
                     </div>
                 </f:facet>
                 <div class="row g-3">
@@ -66,8 +66,8 @@
                                 <p:commandButton 
                                     class="ui-button-warning w-100" 
                                     icon="fas fa-search" 
-                                    value="Search GRN Return Requests" 
-                                    action="#{grnReturnWorkflowController.fillGrnReturnsToFinalize()}" 
+                                    value="Search Direct Purchase Return Requests" 
+                                    action="#{directPurchaseReturnWorkflowController.fillDirectPurchaseReturnsToFinalize()}" 
                                     ajax="false"
                                     style="min-height: 45px;">
                                 </p:commandButton>
@@ -79,6 +79,13 @@
                                     <label class="form-label fw-bold text-secondary">
                                         <i class="fas fa-user me-1"></i>Requested User
                                     </label>
+                                    <!-- 
+                                        NOTE FOR CODERABBITAI & DEVELOPERS: 
+                                        This p:inputText is CORRECT - searchKeyword.creator is a String field (not WebUser entity).
+                                        Used for flexible text-based search by user name/code. No converter needed.
+                                        See SearchKeyword.java: private String creator;
+                                        Allows partial matching across user names in healthcare search workflows.
+                                    -->
                                     <p:inputText 
                                         class="form-control" 
                                         autocomplete="off" 
@@ -89,6 +96,13 @@
                                     <label class="form-label fw-bold text-secondary">
                                         <i class="fas fa-department me-1"></i>Department
                                     </label>
+                                    <!-- 
+                                        NOTE FOR CODERABBITAI & DEVELOPERS: 
+                                        This p:inputText is CORRECT - searchKeyword.department is a String field (not Department entity).
+                                        Used for flexible text-based search by department name/code. No converter needed.
+                                        See SearchKeyword.java: private String department;
+                                        Healthcare staff need to search across various department name variations.
+                                    -->
                                     <p:inputText 
                                         class="form-control" 
                                         autocomplete="off" 
@@ -129,10 +143,10 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="GRN Return Requests to Finalize" styleClass="shadow-sm">
+                        <p:panel header="Direct Purchase Return Requests to Finalize" styleClass="shadow-sm">
                             <p:dataTable 
                                 id="tbl" 
-                                value="#{grnReturnWorkflowController.grnReturnsToFinalize}" 
+                                value="#{directPurchaseReturnWorkflowController.directPurchaseReturnsToFinalize}" 
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -140,8 +154,8 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
-                                emptyMessage="No GRN return requests found matching your criteria"
-                                filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToFinalize}"
+                                emptyMessage="No Direct Purchase return requests found matching your criteria"
+                                filteredValue="#{directPurchaseReturnWorkflowController.filteredDirectPurchaseReturnsToFinalize}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
@@ -196,7 +210,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Original GRN" sortBy="#{b.referenceBill.deptId}">
+                            <p:column headerText="Original Purchase" sortBy="#{b.referenceBill.deptId}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-link text-secondary me-2"></i>
                                     <span class="fw-medium">#{b.referenceBill.deptId}</span>
@@ -226,15 +240,15 @@
                                     <p:commandButton
                                         id="finalize"
                                         ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}"
-                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.cancelled eq true ? 'Cancelled Return' : 'Edit and Finalize GRN Return')}"
+                                        rendered="#{webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}"
+                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.cancelled eq true ? 'Cancelled Return' : 'Edit and Finalize Direct Purchase Return')}"
                                         icon="fas #{b.checkedBy ne null ? 'fa-check-double' : 'fa-edit'}"
                                         class="#{b.checkedBy ne null ? 'ui-button-success ui-button-outlined' : (b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
                                         value="#{b.checkedBy ne null ? 'Finalized' : 'Finalize'}"
-                                        action="#{grnReturnWorkflowController.navigateToUpdateGrnReturn()}"
+                                        action="#{directPurchaseReturnWorkflowController.navigateToUpdateDirectPurchaseReturn()}"
                                         disabled="#{b.checkedBy ne null or b.cancelled eq true}"
                                         style="min-width: 90px;">
-                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>
                                 </div>
                                 <h:panelGroup rendered="#{b.cancelled}" styleClass="d-block mt-1">

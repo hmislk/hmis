@@ -2182,11 +2182,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        List<BillType> billTypes = Arrays.asList(
-                BillType.PharmacyDisposalIssue,
-                BillType.PharmacyIssue
-        );
-        retrieveBillItems("b.billType", billTypes);
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyDisposalIssue));
         calculateStockConsumptionNetTotal(billItems);
     }
 
@@ -3000,11 +2996,11 @@ public class PharmacyReportController implements Serializable {
         if (department != null) {
             jpql.append("and bill.department = :dept ");
             params.put("dept", department);
+        }
 
-            if (site != null) {
-                jpql.append("and bill.department.site = :site ");
-                params.put("site", site);
-            }
+        if (site != null) {
+            jpql.append("and bill.department.site = :site ");
+            params.put("site", site);
         }
 
         if (amp != null) {
@@ -3176,8 +3172,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             } else if ("consumptionDoc".equals(documentType)) {
-                billTypes.add(BillType.PharmacyIssue);
-
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
             } else if ("transferIssueDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyTransferIssue);
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
@@ -3200,6 +3195,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
 
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -3266,9 +3262,9 @@ public class PharmacyReportController implements Serializable {
                 jpql += "and s.item=:itm ";
                 m.put("itm", item);
             }
-            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
-                jpql += " and s.department IS NOT NULL ";
-            }
+//            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
+//                jpql += " and s.department IS NOT NULL ";
+//            }
 
             jpql += " order by s.createdAt ";
             stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
@@ -4106,11 +4102,7 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateStockConsumption() {
         try {
-            List<BillType> billTypes = Arrays.asList(
-                    BillType.PharmacyDisposalIssue,
-                    BillType.PharmacyIssue
-            );
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", billTypes);
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyDisposalIssue));
             cogsRows.put("Stock Consumption", stockConsumptions);
 
         } catch (Exception e) {

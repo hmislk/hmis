@@ -271,6 +271,8 @@ public class Bill implements Serializable, RetirableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -827,10 +829,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }

@@ -6,14 +6,14 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="subcontent">
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateGrnReturn')}" >
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateDirectPurchaseReturn')}" >
             You are NOT authorized
         </h:panelGroup>
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}" >
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateDirectPurchaseReturn')}" >
         <h:form>
             <p:panel> 
                 <f:facet name="header">
-                    <h:outputLabel value="Select GRN for Return"/>
+                    <h:outputLabel value="Select Direct Purchase for Return"/>
                 </f:facet>
                 <div class="row">
                     <div class="col-2">
@@ -25,12 +25,10 @@
                             <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <h:outputLabel/>
-                            <h:outputLabel value="Grn No"/>
+                            <h:outputLabel value="Purchase No"/>
                             <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                             <h:outputLabel value="Invoice Number"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.number}" />
-                            <h:outputLabel value="Po Number"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
                             <h:outputLabel value="Item Name"/>    
                             <p:autoComplete 
                                 id="item"
@@ -48,11 +46,14 @@
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                 </p:column>
                             </p:autoComplete>
-                            <h:outputLabel value="Distributor"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.fromInstitution}" />
+                              <h:outputLabel value="Distributor"/>
+                              <p:inputText 
+                                  id="distributor"
+                                  class="w-100"
+                                  value="#{searchController.searchKeyword.fromInstitution}"/>
                             <h:outputLabel value="Po Value"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                            <h:outputLabel value="Grn Value"/>
+                            <h:outputLabel value="Purchase Value"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                             <p:commandButton 
                                 class="w-100 ui-button-warning"
@@ -60,7 +61,7 @@
                                 id="btnSearch"
                                 ajax="false" 
                                 value="Search"
-                                action="#{searchController.createGrnTable}"/>
+                                action="#{searchController.createDirectPurchaseTable}"/>
 
                         </h:panelGrid>
                     </div>
@@ -80,7 +81,8 @@
                             >
 
                             <p:column 
-                                headerText="Supplier" 
+                                width="12em"
+                                headerText="Distributor" 
                                 sortBy="#{p.fromInstitution.name}" 
                                 filterBy="#{p.fromInstitution.name}" 
                                 filterMatchMode="contains">
@@ -88,59 +90,25 @@
                             </p:column>
 
                             <p:column 
-                                headerText="PO No" 
-                                width="10em" 
-                                sortBy="#{p.referenceBill.deptId}" 
-                                filterBy="#{p.referenceBill.deptId}" 
-                                filterMatchMode="contains">
-                                <h:outputText value="#{p.referenceBill.deptId}" />
-                            </p:column>
-
-                            <p:column 
-                                headerText="GRN No" 
-                                width="10em" 
+                                headerText="Purchase No" 
+                                width="8em" 
                                 sortBy="#{p.deptId}" 
                                 filterBy="#{p.deptId}" 
                                 filterMatchMode="contains">
                                 <h:outputText value="#{p.deptId}" />
                             </p:column>
-                            
-                              <p:column 
+
+                            <p:column 
                                 headerText="Invoice No" 
-                                width="10em" 
+                                width="8em" 
                                 sortBy="#{p.invoiceNumber}" 
                                 filterBy="#{p.invoiceNumber}" 
                                 filterMatchMode="contains">
-                                  <h:outputText value="#{p.invoiceNumber}" />
+                                <h:outputText value="#{p.invoiceNumber}" />
                             </p:column>
 
-
                             <p:column 
-                                headerText="PO Details" 
-                                width="16em">
-                                <div class="d-flex flex-column">
-                                    <div class="mb-1">
-                                        <h:outputText styleClass="fw-bold text-primary" value="#{p.referenceBill.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputText>
-                                        <br/>
-                                        <h:outputText styleClass="text-muted small" value="by #{p.referenceBill.creater.webUserPerson.name}" />
-                                    </div>
-                                    <h:panelGroup rendered="#{p.referenceBill.cancelled}">
-                                        <div class="mb-1">
-                                            <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
-                                            <h:outputText styleClass="text-danger" value="#{p.referenceBill.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText styleClass="text-danger small" value="by #{p.referenceBill.cancelledBill.creater.webUserPerson.name}" />
-                                        </div>
-                                    </h:panelGroup>
-                                </div>
-                            </p:column>
-                            
-                            <p:column 
-                                headerText="GRN Details" 
+                                headerText="Purchase Details" 
                                 width="16em">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
@@ -184,19 +152,7 @@
                             </p:column>
 
                             <p:column 
-                                headerText="PO Value" 
-                                width="10em" 
-                                sortBy="#{p.referenceBill.netTotal}" 
-                                filterBy="#{p.referenceBill.netTotal}" 
-                                filterMatchMode="equals"
-                                styleClass="text-end">
-                                <h:outputText value="#{p.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column 
-                                headerText="GRN Value" 
+                                headerText="Purchase Value" 
                                 width="10em" 
                                 sortBy="#{p.netTotal}" 
                                 filterBy="#{p.netTotal}" 
@@ -213,16 +169,16 @@
                                     icon="pi pi-undo"
                                     title="Create Return"
                                     value="Create Return"
-                                    action="#{grnReturnWorkflowController.navigateToCreateGrnReturnFromGrn()}"
+                                    action="#{directPurchaseReturnWorkflowController.navigateToCreateDirectPurchaseReturnFromPurchase()}"
                                     disabled="#{p.cancelled or p.fullReturned}"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
-                                    <f:setPropertyActionListener target="#{grnReturnWorkflowController.selectedGrn}" value="#{p}" />
+                                    <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.selectedDirectPurchase}" value="#{p}" />
                                 </p:commandButton>
                             </p:column>
 
                             <p:column 
                                 headerText="Previous Returns" 
-                                width="40em">
+                                width="32em">
                                 <h:dataTable 
                                     value="#{p.listOfBill}" 
                                     var="b" 
@@ -252,7 +208,7 @@
                                     <h:column class="text-center" >
                                         <h:commandButton 
                                             value="View" 
-                                            action="pharmacy_reprint_grn_return"
+                                            action="pharmacy_reprint_direct_purchase_return"
                                             styleClass="btn btn-sm btn-outline-primary px-2 py-0">
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}" />
                                         </h:commandButton>
