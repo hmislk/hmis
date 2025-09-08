@@ -125,14 +125,6 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
     }
 
-    // Constructor including field for retail rate adjustments
-    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
-                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
-                    Double purchaseRate, Double wholesaleRate, Double beforeRetailAdjustmentValue) {
-        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
-        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
-    }
-
 
     // Constructor for retail sale autocomplete (includes both stock qty and total stock qty)
     public StockDTO(Long id, String itemName, String code, String genericName,
