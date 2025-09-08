@@ -127,7 +127,7 @@ public class PatientSampleComponant implements Serializable, RetirableEntity {
 
     @Override
     public String toString() {
-        return "com.divudi.core.entity.lab.PatientSample[ id=" + id + " ]";
+        return "com.divudi.core.entity.lab.PatientSampleComponant[ id=" + id + " ]";
     }
 
     public Patient getPatient() {
