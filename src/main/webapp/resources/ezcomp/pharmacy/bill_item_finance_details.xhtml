@@ -109,7 +109,7 @@
                     <!-- User Input Values -->
                     <div class="col-6">
                         <h6 class="text-primary mb-3">📝 User Input Values</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
                             <p:outputLabel value="Purchase Rate (per unit)" />
                             <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -140,7 +140,7 @@
                     <!-- Line-Level Calculations -->
                     <div class="col-6">
                         <h6 class="text-success mb-3">🧮 Line-Level Calculations</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
                             <p:outputLabel value="Line Gross Total" />
                             <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossTotal}" styleClass="text-end">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -175,7 +175,7 @@
                     <!-- Bill-Level Distributions -->
                     <div class="col-6">
                         <h6 class="text-warning mb-3">🏦 Bill-Level Distributions</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
                             <p:outputLabel value="Bill Discount Share" />
                             <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billDiscount}" styleClass="text-end">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -201,7 +201,7 @@
                     <!-- Final Totals -->
                     <div class="col-6">
                         <h6 class="text-danger mb-3">📊 Final Totals (Line + Bill)</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
                             <p:outputLabel value="Total Discount" />
                             <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalDiscount}" styleClass="text-end">
                                 <f:convertNumber pattern="#,##0.00" />

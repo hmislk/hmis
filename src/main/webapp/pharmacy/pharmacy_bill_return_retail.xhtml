@@ -13,7 +13,15 @@
             <h:panelGroup rendered="#{!saleReturnController.printPreview}"  >
                 <p:panel class="w-100">
                     <f:facet name="header" >
-                        <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
+                            <p:commandButton 
+                                ajax="false"
+                                value="Back to Reprint" 
+                                class="ui-button-secondary"
+                                icon="fa fa-arrow-left"
+                                action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />
+                        </div>
                     </f:facet>
 
                     <div class="row" >

@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
         <h:form>
@@ -339,8 +340,48 @@
                                         ></p:inputTextarea>
                                     <p:message for="txtReturnComments" />
                                 </h:panelGroup>
+
+                                <h:panelGroup >
+                                    <p:outputLabel value="Payment Method:" />
+                                    <p:selectOneMenu   
+                                        id="cmbPaymentMethod" 
+                                        value="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod}"
+                                        required="true"
+                                        requiredMessage="Please select a payment method">
+                                        <f:selectItem itemLabel="Select payment method"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <p:ajax process="cmbPaymentMethod" update="paymentMethodDetails" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
                             </p:panelGrid>
 
+                            
+                            <h:panelGroup id="paymentMethodDetails" >
+                                <h:panelGroup
+                                    class="row my-1"
+                                    layout="block"  
+                                    id="creditCard" rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'Card'}" >
+                                    <pa:creditCard paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup
+                                    class="row my-1"
+                                    layout="block" 
+                                    id="cheque"  rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'Cheque'}" >
+                                    <pa:cheque paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup 
+                                    class="row my-1"
+                                    layout="block" 
+                                    id="slip"  rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'Slip'}" >
+                                    <pa:slip paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup 
+                                    class="row my-1"
+                                    layout="block" 
+                                    id="ewallet"  rendered="#{directPurchaseReturnWorkflowController.currentBill.paymentMethod eq 'ewallet'}" >
+                                    <pa:ewallet paymentMethodData="#{directPurchaseReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
 
                             <p:panelGrid 
                                 columns="2"

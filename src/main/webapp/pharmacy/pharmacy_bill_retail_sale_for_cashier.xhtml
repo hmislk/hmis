@@ -96,7 +96,7 @@
                                                             accesskey="i"
                                                             id="acStock"
                                                             value="#{pharmacySaleController.stockDto}"
-                                                            completeMethod="#{stockController.completeAvailableStocksWithItemStockDto}"
+                                                            completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoWithoutTotalStock}"
                                                             converter="#{pharmacySaleController.stockDtoConverter}"
                                                             var="i"
                                                             class="w-100"
@@ -122,11 +122,6 @@
                                                             </p:column>
                                                             <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                                 <h:outputLabel value="#{i.stockQty}" >
-                                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                                </h:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                                <h:outputLabel value="#{i.totalStockQty}" >
                                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>

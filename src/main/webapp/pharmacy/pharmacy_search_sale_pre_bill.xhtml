@@ -165,8 +165,9 @@
                                             <div class="mb-1">
                                                 <i class="fas fa-calendar-alt me-1 text-success"></i>
                                                 <h:outputText value="#{bill.createdAt}" styleClass="small">
-                                                    <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                    <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
+                                                
                                             </div>
                                             <div class="mb-2">
                                                 <i class="fas fa-user me-1 text-success"></i>
@@ -191,7 +192,7 @@
                                                     <i class="fas fa-undo me-1 text-danger"></i>
                                                     <h:outputText value="Returned: " styleClass="text-danger small fw-bold"/>
                                                     <h:outputText value="#{bill.refundedBill.createdAt}" styleClass="text-danger small">
-                                                        <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                        <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                                 <div class="mb-1">
@@ -205,7 +206,7 @@
                                                     <i class="fas fa-trash me-1 text-danger"></i>
                                                     <h:outputText value="Deleted: " styleClass="text-danger small fw-bold"/>
                                                     <h:outputText value="#{bill.retiredAt}" styleClass="text-danger small">
-                                                        <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                        <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                             </h:panelGroup>
@@ -215,7 +216,7 @@
                                                     <i class="fas fa-ban me-1 text-danger"></i>
                                                     <h:outputText value="Cancelled: " styleClass="text-danger small fw-bold"/>
                                                     <h:outputText value="#{bill.cancelledBill.createdAt}" styleClass="text-danger small">
-                                                        <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                        <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                                 <div class="mb-1">
@@ -267,7 +268,7 @@
                                                 <div class="mb-1">
                                                     <i class="fas fa-calendar-alt me-1 text-success"></i>
                                                     <h:outputText value="#{bill.referenceBill.createdAt}" styleClass="small">
-                                                        <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                        <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                                 <div class="mb-2">
@@ -281,7 +282,7 @@
                                                         <i class="fas fa-ban me-1 text-danger"></i>
                                                         <h:outputText value="Cancelled: " styleClass="text-danger small fw-bold"/>
                                                         <h:outputText value="#{bill.referenceBill.cancelledBill.createdAt}" styleClass="text-danger small">
-                                                            <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                            <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                         </h:outputText>
                                                     </div>
                                                     <div class="mb-1">
@@ -295,7 +296,7 @@
                                                         <i class="fas fa-undo me-1 text-danger"></i>
                                                         <h:outputText value="Refunded: " styleClass="text-danger small fw-bold"/>
                                                         <h:outputText value="#{bill.referenceBill.refundedBill.createdAt}" styleClass="text-danger small">
-                                                            <f:convertDateTime timeZone="#{sessionController.timeZone}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                            <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                         </h:outputText>
                                                     </div>
                                                     <div class="mb-1">
