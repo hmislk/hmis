@@ -22,7 +22,6 @@
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
                     <h:form >
-
                         <div class="row my-2" >
                             <div class="col-10" >
                                 <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
@@ -1060,6 +1059,10 @@
                                                     <p:badge value="Reject" styleClass="ui-badge-danger" /> - <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/><br/>
                                                 </h:panelGroup>
                                                 
+                                                <h:panelGroup rendered="#{ps.separated}">
+                                                    <p:badge value="Separated Sample from #{ps.separatedfrom.id}" class="mt-2" styleClass="ui-badge-warning" /><br/>
+                                                </h:panelGroup>
+
                                                 <p:badge value="Re-Collect Sample" styleClass="ui-badge-info" rendered="#{ps.referenceSample ne null}"/>
                                             </h:panelGroup>
 
@@ -1622,7 +1625,7 @@
                                         action="#{patientInvestigationController.reGenerateSampleForRejectSamples()}"
                                         title="Re-Generate Samples"
                                         icon="pi pi-plus-circle"
-                                        styleClass="m-1  w-100 ui-button-success" >
+                                        styleClass="w-100 ui-button-success" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1635,7 +1638,7 @@
                                         action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
                                         title="Generate Barcodes"
                                         icon="pi pi-barcode"
-                                        styleClass="m-1 w-100 ui-button-success" >
+                                        styleClass="w-100 ui-button-success" >
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -1646,9 +1649,20 @@
                                         action="#{patientInvestigationController.collectSamples()}"
                                         title="Collect Samples"
                                         icon="pi pi-plus-circle"
-                                        styleClass="m-1  w-100 ui-button-primary" >
+                                        styleClass="w-100 ui-button-primary" >
                                     </p:commandButton>
 
+                                    <hr/>
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Separate Sample"
+                                        title="Separate Sample"
+                                        icon="pi pi-external-link"
+                                        action="#{patientInvestigationController.navigateToSampleSeparate()}"
+                                        styleClass="w-100 ui-button-warning" >
+                                    </p:commandButton>
+                                    
                                     <hr/>
 
                                     <style>
@@ -1679,7 +1693,8 @@
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         var="mys" 
                                         class="w-100" 
-                                        maxResults="50"
+                                        maxResults="25"
+                                        placeholder="Sample Transporter"
                                         inputStyleClass="form-control"
                                         itemLabel="#{mys.person.nameWithTitle}" 
                                         panelStyleClass="custom-dropdown-panel"
@@ -1696,7 +1711,7 @@
                                         action="#{patientInvestigationController.sendSamplesToLab()}"
                                         title="Send to Lab"
                                         icon="pi pi-external-link"
-                                        styleClass="m-1  w-100 ui-button-warning" >
+                                        styleClass="w-100 ui-button-warning" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1709,7 +1724,7 @@
                                         action="#{patientInvestigationController.receiveSamplesAtLab()}"
                                         title="Receive Samples"
                                         icon="pi pi-check-circle"
-                                        styleClass="m-1  w-100 ui-button-info">
+                                        styleClass="w-100 ui-button-info">
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -1720,7 +1735,8 @@
                                         action="#{patientInvestigationController.collectAndReceiveSamplesAtLab()}"
                                         title="Receive Samples"
                                         icon="pi pi-check-circle"
-                                        styleClass="m-1  w-100 ui-button-info" >
+                                        class="mt-3"
+                                        styleClass="w-100 ui-button-info" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1751,7 +1767,7 @@
                                         action="#{patientInvestigationController.rejectSamples()}"
                                         title="Reject Samples"
                                         icon="pi pi-times-circle"
-                                        styleClass="m-1  w-100 ui-button-danger" >
+                                        styleClass="w-100 ui-button-danger" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1764,7 +1780,7 @@
                                         action="#{patientInvestigationController.generateSampleCodesSamples()}"
                                         title="Reject Samples"
                                         icon="pi pi-times-circle"
-                                        styleClass="m-1  w-100 ui-button-danger" >
+                                        styleClass="w-100 ui-button-danger" >
                                     </p:commandButton>
 
                                     <p:inputTextarea 
@@ -1773,7 +1789,7 @@
                                     </p:inputTextarea>
 
                                     <hr/>
-                                    
+
                                 </h:panelGrid>
                             </div>
 
