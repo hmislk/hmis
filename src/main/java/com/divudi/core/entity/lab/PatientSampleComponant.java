@@ -91,7 +91,11 @@ public class PatientSampleComponant implements Serializable, RetirableEntity {
 
     @Transient
     private String nameTranscient;
-
+    
+    @ManyToOne
+    private PatientSampleComponant separatedfrom;
+    private boolean separated = false;
+    
     public Long getId() {
         return id;
     }
@@ -379,6 +383,22 @@ public class PatientSampleComponant implements Serializable, RetirableEntity {
 
     public void setNameTranscient(String nameTranscient) {
         this.nameTranscient = nameTranscient;
+    }
+
+    public PatientSampleComponant getSeparatedfrom() {
+        return separatedfrom;
+    }
+
+    public void setSeparatedfrom(PatientSampleComponant separatedfrom) {
+        this.separatedfrom = separatedfrom;
+    }
+
+    public boolean isSeparated() {
+        return separated;
+    }
+
+    public void setSeparated(boolean separated) {
+        this.separated = separated;
     }
 
 }

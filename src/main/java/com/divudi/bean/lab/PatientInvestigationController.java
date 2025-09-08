@@ -408,7 +408,27 @@ public class PatientInvestigationController implements Serializable {
         patientSampleFacade.edit(newlyCreatedSeparatePatientSample);
 
         for (PatientSampleComponant psc : selectedPatientSampleComponents) {
-            psc.setPatientSample(newlyCreatedSeparatePatientSample);
+            
+            // Create new ampleComponant
+            PatientSampleComponant newlyCreatedPatientSampleComponant = new PatientSampleComponant();
+
+            newlyCreatedPatientSampleComponant.setPatientSample(newlyCreatedSeparatePatientSample);
+            newlyCreatedPatientSampleComponant.setBill(newlyCreatedSeparatePatientSample.getBill());
+            newlyCreatedPatientSampleComponant.setPatient(newlyCreatedSeparatePatientSample.getPatient());
+            newlyCreatedPatientSampleComponant.setPatientInvestigation(psc.getPatientInvestigation());
+            newlyCreatedPatientSampleComponant.setInvestigationComponant(psc.getInvestigationComponant());
+            newlyCreatedPatientSampleComponant.setCreatedAt(new Date());
+            newlyCreatedPatientSampleComponant.setCreater(sessionController.getWebUser());
+            newlyCreatedPatientSampleComponant.setSeparatedfrom(psc);
+
+            if (newlyCreatedPatientSampleComponant.getId() == null) {
+                patientSampleComponantFacade.create(newlyCreatedPatientSampleComponant);
+            } else {
+                patientSampleComponantFacade.edit(newlyCreatedPatientSampleComponant);
+            }
+            
+            // Update Old ampleComponant
+            psc.setSeparated(true);
             patientSampleComponantFacade.edit(psc);
         }
 
@@ -1092,9 +1112,10 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps and psc.separated =:sept";
         Map m = new HashMap();
         m.put("ps", ps);
+        m.put("sept", false);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
@@ -1103,17 +1124,19 @@ public class PatientInvestigationController implements Serializable {
             return Collections.emptyList();
         }
 
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample.id = :id";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample.id =:id and psc.separated =:sept";
         Map m = new HashMap();
         m.put("id", sampleId);
+        m.put("sept", false);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
     public List<PatientInvestigation> getPatientInvestigationsFromSample(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps and psc.separated =:sept";
 
         Map m = new HashMap();
         m.put("ps", ps);
+        m.put("sept", false);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
@@ -2178,12 +2201,12 @@ public class PatientInvestigationController implements Serializable {
             String jpql = "SELECT r "
                     + " FROM PatientReport r "
                     + " WHERE r.retired = :ret "
-                    + " AND r.patientInvestigation in ( select ps.patientInvestigation from PatientSampleComponant ps where ps.patientSample=:pts and ps.retired=false ) ";
+                    + " AND r.patientInvestigation in ( select ps.patientInvestigation from PatientSampleComponant ps where ps.patientSample=:pts and ps.retired=false and ps.separated =:sept ) ";
 
             Map<String, Object> params = new HashMap<>();
             params.put("pts", ps);
             params.put("ret", false);
-
+            params.put("sept", false);
             PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             if (pr != null) {
@@ -2421,10 +2444,10 @@ public class PatientInvestigationController implements Serializable {
         PatientSample newlyGeneratedSample = createNewPatientSample(referringPatientSample);
 
         List<PatientSampleComponant> oldSamplePatientSampleComponant;
-        String jpql = "select ps from PatientSampleComponant ps where ps.patientSample=:pts ";
+        String jpql = "select ps from PatientSampleComponant ps where ps.patientSample=:pts and ps.separated =:sept";
         Map params = new HashMap();
         params.put("pts", pts);
-
+        params.put("sept", false);
         oldSamplePatientSampleComponant = patientSampleComponantFacade.findByJpql(jpql, params);
 
         for (PatientSampleComponant ptsc : oldSamplePatientSampleComponant) {
@@ -4061,10 +4084,12 @@ public class PatientInvestigationController implements Serializable {
                 + "FROM PatientSampleComponant psc "
                 + " join psc.patientInvestigation i "
                 + "WHERE psc.retired = :ret "
-                + "AND psc.patientSample.id=:sampleId ";
+                + "AND psc.patientSample.id=:sampleId "
+                + "and psc.separated =:sept";
 
         params.put("ret", false);
         params.put("sampleId", sampleId);
+        params.put("sept", false);
 
         // Build JPQL query for PatientInvestigations
         jpql += " and i.retired = :ret ";
@@ -4345,10 +4370,12 @@ public class PatientInvestigationController implements Serializable {
         String jpql = "SELECT psc "
                 + " FROM PatientSampleComponant psc "
                 + " WHERE psc.retired=:retired "
-                + " AND psc.patientInvestigation=:patientInvestigation";
+                + " AND psc.patientInvestigation=:patientInvestigation"
+                + " AND psc.separated =:sept";
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
+        params.put("sept", false);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
     }
