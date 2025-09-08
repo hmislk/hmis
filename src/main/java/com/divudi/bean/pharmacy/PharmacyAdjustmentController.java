@@ -269,7 +269,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyAdjustment);
+        m.put("bt", BillType.PharmacyAdjustmentExpiryDate);
 
         expiryAdjustmentItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
