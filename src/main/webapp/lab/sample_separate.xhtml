@@ -8,119 +8,125 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel>  
-                        <f:facet name="header">
-                            <div class="d-flex justify-content-between">
-                                <h:outputLabel value="Sample Separate" class="mt-2"></h:outputLabel>
-                                <p:commandButton 
-                                    ajax="false"
-                                    value="Back to Sample Management"
-                                    action="/lab/generate_barcode_p"
-                                    icon="fa fa-long-arrow-left"
-                                    styleClass="ui-button-warning">
-                                </p:commandButton>
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleSeparate')}">
+                        <na:not_authorize/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleSeparate')}">
+                        <p:panel>  
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputLabel value="Sample Separate" class="mt-2"></h:outputLabel>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Back to Sample Management"
+                                        action="/lab/generate_barcode_p"
+                                        icon="fa fa-long-arrow-left"
+                                        styleClass="ui-button-warning">
+                                    </p:commandButton>
+                                </div>
+
+                            </f:facet>
+
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <p:panel header="Sample Details">
+                                        <h:panelGrid columns="3" style="line-height: 1.8;">
+                                            <h:outputText value="Patient Sample" style="font-size: 22px; font-weight: 700;"/>
+                                            <h:outputText value=":" style="width: 8em; font-weight: 700;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.id}"  style="font-size: 22px; font-weight: 700;"/>
+                                            <h:outputText value=" Sample Tube" style="font-size: 22px; font-weight: 700;"/>
+                                            <h:outputText value=":" style="width: 8em; font-weight: 700;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.tube.name}"  style="font-size: 22px; font-weight: 700;"/>
+                                            <h:outputText value="Patient Name" />
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.nameWithTitle}" />
+                                            <h:outputText value="Patient Age" />
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.ageAsString}" />
+                                            <h:outputText value="Patient Gender" />
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.sex.label}" />
+                                            <h:outputText value="Patient Mobile" />
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:panelGroup class="d-flex gap-2">
+                                                <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.mobile}" />
+                                                <h:outputText value="/" style="width: 1em;" class="d-flex justify-content-center" rendered="#{patientInvestigationController.currentPatientSample.bill.patient.person.phone ne null }"/>
+                                                <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.phone}" />
+                                            </h:panelGroup>
+                                            <h:outputText value="Bill No" />
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.deptId}" />
+                                            <h:outputText value="Bill Date" />
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                            </h:outputText>
+                                            <h:outputText value="Visit Type"/>
+                                            <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
+                                            <h:panelGroup class="d-flex gap-2">
+                                                <h:panelGroup rendered="#{patientInvestigationController.currentPatientSample.bill.ipOpOrCc == 'CC'}">
+                                                    <h:outputLabel value="Collecting Centre (CC)" class="text-warning"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{patientInvestigationController.currentPatientSample.bill.ipOpOrCc == 'IP'}">
+                                                    <h:outputLabel value="Inpatient (IP) - #{patientInvestigationController.currentPatientSample.bill.patientEncounter.bhtNo}" class="text-info"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{patientInvestigationController.currentPatientSample.bill.ipOpOrCc == 'OP'}">
+                                                    <h:outputLabel value="Outpatient (OP)" class="text-primary"/>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:dataTable 
+                                        var="psc" 
+                                        value="#{patientInvestigationController.getPatientSampleComponents(patientInvestigationController.currentPatientSample)}"
+                                        selection="#{patientInvestigationController.selectedPatientSampleComponents}" 
+                                        rowKey="#{psc.id}"
+                                        rows="20" 
+                                        selectionPageOnly="false" 
+                                        selectionRowMode="none" 
+                                        cellNavigation="true">
+                                        <p:column selectionBox="true" style="width:16px;text-align:center"/>
+
+                                        <p:column headerText="Component" width="12em;">
+                                            <h:outputText value="#{psc.investigationComponant.name}" />
+                                        </p:column>
+                                        <p:column headerText="Investigation Name">
+                                            <h:outputText value="#{psc.patientInvestigation.investigation.name}" />
+                                        </p:column>
+                                    </p:dataTable>  
+                                </div>
+
                             </div>
 
-                        </f:facet>
-
-                        <div class="row">
-                            <div class="col-md-5">
-                                <p:panel header="Sample Details">
-                                    <h:panelGrid columns="3" style="line-height: 1.8;">
-                                        <h:outputText value="Patient Sample" style="font-size: 22px; font-weight: 700;"/>
-                                        <h:outputText value=":" style="width: 8em; font-weight: 700;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.id}"  style="font-size: 22px; font-weight: 700;"/>
-                                        <h:outputText value=" Sample Tube" style="font-size: 22px; font-weight: 700;"/>
-                                        <h:outputText value=":" style="width: 8em; font-weight: 700;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.tube.name}"  style="font-size: 22px; font-weight: 700;"/>
-                                        <h:outputText value="Patient Name" />
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.nameWithTitle}" />
-                                        <h:outputText value="Patient Age" />
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.ageAsString}" />
-                                        <h:outputText value="Patient Gender" />
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.sex.label}" />
-                                        <h:outputText value="Patient Mobile" />
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:panelGroup class="d-flex gap-2">
-                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.mobile}" />
-                                            <h:outputText value="/" style="width: 1em;" class="d-flex justify-content-center" rendered="#{patientInvestigationController.currentPatientSample.bill.patient.person.phone ne null }"/>
-                                            <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.patient.person.phone}" />
-                                        </h:panelGroup>
-                                        <h:outputText value="Bill No" />
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.deptId}" />
-                                        <h:outputText value="Bill Date" />
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:outputText value="#{patientInvestigationController.currentPatientSample.bill.createdAt}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
-                                        </h:outputText>
-                                        <h:outputText value="Visit Type"/>
-                                        <h:outputText value=":" style="width: 8em;" class="d-flex justify-content-center"/>
-                                        <h:panelGroup class="d-flex gap-2">
-                                            <h:panelGroup rendered="#{patientInvestigationController.currentPatientSample.bill.ipOpOrCc == 'CC'}">
-                                                <h:outputLabel value="Collecting Centre (CC)" class="text-warning"/>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{patientInvestigationController.currentPatientSample.bill.ipOpOrCc == 'IP'}">
-                                                <h:outputLabel value="Inpatient (IP) - #{patientInvestigationController.currentPatientSample.bill.patientEncounter.bhtNo}" class="text-info"/>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{patientInvestigationController.currentPatientSample.bill.ipOpOrCc == 'OP'}">
-                                                <h:outputLabel value="Outpatient (OP)" class="text-primary"/>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="col-md-5">
-                                <p:dataTable 
-                                    var="psc" 
-                                    value="#{patientInvestigationController.getPatientSampleComponents(patientInvestigationController.currentPatientSample)}"
-                                    selection="#{patientInvestigationController.selectedPatientSampleComponents}" 
-                                    rowKey="#{psc.id}"
-                                    rows="20" 
-                                    selectionPageOnly="false" 
-                                    selectionRowMode="none" 
-                                    cellNavigation="true">
-                                    <p:column selectionBox="true" style="width:16px;text-align:center"/>
-                                    
-                                    <p:column headerText="Component" width="12em;">
-                                        <h:outputText value="#{psc.investigationComponant.name}" />
-                                    </p:column>
-                                    <p:column headerText="Investigation Name">
-                                        <h:outputText value="#{psc.patientInvestigation.investigation.name}" />
-                                    </p:column>
-                                </p:dataTable>  
-                            </div>
-                            
-                        </div>
-                        
-                        <div class="row mb-4 mt-3">
-                            <div class="col-md-12 d-flex justify-content-end gap-3">
-                                <p:inputText
-                                    style="width: 500px;"
+                            <div class="row mb-4 mt-3">
+                                <div class="col-md-12 d-flex justify-content-end gap-3">
+                                    <p:inputText
+                                        style="width: 500px;"
                                         placeholder="Sample Separation Reason"
                                         value="#{patientInvestigationController.comments}" >
                                     </p:inputText>
-                                <p:commandButton 
-                                    ajax="false"
-                                    value="Separate and Create New Sample"
-                                    action="#{patientInvestigationController.sampleSeparateAndCreateNewSample()}"
-                                    icon="fa fa-plus"
-                                    class="ui-button-success">
-                                </p:commandButton>
-                            </div>
-                            
-                        </div>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Separate and Create New Sample"
+                                        action="#{patientInvestigationController.sampleSeparateAndCreateNewSample()}"
+                                        icon="fa fa-plus"
+                                        class="ui-button-success">
+                                    </p:commandButton>
+                                </div>
 
-                    </p:panel>   
+                            </div>
+
+                        </p:panel>   
+                    </h:panelGroup>
                 </h:form>
             </ui:define>
         </ui:composition>

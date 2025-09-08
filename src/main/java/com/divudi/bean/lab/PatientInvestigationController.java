@@ -366,7 +366,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public String sampleSeparateAndCreateNewSample() {
-        if (selectedPatientSampleComponents.isEmpty()) {
+        if (selectedPatientSampleComponents == null || selectedPatientSampleComponents.isEmpty()) {
             JsfUtil.addErrorMessage("Sample Component is Missing.");
             return "";
         }
@@ -376,7 +376,6 @@ public class PatientInvestigationController implements Serializable {
         }
        
         currentPatientSample = selectedPatientSamples.get(0);
-        System.out.println("currentPatientSample = " + currentPatientSample);
 
         if (currentPatientSample.getBill().isCancelled()) {
             JsfUtil.addErrorMessage("This Sample Bill is Already Canceled !.");
@@ -401,7 +400,6 @@ public class PatientInvestigationController implements Serializable {
 
         PatientSample newlyCreatedSeparatePatientSample = createNewPatientSample(currentPatientSample);
 
-        System.out.println("New Created Patient Sample = " + newlyCreatedSeparatePatientSample);
         newlyCreatedSeparatePatientSample.setSeparated(true);
         newlyCreatedSeparatePatientSample.setSeparatedfrom(currentPatientSample);
         newlyCreatedSeparatePatientSample.setStatus(PatientInvestigationStatus.SEPARATE_AND_SAMPLE_GENERATED);
@@ -464,9 +462,10 @@ public class PatientInvestigationController implements Serializable {
             regeneratedPatientSamples.add(newlyCreatedSeparatePatientSample);
             listingEntity = ListingEntity.PATIENT_SAMPLES_INDIVIDUAL;
         } else {
-            patientSamples.add(0, newlyCreatedSeparatePatientSample);
+            getPatientSamples().add(0, newlyCreatedSeparatePatientSample);
             listingEntity = ListingEntity.PATIENT_SAMPLES;
         }
+        comments = null;
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1118,10 +1117,11 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps and psc.separated =:sept";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps and psc.separated =:sept and psc.retired = :ret";
         Map m = new HashMap();
         m.put("ps", ps);
         m.put("sept", false);
+        m.put("ret", false);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
@@ -1130,19 +1130,21 @@ public class PatientInvestigationController implements Serializable {
             return Collections.emptyList();
         }
 
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample.id =:id and psc.separated =:sept";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample.id =:id and psc.separated =:sept and psc.retired = :ret";
         Map m = new HashMap();
         m.put("id", sampleId);
         m.put("sept", false);
+        m.put("ret", false);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
     public List<PatientInvestigation> getPatientInvestigationsFromSample(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps and psc.separated =:sept";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps and psc.separated =:sept and psc.retired = :ret";
 
         Map m = new HashMap();
         m.put("ps", ps);
         m.put("sept", false);
+        m.put("ret", false);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
