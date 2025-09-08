@@ -140,6 +140,7 @@ public enum Privileges {
     OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
+    LabSampleSeparate("Lab Sample Separate"),
     LabReportFormatEditing("Lab Report Format Editing"),
     LabDataentry("Lab Data Entry"),
     LabAutherizing("Lab Authorizing"),
