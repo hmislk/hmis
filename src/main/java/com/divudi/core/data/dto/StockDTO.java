@@ -79,6 +79,24 @@ public class StockDTO implements Serializable {
         this.wholesaleRate = wholesaleRate;
     }
 
+    // Constructor for pharmacy adjustment with Stock ID, ItemBatch ID and Cost Rate
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double costRate) {
+        this.id = id;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
+        this.costRate = costRate;
+    }
+
     // Constructor for department stock report by batch using DTO
     public StockDTO(Long id,
                     String categoryName,
