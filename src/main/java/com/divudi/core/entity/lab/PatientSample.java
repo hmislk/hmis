@@ -210,6 +210,7 @@ public class PatientSample implements Serializable, RetirableEntity {
     private PatientSample referenceSample;
 
     private boolean separated = false;
+    @ManyToOne
     private PatientSample separatedfrom;
     
     public Long getId() {
