@@ -91,6 +91,10 @@ public class LabTestHistoryController implements Serializable {
     public void addSampleSeparateAndCreateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
         addNewHistory(TestHistoryType.SEPARATE_AND_BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null);
     }
+    
+    public void addSampleSeparate(PatientInvestigation patientInvestigation, PatientSample patientSample,String separateReason) {
+        addNewHistory(TestHistoryType.SAMPLE_SEPARATE, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, separateReason);
+    }
 
     public void addSampleReGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
         addNewHistory(TestHistoryType.BARCODE_REGENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null);

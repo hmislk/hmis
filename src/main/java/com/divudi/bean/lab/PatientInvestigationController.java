@@ -286,6 +286,7 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientSample> regeneratedPatientSamples;
 
     private List<PatientSampleComponant> selectedPatientSampleComponents;
+    private String comments;
 
     public int getNumber() {
         return number;
@@ -445,13 +446,18 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(tptix);
         }
 
-        //update Sample History
+        
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            //update Newly Created Sample History
             for (PatientInvestigation pi : getPatientInvestigationsBySample(newlyCreatedSeparatePatientSample)) {
                 labTestHistoryController.addSampleSeparateAndCreateHistory(pi, newlyCreatedSeparatePatientSample);
             }
+            //update old Sample History
+            for (PatientSampleComponant psc : selectedPatientSampleComponents) {
+                labTestHistoryController.addSampleSeparate(psc.getPatientInvestigation(), psc.getPatientSample(),comments);
+            }
         }
-
+        
         //final Navigation
         if (configOptionApplicationController.getBooleanValueByKey("Show barcode on Regenerated Patient Samples", false)) {
             regeneratedPatientSamples = new ArrayList<>();
@@ -5908,6 +5914,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSelectedPatientSampleComponents(List<PatientSampleComponant> selectedPatientSampleComponents) {
         this.selectedPatientSampleComponents = selectedPatientSampleComponents;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     /**

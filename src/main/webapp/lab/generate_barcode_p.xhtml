@@ -1655,6 +1655,7 @@
                                     <hr/>
 
                                     <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         ajax="false"
                                         value="Separate Sample"
                                         title="Separate Sample"

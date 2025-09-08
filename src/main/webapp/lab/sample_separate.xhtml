@@ -103,10 +103,14 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                         </div>
                         
                         <div class="row mb-4 mt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-12 d-flex justify-content-end gap-3">
+                                <p:inputText
+                                    style="width: 500px;"
+                                        placeholder="Sample Separate Reason"
+                                        value="#{patientInvestigationController.comments}" >
+                                    </p:inputText>
                                 <p:commandButton 
                                     ajax="false"
-                                    style="float: right;"
                                     value="Separate and Crete New Sample"
                                     action="#{patientInvestigationController.sampleSeparateAndCreateNewSample()}"
                                     icon="fa fa-plus"
