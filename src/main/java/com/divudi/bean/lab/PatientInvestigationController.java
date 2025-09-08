@@ -337,7 +337,6 @@ public class PatientInvestigationController implements Serializable {
                 return "";
             }
         }
-        
         if (getPatientSampleComponents(currentPatientSample).size() == 1) {
             JsfUtil.addErrorMessage("You can't Separate this Sample !. ");
             return "";
@@ -370,12 +369,11 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Sample Component is Missing.");
             return "";
         }
-
         if (selectedPatientSampleComponents.size() == getPatientSampleComponents(currentPatientSample).size()) {
             JsfUtil.addErrorMessage("You can't Select All Sample Component !.");
             return "";
         }
-        
+       
         currentPatientSample = selectedPatientSamples.get(0);
         System.out.println("currentPatientSample = " + currentPatientSample);
 
@@ -391,7 +389,6 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Sample is Already Rejected !.");
             return "";
         }
-
         if (!configOptionApplicationController.getBooleanValueByKey("Allow a sample to be separated in any Status. ", true)) {
             if (currentPatientSample.getSampleSent() || currentPatientSample.getOutsourced()) {
                 JsfUtil.addErrorMessage("This Sample Already Sent to Laboratory !. ");
