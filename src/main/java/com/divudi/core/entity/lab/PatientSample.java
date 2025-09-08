@@ -209,6 +209,9 @@ public class PatientSample implements Serializable, RetirableEntity {
     @ManyToOne
     private PatientSample referenceSample;
 
+    private boolean separated = false;
+    private PatientSample separatedfrom;
+    
     public Long getId() {
         return id;
     }
@@ -887,6 +890,22 @@ public class PatientSample implements Serializable, RetirableEntity {
 
     public void setReferenceSample(PatientSample referenceSample) {
         this.referenceSample = referenceSample;
+    }
+
+    public boolean isSeparated() {
+        return separated;
+    }
+
+    public void setSeparated(boolean separated) {
+        this.separated = separated;
+    }
+
+    public PatientSample getSeparatedfrom() {
+        return separatedfrom;
+    }
+
+    public void setSeparatedfrom(PatientSample separatedfrom) {
+        this.separatedfrom = separatedfrom;
     }
 
 }
