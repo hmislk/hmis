@@ -413,10 +413,9 @@ public class AmpController implements Serializable {
         List<Amp> a = null;
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
         if (qry != null) {
             a = getFacade().findByJpql("select c from Amp c where "
-                    + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
+                    + " c.retired=false "
                     + " and ((c.name) like :n or (c.code)  "
                     + "like :n or (c.barcode) like :n) order by c.name", m, 30);
         }
