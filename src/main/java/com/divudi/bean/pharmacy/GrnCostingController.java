@@ -14,7 +14,6 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Bill;
@@ -22,11 +21,20 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -35,6 +43,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.service.pharmacy.PharmacyCostingService;
@@ -44,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +61,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
@@ -70,6 +81,7 @@ import org.primefaces.event.RowEditEvent;
 public class GrnCostingController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final int PRICE_SCALE = 6;
 
     @Inject
     private SessionController sessionController;
@@ -92,6 +104,8 @@ public class GrnCostingController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private AmpFacade ampFacade;
+    @EJB
+    private ItemsDistributorsFacade itemsDistributorsFacade;
 
     @EJB
     @Deprecated
@@ -102,8 +116,6 @@ public class GrnCostingController implements Serializable {
     PaymentFacade paymentFacade;
 //    @EJB
 //    PharmacyCostingService pharmacyCostingService;
-    @Inject
-    private PharmacyCalculation pharmacyCalculation;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -312,7 +324,7 @@ public class GrnCostingController implements Serializable {
             getCurrentGrnBillPre().setInvoiceDate(getApproveBill().getCreatedAt());
         }
 
-        String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
+        String msg = errorCheck(getCurrentGrnBillPre(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return;
@@ -354,7 +366,7 @@ public class GrnCostingController implements Serializable {
 
 //                 updatePoItemQty(i);
 //            System.err.println("1 " + i);
-            ItemBatch itemBatch = getPharmacyCalculation().saveItemBatch(i);
+            ItemBatch itemBatch = saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
 
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
@@ -368,7 +380,7 @@ public class GrnCostingController implements Serializable {
 //
 //            i.getPharmaceuticalBillItem().setStock(stock);
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
 //            saveBillFee(i, p);
             getCurrentGrnBillPre().getBillItems().add(i);
         }
@@ -377,7 +389,7 @@ public class GrnCostingController implements Serializable {
 
         calGrossTotal();
 
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
+        calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
 //        updateBalanceForGrn(getCurrentGrnBillPre());
 
         getBillFacade().edit(getCurrentGrnBillPre());
@@ -386,6 +398,27 @@ public class GrnCostingController implements Serializable {
 //        printPreview = true;
         JsfUtil.addSuccessMessage("Request Saved");
 
+    }
+
+    public void calculateRetailSaleValueAndFreeValueAtPurchaseRate(Bill b) {
+        double sale = 0.0;
+        double free = 0.0;
+
+        for (BillItem i : b.getBillItems()) {
+            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            if (ph == null) {
+                continue;
+            }
+            sale += (ph.getQty() + ph.getFreeQty()) * ph.getRetailRate();
+            free += ph.getFreeQty() * ph.getPurchaseRate();
+        }
+        if (b.getBillType() == BillType.PharmacyGrnReturn || b.getBillType() == BillType.PurchaseReturn || b.getClass().equals(CancelledBill.class) || b.getClass().equals(RefundBill.class)) {
+            b.setSaleValue(0.0 - Math.abs(sale));
+            b.setFreeValue(0.0 - Math.abs(free));
+        } else {
+            b.setSaleValue(Math.abs(sale));
+            b.setFreeValue(Math.abs(free));
+        }
     }
 
     public void requestFinalize() {
@@ -402,7 +435,7 @@ public class GrnCostingController implements Serializable {
         // Invoice details are already bound on currentGrnBillPre via UI
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
 
-        String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
+        String msg = errorCheck(getCurrentGrnBillPre(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return;
@@ -446,7 +479,7 @@ public class GrnCostingController implements Serializable {
 
 //                 updatePoItemQty(i);
 //            System.err.println("1 " + i);
-            ItemBatch itemBatch = getPharmacyCalculation().saveItemBatch(i);
+            ItemBatch itemBatch = saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
 
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
@@ -460,7 +493,7 @@ public class GrnCostingController implements Serializable {
 //
 //            i.getPharmaceuticalBillItem().setStock(stock);
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
 //            saveBillFee(i, p);
             getCurrentGrnBillPre().getBillItems().add(i);
         }
@@ -630,12 +663,12 @@ public class GrnCostingController implements Serializable {
         }
 
         // Invoice details are already bound on grnBill/currentGrnBillPre via UI
-        String msg = pharmacyCalculation.errorCheck(getGrnBill(), getBillItems());
+        String msg = errorCheck(getGrnBill(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return false;
         }
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
+        calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
@@ -714,7 +747,7 @@ public class GrnCostingController implements Serializable {
             i.setPharmaceuticalBillItem(pbi);
             getBillItemFacade().edit(i);
             updateStockAndBatches(i);
-            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
@@ -723,9 +756,9 @@ public class GrnCostingController implements Serializable {
     private void updateStockAndBatches(BillItem i) {
         ItemBatch itemBatch;
         if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
-            itemBatch = getPharmacyCalculation().saveItemBatchWithCosting(i);
+            itemBatch = saveItemBatchWithCosting(i);
         } else {
-            itemBatch = getPharmacyCalculation().saveItemBatch(i);
+            itemBatch = saveItemBatch(i);
         }
         double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit()
                 + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
@@ -759,7 +792,7 @@ public class GrnCostingController implements Serializable {
 
         // Note: NetTotal is already correctly calculated by the service and includes expenses
         // Removed expense doubling line: getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
+        calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
         getBillFacade().edit(getGrnBill());
 
@@ -788,9 +821,9 @@ public class GrnCostingController implements Serializable {
         }
 
         for (PharmaceuticalBillItem orderItem : orderItems) {
-            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(orderItem);
+            double calculatedReturns = calculateRemainigQtyFromOrder(orderItem);
             double remainingQty = Math.abs(orderItem.getQtyInUnit()) - Math.abs(calculatedReturns);
-            double remainingFreeQty = orderItem.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(orderItem);
+            double remainingFreeQty = orderItem.getFreeQty() - calculateRemainingFreeQtyFromOrder(orderItem);
 
             if (remainingQty > 0 || remainingFreeQty > 0) {
                 return false;
@@ -810,12 +843,12 @@ public class GrnCostingController implements Serializable {
             return;
         }
 
-        String msg = pharmacyCalculation.errorCheck(getGrnBill(), getBillItems());
+        String msg = errorCheck(getGrnBill(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return;
         }
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
+        calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
@@ -853,9 +886,9 @@ public class GrnCostingController implements Serializable {
             //System.err.println("1 " + i);
             ItemBatch itemBatch;
             if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
-                itemBatch = getPharmacyCalculation().saveItemBatchWithCosting(i);
+                itemBatch = saveItemBatchWithCosting(i);
             } else {
-                itemBatch = getPharmacyCalculation().saveItemBatch(i);
+                itemBatch = saveItemBatch(i);
             }
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
 
@@ -871,7 +904,7 @@ public class GrnCostingController implements Serializable {
             i.getPharmaceuticalBillItem().setStock(stock);
 
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
             saveBillFee(i, p);
             getGrnBill().getBillItems().add(i);
         }
@@ -890,7 +923,7 @@ public class GrnCostingController implements Serializable {
 
         calGrossTotal();
 
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
+        calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
 
         getBillFacade().edit(getGrnBill());
@@ -1084,9 +1117,9 @@ public class GrnCostingController implements Serializable {
                 continue;
             }
 
-            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(pbiInApprovedOrder);
+            double calculatedReturns = calculateRemainigQtyFromOrder(pbiInApprovedOrder);
             double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(calculatedReturns);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(pbiInApprovedOrder);
+            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - calculateRemainingFreeQtyFromOrder(pbiInApprovedOrder);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
@@ -1151,7 +1184,7 @@ public class GrnCostingController implements Serializable {
                     double unitsPerPack = pbiInApprovedOrder.getBillItem().getItem().getDblValue();
                     unitsPerPack = unitsPerPack > 0 ? unitsPerPack : 1.0;
                     lineGrossRateForBillItem = pr * unitsPerPack; // Convert unit rate to pack rate
-                    
+
                     // For retail rate, check if we have a pack rate from PO
                     double retailRatePack = pbiInApprovedOrder.getRetailRatePack();
                     if (retailRatePack > 0) {
@@ -1193,8 +1226,8 @@ public class GrnCostingController implements Serializable {
 
         for (BillItem importBi : importGrnBill.getBillItems()) {
             PharmaceuticalBillItem i = importBi.getPharmaceuticalBillItem();
-            double remains = i.getQty() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
+            double remains = i.getQty() - calculateRemainigQtyFromOrder(i);
+            double remainFreeQty = i.getFreeQty() - calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1280,7 +1313,7 @@ public class GrnCostingController implements Serializable {
     public void generateBillComponentAll() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double remains = i.getQtyInUnit() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
+            double remains = i.getQtyInUnit() - calculateRemainigQtyFromOrder(i);
 
             BillItem bi = new BillItem();
             bi.setSearialNo(getBillItems().size());
@@ -1643,7 +1676,7 @@ public class GrnCostingController implements Serializable {
         if (f == null) {
             return;
         }
-        double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
+        double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
         if (remains < f.getQuantity().doubleValue()) {
             f.setQuantity(java.math.BigDecimal.valueOf(remains));
             tmp.setTmpQty(remains);
@@ -1666,11 +1699,8 @@ public class GrnCostingController implements Serializable {
             return;
         }
         recalculateFinancialsBeforeAddingBillItem(f);
-
-        // Redistribute bill discount after line rate changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-
         calculateBillTotalsFromItems();
         calDifference();
     }
@@ -1696,8 +1726,12 @@ public class GrnCostingController implements Serializable {
             return;
         }
         recalculateFinancialsBeforeAddingBillItem(f);
-        calculateBillTotalsFromItems();
+
+        // Ensure discount synchronization after free quantity changes
+        ensureBillDiscountSynchronization();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
+        calculateBillTotalsFromItems();
         calDifference();
     }
 
@@ -2205,6 +2239,14 @@ public class GrnCostingController implements Serializable {
         this.ampFacade = ampFacade;
     }
 
+    public ItemsDistributorsFacade getItemsDistributorsFacade() {
+        return itemsDistributorsFacade;
+    }
+
+    public void setItemsDistributorsFacade(ItemsDistributorsFacade itemsDistributorsFacade) {
+        this.itemsDistributorsFacade = itemsDistributorsFacade;
+    }
+
     public boolean isPrintPreview() {
         return printPreview;
     }
@@ -2256,14 +2298,6 @@ public class GrnCostingController implements Serializable {
 
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
-    }
-
-    public PharmacyCalculation getPharmacyCalculation() {
-        return pharmacyCalculation;
-    }
-
-    public void setPharmacyCalculation(PharmacyCalculation pharmacyCalculation) {
-        this.pharmacyCalculation = pharmacyCalculation;
     }
 
     public BillFeePaymentFacade getBillFeePaymentFacade() {
@@ -2449,14 +2483,10 @@ public class GrnCostingController implements Serializable {
                 }
             }
 
-            // Recalculate expense totals with loaded expenses
             recalculateExpenseTotals();
-
-            // Ensure bill discount synchronization before distribution
-            ensureBillDiscountSynchronization();
-
-            distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
             calculateBillTotalsFromItems();
+            ensureBillDiscountSynchronization();
+            distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
             calDifference();
         }
 
@@ -2644,7 +2674,7 @@ public class GrnCostingController implements Serializable {
         }
 
         // Validate batch details and sale prices for finalization
-        String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
+        String msg = errorCheck(getCurrentGrnBillPre(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return;
@@ -2666,6 +2696,125 @@ public class GrnCostingController implements Serializable {
         JsfUtil.addSuccessMessage("GRN Finalized");
     }
 
+    public String errorCheck(Bill b, List<BillItem> billItems) {
+        String msg = "";
+
+        if (b.getInvoiceNumber() == null || b.getInvoiceNumber().trim().isEmpty()) {
+            msg = "Please Fill invoice number";
+        }
+
+        if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Cheque) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getChequeRefNo() == null) {
+                msg = "Please select Cheque Number and Bank";
+            }
+        }
+
+        if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Slip) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getComments() == null) {
+                msg = "Please Fill Memo and Bank";
+            }
+        }
+
+        if (billItems.isEmpty()) {
+            msg = "There is no Item to receive";
+        }
+
+        if (checkItemBatch(billItems)) {
+            msg = "Please Fill Batch deatail and Sale Price to All Item";
+        }
+
+        if (b.getReferenceInstitution() == null) {
+            msg = "Please Fill Reference Institution";
+        }
+
+        // Validate that GRN quantities do not exceed ordered quantities
+        String quantityValidationMsg = validateGrnQuantities(billItems);
+        if (!quantityValidationMsg.isEmpty()) {
+            msg = quantityValidationMsg;
+        }
+
+        return msg;
+    }
+
+    private String validateGrnQuantities(List<BillItem> billItems) {
+        if (getApproveBill() == null) {
+            return "";
+        }
+
+        for (BillItem grnItem : billItems) {
+            if (grnItem.getReferanceBillItem() == null || grnItem.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            BillItem purchaseOrderItem = grnItem.getReferanceBillItem();
+            PharmaceuticalBillItem poItem = purchaseOrderItem.getPharmaceuticalBillItem();
+
+            if (poItem == null) {
+                continue;
+            }
+
+            PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
+
+            double orderedQty = poItem.getQty();
+            double orderedFreeQty = poItem.getFreeQty();
+            double currentGrnQty = currentGrnPbi.getQty();
+            double currentGrnFreeQty = currentGrnPbi.getFreeQty();
+
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered: " + orderedQty + ", Current GRN: " + currentGrnQty);
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered Free: " + orderedFreeQty + ", Current GRN Free: " + currentGrnFreeQty);
+
+            double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
+            System.out.println("totalReceivedFromAllGrns = " + totalReceivedFromAllGrns);
+            double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
+            System.out.println("totalFreeReceivedFromAllGrns = " + totalFreeReceivedFromAllGrns);
+
+            double previouslyReceivedQty = totalReceivedFromAllGrns;
+            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns;
+
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Previously received: " + previouslyReceivedQty + ", Total to receive: " + (previouslyReceivedQty + currentGrnQty));
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Previously received free: " + previouslyReceivedFreeQty + ", Total free to receive: " + (previouslyReceivedFreeQty + currentGrnFreeQty));
+
+            if (orderedQty < previouslyReceivedQty + currentGrnQty) {
+                System.out.println("VALIDATION FAILED: Regular quantity exceeded for " + grnItem.getItem().getName());
+                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty
+                        + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
+                        + ", Remaining: " + (orderedQty - previouslyReceivedQty);
+            }
+
+            if (orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
+                System.out.println("VALIDATION FAILED: Free quantity exceeded for " + grnItem.getItem().getName());
+                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
+                        + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
+                        + ", Already received free: " + previouslyReceivedFreeQty
+                        + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
+            }
+        }
+
+        System.out.println("GRN quantity validation passed for all items");
+        return "";
+    }
+
+    public boolean checkItemBatch(List<BillItem> list) {
+
+        for (BillItem i : list) {
+            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            if (ph == null) {
+                continue;
+            }
+            if (ph.getQty() != 0.0) {
+                if (ph.getDoe() == null || ph.getStringValue().trim().isEmpty()) {
+                    return true;
+                }
+                if (ph.getPurchaseRate() > ph.getRetailRate()) {
+                    return true;
+                }
+
+            }
+
+        }
+        return false;
+    }
+
     public void requestFinalizeWithSaveApprove() {
         // Always use bill's invoice number, ignore controller reference
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
@@ -2685,7 +2834,7 @@ public class GrnCostingController implements Serializable {
         }
 
         // Validate batch details and sale prices for finalization
-        String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), getBillItems());
+        String msg = errorCheck(getCurrentGrnBillPre(), getBillItems());
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return;
@@ -2710,9 +2859,9 @@ public class GrnCostingController implements Serializable {
             // Create/update item batch for stock management with costing respect
             ItemBatch itemBatch;
             if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
-                itemBatch = getPharmacyCalculation().saveItemBatchWithCosting(i);
+                itemBatch = saveItemBatchWithCosting(i);
             } else {
-                itemBatch = getPharmacyCalculation().saveItemBatch(i);
+                itemBatch = saveItemBatch(i);
             }
             i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
 
@@ -2727,20 +2876,21 @@ public class GrnCostingController implements Serializable {
 
             // Update pharmaceutical bill item with stock calculations
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
         }
 
+        String billId;
         // Generate final bill numbers if not already generated
         if (getCurrentGrnBillPre().getDeptId() == null || getCurrentGrnBillPre().getDeptId().isEmpty()) {
-            getCurrentGrnBillPre().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
-        }
-        if (getCurrentGrnBillPre().getInsId() == null || getCurrentGrnBillPre().getInsId().isEmpty()) {
+            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD.PHARMACY_GRN);
+            getCurrentGrnBillPre().setDeptId(billId);
             getCurrentGrnBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
         }
 
         // Set finalization timestamps and user
         getCurrentGrnBillPre().setEditedAt(new Date());
         getCurrentGrnBillPre().setEditor(sessionController.getLoggedUser());
+        getCurrentGrnBillPre().setChecked(true);
         getCurrentGrnBillPre().setCheckeAt(new Date());
         getCurrentGrnBillPre().setCheckedBy(sessionController.getLoggedUser());
 
@@ -2753,7 +2903,7 @@ public class GrnCostingController implements Serializable {
 
         // Final calculations with costing - no copying needed since grnBill and currentGrnBillPre are the same object
         calculateBillTotalsFromItems();
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
+        calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
 
         // Update financial balances
         updateBalanceForGrn(getCurrentGrnBillPre());
@@ -2855,7 +3005,6 @@ public class GrnCostingController implements Serializable {
         BigDecimal billDiscountTotal = BigDecimalUtil.valueOrZero(bill.getBillFinanceDetails().getBillDiscount());
         BigDecimal billExpenseTotal = BigDecimalUtil.valueOrZero(bill.getBillFinanceDetails().getBillExpense());
         BigDecimal billTaxTotal = BigDecimalUtil.valueOrZero(bill.getBillFinanceDetails().getBillTaxValue());
-        
 
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
@@ -2876,11 +3025,9 @@ public class GrnCostingController implements Serializable {
             BigDecimal billExpense = billExpenseTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
             BigDecimal billTax = billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 
-
             f.setBillDiscount(billDiscount);
             f.setBillExpense(billExpense);
             f.setBillTax(billTax);
-            
 
             BigDecimal totalDiscount = lineDiscount.add(billDiscount);
             BigDecimal totalExpense = lineExpense.add(billExpense);
@@ -2889,7 +3036,6 @@ public class GrnCostingController implements Serializable {
             f.setTotalDiscount(totalDiscount);
             f.setTotalExpense(totalExpense);
             f.setTotalTax(totalTax);
-
 
             BigDecimal quantity = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -3056,6 +3202,9 @@ public class GrnCostingController implements Serializable {
 
         pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
         pbi.setPurchaseValue(lineGrossTotal.doubleValue());
+
+        pbi.setQty(qtyInUnits.doubleValue());
+        pbi.setFreeQty(freeQtyInUnits.doubleValue());
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {
@@ -3081,9 +3230,10 @@ public class GrnCostingController implements Serializable {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal totalQty = qty.add(freeQty);
+        // For accurate costing, exclude free quantities from both purchase and retail calculations
+        // Free items don't contribute to purchase cost and shouldn't inflate retail value for profit calculation
         BigDecimal purchaseValue = purchaseRate.multiply(qty);
-        BigDecimal retailValue = retailRate.multiply(totalQty);
+        BigDecimal retailValue = retailRate.multiply(qty);
 
         if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
@@ -3171,7 +3321,7 @@ public class GrnCostingController implements Serializable {
         BigDecimal totalPurchase = BigDecimal.ZERO;
         BigDecimal totalRetail = BigDecimal.ZERO;
         BigDecimal totalWholesale = BigDecimal.ZERO;
-        
+
         // Initialize free item value totals
         BigDecimal totalPurchaseValueFree = BigDecimal.ZERO;
         BigDecimal totalCostValueFree = BigDecimal.ZERO;
@@ -3232,7 +3382,7 @@ public class GrnCostingController implements Serializable {
                 BigDecimal retailValue = retailRate.multiply(qtyTotal);
                 BigDecimal wholesaleValue = wholesaleRate.multiply(qtyTotal);
                 BigDecimal freeItemValue = costRate.multiply(freeQty);
-                
+
                 // Calculate free item values
                 BigDecimal freeItemPurchaseValue = purchaseRate.multiply(freeQty);
                 BigDecimal freeItemCostValue = costRate.multiply(freeQty);
@@ -3247,7 +3397,7 @@ public class GrnCostingController implements Serializable {
                 totalPurchase = totalPurchase.add(Optional.ofNullable(f.getGrossTotal()).orElse(BigDecimal.ZERO));
                 totalRetail = totalRetail.add(retailValue);
                 totalWholesale = totalWholesale.add(wholesaleValue);
-                
+
                 // Accumulate free item values
                 totalPurchaseValueFree = totalPurchaseValueFree.add(freeItemPurchaseValue);
                 totalCostValueFree = totalCostValueFree.add(freeItemCostValue);
@@ -3269,18 +3419,7 @@ public class GrnCostingController implements Serializable {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
             }
         }
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
+
 
         // Calculate bill expenses total ONLY for expenses considered for costing
         double currentBillExpensesConsideredForCosting = 0.0;
@@ -3297,780 +3436,12 @@ public class GrnCostingController implements Serializable {
                 }
             }
         }
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        // Use line-level aggregation only (no bill-level distribution)
-        // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
-        // Reuse existing billTax and billDiscount variables declared earlier in method
-        BigDecimal finalNetTotal = lineNetTotal.add(billTax).subtract(billDiscount).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting));
+
+        netTotal = lineNetTotal.abs().add(billTax.abs()).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting).abs()).subtract(billDiscount.abs());
 
         bill.setTotal(lineNetTotal.doubleValue());
-        bill.setNetTotal(finalNetTotal.doubleValue());
+        bill.setNetTotal(netTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
-
 
         // Ensure BillFinanceDetails is present
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
@@ -4099,20 +3470,11 @@ public class GrnCostingController implements Serializable {
         bfd.setTotalPurchaseValue(totalPurchase);
         bfd.setTotalRetailSaleValue(totalRetail);
         bfd.setTotalWholesaleValue(totalWholesale);
-        
+
         // Set free item values
         bfd.setTotalPurchaseValueFree(totalPurchaseValueFree);
         bfd.setTotalCostValueFree(totalCostValueFree);
         bfd.setTotalRetailSaleValueFree(totalRetailSaleValueFree);
-        
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
 
         bfd.setTotalQuantity(totalQty);
         bfd.setTotalFreeQuantity(totalFreeQty);
@@ -4121,9 +3483,314 @@ public class GrnCostingController implements Serializable {
 
         bfd.setGrossTotal(lineGrossTotal);
         bfd.setLineGrossTotal(lineGrossTotal);
-        bfd.setNetTotal(finalNetTotal);
+        bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
 
+    }
+
+    // ================= Methods copied from PharmacyCalculation =================
+    public List<Item> getSuggessionOnly(Item item) {
+        List<Item> suggessions = new ArrayList<>();
+
+        if (item instanceof Amp) {
+            suggessions = findPack((Amp) item);
+            suggessions.add(item);
+        } else if (item instanceof Ampp) {
+            Amp amp = ((Ampp) item).getAmp();
+            suggessions = findPack(amp);
+            suggessions.add(amp);
+        }
+
+        return suggessions;
+    }
+
+    public List<Item> findPack(Amp amp) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "SELECT i from Ampp i where i.retired=false and "
+                + " i.amp=:am";
+
+        hm.put("am", amp);
+
+        return getItemFacade().findByJpql(sql, hm);
+    }
+
+    /**
+     * Calculates the remaining quantity of items from a purchase order. Initial
+     * quantity is equal to the ordered quantity. GRNs (Goods Received Notes)
+     * reduce the remaining quantity. Cancelled GRNs increase the remaining
+     * quantity. GRN Returns and GRN Return Cancellations are not considered.
+     *
+     * @param po The pharmaceutical bill item linked to the purchase order.
+     * @return Remaining quantity from the original order.
+     */
+    public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
+        double billed = getTotalQty(po.getBillItem(), BillTypeAtomic.PHARMACY_GRN);
+        System.out.println("billed = " + billed);
+        double cancelled = getTotalQty(po.getBillItem(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        System.out.println("cancelled = " + cancelled);
+        double recieveNet = Math.abs(billed) - Math.abs(cancelled);
+        return Math.abs(recieveNet);
+    }
+
+    /**
+     * Calculates the remaining free quantity of items from a purchase order.
+     * Initial quantity is equal to the free quantity in the order. GRNs reduce
+     * the remaining free quantity. Cancelled GRNs increase the remaining free
+     * quantity. GRN Returns and GRN Return Cancellations are not considered.
+     *
+     * @param po The pharmaceutical bill item linked to the purchase order.
+     * @return Remaining free quantity from the original order.
+     */
+    public double calculateRemainingFreeQtyFromOrder(PharmaceuticalBillItem po) {
+        double billed = getTotalFreeQty(po.getBillItem(), BillTypeAtomic.PHARMACY_GRN);
+        double cancelled = getTotalFreeQty(po.getBillItem(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        double recieveNet = Math.abs(billed) - Math.abs(cancelled);
+        return (Math.abs(recieveNet));
+    }
+
+    public double getTotalQty(BillItem b, BillType billType, Bill bill) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  type(p.bill)=:class and p.creater is not null and"
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+        hm.put("class", bill.getClass());
+
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    // ChatGPT contribution (2025-09-10): Treat null retired as active; make SUM null-safe.
+    public double getTotalQty(BillItem pobi, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.qty,0)),0) "
+                + " from BillItem bi "
+                + " where (bi.retired=false or bi.retired is null) "
+                + " and (bi.bill.retired=false or bi.bill.retired is null) "
+                + " and bi.referanceBillItem=:pobi "
+                + " and bi.bill.billTypeAtomic=:bta";
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("pobi", pobi);
+        hm.put("bta", billTypeAtomic);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    public double getTotalFreeQty(BillItem pobi, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.freeQty,0)),0) "
+                + " from BillItem bi "
+                + " where (bi.retired=false or bi.retired is null) "
+                + " and (bi.bill.retired=false or bi.bill.retired is null) "
+                + " and bi.referanceBillItem=:pobi "
+                + " and bi.bill.billTypeAtomic=:bta";
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("pobi", pobi);
+        hm.put("bta", billTypeAtomic);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    public double getTotalFreeQty(BillItem b, BillType billType, Bill bill) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
+                + "  type(p.bill)=:class and p.creater is not null and"
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+        hm.put("class", bill.getClass());
+
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    public double getRemainingQty(PharmaceuticalBillItem ph) {
+        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + ph.getBillItem().getReferanceBillItem().getId();
+        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
+
+        double poQty, remainsFree;
+        poQty = po.getQtyInUnit();
+        remainsFree = poQty - calculateRemainingFreeQtyFromOrder(po);
+
+        return remainsFree;
+    }
+
+    public ItemBatch saveItemBatch(BillItem tmp) {
+        ItemBatch itemBatch = new ItemBatch();
+        Item itm = tmp.getItem();
+
+        if (itm instanceof Ampp) {
+            itm = ((Ampp) itm).getAmp();
+        }
+
+        double purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+        double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
+        double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
+
+        itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
+        itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
+        itemBatch.setPurcahseRate(purchase);
+        itemBatch.setRetailsaleRate(retail);
+        itemBatch.setWholesaleRate(wholesale);
+        itemBatch.setLastPurchaseBillItem(tmp);
+        HashMap hash = new HashMap();
+        String sql;
+
+        itemBatch.setItem(itm);
+        sql = "Select p from ItemBatch p where  p.item=:itm "
+                + " and p.dateOfExpire= :doe and p.retailsaleRate=:ret "
+                + " and p.purcahseRate=:pur";
+
+        hash.put("doe", itemBatch.getDateOfExpire());
+        hash.put("itm", itemBatch.getItem());
+        hash.put("ret", itemBatch.getRetailsaleRate());
+        hash.put("pur", itemBatch.getPurcahseRate());
+        List<ItemBatch> i = getItemBatchFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
+
+        if (!i.isEmpty()) {
+            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
+            ItemBatch ib = i.get(0);
+            ib.setWholesaleRate(wholesale);
+            getItemBatchFacade().edit(ib);
+            return ib;
+        } else {
+            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
+            getItemBatchFacade().create(itemBatch);
+        }
+
+        return itemBatch;
+    }
+
+    private ItemBatch fetchItemBatchWithCosting(Item item, double purchaseRate, double retailRate, double costRate, Date dateOfExpiry) {
+        String jpql = "SELECT p FROM ItemBatch p "
+                + "WHERE p.retired = false "
+                + "AND p.item = :itm "
+                + "AND p.dateOfExpire = :doe "
+                + "AND p.retailsaleRate = :ret "
+                + "AND p.costRate = :cr "
+                + "AND p.purcahseRate = :pur";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itm", item);
+        params.put("doe", dateOfExpiry);
+        params.put("ret", retailRate);
+        params.put("cr", costRate);
+        params.put("pur", purchaseRate);
+
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    private ItemBatch fetchItemBatchWithoutCosting(Item item, double purchaseRate, double retailRate, Date dateOfExpiry) {
+        String jpql = "SELECT p FROM ItemBatch p "
+                + "WHERE p.retired = false "
+                + "AND p.item = :itm "
+                + "AND p.dateOfExpire = :doe "
+                + "AND p.retailsaleRate = :ret "
+                + "AND p.purcahseRate = :pur";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itm", item);
+        params.put("doe", dateOfExpiry);
+        params.put("ret", retailRate);
+        params.put("pur", purchaseRate);
+
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    /**
+     * Creates or fetches an existing ItemBatch based on costing and expiry
+     * logic.Ensures uniqueness based on AMP, purchaseRate, retailRate,
+     * costRate, and expiry.Additional fields like wholesaleRate, make, etc.,
+     * are set but not used for uniqueness.
+     *
+     * @param inputBillItem
+     * @return
+     */
+    public ItemBatch saveItemBatchWithCosting(BillItem inputBillItem) {
+        if (inputBillItem == null || inputBillItem.getItem() == null || inputBillItem.getPharmaceuticalBillItem() == null) {
+            return null;
+        }
+
+        Item originalItem = inputBillItem.getItem();
+        Item amp = originalItem;
+        if (amp instanceof Ampp) {
+            amp = ((Ampp) amp).getAmp();
+        } else {
+        }
+
+        Date expiryDate = inputBillItem.getPharmaceuticalBillItem().getDoe();
+        if (expiryDate == null || amp == null) {
+            return null;
+        }
+
+        ItemBatch itemBatch = null;
+
+        double purchaseRatePerUnit;
+        double retailRatePerUnit;
+        double wholesaleRate = 0.0;
+        double costRatePerUnit = 0.0;
+
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
+        if (manageCosting) {
+            if (inputBillItem.getBillItemFinanceDetails() == null) {
+                return null;
+            }
+
+            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineGrossRate();
+
+            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
+            BigDecimal prPerUnit = prGiven.divide(
+                    unitsPerPack,
+                    PRICE_SCALE,
+                    RoundingMode.HALF_EVEN
+            );
+
+            purchaseRatePerUnit = prPerUnit.doubleValue();
+            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+
+            itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
+        } else {
+            purchaseRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getPurchaseRate();
+            retailRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getRetailRateInUnit();
+            wholesaleRate = inputBillItem.getPharmaceuticalBillItem().getWholesaleRate();
+
+            itemBatch = fetchItemBatchWithoutCosting(amp, purchaseRatePerUnit, retailRatePerUnit, expiryDate);
+        }
+
+        if (itemBatch == null) {
+            itemBatch = new ItemBatch();
+            itemBatch.setItem(amp);
+            itemBatch.setDateOfExpire(expiryDate);
+            itemBatch.setBatchNo(inputBillItem.getPharmaceuticalBillItem().getStringValue());
+            itemBatch.setPurcahseRate(purchaseRatePerUnit);
+            itemBatch.setRetailsaleRate(retailRatePerUnit);
+            itemBatch.setWholesaleRate(wholesaleRate);
+            itemBatch.setCostRate(costRatePerUnit);
+            itemBatch.setLastPurchaseBillItem(inputBillItem);
+            itemBatch.setMake(inputBillItem.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(inputBillItem.getPharmaceuticalBillItem().getModel());
+
+            getItemBatchFacade().create(itemBatch);
+        } else {
+        }
+
+        return itemBatch;
+    }
+
+    public void editBillItem(PharmaceuticalBillItem i, WebUser w) {
+        i.getBillItem().setNetValue(0 - (i.getQty() * i.getPurchaseRate()));
+
+        i.getBillItem().setCreatedAt(Calendar.getInstance().getTime());
+        i.getBillItem().setCreater(w);
+        i.getBillItem().setPharmaceuticalBillItem(i);
+
+        getBillItemFacade().edit(i.getBillItem());
     }
 
 }
