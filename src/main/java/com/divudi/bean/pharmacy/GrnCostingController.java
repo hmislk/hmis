@@ -1729,8 +1729,12 @@ public class GrnCostingController implements Serializable {
             return;
         }
         recalculateFinancialsBeforeAddingBillItem(f);
-        calculateBillTotalsFromItems();
+        
+        // Ensure discount synchronization after free quantity changes
+        ensureBillDiscountSynchronization();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        
+        calculateBillTotalsFromItems();
         calDifference();
     }
 
@@ -2730,7 +2734,77 @@ public class GrnCostingController implements Serializable {
             msg = "Please Fill Reference Institution";
         }
 
+        // Validate that GRN quantities do not exceed ordered quantities
+        String quantityValidationMsg = validateGrnQuantities(billItems);
+        if (!quantityValidationMsg.isEmpty()) {
+            msg = quantityValidationMsg;
+        }
+
         return msg;
+    }
+
+    private String validateGrnQuantities(List<BillItem> billItems) {
+        if (getApproveBill() == null) {
+            return "";
+        }
+
+        for (BillItem grnItem : billItems) {
+            if (grnItem.getReferanceBillItem() == null) {
+                continue;
+            }
+
+            // Get the PO item directly from the reference (no database query needed)
+            BillItem poReferenceItem = grnItem.getReferanceBillItem();
+            PharmaceuticalBillItem poItem = poReferenceItem.getPharmaceuticalBillItem();
+
+            if (poItem == null) {
+                continue;
+            }
+
+            // Get the current GRN's PBI (all quantities are in units)
+            PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
+            
+            if (currentGrnPbi == null) {
+                continue;
+            }
+
+            // All quantities are in units - no conversion needed
+            double orderedQty = poItem.getQtyInUnit();
+            double orderedFreeQty = poItem.getFreeQty();
+            double currentGrnQty = currentGrnPbi.getQty();
+            double currentGrnFreeQty = currentGrnPbi.getFreeQty();
+            
+            // Calculate already received from OTHER GRNs (excluding current one)
+            double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
+            double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
+            
+            // Subtract current GRN quantities from totals to get previously received quantities
+            double previouslyReceivedQty = totalReceivedFromAllGrns - currentGrnQty;
+            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns - currentGrnFreeQty;
+            
+            // Ensure we don't have negative values (in case current GRN is new)
+            previouslyReceivedQty = Math.max(0, previouslyReceivedQty);
+            previouslyReceivedFreeQty = Math.max(0, previouslyReceivedFreeQty);
+
+            // Check if current GRN + previously received exceeds ordered quantity
+            double totalToReceive = currentGrnQty + previouslyReceivedQty;
+            double totalFreeToReceive = currentGrnFreeQty + previouslyReceivedFreeQty;
+
+            if (totalToReceive > orderedQty) {
+                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty + 
+                       " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty + 
+                       ", Remaining: " + (orderedQty - previouslyReceivedQty);
+            }
+
+            if (totalFreeToReceive > orderedFreeQty) {
+                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty + 
+                       " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty + 
+                       ", Already received free: " + previouslyReceivedFreeQty + 
+                       ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
+            }
+        }
+
+        return "";
     }
 
     public boolean checkItemBatch(List<BillItem> list) {
@@ -3165,9 +3239,10 @@ public class GrnCostingController implements Serializable {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal totalQty = qty.add(freeQty);
+        // For accurate costing, exclude free quantities from both purchase and retail calculations
+        // Free items don't contribute to purchase cost and shouldn't inflate retail value for profit calculation
         BigDecimal purchaseValue = purchaseRate.multiply(qty);
-        BigDecimal retailValue = retailRate.multiply(totalQty);
+        BigDecimal retailValue = retailRate.multiply(qty);
 
         if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
@@ -4149,7 +4224,9 @@ public class GrnCostingController implements Serializable {
         // Use line-level aggregation only (no bill-level distribution)
         // Net total calculation: Line Net Total + Bill Tax - Bill Discount + Bill Expenses (Considered)
         // Reuse existing billTax and billDiscount variables declared earlier in method
-        BigDecimal finalNetTotal = lineNetTotal.add(billTax).subtract(billDiscount).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting));
+        // Use netTotal which already includes distributed expenses from distributeProportionalBillValuesToItems
+        // lineNetTotal + billTax - billDiscount would double-count expenses
+        BigDecimal finalNetTotal = netTotal;
 
         bill.setTotal(lineNetTotal.doubleValue());
         bill.setNetTotal(finalNetTotal.doubleValue());
