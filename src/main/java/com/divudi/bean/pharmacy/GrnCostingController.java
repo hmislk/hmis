@@ -3103,7 +3103,7 @@ public class GrnCostingController implements Serializable {
         }
 
         // After distribution, update bill-level totals by aggregating from distributed line items
-        aggregateBillTotalsFromDistributedItems(bill, billItems);
+//        aggregateBillTotalsFromDistributedItems(bill, billItems);
 
     }
 
