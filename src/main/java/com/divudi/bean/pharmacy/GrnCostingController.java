@@ -1699,11 +1699,8 @@ public class GrnCostingController implements Serializable {
             return;
         }
         recalculateFinancialsBeforeAddingBillItem(f);
-
-        // Redistribute bill discount after line rate changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-
         calculateBillTotalsFromItems();
         calDifference();
     }
@@ -2749,54 +2746,45 @@ public class GrnCostingController implements Serializable {
         }
 
         for (BillItem grnItem : billItems) {
-            if (grnItem.getReferanceBillItem() == null) {
+            if (grnItem.getReferanceBillItem() == null || grnItem.getPharmaceuticalBillItem() == null) {
                 continue;
             }
 
-            // Get the PO item directly from the reference (no database query needed)
-            BillItem poReferenceItem = grnItem.getReferanceBillItem();
-            PharmaceuticalBillItem poItem = poReferenceItem.getPharmaceuticalBillItem();
-
+            BillItem purchaseOrderItem = grnItem.getReferanceBillItem();
+            PharmaceuticalBillItem poItem = purchaseOrderItem.getPharmaceuticalBillItem();
+            
             if (poItem == null) {
                 continue;
             }
 
-            // Get the current GRN's PBI (all quantities are in units)
             PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
             
-            if (currentGrnPbi == null) {
-                continue;
-            }
-
-            // All quantities are in units - no conversion needed
-            double orderedQty = poItem.getQtyInUnit();
+            double orderedQty = poItem.getQty();
             double orderedFreeQty = poItem.getFreeQty();
             double currentGrnQty = currentGrnPbi.getQty();
             double currentGrnFreeQty = currentGrnPbi.getFreeQty();
             
-            // Calculate already received from OTHER GRNs (excluding current one)
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered: " + orderedQty + ", Current GRN: " + currentGrnQty);
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered Free: " + orderedFreeQty + ", Current GRN Free: " + currentGrnFreeQty);
+            
             double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
             double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
             
-            // Subtract current GRN quantities from totals to get previously received quantities
-            double previouslyReceivedQty = totalReceivedFromAllGrns - currentGrnQty;
-            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns - currentGrnFreeQty;
-            
-            // Ensure we don't have negative values (in case current GRN is new)
-            previouslyReceivedQty = Math.max(0, previouslyReceivedQty);
-            previouslyReceivedFreeQty = Math.max(0, previouslyReceivedFreeQty);
+            double previouslyReceivedQty = Math.max(0, totalReceivedFromAllGrns - currentGrnQty);
+            double previouslyReceivedFreeQty = Math.max(0, totalFreeReceivedFromAllGrns - currentGrnFreeQty);
 
-            // Check if current GRN + previously received exceeds ordered quantity
-            double totalToReceive = currentGrnQty + previouslyReceivedQty;
-            double totalFreeToReceive = currentGrnFreeQty + previouslyReceivedFreeQty;
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Previously received: " + previouslyReceivedQty + ", Total to receive: " + (previouslyReceivedQty + currentGrnQty));
+            System.out.println("Item: " + grnItem.getItem().getName() + " - Previously received free: " + previouslyReceivedFreeQty + ", Total free to receive: " + (previouslyReceivedFreeQty + currentGrnFreeQty));
 
-            if (totalToReceive > orderedQty) {
+            if (orderedQty < previouslyReceivedQty + currentGrnQty) {
+                System.out.println("VALIDATION FAILED: Regular quantity exceeded for " + grnItem.getItem().getName());
                 return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty + 
                        " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty + 
                        ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-            if (totalFreeToReceive > orderedFreeQty) {
+            if (orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
+                System.out.println("VALIDATION FAILED: Free quantity exceeded for " + grnItem.getItem().getName());
                 return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty + 
                        " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty + 
                        ", Already received free: " + previouslyReceivedFreeQty + 
@@ -2804,6 +2792,7 @@ public class GrnCostingController implements Serializable {
             }
         }
 
+        System.out.println("GRN quantity validation passed for all items");
         return "";
     }
 
@@ -3214,6 +3203,9 @@ public class GrnCostingController implements Serializable {
 
         pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
         pbi.setPurchaseValue(lineGrossTotal.doubleValue());
+        
+        pbi.setQty(qtyInUnits.doubleValue());
+        pbi.setFreeQty(freeQtyInUnits.doubleValue());
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {
