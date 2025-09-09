@@ -3419,18 +3419,7 @@ public class GrnCostingController implements Serializable {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
             }
         }
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
-        // Set legacy totals on Bill
+
 
         // Calculate bill expenses total ONLY for expenses considered for costing
         double currentBillExpensesConsideredForCosting = 0.0;
@@ -3448,10 +3437,10 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        BigDecimal finalNetTotal = netTotal;
+        netTotal = lineNetTotal.abs().add(billTax.abs()).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting).abs()).subtract(billDiscount.abs());
 
         bill.setTotal(lineNetTotal.doubleValue());
-        bill.setNetTotal(finalNetTotal.doubleValue());
+        bill.setNetTotal(netTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
 
         // Ensure BillFinanceDetails is present
@@ -3487,14 +3476,6 @@ public class GrnCostingController implements Serializable {
         bfd.setTotalCostValueFree(totalCostValueFree);
         bfd.setTotalRetailSaleValueFree(totalRetailSaleValueFree);
 
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
-        // DEBUG: Log the values being set in BillFinanceDetails
         bfd.setTotalQuantity(totalQty);
         bfd.setTotalFreeQuantity(totalFreeQty);
         bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
@@ -3502,7 +3483,7 @@ public class GrnCostingController implements Serializable {
 
         bfd.setGrossTotal(lineGrossTotal);
         bfd.setLineGrossTotal(lineGrossTotal);
-        bfd.setNetTotal(finalNetTotal);
+        bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
 
     }
