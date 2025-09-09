@@ -956,27 +956,24 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem
+                        <p:menuitem 
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
                             value="GRN"
                             title="Goods Receipt (GRN)"
                             icon="fas fa-dolly-flatbed"
-                            actionListener="#{searchController.makeListNull()}"
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"  
+                            action="#{searchController.navigateToGrnListToFinalize()}"  
                             value="GRN Finalize"  
                             icon="fas fa-clipboard-check"
-                            actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"  
+                            action="#{searchController.navigateToGrnListToApprove()}"  
                             value="GRN Approval"  
                             icon="fas fa-check-circle"
-                            actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" ></p:menuitem>
 
                         <p:menuitem  
@@ -988,52 +985,13 @@
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
+                            id="mnuPurchaseReturnsAndCancellations"
                             ajax="false" 
-                            action="#{searchController.navigateToReturnReceivedGoods()}"  
-                            value="Return Received Goods (Legacy)" 
-                            title="Return Received Goods - Direct Process"
+                            action="/pharmacy/purchase_returns_and_cancellations_index?faces-redirect=true"  
+                            value="Purchase Returns and Cancellations" 
+                            title="Purchase Returns and Cancellations"
                             icon="fas fa-undo-alt"
-                            actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{grnReturnWorkflowController.navigateToCreateGrnReturn()}"  
-                            value="Create GRN Return" 
-                            title="Create a new GRN Return Request"
-                            icon="fas fa-plus-circle"
-                            actionListener="#{grnReturnWorkflowController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{grnReturnWorkflowController.navigateToFinalizeGrnReturn()}"  
-                            value="Finalize GRN Return" 
-                            title="Finalize GRN Return Requests"
-                            icon="fas fa-tasks"
-                            actionListener="#{grnReturnWorkflowController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{grnReturnWorkflowController.navigateToApproveGrnReturn()}"  
-                            value="Approve GRN Return" 
-                            title="Approve GRN Return Requests"
-                            icon="fas fa-check-circle"
-                            actionListener="#{grnReturnWorkflowController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}" ></p:menuitem>  
-                        <p:menuitem  
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"  
-                            value="Return without Receipt" 
-                            title="Return without Receipt"
-                            icon="fas fa-exchange-alt"
-                            rendered="#{webUserController.hasPrivilege('ReturnWithoutRecipt')}" 
-                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{searchController.navigateToCancelPurchaseOrder()}"  
-                            value="Multiple Purchase Order Cancellation" 
-                            title="Multiple Purchase Order Cancellation"
-                            rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" 
-                            icon="fas fa-cancel"></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods') or webUserController.hasPrivilege('CreateGrnReturn') or webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('ApproveGrnReturn') or webUserController.hasPrivilege('CreateDirectPurchaseReturn') or webUserController.hasPrivilege('FinalizeDirectPurchaseReturn') or webUserController.hasPrivilege('ApproveDirectPurchaseReturn') or webUserController.hasPrivilege('ReturnWithoutRecipt') or webUserController.hasPrivilege('PharmacyOrderCancellation')}" ></p:menuitem>
                     </p:submenu>
 
 
@@ -1204,7 +1162,7 @@
                     <p:submenu label="Transfer" icon="fas fa-exchange-alt" rendered="#{webUserController.hasPrivilege('TheaterTransfer')}" >
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  value="Request" icon="fas fa-paper-plane" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="#{transferIssueController.navigateToDirectPharmacyIssue}"  value="Direct Issue" icon="fas fa-share-square" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Recieve" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Receive" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{reportsTransfer.navigateToPharmacyTransferReports()}"
@@ -1217,7 +1175,7 @@
                     <p:menuitem 
                         ajax="false" 
                         icon="fa fa-pills"
-                        action="/theater/issue_index?faces-redirect=true" 
+                        action="/theater/issue_index?faces-redirect=true"
                         value="Pharmacy &amp; Stores"
                         rendered="#{webUserController.hasPrivilege('TheaterIssue')}" />
 
@@ -1329,7 +1287,7 @@
                     <p:submenu label="Transfer" icon="fas fa-exchange-alt" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
                         <p:menuitem  ajax="false" action="/store/store_transfer_request?faces-redirect=true"  value="Request" icon="fas fa-paper-plane" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_transfer_request_list?faces-redirect=true"  value="Issue" icon="fas fa-share-square" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferIssue')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/store_transfer_issued_list?faces-redirect=true"  value="Recieve" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRecive')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_transfer_issued_list?faces-redirect=true"  value="Receive" icon="fas fa-download" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRecive')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_report_transfer?faces-redirect=true"  value="Reports" icon="pi pi-chart-bar" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferReport')}" ></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('StoreAdjustment')}">
@@ -1930,6 +1888,10 @@
                                              ajax="false"
                                              action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
                         </h:panelGroup>
+                        <!-- User Notifications UI disabled: caused TransactionRolledback errors during render.
+                             Once the JPQL/transaction issues are fixed, remove the comment markers below
+                             to re-enable the bell badge, polling, and refresh actions. -->
+                        <!--
                         <div class="mx-4">
                             <h:panelGroup>
                                 <p:poll
@@ -1949,6 +1911,7 @@
                                     title="Refresh Notifications" style="margin-left: 10px;"/>
                             </h:panelGroup>
                         </div>
+                        -->
 
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />

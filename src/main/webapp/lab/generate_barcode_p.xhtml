@@ -22,7 +22,6 @@
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
                     <h:form >
-
                         <div class="row my-2" >
                             <div class="col-10" >
                                 <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
@@ -1056,7 +1055,15 @@
 
                                             <h:panelGroup rendered="#{!ps.bill.cancelled}">
                                                 <h:outputLabel value=" #{ps.status}" /><br/>
-                                                <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/>
+                                                <h:panelGroup rendered="#{ps.sampleRejected}">
+                                                    <p:badge value="Reject" styleClass="ui-badge-danger" /> - <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/><br/>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup rendered="#{ps.separated}">
+                                                    <p:badge value="Separated Sample from #{ps.separatedfrom.id}" class="mt-2" styleClass="ui-badge-warning" /><br/>
+                                                </h:panelGroup>
+
+                                                <p:badge value="Re-Collect Sample" styleClass="ui-badge-info" rendered="#{ps.referenceSample ne null}"/>
                                             </h:panelGroup>
 
                                         </p:column>
@@ -1274,12 +1281,12 @@
                                                     <div class="ui-g-12">
                                                         <i class="fa fa-vial text-primary"></i>
                                                         <span class="text-primary font-weight-bold">Sample ID : </span>
-                                                        <h:outputText value="#{psc.patientSample.id}" class="text-primary mx-2" />
+                                                        <h:outputText value="#{psc.patientSample.id}" class="#{psc.patientSample.sampleRejected ? 'text-danger mx-2' : 'text-primary  mx-2'}" />
                                                     </div>
                                                     <div class="ui-g-12">
                                                         <i class="fa fa-flask text-success"></i>
                                                         <span class="text-success font-weight-bold">Test Component : </span>
-                                                        <h:outputText value="#{psc.investigationComponant.name}" class="text-success mx-2" />
+                                                        <h:outputText value="#{psc.investigationComponant.name}" class="#{psc.patientSample.sampleRejected ? 'text-danger mx-2' : 'text-primary  mx-2'}" />
                                                     </div>
                                                 </div>
                                             </ui:repeat>
@@ -1507,96 +1514,6 @@
                                                 </ui:repeat>
                                             </h:panelGroup>
 
-                                            <!--
-                                                                                        <h:panelGroup id="individualBarcodeSingle" rendered="#{patientInvestigationController.printIndividualBarcodes eq true}">
-                                            
-                                                                                            <ui:repeat value="#{patientInvestigationController.regeneratedPatientSamples}" var="ps">
-                                                                                                <div>
-                                                                                                    <div class="row">
-                                                                                                        <div class="col-4">
-                                                                                                            <h:panelGroup id="tt">
-                                                                                                                <div class="sticker" >
-                                                                                                                    <div class="patient-info">
-                                                                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Sample ID PHN in Sample Stickers', true)}">
-                                                                                                                            <span class="sample-id">
-                                            #{ps.idStr}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
-                                        <span class="patient-age">
-                                            #{ps.patient.person.ageAsShortString}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
-                                        <span class="patient-sex">
-                                            #{ps.patient.person.sex.shortLabel}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
-                                        <span class="patient-id">
-                                            #{ps.patient.person.id}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
-                                        <span class="patient-id">
-                                            #{ps.bill.ipOpOrCc}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
-                                        <span class="patient-id">
-                                            <h:outputLabel value="#{ps.barcodeGeneratedAt}">
-                                                <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Date Time Format for Barcode Generated Time in Sample Stickers','d/M/yy-hh:mm')}"></f:convertDateTime>
-                                            </h:outputLabel>
-                                            &nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
-                                        <span class="patient-phn">
-                                            #{ps.patient.phn}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                    <span class="patient-name">
-                                            #{ps.patient.person.name}&nbsp;&nbsp;
-                                        </span>
-                                    </div>
-                                    <div class="patient-sample-info">
-                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(ps)}" var="psw">
-                                            <span class="sample-component" style="font-weight: 800">
-                                            #{psw.nameTranscient}&nbsp;&nbsp;
-                                        </span>
-                                    </ui:repeat>
-                                </div>
-                                <div class="barcode-info">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
-                                        <p:barcode 
-                                            value="#{ps.idStr}" 
-                                            cache="false"
-                                            hrp="none"
-                                            type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
-                                            height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
-                                            width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
-                                            orientation="0"></p:barcode>
-                                    </h:panelGroup>
-                                </div> 
-                            </div>
-                            <div class="patient-info">
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
-                                    <span class="sample-id">
-                                            #{ps.bill.deptId}&nbsp;&nbsp;
-                                        </span>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-                        </div> 
-
-                    </div> 
-                </div>
-
-            </ui:repeat>
-
-
-        </h:panelGroup>-->
-
                                         </h:panelGroup>
 
                                     </p:panel>
@@ -1618,7 +1535,7 @@
                                         action="#{patientInvestigationController.reGenerateSampleForRejectSamples()}"
                                         title="Re-Generate Samples"
                                         icon="pi pi-plus-circle"
-                                        styleClass="m-1  w-100 ui-button-success" >
+                                        styleClass="w-100 ui-button-success" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1631,7 +1548,7 @@
                                         action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
                                         title="Generate Barcodes"
                                         icon="pi pi-barcode"
-                                        styleClass="m-1 w-100 ui-button-success" >
+                                        styleClass="w-100 ui-button-success" >
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -1642,9 +1559,22 @@
                                         action="#{patientInvestigationController.collectSamples()}"
                                         title="Collect Samples"
                                         icon="pi pi-plus-circle"
-                                        styleClass="m-1  w-100 ui-button-primary" >
+                                        styleClass="w-100 ui-button-primary" >
                                     </p:commandButton>
 
+                                    <hr/>
+
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                        ajax="false"
+                                        value="Separate Sample"
+                                        title="Separate Sample"
+                                        icon="pi pi-external-link"
+                                        rendered="#{webUserController.hasPrivilege('LabSampleSeparate')}"
+                                        action="#{patientInvestigationController.navigateToSampleSeparate()}"
+                                        styleClass="w-100 ui-button-warning" >
+                                    </p:commandButton>
+                                    
                                     <hr/>
 
                                     <style>
@@ -1675,7 +1605,8 @@
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         var="mys" 
                                         class="w-100" 
-                                        maxResults="50"
+                                        maxResults="25"
+                                        placeholder="Sample Transporter"
                                         inputStyleClass="form-control"
                                         itemLabel="#{mys.person.nameWithTitle}" 
                                         panelStyleClass="custom-dropdown-panel"
@@ -1692,7 +1623,7 @@
                                         action="#{patientInvestigationController.sendSamplesToLab()}"
                                         title="Send to Lab"
                                         icon="pi pi-external-link"
-                                        styleClass="m-1  w-100 ui-button-warning" >
+                                        styleClass="w-100 ui-button-warning" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1705,7 +1636,7 @@
                                         action="#{patientInvestigationController.receiveSamplesAtLab()}"
                                         title="Receive Samples"
                                         icon="pi pi-check-circle"
-                                        styleClass="m-1  w-100 ui-button-info">
+                                        styleClass="w-100 ui-button-info">
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -1716,7 +1647,8 @@
                                         action="#{patientInvestigationController.collectAndReceiveSamplesAtLab()}"
                                         title="Receive Samples"
                                         icon="pi pi-check-circle"
-                                        styleClass="m-1  w-100 ui-button-info" >
+                                        class="mt-3"
+                                        styleClass="w-100 ui-button-info" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1747,7 +1679,7 @@
                                         action="#{patientInvestigationController.rejectSamples()}"
                                         title="Reject Samples"
                                         icon="pi pi-times-circle"
-                                        styleClass="m-1  w-100 ui-button-danger" >
+                                        styleClass="w-100 ui-button-danger" >
                                     </p:commandButton>
 
                                     <hr/>
@@ -1760,7 +1692,7 @@
                                         action="#{patientInvestigationController.generateSampleCodesSamples()}"
                                         title="Reject Samples"
                                         icon="pi pi-times-circle"
-                                        styleClass="m-1  w-100 ui-button-danger" >
+                                        styleClass="w-100 ui-button-danger" >
                                     </p:commandButton>
 
                                     <p:inputTextarea 

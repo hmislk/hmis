@@ -100,11 +100,6 @@
                                             maxResults="10"
                                             minQueryLength="3"
                                             >
-                                            <p:ajax
-                                                event="itemSelect"
-                                                process="acAmp"
-                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                                update="tblStocks" />
                                             <p:column headerText="Item"  style="padding: 3px;" >
                                                 <h:outputText value="#{amp.name}" />
                                             </p:column>

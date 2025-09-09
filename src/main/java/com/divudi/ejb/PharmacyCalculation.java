@@ -797,9 +797,11 @@ public class PharmacyCalculation implements Serializable {
         }
 
         // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack)
-        Item amp = inputBillItem.getItem();
+        Item originalItem = inputBillItem.getItem();
+        Item amp = originalItem;
         if (amp instanceof Ampp) {
             amp = ((Ampp) amp).getAmp();
+        } else {
         }
 
         Date expiryDate = inputBillItem.getPharmaceuticalBillItem().getDoe();
@@ -864,6 +866,7 @@ public class PharmacyCalculation implements Serializable {
             itemBatch.setModal(inputBillItem.getPharmaceuticalBillItem().getModel());
 
             getItemBatchFacade().create(itemBatch);
+        } else {
         }
 
         return itemBatch;
@@ -975,13 +978,13 @@ public class PharmacyCalculation implements Serializable {
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Cheque) {
-            if (b.getBank().getId() == null || b.getChequeRefNo() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getChequeRefNo() == null) {
                 msg = "Please select Cheque Number and Bank";
             }
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Slip) {
-            if (b.getBank().getId() == null || b.getComments() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getComments() == null) {
                 msg = "Please Fill Memo and Bank";
             }
         }
@@ -1185,7 +1188,6 @@ public class PharmacyCalculation implements Serializable {
         }
         
         try {
-            System.out.println("DEBUG: Executing bulk calculation for " + billItemIds.size() + " bill items");
             
             // Step 1: Get issued quantities (BilledBill)
             String issuedSql = "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) " +
@@ -1242,7 +1244,6 @@ public class PharmacyCalculation implements Serializable {
             
             java.util.List<Object[]> originalResults = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(originalSql, originalParams, javax.persistence.TemporalType.TIMESTAMP);
             
-            System.out.println("DEBUG: Found " + issuedMap.size() + " issued, " + cancelledMap.size() + " cancelled, " + originalResults.size() + " original items");
             
             java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> resultMap = new java.util.HashMap<>();
             
@@ -1257,15 +1258,13 @@ public class PharmacyCalculation implements Serializable {
                     
                 resultMap.put(billItemId, dto);
                 
-                System.out.println("  Item ID: " + billItemId + " -> Original: " + originalQty + ", Issued: " + issuedQty + ", Cancelled: " + cancelledQty + ", Remaining: " + dto.getRemainingQty());
             }
             
             return resultMap;
             
         } catch (Exception e) {
-            // Log error and return empty map as fallback
-            System.err.println("Error in getBulkCalculationsForBillItems: " + e.getMessage());
-            e.printStackTrace();
+// Log error and return empty map as fallback
+                        e.printStackTrace();
             return new java.util.HashMap<>();
         }
     }

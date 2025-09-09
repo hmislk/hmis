@@ -2093,7 +2093,6 @@ public class PharmacyReportController implements Serializable {
     public void processOpDrugReturn() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
@@ -2950,16 +2949,16 @@ public class PharmacyReportController implements Serializable {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     private List<DirectPurchaseReportDto> dtoList;
-    
-    public String navigateToDirectPurchaseSummeryReport(){
+
+    public String navigateToDirectPurchaseSummeryReport() {
         dtoList = null;
         return "/pharmacy/direct_purchase_summery_report?faces-redirect=true";
     }
 
-    public void processDirectPurchaseSummeryReport(){
-                                                               
+    public void processDirectPurchaseSummeryReport() {
+
         StringBuilder jpql = new StringBuilder("select new com.divudi.bean.report.PharmacyReportController.DirectPurchaseReportDto("
                 + "bill.id, bill.createdAt, "
                 + "pbi.doe, "
@@ -2980,41 +2979,41 @@ public class PharmacyReportController implements Serializable {
                 + "and bill.retired = :ret "
                 + "and bill.cancelled = :ret "
                 + "and bi.retired = :ret ");
-        
+
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
         params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
         params.put("bt", BillType.PharmacyPurchaseBill);
         params.put("ret", false);
-        
-        if(institution != null){
+
+        if (institution != null) {
             jpql.append("and bill.referenceInstitution = :ins ");
             params.put("ins", institution);
         }
 
-        if(department != null){
+        if (department != null) {
             jpql.append("and bill.department = :dept ");
             params.put("dept", department);
-            
-            if(site != null){
-                jpql.append("and bill.department.site = :site ");
-                params.put("site", site);
-            }
         }
-        
-        if(amp != null){
+
+        if (site != null) {
+            jpql.append("and bill.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (amp != null) {
             jpql.append("and bi.item = :item ");
             params.put("item", amp);
         }
-        
-        if(fromInstitution != null){
+
+        if (fromInstitution != null) {
             jpql.append("and bill.fromInstitution = :fromIns ");
             params.put("fromIns", fromInstitution);
         }
-        
-        dtoList = (List<DirectPurchaseReportDto>)billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
+        dtoList = (List<DirectPurchaseReportDto>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
     }
 
     public List<DirectPurchaseReportDto> getDtoList() {
@@ -3025,8 +3024,8 @@ public class PharmacyReportController implements Serializable {
         this.dtoList = dtoList;
     }
 
-    
-    public static class DirectPurchaseReportDto{
+    public static class DirectPurchaseReportDto {
+
         private Long billId;
         private Date billDate;
         private Date doe;
@@ -3140,9 +3139,7 @@ public class PharmacyReportController implements Serializable {
         public void setQuantity(double quantity) {
             this.quantity = quantity;
         }
-        
-        
-        
+
     }
 
     public void processStockLedgerReport() {
@@ -3174,8 +3171,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             } else if ("consumptionDoc".equals(documentType)) {
-                billTypes.add(BillType.PharmacyIssue);
-
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
             } else if ("transferIssueDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyTransferIssue);
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
@@ -3198,6 +3194,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
 
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -3264,9 +3261,9 @@ public class PharmacyReportController implements Serializable {
                 jpql += "and s.item=:itm ";
                 m.put("itm", item);
             }
-            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
-                jpql += " and s.department IS NOT NULL ";
-            }
+//            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
+//                jpql += " and s.department IS NOT NULL ";
+//            }
 
             jpql += " order by s.createdAt ";
             stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
@@ -3602,7 +3599,7 @@ public class PharmacyReportController implements Serializable {
 
         if (amp != null) {
             item = amp;
-            jpql.append("and sh.itemBatch.item = :itm ");
+            jpql.append("and (sh.itemBatch.item = :itm or sh.itemBatch.item.amp = :itm) ");
             params.put("itm", item);
         }
 
@@ -4091,7 +4088,6 @@ public class PharmacyReportController implements Serializable {
         try {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
 
             Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);

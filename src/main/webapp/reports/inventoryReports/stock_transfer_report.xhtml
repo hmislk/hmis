@@ -541,6 +541,11 @@
                                     <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.departmentTotalsMap.get(deptEntry.key)[0]}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Cost Rate" width="5em" style="text-align: right; padding-right: 10px;"
@@ -555,6 +560,11 @@
                                     <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.itemBatch.costRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.departmentTotalsMap.get(deptEntry.key)[1]}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Issue Approved User" width="10em">

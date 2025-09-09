@@ -267,9 +267,12 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
     //Checking Property
+    private boolean checked=false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -826,10 +829,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
@@ -3015,6 +3022,8 @@ public class Bill implements Serializable, RetirableEntity {
     public void setIndication(String indication) {
         this.indication = indication;
     }
+    
+    
 
     public Institution getTransientSupplier() {
         if (this.getBillTypeAtomic() == null) {
@@ -3028,5 +3037,13 @@ public class Bill implements Serializable, RetirableEntity {
                 transientSupplier = this.getFromInstitution();
         }
         return transientSupplier;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 }

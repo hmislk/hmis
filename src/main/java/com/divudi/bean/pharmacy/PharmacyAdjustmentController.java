@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillClassType;
@@ -71,6 +72,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -127,12 +130,13 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
-    
+
     private int tabIndex = 0;
 
     private YearMonthDay yearMonthDay;
 
     List<BillItem> billItems;
+    List<BillItem> expiryDateAdjustmentBillItems;
     List<Stock> stocks;
     List<Bill> bills;
 
@@ -151,6 +155,10 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void fillDepartmentAdjustmentByBillItem() {
         billItems = fetchBillItems(BillType.PharmacyAdjustment);
+    }
+
+    public void fillExpiryDateAdjustmentReport() {
+        expiryDateAdjustmentBillItems = fetchExpiryDateAdjustmentBillItems();
     }
 
     public void fillAmpStocks() {
@@ -198,7 +206,8 @@ public class PharmacyAdjustmentController implements Serializable {
                 + "s.itemBatch.dateOfExpire, "
                 + "s.itemBatch.batchNo, "
                 + "s.itemBatch.purcahseRate, "
-                + "s.itemBatch.wholesaleRate) "
+                + "s.itemBatch.wholesaleRate, "
+                + "s.itemBatch.costRate) "
                 + "FROM Stock s "
                 + "WHERE s.department = :d "
                 + "AND s.itemBatch.item = :amp ";
@@ -241,6 +250,33 @@ public class PharmacyAdjustmentController implements Serializable {
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return billItems;
+    }
+
+    public List<BillItem> fetchExpiryDateAdjustmentBillItems() {
+        List<BillItem> expiryAdjustmentItems;
+
+        Map m = new HashMap();
+        String sql;
+        sql = "select bi from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType=:bt "
+                + " and bi.pharmaceuticalBillItem.beforeAdjustmentExpiry is not null "
+                + " and bi.pharmaceuticalBillItem.afterAdjustmentExpiry is not null ";
+
+        if (fromDepartment != null) {
+            sql += " and bi.bill.department=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        sql += " order by bi.bill.createdAt desc, bi.id";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.PharmacyAdjustmentExpiryDate);
+
+        expiryAdjustmentItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return expiryAdjustmentItems;
     }
 
     public void setFromDepartment(Department fromDepartment) {
@@ -423,6 +459,17 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public List<BillItem> getExpiryDateAdjustmentBillItems() {
+        if (expiryDateAdjustmentBillItems == null) {
+            expiryDateAdjustmentBillItems = new ArrayList<>();
+        }
+        return expiryDateAdjustmentBillItems;
+    }
+
+    public void setExpiryDateAdjustmentBillItems(List<BillItem> expiryDateAdjustmentBillItems) {
+        this.expiryDateAdjustmentBillItems = expiryDateAdjustmentBillItems;
     }
 
     private void saveDeptAdjustmentBill() {
@@ -921,7 +968,6 @@ public class PharmacyAdjustmentController implements Serializable {
             throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
         }
 
-
         ph.setPurchaseRate(ib.getCostRate() != null ? ib.getCostRate() : 0.0);
         ph.setBeforeAdjustmentValue(oldCostRate);
         ph.setAfterAdjustmentValue(newCostRate);
@@ -1141,17 +1187,16 @@ public class PharmacyAdjustmentController implements Serializable {
     private void saveExDateAdjustmentBillItems() {
         billItem = null;
         BillItem tbi = getBillItem();
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
-        ph.setBillItem(null);
-//        ph.setPurchaseRate(itemBatch.getPurcahseRate());
-//        ph.setRetailRate(itemBatch.getRetailsaleRate());
-        ph.setDoe(itemBatch.getDateOfExpire());
+        tbi.getPharmaceuticalBillItem().setDoe(itemBatch.getDateOfExpire());
+        // Set before and after adjustment expiry dates for the bill item
+        tbi.getPharmaceuticalBillItem().setBeforeAdjustmentExpiry(itemBatch.getDateOfExpire());
+        tbi.getPharmaceuticalBillItem().setAfterAdjustmentExpiry(exDate);
         //tbi.setItem(getStock().getItemBatch().getItem());
         //itemBatch.setDateOfExpire(exDate);
         //tbi.setRate(rsr);
         //pharmaceutical Bill Item
-        ph.setStock(stock);
+        tbi.getPharmaceuticalBillItem().setStock(stock);
         //Rates
         //Values
         tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
@@ -1163,20 +1208,11 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
-
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-        tbi.setPharmaceuticalBillItem(ph);
-
         if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        } else {
             getBillItemFacade().edit(tbi);
         }
-
-        ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-        getItemBatchFacade().edit(itemBatch);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
@@ -1724,6 +1760,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        // Normalize selected expiry to end-of-month when month-year pattern is used
+        boolean expiryIsAlwaysMonthEnd = configOptionApplicationController.getBooleanValueByKey("Always Set Expiry Date to Month End", false);
+        if (expiryIsAlwaysMonthEnd) {
+            exDate = normalizeToEndOfMonth(exDate);
+        }
         if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
@@ -1740,6 +1781,24 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Expiry Date Adjustment Successfully..");
 
+    }
+
+    /**
+     * Ensure the expiry date reflects the last instant of the selected month.
+     * Useful when UI captures only month-year (e.g., pattern "MMM yyyy").
+     */
+    private Date normalizeToEndOfMonth(Date date) {
+        if (date == null) {
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
     }
 
     public void adjustRetailRate() {
@@ -1863,6 +1922,7 @@ public class PharmacyAdjustmentController implements Serializable {
     public void newBill() {
         deptAdjustmentPreBill = null;
         billItems = null;
+        expiryDateAdjustmentBillItems = null;
         stocks = new ArrayList<>();
         bills = new ArrayList<>();
         item = new Item();
@@ -1873,6 +1933,7 @@ public class PharmacyAdjustmentController implements Serializable {
     public void clearBill() {
         deptAdjustmentPreBill = null;
         billItems = null;
+        expiryDateAdjustmentBillItems = null;
         comment = "";
         stocks = new ArrayList<>();
         stock = null;

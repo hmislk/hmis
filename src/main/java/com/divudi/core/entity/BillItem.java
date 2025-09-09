@@ -1183,6 +1183,7 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItemFinanceDetails == null) {
             billItemFinanceDetails = new BillItemFinanceDetails();
             billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
         }
         return billItemFinanceDetails;
     }

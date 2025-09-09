@@ -24,10 +24,10 @@
                                              action="#{purchaseOrderController.approve}">
                             </p:commandButton>
                             <p:commandButton ajax="false"  
-                                             value="Back To Po List" 
+                                             value="Back To PO List to Approve" 
                                              class="ui-button-warning" 
                                              icon="fas fa-arrow-left" 
-                                             action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true">
+                                             action="#{searchController.navigateToPurchaseOrderApprove}">
                             </p:commandButton>
                         </div>
                     </f:facet>
@@ -61,6 +61,14 @@
 
                                         <p:column headerText="Item Name" >  
                                             <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                id="btnViewSelectedItemDetails"
+                                                title="View Item Details"
+                                                action="#{purchaseOrderController.displayItemDetails(bi)}"
+                                                update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                process="@this"
+                                                class="ui-button-icon-only mx-3"/>
                                         </p:column>  
 
                                         <p:column headerText="Code" styleClass="shortNumericColumn"  >  
@@ -135,6 +143,10 @@
                                             <p:commandButton  process="itemList" update="itemList :#{p:resolveFirstComponentWithId('po',view).clientId}" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
                                         </p:column>
                                     </p:dataTable> 
+                                    
+                                    <div >
+                                        <ph:history/>
+                                    </div>
                                 </p:panel>
                             </div>
 
@@ -205,7 +217,6 @@
 
 
                     <p:spacer height="50"/>
-                    <ph:history/>
                 </p:panel>
             </h:panelGroup>
             <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
