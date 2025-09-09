@@ -14,6 +14,8 @@ public enum TestHistoryType {
     ORDERED,
     CANCELED,
     REFUNDED,
+    SAMPLE_SEPARATE,
+    SEPARATE_AND_BARCODE_GENERATED,
     BARCODE_GENERATED,
     BARCODE_REGENERATED,
     BARCODE_PRINTED,
@@ -52,6 +54,10 @@ public enum TestHistoryType {
                 return "Refunded";
             case BARCODE_GENERATED:
                 return "Barcode Generated";
+            case SEPARATE_AND_BARCODE_GENERATED:
+                return "Separate and Barcode Generated";
+            case SAMPLE_SEPARATE:
+                return "Sample Separate";
             case BARCODE_REGENERATED:
                 return "Barcode Regenerated";
             case BARCODE_PRINTED:

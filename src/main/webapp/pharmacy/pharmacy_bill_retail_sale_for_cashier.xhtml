@@ -5,10 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:tkn="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
@@ -84,7 +81,16 @@
                                     <p:panel>
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                            <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                            <h:outputText value="Add New Item" class="mx-4"></h:outputText>
+
+                                            <p:commandButton 
+                                                id="btnItemDetails"
+                                                disabled="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Single Items Summary')}" 
+                                                class="ui-button-warning float-end" 
+                                                title="Single Item Summary (Opens in new tab)" 
+                                                icon="fa fa-external-link-alt"
+                                                onclick="window.open('#{request.contextPath}/faces/pharmacy/pharmacy_item_transactions_popup.xhtml', '_blank'); return false;"
+                                                type="button"/>
                                         </f:facet>
 
                                         <div class="row">
@@ -583,7 +589,7 @@
                                 <h:panelGroup 
                                     id="gpBillPreviewFiveFiveToken2" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Bill is Pos paper',false) or
-                                                                                           sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                                sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                             <phi:saleBillToken id="saleBillTokenPos" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>

@@ -5346,13 +5346,18 @@ public class PharmacyController implements Serializable {
     }
 
     public void createDirectPurchaseTable() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            directPurchase = new ArrayList<>();
+            return;
+        }
 
         // //System.err.println("Getting GRNS : ");
         String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
-                + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
+                + " and b.bill.cancelled=false and b.retired=false and b.item IN :relatedItems "
                 + " and b.bill.billType=:btp and b.createdAt between :frm and :to order by b.id desc ";
         HashMap hm = new HashMap();
-        hm.put("i", pharmacyItem);
+        hm.put("relatedItems", relatedItems);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("btp", BillType.PharmacyPurchaseBill);
@@ -5368,13 +5373,18 @@ public class PharmacyController implements Serializable {
     }
 
     public void createPoTable() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            pos = new ArrayList<>();
+            return;
+        }
 
         // //System.err.println("Getting POS : ");
         String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
-                + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
+                + " and b.bill.cancelled=false and b.retired=false and b.item IN :relatedItems "
                 + " and b.bill.billTypeAtomic=:bta and b.createdAt between :frm and :to order by b.id desc";
         HashMap hm = new HashMap();
-        hm.put("i", pharmacyItem);
+        hm.put("relatedItems", relatedItems);
         hm.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());

@@ -2093,7 +2093,6 @@ public class PharmacyReportController implements Serializable {
     public void processOpDrugReturn() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
@@ -3600,7 +3599,7 @@ public class PharmacyReportController implements Serializable {
 
         if (amp != null) {
             item = amp;
-            jpql.append("and sh.itemBatch.item = :itm ");
+            jpql.append("and (sh.itemBatch.item = :itm or sh.itemBatch.item.amp = :itm) ");
             params.put("itm", item);
         }
 
@@ -4089,7 +4088,6 @@ public class PharmacyReportController implements Serializable {
         try {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
 
             Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
