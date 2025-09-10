@@ -3929,8 +3929,7 @@ public class PharmacyReportController implements Serializable {
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND " + billTypeField + " IN :billTypes ")
-                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
-                    .append("ORDER BY bi.bill.createdAt");
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
@@ -3940,6 +3939,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
             Map<String, Double> result = new HashMap<>();
@@ -3980,7 +3980,6 @@ public class PharmacyReportController implements Serializable {
             baseQuery.append("OR (bi.bill.paymentMethod = :multiPm AND EXISTS ("
                     + "SELECT p FROM Payment p "
                     + "WHERE p.bill = bi.bill AND p.paymentMethod IN :pm)) )");
-            baseQuery.append("ORDER BY bi.bill.createdAt");
 
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
@@ -3992,6 +3991,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
             Map<String, Double> result = new HashMap<>();
