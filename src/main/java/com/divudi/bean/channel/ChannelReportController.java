@@ -462,8 +462,10 @@ public class ChannelReportController implements Serializable {
         private double hosFee;
         private double totalAppoinmentFee;
         private String remark;
+        private boolean isCancelled;
+        private boolean isRefunded;
 
-        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate,Date billedDate,String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark) {
+        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate,Date billedDate,String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
             this.bsId = bsId;
             this.billId = billId;
             this.appoinmentDate = appoinmentDate;
@@ -476,7 +478,26 @@ public class ChannelReportController implements Serializable {
             this.hosFee = hosFee;
             this.totalAppoinmentFee = totalAppoinmentFee;
             this.remark = remark;
+            this.isCancelled = isCancelled;
+            this.isRefunded = isRefunded;
         }
+
+        public boolean isIsCancelled() {
+            return isCancelled;
+        }
+
+        public void setIsCancelled(boolean isCancelled) {
+            this.isCancelled = isCancelled;
+        }
+
+        public boolean isIsRefunded() {
+            return isRefunded;
+        }
+
+        public void setIsRefunded(boolean isRefunded) {
+            this.isRefunded = isRefunded;
+        }
+        
 
         public String getBilledBy() {
             return billedBy;
@@ -752,7 +773,7 @@ public class ChannelReportController implements Serializable {
         }
         
        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, category, reportStatus, reportStatus);
-       wrapperDto.setProcessedBy(sessionController.getLoggedUser().getName());
+       wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
        
        if(institution != null){
            wrapperDto.setHospital(institution);

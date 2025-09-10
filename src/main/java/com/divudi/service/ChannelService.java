@@ -1254,7 +1254,9 @@ public class ChannelService {
                 + "COALESCE(bill.hospitalFee, 0), "
                 + "COALESCE(bill.staffFee, 0), "
                 + "COALESCE(bill.netTotal, 0), "
-                + "bill.comments) "
+                + "bill.comments, "
+                + "bill.cancelled, "
+                + "bill.refunded ) "
                 + "from BillSession bs "
                 + "join bs.bill bill "
                 + "join bs.sessionInstance session "
@@ -1264,7 +1266,9 @@ public class ChannelService {
                 + "and bill.billTypeAtomic in :bta ";
 
 //        Bill bill = new Bill();
-//        bill.getCreater().getName();
+//       bill.getCreater().getName();
+//       bill.isCancelled();
+//       bill.isRefunded();
 //        Patient neww = new Patient();
 //      neww.getPerson().getNameWithTitle();
         List<BillTypeAtomic> btaList = new ArrayList<>();
@@ -1272,9 +1276,12 @@ public class ChannelService {
         if (paidStatus != null && paidStatus.equalsIgnoreCase("Paid")) {
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+            btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+            
         } else {
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+            btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         }
 
         Map<String, Object> params = new HashMap<>();
@@ -1349,7 +1356,7 @@ public class ChannelService {
         boolean availableSummery = false;
 
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
-            if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())) {
+            if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate()) && !(dto.isIsCancelled() || dto.isIsRefunded())) {
                 System.out.println("line 1345");
                 availableSummery = true;
                 switch (dto.getPaymentMethod()) {
@@ -1383,6 +1390,50 @@ public class ChannelService {
 
                     case Credit:
                         summeryDto.setCreditTotal(summeryDto.getCreditTotal() + dto.getTotalAppoinmentFee());
+                        break;
+
+                    default:
+                        break;
+                }
+                summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
+                summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
+                summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
+                summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
+
+            }else if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate()) && (dto.isIsCancelled() || dto.isIsRefunded())) {
+                System.out.println("line 1345");
+                availableSummery = true;
+                switch (dto.getPaymentMethod()) {
+                    case Cash:
+                        summeryDto.setCashTotal(summeryDto.getCashTotal() - Math.abs(dto.getTotalAppoinmentFee()));
+                        break;
+                    case Card:
+                        summeryDto.setCardTotal(summeryDto.getCardTotal() - Math.abs(dto.getTotalAppoinmentFee()));
+                        break;
+                    case MultiplePaymentMethods:
+                        Bill bill = billFacade.find(dto.getBillId());
+                        List<Payment> payments = new ArrayList<>();
+                        if (bill != null) {
+                            payments = billService.fetchBillPayments(bill);
+                        }
+                        for (Payment p : payments) {
+                            switch (p.getPaymentMethod()) {
+                                case Cash:
+                                    summeryDto.setCashTotal(summeryDto.getCashTotal() - Math.abs(p.getPaidValue()));
+                                    break;
+                                case Card:
+                                    summeryDto.setCardTotal(summeryDto.getCardTotal() - Math.abs(p.getPaidValue()));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    case Agent:
+                        summeryDto.setAgentTotal(summeryDto.getAgentTotal() - Math.abs(dto.getTotalAppoinmentFee()));
+                        break;
+
+                    case Credit:
+                        summeryDto.setCreditTotal(summeryDto.getCreditTotal() - Math.abs(dto.getTotalAppoinmentFee()));
                         break;
 
                     default:
