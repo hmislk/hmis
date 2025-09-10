@@ -492,7 +492,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         calculateTotal();
 
         // Use create() for new bills, edit() for existing bills
-        if (isNewBill) {
+        if (currentBill.getId()==null) {
             billFacade.create(currentBill);
         } else {
             billFacade.edit(currentBill);
