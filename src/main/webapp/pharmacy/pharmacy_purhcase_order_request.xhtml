@@ -271,6 +271,7 @@
                                         action="#{purchaseOrderRequestController.finalizeRequest()}"
                                         icon="pi pi-check" 
                                         class="ui-button-warning m-1"
+                                        onclick="return confirm('Are you sure you want to finalize this purchase order? This action cannot be undone.');"
                                         disabled="#{purchaseOrderRequestController.currentBill.checked}"/>
                                     <p:commandButton 
                                         ajax="false"  
