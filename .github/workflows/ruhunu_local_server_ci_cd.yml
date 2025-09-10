@@ -78,7 +78,7 @@ jobs:
           WAR_NAME="ruhunuLocal.war"
           WAR_DIR="/home/ruhunu/app/latest"
           APP_NAME="ruhunuLocal"
-          CONTEXT_PATH="rh-local"
+          CONTEXT_PATH="rhLocal"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -108,15 +108,15 @@ jobs:
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            /home/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /home/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
+            /home/ruhunu/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /home/ruhunu/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
             rm -f /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            if /home/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+            if /home/ruhunu/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
               echo 'Application failed to start.'
