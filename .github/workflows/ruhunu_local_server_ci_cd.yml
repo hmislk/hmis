@@ -1,4 +1,4 @@
-name: HIMS QA-1 Environment CI-CD Workflow
+name: Ruhunu Local Staging Environment CI-CD Workflow
 
 on:
   push:
