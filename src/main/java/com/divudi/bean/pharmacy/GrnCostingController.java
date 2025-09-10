@@ -258,6 +258,7 @@ public class GrnCostingController implements Serializable {
         getBillItems().add(newBillItemCreatedByDuplication);
         recalculateFinancialsBeforeAddingBillItem(newBillItemCreatedByDuplication.getBillItemFinanceDetails());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
     }
 
@@ -1398,9 +1399,9 @@ public class GrnCostingController implements Serializable {
 
         // Ensure bill discount synchronization before distribution
         ensureBillDiscountSynchronization();
-
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
     }
 
     public void calculateBillTotalsFromItems() {
@@ -1688,8 +1689,9 @@ public class GrnCostingController implements Serializable {
             JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
         recalculateFinancialsBeforeAddingBillItem(f);
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
         calDifference();
     }
 
@@ -1700,8 +1702,8 @@ public class GrnCostingController implements Serializable {
         }
         recalculateFinancialsBeforeAddingBillItem(f);
         ensureBillDiscountSynchronization();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
     }
 
@@ -1714,8 +1716,8 @@ public class GrnCostingController implements Serializable {
 
         // Redistribute bill discount after retail rate changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
     }
 
@@ -1728,8 +1730,8 @@ public class GrnCostingController implements Serializable {
 
         // Ensure discount synchronization after free quantity changes
         ensureBillDiscountSynchronization();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
     }
 
@@ -1742,8 +1744,8 @@ public class GrnCostingController implements Serializable {
 
         // Redistribute bill discount after quantity changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
     }
 
@@ -1788,7 +1790,7 @@ public class GrnCostingController implements Serializable {
     public void discountChangedLitener() {
         ensureBillDiscountSynchronization();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-        calculateBillTotalsFromItems();
+        // The distribution method handles final bill totals via aggregateBillTotalsFromDistributedItems
         calDifference();
     }
 
@@ -1953,7 +1955,6 @@ public class GrnCostingController implements Serializable {
         }
 
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-        calculateBillTotalsFromItems();
         calDifference();
 
         getBillFacade().edit(getGrnBill());
@@ -1994,7 +1995,6 @@ public class GrnCostingController implements Serializable {
         recalculateExpenseTotals();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-        calculateBillTotalsFromItems();
         calDifference();
         if (getGrnBill().getId() != null) {
             billFacade.edit(getGrnBill());
@@ -2054,8 +2054,9 @@ public class GrnCostingController implements Serializable {
         }
 
         recalculateExpenseTotals();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
         calDifference();
         if (getGrnBill().getId() != null) {
             billFacade.edit(getGrnBill());
@@ -2428,9 +2429,9 @@ public class GrnCostingController implements Serializable {
         if (getBillItems() != null && !getBillItems().isEmpty()) {
             // Ensure bill discount synchronization before distribution
             ensureBillDiscountSynchronization();
-
-            distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
             calculateBillTotalsFromItems();
+            distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
             calDifference();
         }
 
@@ -2480,9 +2481,9 @@ public class GrnCostingController implements Serializable {
             }
 
             recalculateExpenseTotals();
+            calculateBillTotalsFromItems();
             ensureBillDiscountSynchronization();
             distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
-            calculateBillTotalsFromItems();
             calDifference();
         }
 
@@ -2642,8 +2643,8 @@ public class GrnCostingController implements Serializable {
 
         // Ensure bill discount distribution before saving (even if 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
 
         getBillFacade().edit(getCurrentGrnBillPre());
@@ -2895,8 +2896,8 @@ public class GrnCostingController implements Serializable {
 
         // Ensure bill discount distribution before final calculations (even if 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
 
         // Update financial balances
@@ -3097,7 +3098,7 @@ public class GrnCostingController implements Serializable {
         }
 
         // After distribution, update bill-level totals by aggregating from distributed line items
-//        aggregateBillTotalsFromDistributedItems(bill, billItems);
+        aggregateBillTotalsFromDistributedItems(bill, billItems);
     }
 
     /**
