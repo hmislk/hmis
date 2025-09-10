@@ -14,6 +14,11 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
+import static com.divudi.core.data.PaymentMethod.Agent;
+import static com.divudi.core.data.PaymentMethod.Card;
+import static com.divudi.core.data.PaymentMethod.Cash;
+import static com.divudi.core.data.PaymentMethod.Credit;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ServiceType;
@@ -1211,14 +1216,14 @@ public class ChannelService {
 
         Map params = new HashMap();
         params.put("bt", BillType.ChannelCash);
-        
+
         List<BillTypeAtomic> bta = new ArrayList<>();
         bta.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-        
-        if(reportStatus != null && reportStatus.equalsIgnoreCase("Details")){
+
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("Details")) {
             bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         }
-        
+
         params.put("bta", bta);
         params.put("type", PaymentMethod.Card);
         params.put("fromDate", fromDate);
@@ -1232,32 +1237,42 @@ public class ChannelService {
         jpql += " order by p.bill.createdAt desc";
 
         List<Payment> list = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         return list;
 
     }
-    public void fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, Category category, String reportStatus, String paidStatus){
-        String sql = "select new ChannelReportController.ChannelIncomeDetailDto(bs.id, "
-                + "bs.sessionInstance.sessionDate, "
-                + "bs.bill.patient.person.nameWithTitle, "
-                + "bs.bill.patient.person.smsNumber, "
-                + "bs.bill.paymentMethod, "
-                + "bs.bill.hospitalFee, "
-                + "bs.bill.staffFee, "
-                + "bs.bill.netTotal, "
-                + "bs.bill.comments) "
+
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, Category category, String reportStatus, String paidStatus) {
+        String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
+                + "bill.id, "
+                + "session.sessionDate, "
+                + "bill.createdAt, "
+                + "bill.creater.name, "
+                + "person.name, "
+                + "person.phone, "
+                + "bill.paymentMethod, "
+                + "COALESCE(bill.hospitalFee, 0), "
+                + "COALESCE(bill.staffFee, 0), "
+                + "COALESCE(bill.netTotal, 0), "
+                + "bill.comments) "
                 + "from BillSession bs "
                 + "join bs.bill bill "
-                + "join bs.sessionInstance session"
+                + "join bs.sessionInstance session "
+                + "join bill.patient patient "
+                + "left join patient.person person "
                 + "where bs.createdAt between :fromDate and :todate "
-                + "and bill.billTypeAtomic in :bta";
-        
+                + "and bill.billTypeAtomic in :bta ";
+
+//        Bill bill = new Bill();
+//        bill.getCreater().getName();
+//        Patient neww = new Patient();
+//      neww.getPerson().getNameWithTitle();
         List<BillTypeAtomic> btaList = new ArrayList<>();
-        
-        if(paidStatus != null && paidStatus.equalsIgnoreCase("Paid")){
+
+        if (paidStatus != null && paidStatus.equalsIgnoreCase("Paid")) {
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
-        }else{
+        } else {
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
         }
@@ -1266,58 +1281,170 @@ public class ChannelService {
         params.put("fromDate", fromDate);
         params.put("todate", toDate);
         params.put("bta", btaList);
-        
-        if(user != null){
+
+        if (user != null) {
             sql += "and bill.creater = :user ";
             params.put("user", user);
         }
-        
-        if(institution != null){
+
+        if (institution != null) {
             sql += "and bill.instition = :ins ";
             params.put("ins", institution);
         }
-        
-        if(category != null){
+
+        if (category != null) {
             sql += "and session.originatingSession.category = :category ";
             params.put("category", category);
         }
-        
+
         sql += "order by bill.createdAt desc";
-        
-        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>)billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
-        
-        if(dtoList == null || dtoList.isEmpty()){
-            return;
+
+        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            return null;
         }
-        
-        if(reportStatus != null && reportStatus.equalsIgnoreCase("summery")){
-            
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
+        wrapperDto.setIncomeDtos(dtoList);
+        wrapperDto.setProcessDate(new Date());
+
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("summery")) {
+
             List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
-            
-            for(ChannelReportController.ChannelIncomeDetailDto dto : dtoList){
-                if(summeryDtoList.isEmpty()){
+
+            for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+                if (summeryDtoList.isEmpty()) {
                     ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
                     summery1.setAppoimentDate(dto.getAppoinmentDate());
                     summeryDtoList.add(summery1);
+                    fillPaymentsDataToDto(summeryDtoList, dto);
+                    System.out.println("line 1114");
+                    continue;
+                } else {
+                    System.out.println("line 1116");
+                    fillPaymentsDataToDto(summeryDtoList, dto);
                 }
-                for(ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList){
-                    if(dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())){
-                        summeryDto.set
-                    }
+
+            }
+            wrapperDto.setSummeryDtos(summeryDtoList);
+        }
+
+        return wrapperDto;
+
+//        ChannelReportController.ChannelIncomeDetailDto dto = new ChannelReportController.ChannelIncomeDetailDto(0, fromDate, sql, sql, PaymentMethod.PatientDeposit, 0, 0, 0, sql);
+//        BillSession bs = new BillSession();
+//        bs.getSessionInstance().getOriginatingSession().getCategory();
+//        bs.getBill().getPatient().getPerson().getSmsNumber();
+//        bs.getBill().getHospitalFee();
+//        bs.getBill().getStaffFee();
+//        bs.getBill().getNetTotal();
+//        bs.getBill().getComments();
+//        bs.getBill().getInstitution();
+//        bs.getBill().getCreater();
+    }
+
+    public void fillPaymentsDataToDto(List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList, ChannelReportController.ChannelIncomeDetailDto dto) {
+
+        boolean availableSummery = false;
+
+        for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
+            if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())) {
+                System.out.println("line 1345");
+                availableSummery = true;
+                switch (dto.getPaymentMethod()) {
+                    case Cash:
+                        summeryDto.setCashTotal(summeryDto.getCashTotal() + dto.getTotalAppoinmentFee());
+                        break;
+                    case Card:
+                        summeryDto.setCardTotal(summeryDto.getCardTotal() + dto.getTotalAppoinmentFee());
+                        break;
+                    case MultiplePaymentMethods:
+                        Bill bill = billFacade.find(dto.getBillId());
+                        List<Payment> payments = new ArrayList<>();
+                        if (bill != null) {
+                            payments = billService.fetchBillPayments(bill);
+                        }
+                        for (Payment p : payments) {
+                            switch (p.getPaymentMethod()) {
+                                case Cash:
+                                    summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
+                                    break;
+                                case Card:
+                                    summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    case Agent:
+                        summeryDto.setAgentTotal(summeryDto.getAgentTotal() + dto.getTotalAppoinmentFee());
+                        break;
+
+                    case Credit:
+                        summeryDto.setCreditTotal(summeryDto.getCreditTotal() + dto.getTotalAppoinmentFee());
+                        break;
+
+                    default:
+                        break;
                 }
+                summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
+                summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
+                summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
+                summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
+
             }
         }
-        
-        ChannelReportController.ChannelIncomeDetailDto dto = new ChannelReportController.ChannelIncomeDetailDto(0, fromDate, sql, sql, PaymentMethod.PatientDeposit, 0, 0, 0, sql);
-        BillSession bs = new BillSession();
-        bs.getSessionInstance().getOriginatingSession().getCategory();
-        bs.getBill().getPatient().getPerson().getSmsNumber();
-        bs.getBill().getHospitalFee();
-        bs.getBill().getStaffFee();
-        bs.getBill().getNetTotal();
-        bs.getBill().getComments();
-        bs.getBill().getInstitution();
-        bs.getBill().getCreater();
+
+        if (!availableSummery) {
+            System.out.println("line 1385");
+            ChannelReportController.ChannelIncomeSummeryDto newSummery = new ChannelReportController.ChannelIncomeSummeryDto();
+            newSummery.setAppoimentDate(dto.getAppoinmentDate());
+
+            switch (dto.getPaymentMethod()) {
+                case Cash:
+                    newSummery.setCashTotal(newSummery.getCashTotal() + dto.getTotalAppoinmentFee());
+                    break;
+                case Card:
+                    newSummery.setCardTotal(newSummery.getCardTotal() + dto.getTotalAppoinmentFee());
+                    break;
+                case MultiplePaymentMethods:
+                    Bill bill = billFacade.find(dto.getBillId());
+                    List<Payment> payments = new ArrayList<>();
+                    if (bill != null) {
+                        payments = billService.fetchBillPayments(bill);
+                    }
+                    for (Payment p : payments) {
+                        switch (p.getPaymentMethod()) {
+                            case Cash:
+                                newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
+                                break;
+                            case Card:
+                                newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                case Agent:
+                    newSummery.setAgentTotal(newSummery.getAgentTotal() + dto.getTotalAppoinmentFee());
+                    break;
+
+                case Credit:
+                    newSummery.setCreditTotal(newSummery.getCreditTotal() + dto.getTotalAppoinmentFee());
+                    break;
+
+                default:
+                    break;
+            }
+
+            newSummery.setTotalDocFee(dto.getDoctorFee());
+            newSummery.setTotalHosFee(dto.getHosFee());
+            newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
+            newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
+            summeryDtoList.add(newSummery);
+        }
     }
 
     public List<Bill> fetchAgentDirectFundBills(SearchKeyword searchKeyword, Date fromDate, Date toDate, Institution institution) {
