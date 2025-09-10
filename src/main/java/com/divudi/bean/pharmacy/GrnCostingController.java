@@ -3215,32 +3215,32 @@ public class GrnCostingController implements Serializable {
         if (bi == null) {
             return BigDecimal.ZERO;
         }
-
+        
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         if (f == null) {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal purchaseRate = f.getLineNetRate();
+        // Use total cost as specified in comments
+        BigDecimal totalCost = f.getTotalCost();
         BigDecimal retailRate = f.getRetailSaleRate();
         BigDecimal qty = f.getQuantity();
         BigDecimal freeQty = f.getFreeQuantity();
 
-        if (purchaseRate == null || retailRate == null || qty == null || freeQty == null) {
+        if (totalCost == null || retailRate == null || qty == null || freeQty == null) {
             return BigDecimal.ZERO;
         }
 
-        // For accurate costing, exclude free quantities from both purchase and retail calculations
-        // Free items don't contribute to purchase cost and shouldn't inflate retail value for profit calculation
-        BigDecimal purchaseValue = purchaseRate.multiply(qty);
-        BigDecimal retailValue = retailRate.multiply(qty);
-
-        if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
+        if (totalCost.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
 
-        return retailValue.subtract(purchaseValue)
-                .divide(purchaseValue, 4, RoundingMode.HALF_UP)
+        // Total Potential Income from qty + free qty multiplied by retail rate
+        BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal totalPotentialIncome = retailRate.multiply(totalQty);
+
+        return totalPotentialIncome.subtract(totalCost)
+                .divide(totalCost, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }
 
