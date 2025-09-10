@@ -88,7 +88,8 @@
                         rowIndexVar="rowIndex"
                         value="#{cc.attrs.bill.billItems}"
                         var="bip"
-                        style="font-size: 16px; margin-left: 3%; margin-right: 3%;">
+                        style="font-size: 16px; margin-left: 3%; margin-right: 3%;"
+                        rendered="#{not empty cc.attrs.bill.billItems}">
 
                     <p:column style="padding: 4px; width: 2em;">
                         <f:facet name="header">No</f:facet>

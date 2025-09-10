@@ -34,8 +34,10 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ReportTimerController;
+import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dto.PatientInvestigationDTO;
 import com.divudi.core.data.reports.LaboratoryReport;
+import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.InvestigationFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -94,7 +96,9 @@ public class LaborataryReportController implements Serializable {
     @EJB
     PatientFacade patientFacade;
     @EJB
-    InvestigationFacade investigationFacade;
+    InvestigationFacade investigationFacade; 
+    @EJB
+    BillFeeFacade billFeeFacade;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -742,65 +746,71 @@ public class LaborataryReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
 
         String jpql = "select new com.divudi.core.data.dto.TestCountDTO("
-                + "bi.item.id, "
-                + "bi.item.name, "
-                + "count(bi), "
-                + " bi.reagentFee) "
-                + " from BillItem bi "
-                + " where bi.retired =:ret "
-                + " and bi.bill.cancelled =:can "
-                + " and bi.refunded =:ref "
-                + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billTypeAtomic IN :bType "
-                + " and type(bi.item) = :invType ";
+                + " bf.billItem.item.id, "
+                + " bf.billItem.item.name, "
+                + " count(bf.billItem), "
+                + " bf.feeGrossValue ) "
+                + " from BillFee bf "
+                + " where bf.retired =:bfRet"
+                + " and bf.billItem.retired =:ret "
+                + " and bf.billItem.refunded =:ref "
+                + " and bf.billItem.bill.cancelled =:can "
+                + " and bf.billItem.bill.retired =:bRet "
+                + " and bf.fee.feeType =:feeType "
+                + " and bf.billItem.bill.createdAt between :fd and :td "
+                + " and bf.billItem.bill.billTypeAtomic IN :bType "
+                + " and type(bf.billItem.item) = :invType ";
 
         if (institution != null) {
-            jpql += " and bi.bill.institution=:ins ";
+            jpql += " and bf.billItem.bill.institution=:ins ";
             params.put("ins", institution);
         }
 
         if (webUser != null) {
-            jpql += " and bi.bill.creater=:user ";
+            jpql += " and bf.billItem.bill.creater=:user ";
             params.put("user", webUser);
         }
 
         if (department != null) {
-            jpql += " and bi.bill.department=:dep ";
+            jpql += " and bf.billItem.bill.department=:dep ";
             params.put("dep", department);
         }
 
         if (admissionType != null) {
-            jpql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            jpql += " and bf.billItem.bill.patientEncounter.admissionType=:admissionType ";
             params.put("admissionType", admissionType);
         }
 
         if (paymentScheme != null) {
-            jpql += " and bi.bill.paymentScheme=:paymentScheme ";
+            jpql += " and bf.billItem.bill.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
         }
 
         if (toInstitution != null) {
-            jpql += " and bi.bill.toInstitution=:toIns ";
+            jpql += " and bf.billItem.bill.toInstitution=:toIns ";
             params.put("toIns", toInstitution);
         }
 
         if (toDepartment != null) {
-            jpql += " and bi.bill.toDepartment=:toDep ";
+            jpql += " and bf.billItem.bill.toDepartment=:toDep ";
             params.put("toDep", toDepartment);
         }
 
         if (visitType != null && !visitType.trim().isEmpty()) {
-            jpql += " AND bi.bill.ipOpOrCc = :type ";
+            jpql += " AND bf.billItem.bill.ipOpOrCc = :type ";
             params.put("type", visitType.trim());
         }
 
-        jpql += " group by bi.item.id, bi.item.name, bi.reagentFee ";
+        jpql += " group by bf.billItem.item.id, bf.billItem.item.name, bf.feeGrossValue ";
 
         params.put("ret", false);
         params.put("ref", false);
+        params.put("bRet", false);
+        params.put("bfRet", false);
         params.put("can", false);
-        params.put("fd", fromDate);
-        params.put("td", toDate);
+        params.put("fd", getFromDate());
+        params.put("feeType", FeeType.Chemical);
+        params.put("td", getToDate());
         params.put("invType", Investigation.class);
 
         List<BillTypeAtomic> bTypes = Arrays.asList(
@@ -811,19 +821,19 @@ public class LaborataryReportController implements Serializable {
                 BillTypeAtomic.INWARD_SERVICE_BILL);
         params.put("bType", bTypes);
 
-        List<TestCountDTO> testWiseReagentCount = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<TestCountDTO> testWiseReagentCount = (List<TestCountDTO>) billFeeFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         totalCount = 0.0;
         totalNetTotal = 0.0;
 
         if (testWiseReagentCount != null) {
             for (TestCountDTO dto : testWiseReagentCount) {
-                double netTotal = 0.0;
+                double itemNetTotal = 0.0;
                 double reagentFee = dto.getReagentFee() == null ? 0.0 : dto.getReagentFee();
-                netTotal = dto.getCount() * reagentFee;
-                dto.setTotal(netTotal);
+                itemNetTotal = dto.getCount() * reagentFee;
+                dto.setTotal(itemNetTotal);
                 totalCount += dto.getCount();
-                totalNetTotal += netTotal;
+                totalNetTotal += itemNetTotal;
             }
         }
         List<TestCountDTO> safeList = testWiseReagentCount == null ? java.util.Collections.emptyList() : testWiseReagentCount;
@@ -869,6 +879,8 @@ public class LaborataryReportController implements Serializable {
                     + " pi.billItem.bill.patient.person.sex) "
                     + " from PatientInvestigation pi "
                     + " where pi.billItem.retired = :ret "
+                    + " and pi.billItem.bill.cancelled =:can "
+                    + " and pi.billItem.refunded =:ref "
                     + " and pi.billItem.bill.createdAt between :fd and :td "
                     + " and pi.billItem.bill.billTypeAtomic IN :bType "
                     + " and type(pi.billItem.item) = :invType ";
@@ -897,6 +909,8 @@ public class LaborataryReportController implements Serializable {
             params.put("fd", fromDate);
             params.put("td", toDate);
             params.put("invType", Investigation.class);
+            params.put("can", false);
+            params.put("ref", false);
 
             List<BillTypeAtomic> bTypes = Arrays.asList(
                     BillTypeAtomic.OPD_BILL_WITH_PAYMENT,

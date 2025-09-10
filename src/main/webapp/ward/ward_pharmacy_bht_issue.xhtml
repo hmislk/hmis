@@ -20,6 +20,8 @@
                         class="ui-button-success"
                         icon="fa fa-check"
                         value="Issue to BHT"
+                        onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                    return false;"
                         action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
                         ajax="false" >
                     </p:commandButton>
@@ -60,7 +62,8 @@
                                             <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Rate" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}"
+                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                             <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
@@ -96,16 +99,18 @@
 
                                 <h:panelGrid columns="1" class="w-100" >
                                     <p:outputLabel value="&nbsp;" ></p:outputLabel>
-                                    <p:commandButton  accesskey="a"
-                                                      id="btnAdd"
-                                                      icon="fa fa-plus"
-                                                      value="Add"
-                                                      class="ui-button-success mx-1"
-                                                      action="#{pharmacySaleBhtController.addBillItemNew}"
-                                                      ajax="false"
-                                                      style="float: right;"
-                                                      update="focusItem"
-                                                      ></p:commandButton>
+                                    <p:commandButton  
+                                        accesskey="a"
+                                        id="btnAdd"
+                                        icon="fa fa-plus"
+                                        value="Add"
+                                        class="ui-button-success mx-1"
+                                        action="#{pharmacySaleBhtController.addBillItemNew}"
+                                        ajax="false"
+                                        style="float: right;"
+                                        update="focusItem"
+                                        >
+                                    </p:commandButton>
                                 </h:panelGrid>
 
                                 <p:focus id="focusQty" for="txtQty"></p:focus>
@@ -136,7 +141,7 @@
                                 <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}" ></p:outputLabel>
                                 <p:outputLabel  value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person.nameWithTitle}" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}" >
                                 </p:outputLabel>
-                                
+
                                 <p:outputLabel value="Patient Name" ></p:outputLabel>
                                 <p:outputLabel value=":" ></p:outputLabel>
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.patient.person.nameWithTitle}" ></p:outputLabel>
@@ -187,12 +192,12 @@
                                 class="ui-button-warning ui-button-icon-only mx-1" />
                         </div>
                     </p:column>
-                    
+
                     <p:column headerText="Issuing Bill Item" style="width: 50px!important;"  rendered="#{webUserController.hasPrivilege('Developers')}" >
                         <h:outputText id="Isitem" value="#{bItm.item.name}" >
                         </h:outputText>
                     </p:column>
-                    
+
 
                     <p:column headerText="Description" style="width: 50px!important;"  >
                         <h:outputText id="dis" value="#{bItm.item.descreption}" >
@@ -203,19 +208,19 @@
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
                     </p:column>
 
-                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -227,7 +232,8 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Qty" style="width:25px!important; text-align: right;">
+                    <p:column headerText="Qty" 
+                              style="width:25px!important; text-align: right;">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{bItm.pharmaceuticalBillItem.qty}" >
@@ -240,7 +246,8 @@
                         </p:cellEditor>
                     </p:column>
 
-                    <p:column headerText="Net Total"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:column headerText="Net Total"  style="width:50px!important; text-align: right;" 
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                         <h:outputLabel value="#{bItm.netValue}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -304,13 +311,13 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Purchase Rate">
+                        <p:column headerText="Purchase Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                             <h:outputText value="#{sStock.itemBatch.purcahseRate}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Retail Rate">
+                        <p:column headerText="Retail Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                             <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>

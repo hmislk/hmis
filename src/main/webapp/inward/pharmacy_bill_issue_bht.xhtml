@@ -69,6 +69,8 @@
                                     value="Settle"
                                     ajax="false"
                                     action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     class="ui-button-success mx-2"
                                     icon ="fa-solid fa-check">
                                 </p:commandButton>
@@ -161,6 +163,7 @@
                                                     <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
                                                 </p:column>
                                                 <p:column
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
                                                     headerText="Rate" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -221,7 +224,9 @@
                                                     <h:outputLabel value=") - " ></h:outputLabel>
                                                     <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Rate" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <p:column
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                    headerText="Rate" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
@@ -284,30 +289,35 @@
                                             id="lblRate"
                                             value="Rate"
                                             styleClass="form-label text-end"></p:outputLabel>
-                                        <p:inputText
-                                            class="w-100 form-control text-end"
-                                            autocomplete="off"
-                                            accesskey="q"
-                                            disabled="true"
-                                            id="txtRate"
-                                            value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
+                                        <h:panelGroup id="txtRate">
+                                            <p:inputText
+                                                class="w-100 form-control text-end"
+                                                autocomplete="off"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                accesskey="q"
+                                                disabled="true"
+                                                value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+                                        </h:panelGroup>
                                     </div>
                                     <div class="col-12 col-md-2 text-end">
                                         <p:outputLabel
                                             id="lblValue"
                                             value="Value"
                                             styleClass="form-label"></p:outputLabel>
-                                        <p:inputText
-                                            class="w-100 form-control text-end"
-                                            autocomplete="off"
-                                            accesskey="q"
-                                            disabled="true"
-                                            id="txtValue"
-                                            value="#{pharmacySaleBhtController.billItem.netValue}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
+                                        <h:panelGroup  id="txtValue">
+                                            <p:inputText
+                                                class="w-100 form-control text-end"
+                                                autocomplete="off"
+                                                accesskey="q"
+                                                disabled="true"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                value="#{pharmacySaleBhtController.billItem.netValue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+                                        </h:panelGroup>
+
                                     </div>
                                     <div class="col-12 col-md-2">
                                         <p:outputLabel
@@ -360,12 +370,18 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
-                                    <p:column headerText="Rate"  width="8em"  class="text-end">
+                                    <p:column 
+                                        headerText="Rate*"  width="8em" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                        class="text-end">
                                         <h:outputText value="#{bi.netRate}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Value"  width="8em"  class="text-end">
+                                    <p:column 
+                                        headerText="Value" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                        width="8em"  class="text-end">
                                         <h:outputText value="#{bi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -494,22 +510,17 @@
                         </div>
 
                         <h:panelGroup id="gpBillPreview" >
-
                             <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                 <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
-
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
-
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
                                         <phi:saleBill_five_five_1 bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_five_five_1>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
-
                             <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'A4Paper'}">
-
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
                                         <phe:A4_paper_with_headings bill="#{pharmacySaleBhtController.printBill}"/>

@@ -63,17 +63,17 @@ public class MeasurementUnitController implements Serializable {
 
     public String navigateToAddMeasurementUnit() {
         current = new MeasurementUnit();
-        return "/pharmacy/admin/unit";
+        return "/pharmacy/admin/unit?faces-redirect=true";
     }
 
     public String navigateToManageMeasurementUnit() {
         current = new MeasurementUnit();
-        return "/pharmacy/admin/manage_unit";
+        return "/pharmacy/admin/manage_unit?faces-redirect=true";
     }
 
     public String navigateToListAllMeasurementUnit() {
 
-        return "/pharmacy/admin/units";
+        return "/pharmacy/admin/units?faces-redirect=true";
     }
 
     public String navigateToEditMeasurementUnit() {
@@ -81,7 +81,7 @@ public class MeasurementUnitController implements Serializable {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
-        return "/pharmacy/admin/unit";
+        return "/pharmacy/admin/unit?faces-redirect=true";
     }
 
     public void fillAllUnits() {

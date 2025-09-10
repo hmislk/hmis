@@ -78,7 +78,7 @@
                                                 </p:column>
                                                 <p:column
                                                     headerText="Purchase Rate"
-                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Rate',true)}"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -86,7 +86,7 @@
                                                 </p:column>
                                                 <p:column
                                                     headerText="Retail Rate"
-                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -94,7 +94,7 @@
                                                 </p:column>
                                                 <p:column
                                                     headerText="Cost Rate"
-                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.costRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -161,17 +161,17 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
                                         </div>
-                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">
+                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Retail Rate" for="txtRate" />
                                             <p:inputText
                                                 id="txtRate"
                                                 readonly="true"
                                                 class="w-100 text-end"
                                                 value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </p:inputText>
                                         </div>
-                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Rate',true)}">
+                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Purchase Rate" for="txtPurchaseRate" />
                                             <p:inputText
                                                 id="txtPurchaseRate"
@@ -181,18 +181,18 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
                                         </div>
-                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">
+                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Cost Rate" for="txtCostRate" />
                                             <p:inputText
                                                 id="txtCostRate"
                                                 readonly="true"
                                                 class="w-100 text-end"
                                                 value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </p:inputText>
                                         </div>
 
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Value',true)}">
+                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Purchase Value" for="txtPVal" />
                                             <p:inputText
                                                 id="txtPVal"
@@ -202,7 +202,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
                                         </div>
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Value',true)}">
+                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Retail Value" for="txtRVal" />
                                             <p:inputText
                                                 id="txtRVal"
@@ -212,7 +212,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
                                         </div>
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Value',true)}">
+                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Cost Value" for="txtCostVal" />
                                             <p:inputText
                                                 id="txtCostVal"
@@ -223,7 +223,7 @@
                                             </p:inputText>
                                         </div>     
 
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Issue Value',true)}">
+                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <p:outputLabel value="Issue Value" for="txtIssueVal" />
                                             <p:inputText
                                                 id="txtIssueVal"
@@ -271,16 +271,16 @@
                                         <p:column headerText="Qty" style="padding: 6px;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" ></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Issue Rate" style="padding: 6px;" styleClass="text-end">
+                                        <p:column headerText="Issue Rate" style="padding: 6px;" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column 
                                             headerText="Retail Rate" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -289,7 +289,7 @@
                                             headerText="Purchase Rate" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Rate',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -298,9 +298,9 @@
                                             headerText="Cost Rate" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Rate',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.0000" />
                                             </h:outputLabel>
                                         </p:column>
 
@@ -308,7 +308,7 @@
                                             headerText="Purchase Value" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Value',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtPurchaseRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -317,7 +317,7 @@
                                             headerText="Retail Value" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Value',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -326,7 +326,7 @@
                                             headerText="Cost Value" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Value',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtCostRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -335,7 +335,7 @@
                                             headerText="Issue Value" 
                                             style="padding: 6px;" 
                                             styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Issue Value',true)}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <h:outputLabel value="#{bi.billItemFinanceDetails.lineNetTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -403,7 +403,7 @@
                                         <h:outputText class="mx-4" value="Bill Details" />
                                     </f:facet>
                                     <div class="row g-2">
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Issue Value',true)}">
+                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h:outputLabel class="fw-bold text-muted" value="Total Issue Value:" />
                                                 <p:inputText 
@@ -411,12 +411,12 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
 
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Purchase Value',true)}">
+                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h:outputLabel class="fw-bold text-muted" value="Total Purchase Value:" />
                                                 <p:inputText 
@@ -424,12 +424,12 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
 
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Retail Value',true)}">
+                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h:outputLabel class="fw-bold text-muted" value="Total Retail Value:" />
                                                 <p:inputText 
@@ -437,12 +437,12 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>
 
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Dispotals - Display Cost Value',true)}">
+                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h:outputLabel class="fw-bold text-muted" value="Total Cost Value:" />
                                                 <p:inputText 
@@ -450,7 +450,7 @@
                                                     readonly="true"
                                                     class="text-end fw-bold"
                                                     style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <f:convertNumber pattern="#,##0.0000" />
                                                 </p:inputText>
                                             </div>
                                         </div>

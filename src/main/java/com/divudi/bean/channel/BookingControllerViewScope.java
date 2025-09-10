@@ -9385,6 +9385,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             patientFacade.edit(patient);
         }
     }
+    
+    public void saveSelected() {
+        saveSelected(this.patient);
+        
+    }
 
     @Override
     public void saveSelectedPatient() {

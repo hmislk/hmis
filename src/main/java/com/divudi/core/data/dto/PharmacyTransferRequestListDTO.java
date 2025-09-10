@@ -120,6 +120,22 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.fullyIssued = fullyIssued;
     }
 
+    // Basic constructor without cancellation details
+    public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
+            Object fromDepartmentName, Object creatorName) {
+        System.out.println("=== Basic DTO Constructor called with: billId=" + billId + 
+            ", deptId=" + deptId + ", creatorName=" + creatorName + " ===");
+        
+        this.billId = billId;
+        this.deptId = deptId != null ? deptId.toString() : "";
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
+        this.creatorName = creatorName != null ? creatorName.toString() : "";
+        this.cancelled = false;  // Default to not cancelled
+        this.cancelledAt = null;
+        this.cancellerName = "";
+    }
+
     // ------------------------------------------------------------------
     // Getters & Setters
     // ------------------------------------------------------------------

@@ -105,24 +105,6 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <!--                                <p:column headerText="Purchase Rate" width="6em">  
-                                                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>
-                                
-                                                                <p:column headerText="Cost Rate" width="6em;">  
-                                                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.costRate}" style="text-align: right;">                        
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>  
-                                
-                                                                <p:column headerText="Sale Rate" width="8emm">  
-                                                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>-->
-
                                 <p:column headerText="Qty" width="8em" class="text-end">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.#" />
@@ -132,10 +114,10 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column 
-                                    headerText="Rate" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
-                                    width="8em" 
+                                <p:column
+                                    headerText="Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                                    width="8em"
                                     class="text-end">
                                     <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -145,11 +127,11 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     headerText="Value"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false)}"
-                                    width="8em" 
-                                    class="text-end">                   
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                                    width="8em"
+                                    class="text-end">
                                     <p:inputText autocomplete="off" id="netValue" 
                                                  value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -177,6 +159,8 @@
                                     icon="fas fa-check" 
                                     action="#{transferIssueController.settle}" 
                                     style="float: right;" 
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     ajax="false" 
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>  
@@ -194,18 +178,27 @@
                                                 disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
                                                 completeMethod="#{departmentController.completeDept}"/>
 
-                                <h:outputLabel value="Value &nbsp;" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" />
+                                <h:outputLabel value="Value &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}" />
+                                <h:outputLabel value=": &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"/>
+                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}" />
 
 
 
                                 <h:outputLabel value="Select Staff Name" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
-                                                 forceSelection="true" 
+                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                                 forceSelection="true"
                                                  var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
                                                  value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+
+                                <h:outputLabel value="Comment *" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:inputTextarea
+                                    class="w-100"
+                                    rows="3"
+                                    value="#{transferIssueController.issuedBill.comments}"
+                                    required="true"
+                                    requiredMessage="Please enter a comment."/>
 
                             </h:panelGrid>
                         </p:panel>
@@ -269,13 +262,17 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Purchase Rate">
+                        <p:column 
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                            headerText="Purchase Rate">
                             <h:outputText value="#{sStock.itemBatch.purcahseRate}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Retail Rate">
+                        <p:column 
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                            headerText="Retail Rate">
                             <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>

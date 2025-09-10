@@ -18,14 +18,23 @@
                     class="w-100">
                     <f:facet name="header">
                         <h:outputLabel value="Goods Receive" />
-                        <p:commandButton  
-                            value="Settle" 
+                        <p:commandButton
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            actionListener="#{searchController.makeListNull()}"
+                            class="ui-button-warning"
+                            icon="fa fa-arrow-left"
+                            style="float: right; margin-right: 0.5em;"
+                            value="Back to PO List">
+                        </p:commandButton>
+                        <p:commandButton
+                            value="Settle"
                             action="#{grnCostingController.settle}"
                             class="ui-button-success"
                             icon="fas fa-check"
-                            ajax="false"  
+                            ajax="false"
                             style="float: right;">
-                        </p:commandButton> 
+                        </p:commandButton>
                     </f:facet>
 
 
@@ -551,7 +560,7 @@
                                 <p:outputLabel
                                     id="txtBillExpenses"
                                     class="text-end w-100"
-                                    value="#{grnCostingController.billExpensesTotal}" >
+                                    value="#{grnCostingController.grnBill.expenseTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
 
@@ -607,14 +616,14 @@
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="GRN Preview " class="mt-2"/>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    action="pharmacy_purchase_order_list_for_recieve"
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-warning"
                                     icon="fa fa-arrow-left"
-                                    actionListener="#{grnCostingController.viewPoList()}" 
-                                    value="Back to PO List"> 
-                                </p:commandButton>                   
+                                    value="Back to PO List">
+                                </p:commandButton>
                                 <p:commandButton 
                                     value="Print" 
                                     ajax="false" 

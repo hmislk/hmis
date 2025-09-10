@@ -125,7 +125,7 @@
                                 styleClass="noBorder" 
                                 var="bItm"
                                 rowIndexVar="i"
-                                scrollable="false"
+                                scrollable="true"
                                 rowKey="#{bi.searialNo}"
                                 paginator="true"
                                 paginatorPosition="bottom"
@@ -136,7 +136,8 @@
                                 sortBy="#{bItm.searialNo}"  
                                 editable="true">
 
-                                <p:column headerText="Item Name">
+                                <p:column headerText="Item Name" style="min-width: 8em; max-width: 15em">
+                                    <div style="min-width: 10em; display: flex; align-items: center;">
                                     <h:outputText 
                                         id="item" 
                                         value="#{bItm.item.name}" />
@@ -148,6 +149,7 @@
                                         update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
                                         process="@this"
                                         class="ui-button-icon-only mx-3"/>
+                                    </div>
                                 </p:column>
 
                                 <p:column 
@@ -213,6 +215,8 @@
                                     icon="fas fa-check" 
                                     action="#{transferIssueController.settleDirectIssue}" 
                                     style="float: right;" 
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                                return false;"
                                     ajax="false" 
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>
@@ -269,12 +273,14 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
 
-                                <h:outputLabel value="Comment" />
+                                <h:outputLabel value="Comment *" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:inputTextarea 
+                                <p:inputTextarea
                                     class="w-100"
-                                    value="#{transferIssueController.issuedBill.comments}" 
-                                    rows="3" />
+                                    value="#{transferIssueController.issuedBill.comments}"
+                                    rows="3"
+                                    required="true"
+                                    requiredMessage="Please enter a comment." />
 
                             </h:panelGrid>
                         </p:panel>

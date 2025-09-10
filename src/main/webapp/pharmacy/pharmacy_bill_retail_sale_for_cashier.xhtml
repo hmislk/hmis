@@ -5,10 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:tkn="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
@@ -17,8 +14,6 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
-
                 <h:form id="bill" >
 
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
@@ -86,7 +81,16 @@
                                     <p:panel>
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                            <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                            <h:outputText value="Add New Item" class="mx-4"></h:outputText>
+
+                                            <p:commandButton 
+                                                id="btnItemDetails"
+                                                disabled="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Single Items Summary')}" 
+                                                class="ui-button-warning float-end" 
+                                                title="Single Item Summary (Opens in new tab)" 
+                                                icon="fa fa-external-link-alt"
+                                                onclick="window.open('#{request.contextPath}/faces/pharmacy/pharmacy_item_transactions_popup.xhtml', '_blank'); return false;"
+                                                type="button"/>
                                         </f:facet>
 
                                         <div class="row">
@@ -97,46 +101,42 @@
                                                         <p:autoComplete
                                                             accesskey="i"
                                                             id="acStock"
-                                                            value="#{pharmacySaleController.stock}"
-                                                            completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
+                                                            value="#{pharmacySaleController.stockDto}"
+                                                            completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoWithoutTotalStock}"
+                                                            converter="#{pharmacySaleController.stockDtoConverter}"
                                                             var="i"
                                                             class="w-100"
                                                             inputStyleClass="form-control"
                                                             maxResults="20"
                                                             scrollHeight="400"
-                                                            itemLabel="#{i.itemBatch.item.name}"
+                                                            itemLabel="#{i.itemName}"
                                                             itemValue="#{i}"
                                                             >
-                                                            <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                            <p:column headerText="Item" style="padding: 8px;" styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                                <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
+                                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
                                                                 </h:outputText>
                                                                 <h:outputLabel value=" (" ></h:outputLabel>
-                                                                <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+                                                                <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
                                                                 <h:outputLabel value=") - " ></h:outputLabel>
-                                                                <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
+                                                                <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
                                                             </p:column>
-                                                            <p:column headerText="Rate" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
+                                                            <p:column headerText="Rate" style="padding: 8px;" styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                                <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.stock}" >
+                                                            <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                                <h:outputLabel value="#{i.stockQty}" >
                                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.transItemStockQty}" >
-                                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                                </h:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
+                                                            <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                                <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
                                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('det',view).clientId}"  ></p:ajax>
+                                                            <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
                                                             <p:ajax event="itemSelect" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  listener="#{pharmacySaleController.handleSelect}"  update="txtQty txtRate focusQty" ></p:ajax>
                                                             <p:ajax event="query" process="acStock"></p:ajax>
                                                         </p:autoComplete>
@@ -213,9 +213,10 @@
                                                      style="padding: 0;"
                                                      rowKey="#{bi.searialNo}"
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100"
-                                                     selection="#{pharmacySaleController.selectedBillItems}">
+                                                     selection="#{pharmacySaleController.selectedBillItems}"
+                                                     selectionMode="multiple">
 
-                                            <p:column selectionMode="multiple" style="width: 2%;"></p:column>
+                                            <p:column selectRow="true" width="2em"></p:column>
 
                                             <p:column headerText="No" style="width: 4%; padding: 0;" >
                                                 <h:outputLabel id="no" value="#{s+1}." >
@@ -321,28 +322,6 @@
 
                                     </p:panel>
 
-
-                                    <p:panel>
-                                        <f:facet name="header" >
-                                            <h:outputText styleClass="fas fa-ban " />
-                                            <h:outputText value="Not Accepted Bills" class="mx-4"></h:outputText>
-                                        </f:facet>
-
-                                        <p:dataTable value="#{searchController.bills}" var="bill" styleClass="summeryBorder" >
-                                            <p:column headerText="Pre Bill No">
-                                                <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Date" >
-                                                <h:outputLabel value="#{bill.createdAt}" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <!--                                            <p:column headerText="User" style="overflow: hidden;">
-                                                                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}"  ></h:outputLabel>
-                                                                                        </p:column>     -->
-                                        </p:dataTable>
-
-                                    </p:panel>
                                 </div>
 
                                 <div class="col-md-5">
@@ -504,7 +483,7 @@
                 </h:form>
 
                 <h:form>
-                    <p:panel  rendered="#{pharmacySaleController.billPreview}" >
+                    <p:panel id="panelPrint"  rendered="#{pharmacySaleController.billPreview}" >
                         <div class="nonPrintBlock row" >
 
                             <div class="col-6" >
@@ -540,7 +519,7 @@
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
                                     action="#" >
-                                    <p:printer target="TokenPreview" ></p:printer>
+                                    <p:printer target="tokenPrint" ></p:printer>
                                 </p:commandButton>
 
                                 <p:commandButton
@@ -551,7 +530,7 @@
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
                                     action="#" >
-                                    <p:printer target="gpBillPreviewTokenAndBill" ></p:printer>
+                                    <p:printer target="billAndTokenPrint" ></p:printer>
                                 </p:commandButton>
                             </div>
                             <div class="col-4" >
@@ -589,16 +568,17 @@
                         </div>
 
 
-                        <h:panelGroup id="gpBillPreviewTokenAndBill">
-                            <h:panelGroup  rendered="#{pharmacySaleController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"  id="TokenPreview" class="m-2">
-<!--                                <h:panelGroup id="gpBillPreviewPosToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                    <div >
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
-                                            <phi:saleBillToken id="saleBillToken" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
-                                        </h:panelGroup>
-                                    </div>
-                                </h:panelGroup>-->
-                                <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+
+                        <h:panelGroup
+                            id="billAndTokenPrint">
+                            <h:panelGroup 
+                                layout="block"
+                                rendered="#{pharmacySaleController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"
+                                style="page-break-after: always!important;"
+                                id="tokenPrint">
+                                <h:panelGroup 
+                                    id="gpBillPreviewFiveFiveToken" 
+                                    rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                             <phi:saleBill_five_five_token id="saleBillTokenFiveFive" bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five_token>
@@ -606,8 +586,10 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or
-                                                                                           sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                <h:panelGroup 
+                                    id="gpBillPreviewFiveFiveToken2" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Bill is Pos paper',false) or
+                                                sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                             <phi:saleBillToken id="saleBillTokenPos" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
@@ -617,9 +599,14 @@
 
                             </h:panelGroup>
 
-                            <h:panelGroup styleClass="billPrint"   id="gpBillPreview">
 
-                                <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
+                            <h:panelGroup 
+                                styleClass="billPrint"  
+                                layout="block"
+                                style="page-break-after: always!important; page-break-before: always!important;"
+                                id="gpBillPreview">
+
+                                <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Bill is Pos paper',false)}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                             <phi:saleBill_for_Cashier bill="#{pharmacySaleController.printBill}"></phi:saleBill_for_Cashier>

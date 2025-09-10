@@ -290,7 +290,7 @@
                                                 </div>
                                             </p:column>
 
-                                            <p:column>
+                                            <p:column width="6em">
                                                 <p:commandButton 
                                                     rendered="#{bs.absent and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
                                                     disabled="#{!(bs.bill.paidAmount eq 0 or (!(bs.bill.paymentMethod eq 'OnCall') or bs.bill.paidBill.paymentMethod ne 'OnCall'))}"

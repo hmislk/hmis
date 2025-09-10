@@ -10,6 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="showBackground" type="java.lang.Boolean" default="false"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,7 +18,7 @@
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'General'}"  >
             <div id="divReport"  class="labReport"  >
                 <ez:common_report 
-                    showBackground="#{patientReportController.showBackground}"
+                    showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}"
                     commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                     patientReport="#{patientReportController.currentPatientReport}"/>
 

@@ -13,15 +13,20 @@
 
             <ui:define name="content">
 
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY') and webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem'))}">
+                    <p:panel>
+                        <p:outputLabel value="YOU ARE NOT AUTHORIZED." />
+                    </p:panel>
+                </h:panelGroup>
 
-                <h:form>
+                <h:form rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY') and webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}">
 
                     <p:panel rendered="#{!pharmacyAdjustmentController.printPreview}">
                         <f:facet name="header" >
                             <p:outputLabel value="Department Stock Adjustment : Quantity (Zero)" style="color: red;" />
                             <p:commandButton id="btnzero" value="Go To Adjustment" ajax="false" style="float: right"
                                              class="ui-button-warning" icon="fa-solid fa-arrow-left"
-                                             action="pharmacy_adjustment_department_by_item" actionListener="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
+                                             action="pharmacy_adjustment_department_by_item" actionListener="#{pharmacyAdjustmentController.newBill()}" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY') and webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}"></p:commandButton>
                         </f:facet>
                         <div class="row">
                             <div class="col-md-4">

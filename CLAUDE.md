@@ -28,11 +28,20 @@
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
 - **Fallback**: Machine-specific Maven paths
 - **JSF-Only Changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
+- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user
 
 ### DTO Implementation
 - **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
 - **CRITICAL**: Never modify existing constructors - only add new ones
 - **Use direct DTO queries** - avoid entity-to-DTO conversion loops
+
+### UI Development Guidelines
+- **🚨 UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
+- **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
+- **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
+- **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
+- **UI Styling Guidelines**: [Complete Reference](developer_docs/ui/ui-styling-guidelines.md)
+- **UI Best Practices**: [Troubleshooting & Patterns](developer_docs/ui-best-practices.md)
 
 ### Database Development
 - **MySQL Guide**: [Complete Reference](developer_docs/database/mysql-developer-guide.md)
@@ -45,14 +54,19 @@
 1. **MANUAL PERSISTENCE.XML VERIFICATION**: Before any GitHub push, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` - NEVER commit hardcoded JNDI datasources
 2. **Include issue closing keywords** in commit messages
 3. **Update project board status** automatically  
-4. **Run tests before committing** using detect-maven script (only for Java changes)
-5. **Follow DTO patterns** to avoid breaking changes
-6. **JSF-only changes** do not require compilation or testing
-7. **🚨 CRITICAL QA RULE**: Before any QA deployment, verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables
-8. **🚨 DDL GENERATION RULE**: Never commit persistence.xml with hardcoded DDL generation paths (`eclipselink.application-location`)
-9. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
-10. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
-11. **🚨 DATABASE CREDENTIALS RULE**: NEVER commit database credentials to git - store them in environment-specific folders outside the project directory (see MySQL guide)
+4. **Run tests before committing** using detect-maven script (only for Java changes, only when user requests)
+5. **🚨 MAVEN COMPILE RULE**: NEVER run Maven compile commands unless explicitly requested by user
+6. **Follow DTO patterns** to avoid breaking changes
+7. **JSF-only changes** do not require compilation or testing
+8. **🚨 CRITICAL QA RULE**: Before any QA deployment, verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables
+9. **🚨 DDL GENERATION RULE**: Never commit persistence.xml with hardcoded DDL generation paths (`eclipselink.application-location`)
+10. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
+11. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
+12. **🚨 DATABASE CREDENTIALS RULE**: NEVER commit database credentials to git - store them in environment-specific folders outside the project directory (see MySQL guide)
+13. **🚨 ERP UI RULE**: Use h:outputText instead of HTML heading tags (h1-h6) - this is an ERP system, not a website
+14. **🚨 XHTML STRUCTURE RULE**: Use HTML DOCTYPE with ui:composition and template inside h:body for all XHTML pages
+15. **🚨 PRIMEFACES CSS RULE**: Use PrimeFaces button classes (ui-button-success, ui-button-warning, etc.) instead of Bootstrap button classes
+16. **🚨 XML ENTITY RULE**: Always escape ampersands as &amp; in XHTML attribute values to prevent XML parsing errors
 
 ## Wiki Writing Guidelines {#wiki-writing-guidelines}
 

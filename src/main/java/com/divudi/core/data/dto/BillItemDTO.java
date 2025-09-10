@@ -13,9 +13,11 @@ public class BillItemDTO implements Serializable {
     private String batchNo;
     private Double qty;
     private Double costRate;
+    private Double purchaseRate;
     private Double retailRate;
     private Double billNetTotal;
     private Long id;
+    private Long billId;
     private Double discount;
     private PaymentMethod paymentMethod;
 
@@ -44,6 +46,24 @@ public class BillItemDTO implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    //Cost of Good Sold report-sale report
+    public BillItemDTO(Long id, Long billId, Date createdAt, String name, String code,
+            String deptId, String batchNo, Double qty, Double costRate, Double purchaseRate,
+            Double retailRate, Double netTotal) {
+        this.id = id;
+        this.billId = billId;
+        this.billCreatedAt = createdAt;
+        this.itemName = name;
+        this.itemCode = code;
+        this.billDeptId = deptId;
+        this.batchNo = batchNo;
+        this.qty = qty;
+        this.costRate = costRate;
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.billNetTotal = netTotal;
+    }
+        
     // Calculated fields (Cost Value and Sale Value are calculated in JSF)
     public Double getCostValue() {
         return (costRate != null && qty != null) ? costRate * qty : 0.0;
@@ -148,6 +168,22 @@ public class BillItemDTO implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+
+    public Double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(Double purchaseRate) {
+        this.purchaseRate = purchaseRate;
     }
 
 }

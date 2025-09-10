@@ -24,6 +24,7 @@ public enum BillType {
     LabBill,
     CollectingCentreBill,
     CollectingCentreAgentPayment,
+    CollectingCentreAgentPaymentCancel,
     CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
@@ -92,6 +93,7 @@ public enum BillType {
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
+    PharmacyDonationBill,
     PharmacyTransferRequest,
     PharmacyTransferIssue,
     PharmacyDirectIssue,
@@ -109,6 +111,9 @@ public enum BillType {
     PharmacyAddtoStock,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
+    PharmacySnapshotBill,
+    PharmacyPhysicalCountBill,
+    PharmacyStockAdjustmentBill,
     ChannelCash(ChannelCashFlow),
     ChannelPaid(ChannelCashFlow),
     ChannelAgent(ChannelCashFlow),
@@ -221,6 +226,8 @@ public enum BillType {
                 return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
+            case PharmacyDonationBill:
+                return "Pharmacy Donation Bill";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
@@ -228,6 +235,12 @@ public enum BillType {
                 return "Pharmacy Sale Bill for Cashier";
             case PharmacyAdjustment:
                 return "Pharmacy Adjustment";
+            case PharmacySnapshotBill:
+                return "Snapshot Bill";
+            case PharmacyPhysicalCountBill:
+                return "Physical Count Bill";
+            case PharmacyStockAdjustmentBill:
+                return "Stock Adjustment Bill";
             case GrnPayment:
                 return "Grn Payment";
             case GrnPaymentPre:

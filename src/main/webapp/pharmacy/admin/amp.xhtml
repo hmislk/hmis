@@ -187,6 +187,13 @@
                                     offLabel="No"
                                     class="w-100" />
 
+                                <h:outputText  value="Refunds Allowed" class="w-100"></h:outputText>
+                                <p:selectBooleanButton
+                                    value="#{ampController.current.refundsAllowed}" 
+                                    onLabel="Yes"
+                                    offLabel="No"
+                                    class="w-100" />
+
                                 <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
                                 <h:inputTextarea 
                                     id="txtIns" 

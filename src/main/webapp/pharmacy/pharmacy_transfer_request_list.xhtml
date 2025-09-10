@@ -71,25 +71,11 @@
                                 <h:outputLabel value="#{p.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
-                                <br/>
-                                <h:panelGroup rendered="#{p.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
-                                                   value="#{p.cancelledAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                </h:panelGroup>
 
                             </p:column>                 
                             <p:column headerText="Requested By" width="100px" >                      
                                 <h:outputLabel value="#{p.creatorName}" >
                                 </h:outputLabel>
-                                <br/>
-                                <h:panelGroup rendered="#{p.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancellerName}" >
-                                    </h:outputLabel>
-                                </h:panelGroup>
                             </p:column>  
                             <p:column width="100px" headerText="Action" >
                                 <p:commandButton
@@ -102,6 +88,7 @@
                                 </p:commandButton>
 
                                 <p:commandButton
+                                    id="btnToIssue"
                                     ajax="false"
                                     icon="fas fa-check"
                                     title="Issue"

@@ -321,13 +321,6 @@ public class DirectPurchaseReturnController implements Serializable {
             rate = fd.getTotalCostRate();
         }
 
-        if (originalBillItem.getItem() instanceof Ampp) {
-            BigDecimal upp = BigDecimalUtil.valueOrOne(fd.getUnitsPerPack());
-            if (BigDecimalUtil.isPositive(upp)) {
-                rate = BigDecimalUtil.multiply(rate, upp);
-            }
-        }
-
         return rate;
     }
 
@@ -495,6 +488,12 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public void settle() {
+        // Server-side validation for return comments
+        if (returnBill == null || returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return comments are required.");
+            return;
+        }
+        
         fillData();
         applyPendingReturnTotals();
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
@@ -683,6 +682,8 @@ public class DirectPurchaseReturnController implements Serializable {
             getBillItems().add(newBillItemInReturnBill);
             calculateBillItemDetails(newBillItemInReturnBill);
         }
+        
+        callculateBillDetails();
     }
 
     private void calculateBillItemDetails(BillItem returningBillItem) {
