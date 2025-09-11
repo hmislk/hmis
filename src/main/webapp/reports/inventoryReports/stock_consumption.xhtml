@@ -285,9 +285,18 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Net Total" width="5em">
-                                <h:outputText value="#{f.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
+                                <h:panelGroup rendered="#{f.bill.billType eq 'PharmacyDisposalIssue'}">
+
+                                    <h:outputText value="#{f.bill.total}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{f.bill.billType ne 'PharmacyDisposalIssue'}">
+
+                                    <h:outputText value="#{0.0 - f.bill.total}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyReportController.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
