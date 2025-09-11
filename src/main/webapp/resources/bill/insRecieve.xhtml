@@ -58,7 +58,7 @@
                          icon="pi pi-print"
                          styleClass="ui-button-info"
                          ajax="false"
-                         action="#">
+                         action="#{billController.printPreview}">
             <p:printer target="gpBillPreview"/>
         </p:commandButton>
     </div>
@@ -70,13 +70,13 @@
         <!-- ====== RECEIPT CONTENT ====== -->
         <div class="receipt">
 
-            <div class="r-title"><h:outputText value="PHARMACY"/></div>
+            <div class="r-title"><h:outputText value="#{cc.attrs.bill.department.name}"/></div>
             <div class="r-head">
-                <h:outputText value="144, Beliatta Road, Tangalle"/><br/>
+                <h:outputText value="#{cc.attrs.bill.institution.address}"/><br/>
                 <span class="small">
-          <h:outputText value="Tel : 076 148 9316"/>&nbsp;&nbsp;&nbsp;
-          <h:outputText value="Email : Info@slh.lk"/>&nbsp;&nbsp;&nbsp;
-          <h:outputText value="Web : www.slh.lk"/>
+          <h:outputText value="Tel : #{cc.attrs.bill.institution.phone}"/>&nbsp;&nbsp;&nbsp;
+          <h:outputText value="Email : #{cc.attrs.bill.institution.email}"/>&nbsp;&nbsp;&nbsp;<br/>
+          <h:outputText value="Web : #{cc.attrs.bill.institution.web}"/>
         </span>
             </div>
             <div class="r-line"></div>
