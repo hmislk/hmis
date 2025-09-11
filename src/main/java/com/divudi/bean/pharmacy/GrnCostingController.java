@@ -259,6 +259,7 @@ public class GrnCostingController implements Serializable {
         recalculateFinancialsBeforeAddingBillItem(newBillItemCreatedByDuplication.getBillItemFinanceDetails());
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
         calDifference();
     }
 
@@ -1401,6 +1402,7 @@ public class GrnCostingController implements Serializable {
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
 
     }
 
@@ -1693,6 +1695,7 @@ public class GrnCostingController implements Serializable {
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
         calDifference();
+        recalculateProfitMarginsForAllItems();
     }
 
     public void lineDiscountRateChangedListner(BillItem tmp) {
@@ -1718,6 +1721,7 @@ public class GrnCostingController implements Serializable {
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
         calDifference();
     }
 
@@ -1975,6 +1979,7 @@ public class GrnCostingController implements Serializable {
 
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
+        recalculateProfitMarginsForAllItems();
 
         getBillFacade().edit(getGrnBill());
 
@@ -2450,6 +2455,7 @@ public class GrnCostingController implements Serializable {
             ensureBillDiscountSynchronization();
             calculateBillTotalsFromItems();
             distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+            recalculateProfitMarginsForAllItems();
 
             calDifference();
         }
