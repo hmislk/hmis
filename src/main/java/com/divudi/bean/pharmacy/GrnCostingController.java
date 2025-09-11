@@ -1708,6 +1708,8 @@ public class GrnCostingController implements Serializable {
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
+        // Recompute margins as free quantity changes affect potential income
+        recalculateProfitMarginsForAllItems();
     }
 
     public void retailRateChangedListner(BillItem tmp) {
@@ -1737,6 +1739,8 @@ public class GrnCostingController implements Serializable {
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
+        // Recompute margins as free quantity changes affect potential income
+        recalculateProfitMarginsForAllItems();
     }
 
     public void qtyChangedListner(BillItem tmp) {
@@ -2923,6 +2927,8 @@ public class GrnCostingController implements Serializable {
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        // Recompute totals/margins before first render
+        calDifference();
         calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
 
         // Update financial balances
