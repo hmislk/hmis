@@ -27,10 +27,10 @@
                                     icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton 
-                                    value="New Bill" 
-                                    ajax="false" 
-                                    action="#{cashRecieveBillController.prepareNewBill()}"  
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    action="#{cashRecieveBillController.prepareNewBill()}"
                                     icon="fa fa-plus"
                                     class="ui-button-warning">
                                 </p:commandButton>
@@ -56,6 +56,7 @@
                                                 icon="fa fa-plus"
                                                 class=" ui-button-success"/>
                                         </div>
+
                                     </div>
 
 
@@ -164,7 +165,7 @@
 
 <!--                                <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Comment" />      
+                                        <p:outputLabel value="Comment" />
                                     </div>
                                     <div class="col-md-8">
                                         <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
