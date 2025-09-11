@@ -251,10 +251,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Calculate item totals using internal logic
         calculateItemTotals(getCurrentBillItem());
 
-        // Calculate and store profit margin for the item
-        BigDecimal profitMargin = calculateProfitMarginForPurchasesBigDecimal(getCurrentBillItem());
-        getCurrentBillItem().getBillItemFinanceDetails().setProfitMargin(profitMargin);
-
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
 
