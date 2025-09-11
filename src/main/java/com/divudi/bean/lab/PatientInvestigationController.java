@@ -2205,6 +2205,10 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Rejected");
                 return;
             }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB){
+                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
+                return;
+            }
 
             String jpql = "SELECT r "
                     + " FROM PatientReport r "
