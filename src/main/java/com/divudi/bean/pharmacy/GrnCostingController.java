@@ -1790,8 +1790,27 @@ public class GrnCostingController implements Serializable {
     public void discountChangedLitener() {
         ensureBillDiscountSynchronization();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        // Recalculate profit margins for all items after discount distribution
+        recalculateProfitMarginsForAllItems();
         // The distribution method handles final bill totals via aggregateBillTotalsFromDistributedItems
         calDifference();
+    }
+
+    /**
+     * Recalculates profit margins for all bill items after discount distribution
+     */
+    private void recalculateProfitMarginsForAllItems() {
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            return;
+        }
+        
+        for (BillItem item : getBillItems()) {
+            if (item != null && item.getBillItemFinanceDetails() != null) {
+                // Recalculate profit margin using the updated total cost (which includes distributed discount)
+                BigDecimal profitMargin = calculateProfitMarginForPurchasesBigDecimal(item);
+                item.getBillItemFinanceDetails().setProfitMargin(profitMargin);
+            }
+        }
     }
 
     /**
