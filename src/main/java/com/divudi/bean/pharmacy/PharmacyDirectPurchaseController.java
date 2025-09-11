@@ -105,6 +105,23 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentExpense = null;
         warningMessage = null;
     }
+    
+        /**
+     * Recalculates profit margins for all bill items after discount distribution
+     */
+    private void recalculateProfitMarginsForAllItems() {
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            return;
+        }
+        
+        for (BillItem item : getBillItems()) {
+            if (item != null && item.getBillItemFinanceDetails() != null) {
+                // Recalculate profit margin using the updated total cost (which includes distributed discount)
+                BigDecimal profitMargin = calculateProfitMarginForPurchasesBigDecimal(item);
+                item.getBillItemFinanceDetails().setProfitMargin(profitMargin);
+            }
+        }
+    }
 
     public void addItem() {
         Item item = getCurrentBillItem().getItem();
