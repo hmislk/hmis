@@ -497,16 +497,17 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-
-            if (ps.getDepartment() != sessionController.getDepartment()) {
+            
+            if (! ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
                 JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+            
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
                 canSentOutLabSamples.add(ps);
             }
         }
@@ -1747,7 +1748,7 @@ public class PatientInvestigationController implements Serializable {
         lstToSamle = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
     }
-
+    
     @Deprecated
     public void generateBarcodesForSelectedBills() {
         selectedBillBarcodes = new ArrayList<>();
