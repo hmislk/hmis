@@ -183,10 +183,9 @@
                 </div>
                 <div>
                     Settle By :
-                    <h:outputText value="#{cc.attrs.bill.creater != null and cc.attrs.bill.creater.name ne null ? cc.attrs.bill.creater.name : cc.attrs.bill.creater.id}"/>
+                    <h:outputText value="#{sessionController.loggedUser != null and sessionController.loggedUser.name ne null ? sessionController.loggedUser.name : sessionController.loggedUser.id}"/>
                 </div>
             </div>
-
         </div>
     </p:panel>
 
