@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+            <p:dataTable  
+                class="w-100"
+                value="#{patientInvestigationController.patientSamples}"
+                var="ps" 
+                paginator="true"
+                rowKey="#{ps.id}"
+                paginatorPosition="bottom"
+                selectionMode="multiple"
+                selection="#{patientInvestigationController.selectedPatientSamples}"
+                rows="10"
+                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                rowsPerPageTemplate="10,25,50" 
+                style="table-layout: fixed; width: 100%;">
+
+                <!-- Selection Box Column -->
+                <p:column selectionBox="true" width="1em" style="vertical-align: top;">
+                </p:column>
+
+                <!-- Sample ID Column with Icon -->
+                <p:column headerText="Sample" width="3em" style="vertical-align: top;">
+                    <p:commandLink 
+                        ajax="false" 
+                        class="text-primary"
+                        action="#{patientInvestigationController.navigateToThePatientSample(ps)}">
+                        <i class="fa-solid fa-vial-virus text-danger"></i> <!-- Sample Icon -->
+                        <h:outputLabel value="#{ps.id}" class="mx-2" />
+                    </p:commandLink>
+
+                    <br/><br/>
+                    <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
+                    <h:outputLabel value="#{ps.tube.name}" class="mx-2" />
+                </p:column>
+
+                <p:column headerText="Investigation List" width="8em" style="vertical-align: top;">
+                    <ui:repeat value="#{patientInvestigationController.getPatientInvestigationsFromSample(ps)}" var="psc">
+                        <div class="ui-g">
+                            <div class="ui-g-12 d-flex gap-3">
+                                <i class="fa fa-flask text-success mt-1"></i>
+                                <h:outputText value="#{psc.investigationComponant.name}" />
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </p:column>
+
+                <!-- Bill Column with Icon -->
+                <p:column headerText="Bill" width="6em" style="vertical-align: top;">
+                    <p:commandLink 
+                        ajax="false" 
+                        class="text-primary"
+                        action="#{billSearch.navigateToViewOpdBill()}">
+                        <f:setPropertyActionListener value="#{ps.bill}" target="#{billSearch.bill}"/>
+                        <i class="fas fa-receipt"></i><!-- Bill Icon -->
+                        <h:outputLabel class="mx-2" value="#{ps.bill.deptId}"/>
+                    </p:commandLink>
+                    <br/>
+                    <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
+                    <h:outputLabel value="#{ps.bill.createdAt}" class="mx-2">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                    </h:outputLabel>
+                    <br/>
+                    <!-- CC, IP, and OP Icons with Colours -->
+                    <h:panelGroup rendered="#{ps.bill.ipOpOrCc == 'CC'}">
+                        <i class="fas fa-box text-warning"></i> <!-- Collecting Centre Icon -->
+                        <h:outputLabel value="Collecting Centre (CC)" class="mx-2 text-warning"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{ps.bill.ipOpOrCc == 'IP'}">
+                        <i class="fas fa-procedures text-info"></i> <!-- Inpatient Icon -->
+                        <h:outputLabel value="Inpatient (IP)" class="text-info mx-2 "/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{ps.bill.ipOpOrCc == 'OP'}">
+                        <i class="fas fa-user-outlet text-primary"></i> <!-- Outpatient Icon -->
+                        <h:outputLabel value="Outpatient (OP)" class="mx-2 text-primary"/>
+                    </h:panelGroup>
+                </p:column>
+
+                <!-- Patient Details Column with Icons -->
+                <p:column headerText="Patient" width="10em" style="vertical-align: top;">
+                    <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
+                    <h:outputLabel class="mx-2" value="#{ps.bill.patient.person.nameWithTitle}" />
+                    <br/>
+                    <i class="fas fa-birthday-cake text-info"></i> <!-- Age Icon -->
+                    <h:outputLabel class="mx-2" value="#{ps.bill.patient.person.ageAsString}" />
+                    <br/>
+                    <i class="fas fa-venus-mars text-danger"></i> <!-- Sex Icon -->
+                    <h:outputLabel class="mx-2" value="#{ps.bill.patient.person.sex.label}" />
+                    <br/>
+                    <i class="fas fa-phone-alt text-success"></i> <!-- Phone Icon -->
+                    <h:outputLabel class="mx-2" value="#{ps.bill.patient.person.phone}" />
+                    <br/>
+                    <i class="fas fa-mobile-alt text-warning"></i> <!-- Mobile Icon -->
+                    <h:outputLabel class="mx-2" value="#{ps.bill.patient.person.mobile}" />
+                </p:column>
+
+                <!-- Status Column with Badge -->
+                <p:column headerText="Curent Status" width="6em" style="vertical-align: top;">
+                    <h:panelGroup rendered="#{ps.bill.cancelled}">
+                        <div class="d-flex justify-content-center mt-4">
+                            <p:badge 
+                                value="Bill Cancel" 
+                                severity="info"
+                                size="large"
+                                style="width: 200px;"
+                                styleClass="ui-badge-danger" 
+                                rendered="#{ps.bill.cancelled}" >
+                            </p:badge>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{!ps.bill.cancelled}">
+                        <h:outputLabel value=" #{ps.status}" /><br/>
+                        <h:panelGroup rendered="#{ps.sampleRejected}">
+                            <p:badge value="Reject" styleClass="ui-badge-danger" /> - <p:badge value="Request Re-Collect" styleClass="ui-badge-warning" rendered="#{ps.requestReCollected}"/><br/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{ps.separated}">
+                            <p:badge value="Separated Sample from #{ps.separatedfrom.id}" class="mt-2" styleClass="ui-badge-warning" /><br/>
+                        </h:panelGroup>
+
+                        <p:badge value="Re-Collect Sample" styleClass="ui-badge-info" rendered="#{ps.referenceSample ne null}"/>
+                    </h:panelGroup>
+
+                </p:column>
+
+                <!-- Status Details Column  -->
+                <p:column headerText="Status Details" width="10em">
+                    <div>
+                        <h:panelGrid>
+                            <h:panelGroup>
+                                <div class="d-flex gap-3">
+                                    <h:outputLabel value="Created At" />
+                                    <h:outputLabel value="#{ps.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{ps.barcodeGenerated}">
+                                <div class="d-flex gap-3 ">
+                                    <h:outputLabel value="Generated At " />
+                                    <h:outputLabel value="#{ps.barcodeGeneratedAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{ps.sampleCollected}">
+                                <div class="d-flex gap-3 ">
+                                    <h:outputLabel value="Collected At" />
+                                    <h:outputLabel value="#{ps.sampleCollectedAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{ps.sampleSent}">
+                                <div class="d-flex gap-3 ">
+                                    <h:outputLabel value="Send to Lab " />
+                                    <h:outputLabel value="#{ps.sampleSentAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{ps.outsourced}">
+                                <div class="d-flex gap-3 ">
+                                    <h:outputLabel value="Send to OutLab " />
+                                    <h:outputLabel value="#{ps.outsourcedAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{ps.sampleReceivedAtLab}">
+                                <div class="d-flex gap-3 ">
+                                    <h:outputLabel value="Received At Lab" />
+                                    <h:outputLabel value="#{ps.sampleReceivedAtLabAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <h:panelGroup rendered="#{ps.sampleRejected or ps.cancelled}">
+                            <hr/>
+                        </h:panelGroup>
+
+                        <h:panelGrid rendered="#{ps.sampleRejected or ps.cancelled}">
+                            <h:panelGroup rendered="#{ps.sampleRejected}">
+                                <div class="d-flex gap-3 " >
+                                    <h:outputLabel value="Rejected At" />
+                                    <h:outputLabel value="#{ps.sampleRejectedAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{ps.cancelled}">
+                                <div class="d-flex gap-3 " >
+                                    <h:outputLabel value="cancelled At" />
+                                    <h:outputLabel value="#{ps.cancelledAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGrid>
+                    </div>
+                </p:column>
+
+            </p:dataTable>
+        </h:panelGroup>
+    </cc:implementation>
+</html>
