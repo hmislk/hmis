@@ -129,6 +129,7 @@
                             <p:commandButton 
                                 icon="fa-solid fa-barcode"
                                 value="Generate Barcodes" 
+                                disabled="#{b.cancelled}"
                                 ajax="false" 
                                 action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" >
                             </p:commandButton>
