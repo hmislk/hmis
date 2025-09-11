@@ -105,15 +105,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentExpense = null;
         warningMessage = null;
     }
-    
-        /**
-     * Recalculates profit margins for all bill items after discount distribution
+
+    /**
+     * Recalculates profit margins for all bill items after discount
+     * distribution
      */
     private void recalculateProfitMarginsForAllItems() {
         if (getBillItems() == null || getBillItems().isEmpty()) {
             return;
         }
-        
+
         for (BillItem item : getBillItems()) {
             if (item != null && item.getBillItemFinanceDetails() != null) {
                 // Recalculate profit margin using the updated total cost (which includes distributed discount)
@@ -249,6 +250,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Calculate item totals using internal logic
         calculateItemTotals(getCurrentBillItem());
+
+        // Calculate and store profit margin for the item
+        BigDecimal profitMargin = calculateProfitMarginForPurchasesBigDecimal(getCurrentBillItem());
+        getCurrentBillItem().getBillItemFinanceDetails().setProfitMargin(profitMargin);
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
@@ -542,19 +547,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         BigDecimal purchaseRatePerUnit;
         BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
-        
+
         // For AMPP items, convert pack rates to unit rates for profit calculation
         if (bi.getItem() instanceof Ampp) {
             BigDecimal packPurchaseRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
             BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
-            
+
             if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
                 unitsPerPack = BigDecimal.ONE; // Avoid division by zero
             }
-            
+
             // Convert pack rate to unit rate for profit calculation
             purchaseRatePerUnit = packPurchaseRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP);
-            
+
             // DEBUG: Log the values to identify AMPP calculation issue
             System.out.println("DEBUG - Item: " + bi.getItem().getName() + " (AMPP)");
             System.out.println("DEBUG - Pack Purchase Rate (stored): " + packPurchaseRate);
@@ -564,12 +569,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         } else {
             // For AMP items, grossRate is already per unit
             purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
-            
+
             System.out.println("DEBUG - Item: " + bi.getItem().getName() + " (AMP)");
             System.out.println("DEBUG - Purchase Rate Per Unit (stored): " + purchaseRatePerUnit);
             System.out.println("DEBUG - Retail Rate Per Unit: " + retailRatePerUnit);
         }
-        
+
         if (purchaseRatePerUnit.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
         }
@@ -578,10 +583,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal profit = retailRatePerUnit.subtract(purchaseRatePerUnit);
         BigDecimal margin = profit.divide(purchaseRatePerUnit, 4, RoundingMode.HALF_UP);
         double result = margin.multiply(BigDecimal.valueOf(100)).doubleValue();
-        
+
         System.out.println("DEBUG - Calculated Profit Margin: " + result + "%");
         System.out.println("DEBUG - =====================================");
-        
+
         return result;
     }
 
@@ -714,6 +719,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         calculateBillTotalsFromItems();
         // Distribute bill-level adjustments proportionally to line items
         distributeProportionalBillValuesToItems();
+        recalculateProfitMarginsForAllItems();
     }
 
     public void billTaxChangedByUser() {
@@ -722,6 +728,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         calculateBillTotalsFromItems();
         // Distribute bill-level adjustments proportionally to line items
         distributeProportionalBillValuesToItems();
+        recalculateProfitMarginsForAllItems();
     }
 
     /**
@@ -774,6 +781,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Recalculate expense totals after adding new expense
         recalculateExpenseTotals();
+        recalculateProfitMarginsForAllItems();
 
         // Persist the updated bill
         if (getBill().getId() != null) {
@@ -802,6 +810,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         recalculateExpenseTotals();
+        recalculateProfitMarginsForAllItems();
 
         if (getBill().getId() != null) {
             billFacade.edit(getBill());
@@ -915,7 +924,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 getBillItemFacade().edit(item);
             }
         }
-
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
@@ -1204,7 +1212,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     /**
      * Calculates bill-level totals from all items for Direct Purchase workflow.
-     * Populates BillFinanceDetails (purchase/retail/cost/gross/net, quantities, discounts, taxes, expenses).
+     * Populates BillFinanceDetails (purchase/retail/cost/gross/net, quantities,
+     * discounts, taxes, expenses).
      */
     public void calculateBillTotalsFromItems() {
         if (getBill() == null || getBillItems() == null || getBillItems().isEmpty()) {
@@ -1508,25 +1517,26 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal purchaseRate = f.getLineNetRate();
+        // Use total cost as specified in comments
+        BigDecimal totalCost = f.getTotalCost();
         BigDecimal retailRate = f.getRetailSaleRate();
         BigDecimal qty = f.getQuantity();
         BigDecimal freeQty = f.getFreeQuantity();
 
-        if (purchaseRate == null || retailRate == null || qty == null || freeQty == null) {
+        if (totalCost == null || retailRate == null || qty == null || freeQty == null) {
             return BigDecimal.ZERO;
         }
 
+        if (totalCost.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        // Total Potential Income from qty + free qty multiplied by retail rate
         BigDecimal totalQty = qty.add(freeQty);
-        BigDecimal purchaseValue = purchaseRate.multiply(qty);
-        BigDecimal retailValue = retailRate.multiply(totalQty);
+        BigDecimal totalPotentialIncome = retailRate.multiply(totalQty);
 
-        if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-
-        return retailValue.subtract(purchaseValue)
-                .divide(purchaseValue, 4, RoundingMode.HALF_UP)
+        return totalPotentialIncome.subtract(totalCost)
+                .divide(totalCost, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }
 
