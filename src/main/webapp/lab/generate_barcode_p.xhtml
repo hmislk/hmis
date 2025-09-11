@@ -1562,8 +1562,10 @@
                                         styleClass="w-100 ui-button-primary" >
                                     </p:commandButton>
 
-                                    <hr/>
-
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleSeparate')}">
+                                        <hr/>
+                                    </h:panelGroup>
+                                    
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         ajax="false"
