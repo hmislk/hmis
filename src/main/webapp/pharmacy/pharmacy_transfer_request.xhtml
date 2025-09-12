@@ -86,14 +86,14 @@
                                     ajax="false"
                                     icon="pi pi-save"
                                     class="mx-1 ui-button-success"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}"/>
+                                    />
                                 <p:commandButton
                                     value="Finalize"
                                     action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-check"
                                     class="mx-1 ui-button-warning"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}"/>
+                                    />
                                 <p:commandButton
                                     value="New Bill"
                                     action="#{transferRequestController.recreate}"
