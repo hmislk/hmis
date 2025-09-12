@@ -356,6 +356,7 @@
                                     <p:autoComplete 
                                         completeMethod="#{staffController.completeStaff}"
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         var="mys" 
                                         class="w-100" 
                                         maxResults="25"
@@ -384,6 +385,7 @@
                                         <p:inputText 
                                             class="w-100"
                                             placeholder="Sample Retrieving Reason"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                             value="#{patientInvestigationController.comments}" >
                                         </p:inputText>
 
@@ -391,6 +393,7 @@
                                             value="Retrieving the sent sample"
                                             styleClass="w-100 ui-button-primary" 
                                             title="Receive Samples"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                             action="#{patientInvestigationController.retrievingTheSentSampleToLab()}"
                                             ajax="false"
                                             icon="fa fa-reply-all">

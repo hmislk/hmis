@@ -2222,8 +2222,20 @@ public class PatientInvestigationController implements Serializable {
             ps.setInstitution(sessionController.getInstitution());
             ps.setDepartment(sessionController.getDepartment());
             ps.setStatus(PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING);
+            
+            //Update Sample Outsource Data
             ps.setOutsourced(false);
+            ps.setOutsourceDepartment(null);
+            ps.setOutsourceInstitution(null);
+            ps.setOutsourceSentUser(null);
+            ps.setOutsourcedAt(null);
+            
+            //Update Sample Send Data
             ps.setSampleSent(false);
+            ps.setSampleSentAt(null);
+            ps.setSampleSentBy(null);
+            ps.setSampleSentToDepartment(null);
+            ps.setSampleSentToInstitution(null);
             patientSampleFacade.edit(ps);
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
@@ -2235,6 +2247,13 @@ public class PatientInvestigationController implements Serializable {
         // Update patient investigations and collect associated bills
         for (PatientInvestigation tptix : receivedPtixs.values()) {
             tptix.setStatus(PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING);
+            tptix.setOutsourcedInstitution(null);
+            tptix.setOutsourcedDepartment(null);
+            tptix.setOutsourcedUser(null);
+            tptix.setOutsourcedAt(null);
+            tptix.setSampleSent(false);
+            tptix.setSampleSentAt(null);
+            tptix.setSampleSentBy(null);
             getFacade().edit(tptix);
             receivedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
