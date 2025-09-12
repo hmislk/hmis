@@ -241,7 +241,7 @@
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="#{bi.qty}" >
+                                <h:outputText value="#{bi.billItemFinanceDetails.quantityByUnits}" >
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
