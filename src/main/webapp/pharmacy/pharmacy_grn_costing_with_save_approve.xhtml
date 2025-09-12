@@ -204,7 +204,7 @@
                                         <f:ajax 
                                             event="blur" 
                                             execute="dRate" 
-                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total doeDateOnlyShort profMargin batch pRate rRate :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
                                             listener="#{grnCostingController.lineDiscountRateChangedListner(bi)}"></f:ajax>
                                     </p:inputText>
                                 </p:column>
@@ -447,6 +447,7 @@
                                         class="ui-button-warning mx-1"
                                         icon="fas fa-flag"
                                         ajax="false"
+                                        onclick="return confirm('Are you sure you want to finalize this GRN? This action cannot be undone.');"
                                         rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
                                     </p:commandButton>
                                     <p:commandButton
@@ -455,6 +456,7 @@
                                         class="ui-button-warning mx-1"
                                         icon="fas fa-check"
                                         ajax="false"
+                                        onclick="return confirm('Are you sure you want to approve this GRN? This action cannot be undone.');"
                                         rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
                                     </p:commandButton>
                                 </f:facet>
