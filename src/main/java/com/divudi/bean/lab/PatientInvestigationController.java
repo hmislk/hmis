@@ -507,7 +507,7 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
             
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
                 canSentOutLabSamples.add(ps);
             }
         }
