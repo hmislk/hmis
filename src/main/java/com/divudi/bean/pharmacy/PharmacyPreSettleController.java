@@ -571,7 +571,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private void saveSaleReturnBill() {
         getSaleReturnBill().copy(getPreBill());
         getSaleReturnBill().copyValue(getPreBill());
-        
+
         // For refunds, all values should be negative
         getSaleReturnBill().setNetTotal(0 - Math.abs(getSaleReturnBill().getNetTotal()));
         getSaleReturnBill().setTotal(0 - Math.abs(getSaleReturnBill().getTotal()));
@@ -807,6 +807,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                 case Agent:
                 case Credit:
+                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                    p.setPaidValue(paymentMethodData.getCredit().getTotalValue());
+                    p.setComments(paymentMethodData.getCredit().getComment());
+                    bill.setToInstitution(paymentMethodData.getCredit().getInstitution());
+                    break;
                 case PatientDeposit:
                 case Slip:
                 case OnCall:
@@ -817,6 +824,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
+            billFacade.edit(bill);
             paymentFacade.create(p);
 
             ps.add(p);
@@ -1189,7 +1197,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return p;
     }
 
-
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         if (p == null) {
             System.err.println("Payment object is null, cannot set payment method data");
@@ -1220,7 +1227,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
     }
-
 
     @EJB
     CashTransactionBean cashTransactionBean;
@@ -1590,7 +1596,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
-
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
