@@ -316,7 +316,7 @@
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleSeparate')}">
                                         <hr/>
                                     </h:panelGroup>
-                                    
+
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         ajax="false"
@@ -327,7 +327,7 @@
                                         action="#{patientInvestigationController.navigateToSampleSeparate()}"
                                         styleClass="w-100 ui-button-warning" >
                                     </p:commandButton>
-                                    
+
                                     <hr/>
 
                                     <style>
@@ -345,7 +345,7 @@
                                         <p:commandButton
                                             value="Send to Out Lab "
                                             disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                            styleClass="m-1 w-100 ui-button-primary" 
+                                            styleClass="w-100 ui-button-primary" 
                                             icon="fa fa-paper-plane" 
                                             onclick="PF('dlg2').show()">
                                         </p:commandButton>
@@ -380,6 +380,24 @@
                                     </p:commandButton>
 
                                     <hr/>
+                                    <h:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('LabSampleRetrieving')}">
+                                        <p:inputText 
+                                            class="w-100"
+                                            placeholder="Sample Retrieving Reason"
+                                            value="#{patientInvestigationController.comments}" >
+                                        </p:inputText>
+
+                                        <p:commandButton
+                                            value="Retrieving the sent sample"
+                                            styleClass="w-100 ui-button-primary" 
+                                            title="Receive Samples"
+                                            action="#{patientInvestigationController.retrievingTheSentSampleToLab()}"
+                                            ajax="false"
+                                            icon="fa fa-reply-all">
+                                        </p:commandButton>
+
+                                        <hr/>
+                                    </h:panelGrid>
 
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
