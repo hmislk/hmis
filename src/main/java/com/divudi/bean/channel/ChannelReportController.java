@@ -773,6 +773,11 @@ public class ChannelReportController implements Serializable {
         }
         
        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, category, reportStatus, reportStatus);
+       
+       if(wrapperDto == null){
+           return;
+       }
+       
        wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
        
        if(institution != null){
