@@ -2807,7 +2807,9 @@ public class GrnCostingController implements Serializable {
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-            if (orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
+            // Feature flag controlled free quantity validation
+            boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
+            if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
                 System.out.println("VALIDATION FAILED: Free quantity exceeded for " + grnItem.getItem().getName());
                 return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
@@ -3246,26 +3248,24 @@ public class GrnCostingController implements Serializable {
             return BigDecimal.ZERO;
         }
 
-        // Use total cost as specified in comments
-        BigDecimal totalCost = f.getTotalCost();
-        BigDecimal retailRate = f.getRetailSaleRate();
-        BigDecimal qty = f.getQuantity();
-        BigDecimal freeQty = f.getFreeQuantity();
-
-        if (totalCost == null || retailRate == null || qty == null || freeQty == null) {
+        // Prefer distributed total cost; fall back to item net totals if not yet distributed
+        BigDecimal effectiveCost = BigDecimalUtil.valueOrZero(f.getTotalCost());
+        if (effectiveCost.compareTo(BigDecimal.ZERO) == 0) {
+            effectiveCost = BigDecimalUtil.valueOrZero(
+                f.getNetTotal() != null ? f.getNetTotal() : f.getLineNetTotal()
+            );
+        }
+        if (effectiveCost.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
         }
 
-        if (totalCost.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
+        // Use unit-based revenue for consistency across AMP/AMPP
+        BigDecimal totalUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
+        BigDecimal retailPerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        BigDecimal totalPotentialIncome = totalUnits.multiply(retailPerUnit);
 
-        // Total Potential Income from qty + free qty multiplied by retail rate
-        BigDecimal totalQty = qty.add(freeQty);
-        BigDecimal totalPotentialIncome = retailRate.multiply(totalQty);
-
-        return totalPotentialIncome.subtract(totalCost)
-                .divide(totalCost, 4, RoundingMode.HALF_UP)
+        return totalPotentialIncome.subtract(effectiveCost)
+                .divide(effectiveCost, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }
 

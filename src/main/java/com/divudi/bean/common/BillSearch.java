@@ -4064,6 +4064,7 @@ public class BillSearch implements Serializable {
             case PHARMACY_ISSUE_RETURN:
                 return navigateToPharmacyIssueReturn();
             case PHARMACY_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
                 return navigateToPharmacyIssue();
             case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssueCancelled();

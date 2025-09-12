@@ -14,242 +14,449 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <p:tabView styleClass="w-100">
-            <p:tab title="Details">
-                <p:panelGrid layout="tabular" columns="2" styleClass="w-100 m-1">
-                    <f:facet name="header" >
-                        <h:outputText value="Medicine" ></h:outputText>
-                    </f:facet>
-                    
-                    <p:outputLabel value="Item Name" />
-                    <p:outputLabel value="#{cc.attrs.pbi.item.name}" />
-
-                    <p:outputLabel value="Item Code" />
-                    <p:outputLabel value="#{cc.attrs.pbi.item.code}" />
-
-                    <p:outputLabel value="Item Type" />
-                    <h:panelGroup >
-                        <p:outputLabel rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" value="Units"/>
-                        <p:outputLabel rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" value="Packs" />
-                    </h:panelGroup>
-
-                    <p:outputLabel value="Generic Name (VTM)" />
-                    <h:panelGroup >
-                        <p:outputLabel  
-                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" 
-                            value="#{cc.attrs.pbi.item.vmp.vtm.name}" class="w-100" >
-                        </p:outputLabel>
-                        <p:outputLabel  
-                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" 
-                            value="#{cc.attrs.pbi.item.amp.vmp.vtm.name}" class="w-100" >
-                        </p:outputLabel>
-                    </h:panelGroup>
-
-                    <p:outputLabel value="Product Name (AMP)" />
-                    <h:panelGroup >
-                        <p:outputLabel  
-                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" 
-                            value="#{cc.attrs.pbi.item.vmp.name}" class="w-100" >
-                        </p:outputLabel>
-                        <p:outputLabel  
-                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" 
-                            value="#{cc.attrs.pbi.item.amp.vmp.name}" class="w-100" >
-                        </p:outputLabel>
-                    </h:panelGroup>
-
-                    <p:outputLabel value="Units Per Pack" />
-                    <h:panelGroup >
-                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}"  value="#{cc.attrs.pbi.item.dblValue}"  >
-                            <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                        </p:outputLabel>
-                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}"  value="1" >
-                        </p:outputLabel>
-                    </h:panelGroup>
-
-                </p:panelGrid>
-
-                <p:panelGrid 
-                    layout="tabular" columns="3" styleClass="w-100 m-1">
-                    
-                    <f:facet name="header" >
-                        <h:outputText value="Quantities" ></h:outputText>
-                    </f:facet>
-                    
-                    <p:outputLabel value="" />
-                    <p:outputLabel value="#" />
-                    <p:outputLabel value="in Units" />
-
-                    <p:outputLabel value="Quantity" />
-                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}" styleClass="text-end">
-                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                    </p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.quantityByUnits}" styleClass="text-end">
-                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                    </p:outputLabel>
-
-                    <p:outputLabel value="Free Quantity" />
-                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
-                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                    </p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantityByUnits}" styleClass="text-end">
-                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                    </p:outputLabel>
-
-                    <p:outputLabel value="Total Quantity" />
-                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalQuantity}" styleClass="text-end">
-                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                    </p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalQuantityByUnits}" styleClass="text-end">
-                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
-                    </p:outputLabel>
-                </p:panelGrid>
-            </p:tab>
-            <p:tab title="Rates and Values">
-                <div class="row">
-                    <!-- User Input Values -->
-                    <div class="col-6">
-                        <h6 class="text-primary mb-3">📝 User Input Values</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
-                            <p:outputLabel value="Purchase Rate (per unit)" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Discount Rate (amount per unit)" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscountRate}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Retail Rate" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Quantity (paid)" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.0" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Free Quantity" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.0" />
-                            </p:outputLabel>
-                        </p:panelGrid>
-                    </div>
-                    
-                    <!-- Line-Level Calculations -->
-                    <div class="col-6">
-                        <h6 class="text-success mb-3">🧮 Line-Level Calculations</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
-                            <p:outputLabel value="Line Gross Total" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossTotal}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Line Discount Value" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscount}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Line Net Total" style="font-weight: bold;" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineNetTotal}" styleClass="text-end fw-bold">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Line Net Rate (per unit)" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineNetRate}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Line Cost Rate (including free)" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineCostRate}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:panelGrid>
-                    </div>
-                </div>
-                
-                <hr class="my-4" />
-                
-                <div class="row">
-                    <!-- Bill-Level Distributions -->
-                    <div class="col-6">
-                        <h6 class="text-warning mb-3">🏦 Bill-Level Distributions</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
-                            <p:outputLabel value="Bill Discount Share" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billDiscount}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Bill Tax Share" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billTax}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Bill Expense Share" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billExpense}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Bill Net Adjustment" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billNetTotal}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:panelGrid>
-                    </div>
-                    
-                    <!-- Final Totals -->
-                    <div class="col-6">
-                        <h6 class="text-danger mb-3">📊 Final Totals (Line + Bill)</h6>
-                        <p:panelGrid layout="tabular" columns="2" styleClass="w-100" columnClasses="text-start, text-end">
-                            <p:outputLabel value="Total Discount" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalDiscount}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Total Tax" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalTax}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Total Expense" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalExpense}" styleClass="text-end">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            
-                            <p:outputLabel value="Final Net Total" style="font-weight: bold; font-size: 1.1em;" />
-                            <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.netTotal}" styleClass="text-end fw-bold text-danger" style="font-size: 1.1em;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:panelGrid>
-                    </div>
-                </div>
-                
-                <hr class="my-4" />
-                
-                <!-- Calculation Summary -->
-                <div class="row">
-                    <div class="col-12">
-                        <h6 class="text-info mb-3">🧾 Calculation Summary</h6>
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="card-text mb-2">
-                                    <strong>Line Calculation:</strong> 
-                                    #{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate} × #{cc.attrs.pbi.billItemFinanceDetails.quantity} - #{cc.attrs.pbi.billItemFinanceDetails.lineDiscount} = 
-                                    <span class="text-success fw-bold">#{cc.attrs.pbi.billItemFinanceDetails.lineNetTotal}</span>
-                                </p>
-                                <p class="card-text mb-0">
-                                    <strong>Final Total:</strong> 
-                                    #{cc.attrs.pbi.billItemFinanceDetails.lineNetTotal} + (Bill Adjustments) = 
-                                    <span class="text-danger fw-bold">#{cc.attrs.pbi.billItemFinanceDetails.netTotal}</span>
-                                </p>
+        <div class="container-fluid p-0" style="max-height: 90vh; overflow-y: auto;">
+            <!-- Compact Header -->
+            <div class="row mb-2">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white py-2">
+                            <h6 class="mb-0"><i class="fas fa-pills me-2"></i>Item Information</h6>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="small text-muted">Item Name</div>
+                                    <div class="fw-bold small"><h:outputText value="#{cc.attrs.pbi.item.name}" /></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="small text-muted">Code</div>
+                                    <div class="small"><h:outputText value="#{cc.attrs.pbi.item.code}" /></div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="small text-muted">Type</div>
+                                    <div class="small">
+                                        <span class="badge bg-info">
+                                            <h:outputText rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" value="Units"/>
+                                            <h:outputText rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" value="Packs" />
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="small text-muted">Units/Pack</div>
+                                    <div class="small fw-bold">
+                                        <h:outputText rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" value="#{cc.attrs.pbi.item.dblValue}">
+                                            <f:convertNumber pattern="#,###.#" />
+                                        </h:outputText>
+                                        <h:outputText rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" value="1" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center py-2">
+                            <div class="h4 mb-1">
+                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.profitMargin}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>%
+                            </div>
+                            <div class="small">Profit Margin</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Data -->
+            <p:tabView styleClass="w-100">
+                <p:tab title="Financial Data">
+                    <!-- Financial Overview -->
+                    <div class="row mb-2">
+                        <!-- Input Values -->
+                        <div class="col-lg-3">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white py-1">
+                                    <h6 class="mb-0 small"><i class="fas fa-keyboard me-1"></i>Input Values</h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Purchase Rate</div>
+                                        <div class="col-4 text-end small fw-bold text-primary">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Discount Rate</div>
+                                        <div class="col-4 text-end small fw-bold text-warning">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscountRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Retail Rate</div>
+                                        <div class="col-4 text-end small fw-bold text-success">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantities -->
+                        <div class="col-lg-3">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white py-1">
+                                    <h6 class="mb-0 small"><i class="fas fa-boxes me-1"></i>Quantities</h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Paid Qty</div>
+                                        <div class="col-4 text-end small fw-bold text-primary">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}">
+                                                <f:convertNumber pattern="#,##0.#" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Free Qty</div>
+                                        <div class="col-4 text-end small fw-bold text-warning">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantity}">
+                                                <f:convertNumber pattern="#,##0.#" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Total</div>
+                                        <div class="col-4 text-end small fw-bold text-success">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalQuantity}">
+                                                <f:convertNumber pattern="#,##0.#" />
+                                            </h:outputText>
+                                            <span class="text-muted small"> (
+                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalQuantityByUnits}">
+                                                    <f:convertNumber pattern="#,##0.#" />
+                                                </h:outputText> units)
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Line Calculations & Values -->
+                        <div class="col-lg-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white py-1">
+                                    <h6 class="mb-0 small"><i class="fas fa-calculator me-1"></i>Calculations &amp; Values</h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="fw-bold small text-success mb-1">Line Calculations</div>
+                                            <div class="row mb-1">
+                                                <div class="col-7 small text-muted">Gross Total</div>
+                                                <div class="col-5 text-end small fw-bold text-primary">
+                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                                <div class="col-7 small text-muted">Discount</div>
+                                                <div class="col-5 text-end small fw-bold text-warning">
+                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscount}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row border-bottom pb-1">
+                                                <div class="col-7 small text-success fw-bold">Net Total</div>
+                                                <div class="col-5 text-end small fw-bold text-success">
+                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineNetTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="fw-bold small text-info mb-1">Values</div>
+                                            <div class="row mb-1">
+                                                <div class="col-7 small text-muted">Retail Value</div>
+                                                <div class="col-5 text-end small fw-bold text-success">
+                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.valueAtRetailRate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                                <div class="col-7 small text-muted">Cost Value</div>
+                                                <div class="col-5 text-end small fw-bold text-warning">
+                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.valueAtCostRate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row border-bottom pb-1">
+                                                <div class="col-7 small text-muted">Cost Rate</div>
+                                                <div class="col-5 text-end small fw-bold text-info">
+                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineCostRate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Compact Bill Adjustments -->
+                    <div class="row mb-2">
+                        <div class="col-lg-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark py-1">
+                                    <h6 class="mb-0 small"><i class="fas fa-percent me-1"></i>Bill Adjustments</h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Discount Share</div>
+                                        <div class="col-4 text-end small fw-bold text-warning">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.billDiscount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Tax Share</div>
+                                        <div class="col-4 text-end small fw-bold text-info">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.billTax}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Expense Share</div>
+                                        <div class="col-4 text-end small fw-bold text-danger">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.billExpense}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white py-1">
+                                    <h6 class="mb-0 small"><i class="fas fa-calculator me-1"></i>Final Totals</h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Total Discount</div>
+                                        <div class="col-4 text-end small fw-bold text-warning">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalDiscount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <div class="col-8 small text-muted">Total Tax</div>
+                                        <div class="col-4 text-end small fw-bold text-info">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalTax}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1 border-bottom pb-1">
+                                        <div class="col-8 small text-muted">Total Expense</div>
+                                        <div class="col-4 text-end small fw-bold text-danger">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalExpense}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <div class="h5 text-danger mb-0 fw-bold">
+                                            <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="small text-muted">Final Net Total</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- Compact Profit Analysis -->
+                <h:panelGroup id="profitDetailsPanel">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white py-1">
+                                    <h6 class="mb-0 small"><i class="fas fa-chart-line me-1"></i>Profitability Analysis</h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row">
+                                        <!-- Profit Summary -->
+                                        <div class="col-md-4 text-center">
+                                            <div class="h4 text-success mb-1">
+                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.profitMargin}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>%
+                                            </div>
+                                            <div class="small text-muted">Profit Margin</div>
+                                        </div>
+                                        
+                                        <!-- Revenue → Cost → Profit Flow -->
+                                        <div class="col-md-8">
+                                            <div class="row text-center small">
+                                                <div class="col-4">
+                                                    <div class="fw-bold text-success">
+                                                        <h:outputText
+                                                            value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate
+                                                                     * ((empty cc.attrs.pbi.billItemFinanceDetails.quantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.quantity)
+                                                                     + (empty cc.attrs.pbi.billItemFinanceDetails.freeQuantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.freeQuantity))}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </div>
+                                                    <div class="text-muted">Revenue</div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="fw-bold text-warning">
+                                                        <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalCost}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </div>
+                                                    <div class="text-muted">Total Cost</div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="fw-bold text-primary">
+                                                        <h:outputText
+                                                            value="#{(cc.attrs.pbi.billItemFinanceDetails.retailSaleRate
+                                                                     * ((empty cc.attrs.pbi.billItemFinanceDetails.quantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.quantity)
+                                                                     + (empty cc.attrs.pbi.billItemFinanceDetails.freeQuantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.freeQuantity)))
+                                                                     - cc.attrs.pbi.billItemFinanceDetails.totalCost}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </div>
+                                                    <div class="text-muted">Gross Profit</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Comprehensive Calculation -->
+                                    <div class="row mt-2">
+                                        <div class="col-12">
+                                            <div class="card bg-light border-0">
+                                                <div class="card-body py-2">
+                                                    <!-- Profit Margin Formula -->
+                                                    <div class="mb-2">
+                                                        <div class="fw-bold text-center text-primary mb-1">Profit Margin Formula</div>
+                                                        <div class="bg-white p-2 rounded text-center small">
+                                                            <strong>Profit Margin % = (Total Revenue - Total Cost) ÷ Total Cost × 100</strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Cost Calculation -->
+                                                    <div class="mb-2">
+                                                        <div class="fw-bold text-center text-secondary mb-1">Cost Calculation</div>
+                                                        <div class="bg-white p-2 rounded text-center small">
+                                                            <span class="text-primary">
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText> × 
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}">
+                                                                    <f:convertNumber pattern="#,##0.0"/>
+                                                                </h:outputText>
+                                                            </span> - 
+                                                            <span class="text-warning">
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </span> + Bill Adjustments = 
+                                                            <span class="text-danger fw-bold">
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalCost}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Revenue Calculation -->
+                                                    <div class="mb-2">
+                                                        <div class="fw-bold text-center text-success mb-1">Revenue Calculation</div>
+                                                        <div class="bg-white p-2 rounded text-center small">
+                                                            <span class="text-success">
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText> × (
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}">
+                                                                    <f:convertNumber pattern="#,##0.0"/>
+                                                                </h:outputText> + 
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantity}">
+                                                                    <f:convertNumber pattern="#,##0.0"/>
+                                                                </h:outputText>)
+                                                            </span> = 
+                                                            <span class="text-success fw-bold">
+                                                                <h:outputText
+                                                                    value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate
+                                                                             * ((empty cc.attrs.pbi.billItemFinanceDetails.quantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.quantity)
+                                                                             + (empty cc.attrs.pbi.billItemFinanceDetails.freeQuantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.freeQuantity))}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Final Calculation -->
+                                                    <div class="border-top pt-2">
+                                                        <div class="fw-bold text-center text-primary mb-1">Final Calculation</div>
+                                                        <div class="bg-primary text-white p-2 rounded text-center">
+                                                            <strong>
+                                                                (
+                                                                <h:outputText
+                                                                    value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate
+                                                                             * ((empty cc.attrs.pbi.billItemFinanceDetails.quantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.quantity)
+                                                                             + (empty cc.attrs.pbi.billItemFinanceDetails.freeQuantity ? 0 : cc.attrs.pbi.billItemFinanceDetails.freeQuantity))}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText> - 
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalCost}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                                ) ÷ 
+                                                                <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.totalCost}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText> × 100 = 
+                                                                <span class="h5">
+                                                                    <h:outputText value="#{cc.attrs.pbi.billItemFinanceDetails.profitMargin}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>%
+                                                                </span>
+                                                            </strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
             </p:tab>
         </p:tabView>
-
-
+        </div>
+        
     </cc:implementation>
 </html>
