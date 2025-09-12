@@ -1290,7 +1290,7 @@ public class ChannelService {
         }
 
         if (institution != null) {
-            sql += "and bill.instition = :ins ";
+            sql += "and bill.institution = :ins ";
             params.put("ins", institution);
         }
 
@@ -1379,6 +1379,7 @@ public class ChannelService {
                                     break;
                             }
                         }
+                        break;
                     case Agent:
                         summeryDto.setAgentTotal(summeryDto.getAgentTotal() + dto.getTotalAppoinmentFee());
                         break;
@@ -1473,6 +1474,7 @@ public class ChannelService {
                                 break;
                         }
                     }
+                    break;
 
                 case Agent:
                     newSummery.setAgentTotal(newSummery.getAgentTotal() + dto.getTotalAppoinmentFee());
