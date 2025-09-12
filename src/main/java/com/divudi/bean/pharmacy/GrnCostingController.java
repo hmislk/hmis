@@ -2807,13 +2807,15 @@ public class GrnCostingController implements Serializable {
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-//            if (orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
-//                System.out.println("VALIDATION FAILED: Free quantity exceeded for " + grnItem.getItem().getName());
-//                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
-//                        + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
-//                        + ", Already received free: " + previouslyReceivedFreeQty
-//                        + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
-//            }
+            // Feature flag controlled free quantity validation
+            boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
+            if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
+                System.out.println("VALIDATION FAILED: Free quantity exceeded for " + grnItem.getItem().getName());
+                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
+                        + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
+                        + ", Already received free: " + previouslyReceivedFreeQty
+                        + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
+            }
         }
 
         System.out.println("GRN quantity validation passed for all items");

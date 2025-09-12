@@ -257,6 +257,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentBillItem = null;
         // Calculate bill totals using internal methods
         calculateBillTotalsFromItems();
+        
+        // Distribute bill-level adjustments proportionally to line items
+        distributeProportionalBillValuesToItems();
+        
+        // Recalculate profit margins after distributions have been applied
+        recalculateProfitMarginsForAllItems();
 
 //        calulateTotalsWhenAddingItemsOldMethod();
     }
