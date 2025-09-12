@@ -17,24 +17,23 @@
                     <p:growl id="panelErrorMsg"/>
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
                         <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
-                        <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}">
-                            <h:panelGroup  class="mx-4">
-                                <p:outputLabel value="Counter" ></p:outputLabel>
-                                <p:selectOneMenu class="mx-2" value="#{pharmacySaleController.counter}" >
-                                    <f:selectItem itemLabel="Any" ></f:selectItem>
-                                    <f:selectItems
-                                        value="#{sessionController.loggableSubDepartments}"
-                                        var="c"
-                                        itemLabel="#{c.name}"
-                                        itemValue="#{c}" >
-                                    </f:selectItems>
-                                </p:selectOneMenu>
-                            </h:panelGroup>
-                        </p:panel>
+
                         <p:panel>
-                            <f:facet name="header" >
+                            <f:facet id="panelHeader" name="header" >
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" />
+                                    <h:outputLabel value="Pharmacy Retail Bill For Cashier - 1" />
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}" class="d-flex align-items-center">
+                                        <p:outputLabel value="Counter" class="me-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{pharmacySaleController.counter}" >
+                                            <f:selectItem itemLabel="Any" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{sessionController.loggableSubDepartments}"
+                                                var="c"
+                                                itemLabel="#{c.name}"
+                                                itemValue="#{c}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             value="Back"
@@ -64,8 +63,6 @@
                                             class="ui-button-success"
                                             >
                                         </p:commandButton>
-
-
                                     </div>
                                 </div>
 
