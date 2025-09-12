@@ -246,7 +246,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="COST VALUE" width="5em">
-                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate * bi.qty}" >
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate * bi.billItemFinanceDetails.quantityByUnits}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
