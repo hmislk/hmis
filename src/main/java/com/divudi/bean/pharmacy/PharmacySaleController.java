@@ -1970,6 +1970,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @EJB
     private ConfigOptionFacade configOptionFacade;
 
+    public String settlePreBillAndNavigateToPrint() {
+        settlePreBill();
+        return navigateToSaleBillForCashierPrint();
+    }
+    
+    public String navigateToSaleBillForCashierPrint(){
+        return "/pharmacy/printing/retail_sale_for_cashier?faces-redirect=true";
+    }
+    
     public void settlePreBill() {
         configOptionFacade.flush();
         editingQty = null;

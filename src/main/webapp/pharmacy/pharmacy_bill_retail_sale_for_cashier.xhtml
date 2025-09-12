@@ -8,18 +8,13 @@
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:tkn="http://xmlns.jcp.org/jsf/composite/pharmacy">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form id="bill" >
-
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />
                     <p:growl id="panelErrorMsg"/>
-
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
                         <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
                         <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}">
@@ -65,7 +60,7 @@
                                             icon="fas fa-check"
                                             onclick="if (!confirm('Are you sure?'))
                                                         return false"
-                                            action="#{pharmacySaleController.settlePreBill()}"
+                                            action="#{pharmacySaleController.settlePreBillAndNavigateToPrint()}"
                                             class="ui-button-success"
                                             >
                                         </p:commandButton>
