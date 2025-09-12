@@ -21,6 +21,7 @@
                                              class="ui-button-success m-1" 
                                              icon="fas fa-check" 
                                              disabled="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                             onclick="return confirm('Are you sure you want to approve this purchase order? This action cannot be undone.');"
                                              action="#{purchaseOrderController.approve}">
                             </p:commandButton>
                             <p:commandButton ajax="false"  
