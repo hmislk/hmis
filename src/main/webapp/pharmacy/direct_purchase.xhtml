@@ -399,14 +399,16 @@
                                         update="@none">
                                         <i class="fas fa-info-circle" />
                                     </p:commandLink>
-                                    <p:dialog id="dialog"
-                                              widgetVar="dialog#{i}"
-                                              header="Details"
-                                              modal="true"
-                                              closable="true"
-                                              resizable="false"
-                                              class="w-75"
-                                              dynamic="true">
+                                    <p:dialog 
+                                        id="dialog"
+                                        position="top"
+                                        widgetVar="dialog#{i}"
+                                        header="Details"
+                                        modal="true"
+                                        closable="true"
+                                        resizable="false"
+                                        class="w-75"
+                                        dynamic="true">
                                         <ph:bill_item_finance_details pbi="#{ph}"/>
                                     </p:dialog>
                                 </p:column>
@@ -464,7 +466,7 @@
                                 <p:column headerText="Profit %"  styleClass="text-end">
                                     <h:outputText
                                         id="profMargin"
-                                        value="#{pharmacyDirectPurchaseController.calculateProfitMargin(ph)}"
+                                        value="#{ph.billItemFinanceDetails.profitMargin}"
                                         styleClass="#{pharmacyDirectPurchaseController.isProfitMarginExcessive(ph) ? 'ui-messages-fatal' : ''}">
                                         <f:convertNumber pattern="0.0" />
                                     </h:outputText>

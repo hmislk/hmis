@@ -451,8 +451,10 @@
 
                                     <p:tab title="Adjustment Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Adjustment Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-vice adjustments')}" class="w-100" value="Item-vice adjustments" 
-                                                             action="pharmacy_report_adjustment_bill_item?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-vice adjustments', true)}" class="w-100" value="Item-wise adjustments" 
+                                                             action="/pharmacy/pharmacy_report_adjustment_bill_item?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiry adjustments', true)}" class="w-100" value="Expiry adjustments" 
+                                                             action="/pharmacy/pharmacy_report_adjustment_expiry_date?faces-redirect=true" ajax="false" />
                                         </div>
                                     </p:tab>
 
