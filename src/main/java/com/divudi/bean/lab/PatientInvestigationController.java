@@ -2198,7 +2198,7 @@ public class PatientInvestigationController implements Serializable {
         
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Bill is Already cancelled");
                 return;
             }
             
@@ -2208,7 +2208,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (canRetrievingSamples.isEmpty()) {
-            JsfUtil.addErrorMessage("There are no suitable samples to be Retrieving from the selected samples.");
+            JsfUtil.addErrorMessage("There are no suitable samples to retrieve from the selected samples.");
             return;
         }
 
@@ -2247,6 +2247,7 @@ public class PatientInvestigationController implements Serializable {
         // Update patient investigations and collect associated bills
         for (PatientInvestigation tptix : receivedPtixs.values()) {
             tptix.setStatus(PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING);
+            tptix.setOutsourced(false);
             tptix.setOutsourcedInstitution(null);
             tptix.setOutsourcedDepartment(null);
             tptix.setOutsourcedUser(null);
