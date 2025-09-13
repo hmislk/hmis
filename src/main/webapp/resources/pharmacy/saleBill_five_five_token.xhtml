@@ -9,8 +9,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
-        <cc:attribute name="duplicate" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -44,9 +44,9 @@
                 <h:outputLabel value="-------------------------------------------------------------------------------"   />                           
             </div>
 
-            <h:panelGroup rendered="#{not empty tokenController.findPharmacyTokens(cc.attrs.bill)}">
+            <h:panelGroup rendered="#{not empty pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill)}">
                 <div class="billline">
-                    <h:outputLabel value="#{tokenController.findPharmacyTokens(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
+                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
                 </div>
             </h:panelGroup>  
 

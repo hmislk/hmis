@@ -58,6 +58,11 @@
 
 ## Icon Usage
 
+### Icon Priority and Sources
+1. **PrimeFaces Icons (Primary)**: Always check PrimeFaces icon library first
+2. **Font Awesome (Secondary)**: Use Font Awesome icons when suitable PrimeFaces icons are not available
+3. **Consistency**: Once an icon is chosen for a data type/action, use it consistently across the application
+
 ### Financial/Currency Icons (Neutral)
 - `fa-coins` - For monetary values, amounts
 - `fa-money-bill` - For payment amounts, totals
@@ -65,10 +70,12 @@
 
 ### Action Icons
 - `fa-edit` - For edit actions
+- `fa-eye` - For view/preview actions
 - `fa-check-circle` - For approval/finalize actions  
 - `fa-check-double` - For completed/finalized status
 - `fa-search` - For search actions
-- `fa-ban` - For cancelled/blocked status
+- `fa-times-circle` - For cancelled/blocked status
+- `fa-undo` - For refund/reverse actions
 
 ### Data Type Icons  
 - `fa-calendar-alt` - For date fields
@@ -95,6 +102,47 @@
 - **Alert classes**: Use PrimeFaces messages/growl components
 - **Modal classes**: Use PrimeFaces dialog components
 
+## Theme and Styling Priority
+
+### 1. PrimeFaces (Primary)
+- **First choice**: Always try to use PrimeFaces themes, styles, and components
+- **Headers/Footers**: Use PrimeFaces headers and footers instead of HTML heading tags
+- **Color classes**: Prefer PrimeFaces color classes for consistent theming
+- **Component styling**: Use PrimeFaces-native styling attributes
+
+### 2. Bootstrap (Secondary) 
+- **Layout utilities**: Use Bootstrap for layout (rows, cols, flexbox utilities)
+- **Spacing utilities**: Use Bootstrap spacing classes (mb-3, mt-2, p-2, etc.)
+- **Fallback styling**: Only when PrimeFaces classes cannot achieve the desired result
+- **Grid system**: Primary choice for responsive layouts
+- **Content alignment**: Mainly use Bootstrap for aligning contents like rows and columns
+
+### 3. Custom Styles (Last Resort)
+- **Minimize usage**: Avoid custom styles as much as possible
+- **Location**: Use `\src\main\webapp\resources\css\ohmis.css` for custom classes when absolutely necessary
+- **Avoid inline styles**: Minimize use of inline styles - prefer CSS classes
+- **Theme-compatible**: Ensure custom styles work with PrimeFaces theme changes
+
+### 4. Color Guidelines
+- **Default colors first**: Try to use default PrimeFaces theme colors
+- **Bootstrap fallback**: If PrimeFaces colors don't work, use Bootstrap color utilities
+- **Theme-based approach**: Since we use PrimeFaces themes, colors should be theme-compatible
+- **Consistency**: Maintain color consistency across the application
+
+## Typography Guidelines (ERP-Focused)
+
+### Font Sizing Philosophy
+- **Avoid multiple font sizes**: This is a web application, not a website
+- **Visual appeal**: Multiple size fonts are not visually appealing in ERP systems
+- **Uniform appearance**: Maintain consistent text sizing for professional look
+- **Business focus**: Text should support functionality, not dominate the interface
+
+### Header Alternatives
+- **No HTML headers**: Avoid h1, h2, h3, h4, h5, h6 tags
+- **PrimeFaces headers**: Use PrimeFaces panel headers and component headers
+- **h:outputText approach**: Use `<h:outputText>` with appropriate CSS classes for headings
+- **Consistent styling**: Maintain uniform text appearance across modules
+
 ## Best Practices
 
 1. **Consistency**: Use the same icon for the same data type across all pages
@@ -102,6 +150,9 @@
 3. **PrimeFaces First**: Prefer PrimeFaces components and classes over Bootstrap alternatives
 4. **Theme Compatibility**: Ensure styling works with different PrimeFaces themes
 5. **Responsive Design**: Use Bootstrap grid system for responsive layouts
+6. **Minimize Custom CSS**: Use existing PrimeFaces/Bootstrap classes before creating custom styles
+7. **Theme-Based Colors**: Stick to theme-compatible colors for consistent appearance
+8. **Professional Typography**: Avoid website-style typography in favor of business application standards
 
 ## Common Patterns
 
@@ -135,6 +186,48 @@
             icon="fas fa-edit" />
     </p:column>
 </p:dataTable>
+```
+
+### Vertical Action Button Groups
+```xhtml
+<p:column id="colActions" headerText="Actions">
+    <div class="btn-group-vertical" role="group" style="width: 100%;">
+        <p:commandButton 
+            value="Pre Bill" 
+            action="#{controller.action}"
+            styleClass="ui-button-success btn-sm"
+            icon="fa fa-eye"
+            style="margin-bottom: 2px;">
+        </p:commandButton>
+        
+        <p:commandButton 
+            value="Paid Bill" 
+            rendered="#{condition}"
+            action="#{controller.action}"
+            styleClass="ui-button-info btn-sm"
+            icon="fa fa-check-circle"
+            style="margin-bottom: 2px;">
+        </p:commandButton>
+
+        <p:commandButton 
+            value="Cancelled" 
+            action="#{controller.action}" 
+            styleClass="ui-button-danger btn-sm"
+            icon="fa fa-times-circle"
+            rendered="#{condition}"
+            style="margin-bottom: 2px;">
+        </p:commandButton>
+
+        <p:commandButton 
+            value="Refunded" 
+            action="#{controller.action}" 
+            styleClass="ui-button-warning btn-sm"
+            icon="fa fa-undo"
+            rendered="#{condition}"
+            style="margin-bottom: 2px;">
+        </p:commandButton>
+    </div>
+</p:column>
 ```
 
 ## Page Structure Guidelines
