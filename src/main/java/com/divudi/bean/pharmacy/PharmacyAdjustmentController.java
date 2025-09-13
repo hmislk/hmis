@@ -45,6 +45,7 @@ import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.service.pharmacy.StockSearchService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -153,8 +154,15 @@ public class PharmacyAdjustmentController implements Serializable {
         return fromDepartment;
     }
 
+    public String navigateToViewReportOnItemviceAdjustments(){
+        if(fromDepartment==null){
+            fromDepartment = sessionController.getDepartment();
+        }
+        return "/pharmacy/pharmacy_report_adjustment_bill_item?faces-redirect=true";
+    }
+    
     public void fillDepartmentAdjustmentByBillItem() {
-        billItems = fetchBillItems(BillType.PharmacyAdjustment);
+        billItems = fetchBillItemsForAllAdjustmentTypes();
     }
 
     public void fillExpiryDateAdjustmentReport() {
@@ -223,6 +231,40 @@ public class PharmacyAdjustmentController implements Serializable {
         params.put("amp", amp);
 
         return (List<StockDTO>) getStockFacade().findLightsByJpql(sql, params);
+    }
+
+    public List<BillItem> fetchBillItemsForAllAdjustmentTypes() {
+        List<BillItem> billItems;
+        List<BillType> adjustmentBillTypes = Arrays.asList(
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyAdjustmentDepartmentStock,
+            BillType.PharmacyAdjustmentDepartmentSingleStock,
+            BillType.PharmacyAdjustmentStaffStock,
+            BillType.PharmacyAdjustmentSaleRate,
+            BillType.PharmacyAdjustmentWholeSaleRate,
+            BillType.PharmacyAdjustmentPurchaseRate,
+            BillType.PharmacyAdjustmentExpiryDate
+        );
+
+        Map m = new HashMap();
+        String sql = "select bi from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType in :billTypes ";
+
+        if (fromDepartment != null) {
+            sql += " and bi.bill.department=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        sql += " order by bi.id";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("billTypes", adjustmentBillTypes);
+
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return billItems;
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
