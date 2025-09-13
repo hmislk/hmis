@@ -1686,7 +1686,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
-        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {

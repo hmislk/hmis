@@ -1826,17 +1826,15 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
-        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier") || configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
-                    if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
-                        Token saleForCashierToken = tokenController.findPharmacyTokenSaleForCashier(getPreBill(), TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-                        if (saleForCashierToken == null) {
-                            settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-                        }
-                        markInprogress();
+                    Token saleForCashierToken = tokenController.findPharmacyTokenSaleForCashier(getPreBill(), TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                    if (saleForCashierToken == null) {
+                        settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
                     }
+                    markInprogress();
 
                 } else if (t != null) {
                     markToken();

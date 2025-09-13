@@ -33,7 +33,6 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean nativePrinters;
     
     // Feature Settings
-    private boolean createToken;
     private boolean enableTokenSystem;
     private boolean tenderedAmount;
     private boolean showItemsSummary;
@@ -65,7 +64,6 @@ public class PharmacyRetailConfigController implements Serializable {
         nativePrinters = configOptionApplicationController.getBooleanValueByKey("Pharmacy Bill Support for Native Printers", false);
         
         // Feature Settings
-        createToken = configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier", false);
         enableTokenSystem = configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false);
         tenderedAmount = configOptionApplicationController.getBooleanValueByKey("Allow Tendered Amount for pharmacy sale for cashier", false);
         showItemsSummary = configOptionApplicationController.getBooleanValueByKey("Pharmacy Analytics - Show Single Items Summary", false);
@@ -96,7 +94,6 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionApplicationController.setBooleanValueByKey("Pharmacy Bill Support for Native Printers", nativePrinters);
             
             // Feature Settings
-            configOptionApplicationController.setBooleanValueByKey("Create Token At Pharmacy Sale For Cashier", createToken);
             configOptionApplicationController.setBooleanValueByKey("Enable token system in sale for cashier", enableTokenSystem);
             configOptionApplicationController.setBooleanValueByKey("Allow Tendered Amount for pharmacy sale for cashier", tenderedAmount);
             configOptionApplicationController.setBooleanValueByKey("Pharmacy Analytics - Show Single Items Summary", showItemsSummary);
@@ -184,14 +181,6 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setNativePrinters(boolean nativePrinters) {
         this.nativePrinters = nativePrinters;
-    }
-
-    public boolean isCreateToken() {
-        return createToken;
-    }
-
-    public void setCreateToken(boolean createToken) {
-        this.createToken = createToken;
     }
 
     public boolean isEnableTokenSystem() {
