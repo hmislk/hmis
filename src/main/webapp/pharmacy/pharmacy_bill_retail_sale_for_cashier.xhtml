@@ -16,12 +16,13 @@
                     <p:defaultCommand  target="btnAdd" />
                     <p:growl id="panelErrorMsg"/>
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
-                        <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
-
+                        
                         <p:panel>
                             <f:facet id="panelHeader" name="header" >
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h:outputLabel value="Pharmacy Retail Bill For Cashier - 1" />
+                                    <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 36px; color: purple; "></i>
+
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}" class="d-flex align-items-center">
                                         <p:outputLabel value="Counter" class="me-2"></p:outputLabel>
                                         <p:selectOneMenu value="#{pharmacySaleController.counter}" >
@@ -50,6 +51,14 @@
                                             ajax="false"
                                             actionListener="#{pharmacySaleController.resetAll}"
                                             class="ui-button-warning" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary"
+                                            type="button"
+                                            onclick="PF('configDialog').show();" >
                                         </p:commandButton>
 
                                         <p:commandButton
@@ -638,7 +647,199 @@
                     </p:panel>
                 </h:form>
 
-
+                <!-- Configuration Dialog -->
+                <p:dialog id="configDialog" 
+                         header="Pharmacy Retail Sale Configuration" 
+                         widgetVar="configDialog" 
+                         modal="true" 
+                         width="900" 
+                         height="600"
+                         resizable="true" 
+                         maximizable="true"
+                         closeOnEscape="true">
+                    
+                    <f:event type="preRenderView" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" />
+                    
+                    <h:form id="configForm">
+                        <p:tabView id="configTabs">
+                            
+                            <!-- Paper Settings Tab -->
+                            <p:tab title="Paper &amp; Print Settings">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Bill Paper Types</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="posPaper"
+                                                value="#{pharmacyRetailConfigController.posPaper}" />
+                                            <p:outputLabel for="posPaper" value="POS Paper" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="fiveFivePaper"
+                                                value="#{pharmacyRetailConfigController.fiveFivePaper}" />
+                                            <p:outputLabel for="fiveFivePaper" value="FiveFive Paper (No Header)" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="posHeaderPaper"
+                                                value="#{pharmacyRetailConfigController.posHeaderPaper}" />
+                                            <p:outputLabel for="posHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="custom1Paper"
+                                                value="#{pharmacyRetailConfigController.custom1Paper}" />
+                                            <p:outputLabel for="custom1Paper" value="Custom Format 1" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="custom2Paper"
+                                                value="#{pharmacyRetailConfigController.custom2Paper}" />
+                                            <p:outputLabel for="custom2Paper" value="Custom Format 2" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="custom3Paper"
+                                                value="#{pharmacyRetailConfigController.custom3Paper}" />
+                                            <p:outputLabel for="custom3Paper" value="Custom Format 3" class="ms-2" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h5>Token Settings</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="tokenFiveFive"
+                                                value="#{pharmacyRetailConfigController.tokenFiveFivePaper}" />
+                                            <p:outputLabel for="tokenFiveFive" value="Token - FiveFive Paper with Header Space" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="tokenPosPaper"
+                                                value="#{pharmacyRetailConfigController.tokenPosPaper}" />
+                                            <p:outputLabel for="tokenPosPaper" value="Token - POS Paper" class="ms-2" />
+                                        </div>
+                                        
+                                        <h5 class="mt-4">Print Support</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="nativePrinters"
+                                                value="#{pharmacyRetailConfigController.nativePrinters}" />
+                                            <p:outputLabel for="nativePrinters" value="Enable Native Printer Support" class="ms-2" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:tab>
+                            
+                            <!-- Features Tab -->
+                            <p:tab title="Features &amp; Functions">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Token System</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="createToken"
+                                                value="#{pharmacyRetailConfigController.createToken}" />
+                                            <p:outputLabel for="createToken" value="Create Token at Sale" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="enableTokenSystem"
+                                                value="#{pharmacyRetailConfigController.enableTokenSystem}" />
+                                            <p:outputLabel for="enableTokenSystem" value="Enable Token System" class="ms-2" />
+                                        </div>
+                                        
+                                        <h5 class="mt-4">Payment Options</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="tenderedAmount"
+                                                value="#{pharmacyRetailConfigController.tenderedAmount}" />
+                                            <p:outputLabel for="tenderedAmount" value="Allow Tendered Amount Entry" class="ms-2" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h5>Analytics &amp; Display</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="showItemsSummary"
+                                                value="#{pharmacyRetailConfigController.showItemsSummary}" />
+                                            <p:outputLabel for="showItemsSummary" value="Show Single Items Summary" class="ms-2" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:tab>
+                            
+                            <!-- Paper Configuration Tab -->
+                            <p:tab title="Specific Paper Settings">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Cashier Specific Settings</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="cashierBillPos"
+                                                value="#{pharmacyRetailConfigController.cashierBillPos}" />
+                                            <p:outputLabel for="cashierBillPos" value="Cashier Bill - POS Paper" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="cashierBillCustom3"
+                                                value="#{pharmacyRetailConfigController.cashierBillCustom3}" />
+                                            <p:outputLabel for="cashierBillCustom3" value="Cashier Bill - FiveFive Custom 3" class="ms-2" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="cashierTokenPos"
+                                                value="#{pharmacyRetailConfigController.cashierTokenPos}" />
+                                            <p:outputLabel for="cashierTokenPos" value="Cashier Token - POS Paper" class="ms-2" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h5>General Bill Settings</h5>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="posHeaderPaperGeneral"
+                                                value="#{pharmacyRetailConfigController.posHeaderPaperGeneral}" />
+                                            <p:outputLabel for="posHeaderPaperGeneral" value="General Bill - POS Header Paper" class="ms-2" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <p:messages id="configMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <p:commandButton 
+                                                value="Apply &amp; Close" 
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                action="#{pharmacyRetailConfigController.saveConfig}"
+                                                update="configMessages"
+                                                oncomplete="PF('configDialog').hide();" />
+                                            <p:commandButton 
+                                                value="Cancel" 
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('configDialog').hide(); return false;" 
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:tab>
+                        </p:tabView>
+                    </h:form>
+                </p:dialog>
 
             </ui:define>
         </ui:composition>
