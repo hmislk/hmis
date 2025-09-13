@@ -3,7 +3,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
-import javax.enterprise.context.RequestScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import java.io.Serializable;
 
@@ -13,11 +13,17 @@ import java.io.Serializable;
  * @author Claude Code Assistant
  */
 @Named
-@RequestScoped
+@ViewScoped
 public class PharmacyRetailConfigController implements Serializable {
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    
+    @Inject
+    private com.divudi.bean.common.ConfigOptionController configOptionController;
+    
+    @Inject
+    private com.divudi.bean.common.SessionController sessionController;
 
     // Paper Type Settings
     private boolean posPaper;
@@ -45,34 +51,35 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public PharmacyRetailConfigController() {
     }
+    
 
     /**
-     * Load current configuration values from the application options
+     * Load current configuration values from the department-specific options
      */
     public void loadCurrentConfig() {
         // Paper Type Settings
-        posPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", true);
-        fiveFivePaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", true);
-        posHeaderPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", true);
-        custom1Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", true);
-        custom2Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 2", true);
-        custom3Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 3", true);
+        posPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", true);
+        fiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", true);
+        posHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", true);
+        custom1Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", true);
+        custom2Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 2", true);
+        custom3Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 3", true);
         
         // Token Settings
-        tokenFiveFivePaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", true);
-        tokenPosPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", true);
-        nativePrinters = configOptionApplicationController.getBooleanValueByKey("Pharmacy Bill Support for Native Printers", false);
+        tokenFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", true);
+        tokenPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", true);
+        nativePrinters = configOptionController.getBooleanValueByKey("Pharmacy Bill Support for Native Printers", false);
         
         // Feature Settings
-        enableTokenSystem = configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false);
-        tenderedAmount = configOptionApplicationController.getBooleanValueByKey("Allow Tendered Amount for pharmacy sale for cashier", false);
-        showItemsSummary = configOptionApplicationController.getBooleanValueByKey("Pharmacy Analytics - Show Single Items Summary", false);
+        enableTokenSystem = configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false);
+        tenderedAmount = configOptionController.getBooleanValueByKey("Allow Tendered Amount for pharmacy sale for cashier", false);
+        showItemsSummary = configOptionController.getBooleanValueByKey("Pharmacy Analytics - Show Single Items Summary", false);
         
         // Cashier Specific Settings
-        cashierBillPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", false);
-        cashierBillCustom3 = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", false);
-        cashierTokenPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for Cashier Token Bill is Pos paper", false);
-        posHeaderPaperGeneral = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", true);
+        cashierBillPos = configOptionController.getBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", false);
+        cashierBillCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", false);
+        cashierTokenPos = configOptionController.getBooleanValueByKey("Pharmacy Sale for Cashier Token Bill is Pos paper", false);
+        posHeaderPaperGeneral = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", true);
     }
 
     /**
@@ -81,30 +88,34 @@ public class PharmacyRetailConfigController implements Serializable {
     public void saveConfig() {
         try {
             // Paper Type Settings
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", posPaper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", fiveFivePaper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", posHeaderPaper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", custom1Paper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 2", custom2Paper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 3", custom3Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", posPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", fiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", posHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", custom1Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 2", custom2Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 3", custom3Paper);
             
             // Token Settings
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", tokenFiveFivePaper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", tokenPosPaper);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Bill Support for Native Printers", nativePrinters);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", tokenFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", tokenPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Bill Support for Native Printers", nativePrinters);
             
             // Feature Settings
-            configOptionApplicationController.setBooleanValueByKey("Enable token system in sale for cashier", enableTokenSystem);
-            configOptionApplicationController.setBooleanValueByKey("Allow Tendered Amount for pharmacy sale for cashier", tenderedAmount);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Analytics - Show Single Items Summary", showItemsSummary);
+            configOptionController.setBooleanValueByKey("Enable token system in sale for cashier", enableTokenSystem);
+            configOptionController.setBooleanValueByKey("Allow Tendered Amount for pharmacy sale for cashier", tenderedAmount);
+            configOptionController.setBooleanValueByKey("Pharmacy Analytics - Show Single Items Summary", showItemsSummary);
             
             // Cashier Specific Settings
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", cashierBillPos);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", cashierBillCustom3);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for Cashier Token Bill is Pos paper", cashierTokenPos);
-            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", posHeaderPaperGeneral);
+            configOptionController.setBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", cashierBillPos);
+            configOptionController.setBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", cashierBillCustom3);
+            configOptionController.setBooleanValueByKey("Pharmacy Sale for Cashier Token Bill is Pos paper", cashierTokenPos);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", posHeaderPaperGeneral);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
+            
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+            
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving configuration: " + e.getMessage());
         }

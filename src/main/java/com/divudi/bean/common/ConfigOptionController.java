@@ -92,6 +92,16 @@ public class ConfigOptionController implements Serializable {
         return configOptionApplicationController.getBooleanValueByKey(departmentName + " - " + key, defaultValue);
     }
 
+    public void setBooleanValueByKey(String key, boolean value) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+            configOptionApplicationController.setBooleanValueByKey(departmentName + " - " + key, value);
+        } else {
+            configOptionApplicationController.setBooleanValueByKey(key, value);
+        }
+    }
+
     public String navigateToDepartmentOptions() {
         institution = null;
         department = sessionController.getDepartment();
