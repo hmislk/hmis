@@ -23,7 +23,7 @@
                                     <h:outputLabel value="Pharmacy Retail Bill For Cashier - 1" />
                                     <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 36px; color: purple; "></i>
 
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" class="d-flex align-items-center">
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}" class="d-flex align-items-center">
                                         <p:outputLabel value="Counter" class="me-2"></p:outputLabel>
                                         <p:selectOneMenu value="#{pharmacySaleController.counter}" >
                                             <f:selectItem itemLabel="Any" ></f:selectItem>
