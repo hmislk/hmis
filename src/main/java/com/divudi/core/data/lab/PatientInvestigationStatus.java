@@ -31,7 +31,8 @@ public enum PatientInvestigationStatus {
     SAMPLE_RECOLLECTION_PENDING("Sample Recollection Pending"),
     SAMPLE_RECOLLECTION_COMPLETE("Sample Recollection Completed"),
     SAMPLE_REGENERATED("Barcode Regenerated"),
-    SEPARATE_AND_SAMPLE_GENERATED("Separate and Barcode Generated");
+    SEPARATE_AND_SAMPLE_GENERATED("Separate and Barcode Generated"),
+    SENT_SAMPLE_RETRIEVING("Retrieving the sent sample");
     
     private final String label;
 

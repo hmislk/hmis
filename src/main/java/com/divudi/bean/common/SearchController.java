@@ -8429,12 +8429,7 @@ public class SearchController implements Serializable {
     }
 
     public void addToStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         bill = new Bill();
-
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());
         bill.setCreatedAt(new Date());

@@ -26,6 +26,7 @@ public enum TestHistoryType {
     SAMPLE_ACCEPTED,
     SAMPLE_SENT,
     SAMPLE_SENT_OUT_LAB,
+    SAMPLE_RETRIEVING,
     SAMPLE_REJECTED,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
@@ -74,6 +75,8 @@ public enum TestHistoryType {
                 return "Sample Accepted";
             case SAMPLE_SENT:
                 return "Sample Sent";
+            case SAMPLE_RETRIEVING:
+                return "Receiving the sent sample";
             case SAMPLE_SENT_OUT_LAB:
                 return "Sample Sent to External Lab";
             case SAMPLE_REJECTED:

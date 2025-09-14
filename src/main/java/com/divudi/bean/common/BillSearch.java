@@ -113,6 +113,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -256,6 +257,8 @@ public class BillSearch implements Serializable {
     PurchaseReturnController purchaseReturnController;
     @Inject
     DirectPurchaseReturnController directPurchaseReturnController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
 
     @Inject
     GrnReturnWithCostingController grnReturnWithCostingController;
@@ -3981,7 +3984,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_PRE:
                 return navigateToViewPharmacyPreBill();
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
-                return navigateToViewPharmacySettledPreBill();
+                pharmacySaleController.setPrintBill(bill);
+                return pharmacySaleController.navigateToSaleBillForCashierPrint();
+//                return navigateToViewPharmacySettledPreBill();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -4372,6 +4377,7 @@ public class BillSearch implements Serializable {
         return "/pharmacy/view/pharmacy_pre_bill_view?faces-redirect=true";
     }
 
+    @Deprecated // Use pharmacySaleController.navigateToSaleBillForCashierPrint();
     public String navigateToViewPharmacySettledPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
