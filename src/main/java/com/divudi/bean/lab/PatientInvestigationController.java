@@ -45,6 +45,7 @@ import com.divudi.core.facade.ReportItemFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.dto.SampleDTO;
 import com.divudi.core.data.lab.BillBarcode;
@@ -337,7 +338,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Allow a sample to be separated in any Status. ", true)) {
-            
+
         }
 
         if (getPatientSampleComponents(currentPatientSample).size() == 1) {
@@ -493,6 +494,16 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
+        PatientInvestigationStatus availableStatusforSend = null;
+        if (outLabDepartment.getDepartmentType() == DepartmentType.Lab) {
+            availableStatusforSend = PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB;
+        } else if (outLabDepartment.getDepartmentType() == DepartmentType.External_Lab) {
+            availableStatusforSend = PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB;
+        } else {
+            JsfUtil.addErrorMessage("Out Lab Department is not Valid for Send.");
+            return;
+        }
+
         List<PatientSample> canSentOutLabSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
@@ -535,7 +546,7 @@ public class PatientInvestigationController implements Serializable {
             ps.setOutsourcedAt(new Date());
             ps.setInstitution(outLabInstitution);
             ps.setDepartment(outLabDepartment);
-            ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+            ps.setStatus(availableStatusforSend);
             patientSampleFacade.edit(ps);
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
@@ -557,21 +568,25 @@ public class PatientInvestigationController implements Serializable {
             tptix.setOutsourcedUser(sessionController.getLoggedUser());
             tptix.setOutsourcedAt(new Date());
 
-            tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+            tptix.setStatus(availableStatusforSend);
             getFacade().edit(tptix);
             sampleBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
 
         // Update Bills
         for (Bill tb : sampleBills.values()) {
-            tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+            tb.setStatus(availableStatusforSend);
             billFacade.edit(tb);
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : canSentOutLabSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                    labTestHistoryController.addSampleOutLabSentHistory(pi, ps, sampleTransportedToLabByStaff, sessionController.getDepartment(), outLabDepartment);
+                    if (outLabDepartment.getDepartmentType() == DepartmentType.Lab) {
+                        labTestHistoryController.addSampleInternalLabSentHistory(pi, ps, sampleTransportedToLabByStaff, sessionController.getDepartment(), outLabDepartment);
+                    } else{
+                        labTestHistoryController.addSampleOutLabSentHistory(pi, ps, sampleTransportedToLabByStaff, sessionController.getDepartment(), outLabDepartment);
+                    }
                 }
             }
         }
