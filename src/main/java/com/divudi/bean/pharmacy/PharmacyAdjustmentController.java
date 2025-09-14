@@ -98,6 +98,8 @@ public class PharmacyAdjustmentController implements Serializable {
     private ItemBatchFacade itemBatchFacade;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
+    @EJB
+    private com.divudi.core.facade.StaffFacade staffFacade;
     @Inject
     private BillService billService;
     @Inject
@@ -149,6 +151,10 @@ public class PharmacyAdjustmentController implements Serializable {
     private StockDTO selectedCostRateStockDto;
 
     private boolean printPreview;
+    
+    // Staff selection properties
+    private com.divudi.core.entity.Staff selectedStaff;
+    private List<Stock> staffStocks;
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -473,6 +479,42 @@ public class PharmacyAdjustmentController implements Serializable {
 
         return items;
     }
+    
+    public List<com.divudi.core.entity.Staff> completeStaff(String qry) {
+        List<com.divudi.core.entity.Staff> staffs;
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select s from Staff s where (s.person.name like :n or s.code like :n) "
+                + "and s.retired = false order by s.person.name";
+        staffs = staffFacade.findByJpql(sql, m, 20);
+        return staffs;
+    }
+    
+    public void listStaffStock() {
+        if (selectedStaff == null) {
+            JsfUtil.addErrorMessage("Please select a staff member first");
+            staffStocks = null;
+            return;
+        }
+        
+        List<Stock> items;
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+        double d = 0.0;
+        m.put("s", d);
+        m.put("staff", selectedStaff);
+        sql = "select i from Stock i where i.stock > :s and i.staff = :staff "
+                + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire, i.stock desc";
+        items = getStockFacade().findByJpql(sql, m);
+        staffStocks = items;
+        
+        if (staffStocks == null || staffStocks.isEmpty()) {
+            JsfUtil.addErrorMessage("No stock found for the selected staff member");
+        } else {
+            JsfUtil.addSuccessMessage(staffStocks.size() + " stock items found for " + selectedStaff.getPerson().getName());
+        }
+    }
 
     public BillItem getBillItem() {
         if (billItem == null) {
@@ -541,9 +583,11 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(toDepartment, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+        getDeptAdjustmentPreBill().setDeptId(deptId);
+        getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentDepartmentStock);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -671,6 +715,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentSaleRate);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -695,6 +740,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentWholeSaleRate);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -2328,6 +2374,24 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setTabIndex(int tabIndex) {
         this.tabIndex = tabIndex;
+    }
+
+    public com.divudi.core.entity.Staff getSelectedStaff() {
+        return selectedStaff;
+    }
+
+    public void setSelectedStaff(com.divudi.core.entity.Staff selectedStaff) {
+        this.selectedStaff = selectedStaff;
+        // Clear staff stocks when staff changes
+        staffStocks = null;
+    }
+
+    public List<Stock> getStaffStocks() {
+        return staffStocks;
+    }
+
+    public void setStaffStocks(List<Stock> staffStocks) {
+        this.staffStocks = staffStocks;
     }
 
 }
