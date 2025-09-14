@@ -2094,6 +2094,7 @@ public class PharmacyReportController implements Serializable {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
@@ -4091,6 +4092,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
 
             Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
             cogsRows.put("Drug Return Op", opDrugReturns);
