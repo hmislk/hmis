@@ -331,12 +331,15 @@ public class PatientInvestigationController implements Serializable {
             return "";
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Allow a sample to be separated in any Status. ", true)) {
-            if (currentPatientSample.getSampleSent() || currentPatientSample.getOutsourced()) {
-                JsfUtil.addErrorMessage("This Sample Already Sent to Laboratory !. ");
-                return "";
-            }
+        if (currentPatientSample.getSampleSent() || currentPatientSample.getOutsourced()) {
+            JsfUtil.addErrorMessage("This Sample Already Sent to Laboratory !. ");
+            return "";
         }
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Allow a sample to be separated in any Status. ", true)) {
+            
+        }
+
         if (getPatientSampleComponents(currentPatientSample).size() == 1) {
             JsfUtil.addErrorMessage("You can't Separate this Sample !. ");
             return "";
@@ -373,7 +376,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("You can't Select All Sample Component !.");
             return "";
         }
-       
+
         currentPatientSample = selectedPatientSamples.get(0);
 
         if (currentPatientSample.getBill().isCancelled()) {
@@ -406,7 +409,7 @@ public class PatientInvestigationController implements Serializable {
         patientSampleFacade.edit(newlyCreatedSeparatePatientSample);
 
         for (PatientSampleComponant psc : selectedPatientSampleComponents) {
-            
+
             // Create new ampleComponant
             PatientSampleComponant newlyCreatedPatientSampleComponant = new PatientSampleComponant();
 
@@ -424,7 +427,7 @@ public class PatientInvestigationController implements Serializable {
             } else {
                 patientSampleComponantFacade.edit(newlyCreatedPatientSampleComponant);
             }
-            
+
             // Update Old ampleComponant
             psc.setSeparated(true);
             patientSampleComponantFacade.edit(psc);
@@ -443,7 +446,6 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(tptix);
         }
 
-        
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             //update Newly Created Sample History
             for (PatientInvestigation pi : getPatientInvestigationsBySample(newlyCreatedSeparatePatientSample)) {
@@ -451,10 +453,10 @@ public class PatientInvestigationController implements Serializable {
             }
             //update old Sample History
             for (PatientSampleComponant psc : selectedPatientSampleComponents) {
-                labTestHistoryController.addSampleSeparate(psc.getPatientInvestigation(), psc.getPatientSample(),comments);
+                labTestHistoryController.addSampleSeparate(psc.getPatientInvestigation(), psc.getPatientSample(), comments);
             }
         }
-        
+
         //final Navigation
         if (configOptionApplicationController.getBooleanValueByKey("Show barcode on Regenerated Patient Samples", false)) {
             regeneratedPatientSamples = new ArrayList<>();
@@ -497,8 +499,8 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            
-            if (! ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+
+            if (!ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
                 JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
                 return;
             }
@@ -506,10 +508,10 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
                 return;
             }
-            
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED 
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED 
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED  
+
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED
+                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED
+                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED
                     || ps.getStatus() == PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING) {
                 canSentOutLabSamples.add(ps);
             }
@@ -1751,7 +1753,7 @@ public class PatientInvestigationController implements Serializable {
         lstToSamle = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
     }
-    
+
     @Deprecated
     public void generateBarcodesForSelectedBills() {
         selectedBillBarcodes = new ArrayList<>();
@@ -1930,7 +1932,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already colleted.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_REGENERATED || ps.getStatus() == PatientInvestigationStatus.SEPARATE_AND_SAMPLE_GENERATED ) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_REGENERATED || ps.getStatus() == PatientInvestigationStatus.SEPARATE_AND_SAMPLE_GENERATED) {
                 canCollectSamples.add(ps);
             }
         }
@@ -2183,7 +2185,7 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples are Received at Lab");
     }
-    
+
     public void retrievingTheSentSampleToLab() {
         System.out.println("retrievingTheSentSampleToLab");
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
@@ -2195,13 +2197,13 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         List<PatientSample> canRetrievingSamples = new ArrayList<>();
-        
+
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already cancelled");
                 return;
             }
-            
+
             if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                 canRetrievingSamples.add(ps);
             }
@@ -2222,14 +2224,14 @@ public class PatientInvestigationController implements Serializable {
             ps.setInstitution(sessionController.getInstitution());
             ps.setDepartment(sessionController.getDepartment());
             ps.setStatus(PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING);
-            
+
             //Update Sample Outsource Data
             ps.setOutsourced(false);
             ps.setOutsourceDepartment(null);
             ps.setOutsourceInstitution(null);
             ps.setOutsourceSentUser(null);
             ps.setOutsourcedAt(null);
-            
+
             //Update Sample Send Data
             ps.setSampleSent(false);
             ps.setSampleSentAt(null);
@@ -2262,7 +2264,7 @@ public class PatientInvestigationController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : canRetrievingSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                    labTestHistoryController.addSampleRetrievingHistory(pi, ps,getComments());
+                    labTestHistoryController.addSampleRetrievingHistory(pi, ps, getComments());
                 }
             }
         }
@@ -2272,7 +2274,7 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING);
             billFacade.edit(tb);
         }
-        
+
         comments = null;
 
         JsfUtil.addSuccessMessage("The selected samples are returned to the logged-in department.");
@@ -2302,7 +2304,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Rejected");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB){
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
                 return;
             }
@@ -6210,7 +6212,6 @@ public class PatientInvestigationController implements Serializable {
 //                        if (ixi.getSample() == null) {
 //                            continue;
 //                        }
-
                         j = "select ps from PatientSample ps "
                                 + " where ps.tube=:tube "
                                 //                                + " and ps.sample=:sample "
@@ -6685,7 +6686,7 @@ public class PatientInvestigationController implements Serializable {
                 + " and ps.retired=false ";
         m = new HashMap();
         m.put("pts", patientSample);
-        
+
         ptsc = patientSampleComponantFacade.findByJpql(j, m);
         return ptsc;
     }
