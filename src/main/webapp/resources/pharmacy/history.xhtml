@@ -1457,40 +1457,43 @@
 
                 <p:tab title="Direct Purchase" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Direct Purchase Tab', true)}">
 
-                    <p:dataTable styleClass="noBorder" id="dp" value="#{pharmacyController.directPurchase}" var="dd3"
-                                 rows="10" 
-                                 paginator="true"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
+                    <p:dataTable 
+                        styleClass="noBorder" 
+                        id="tblDirectPurchase" 
+                        value="#{pharmacyController.directPurchaseDtos}" var="dd3"
+                        rows="10" 
+                        paginator="true"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="5,10,15">
                         <p:column headerText="Bill No">
-                            #{dd3.bill.deptId}
+                            #{dd3.billDeptId}
                         </p:column>
                         <p:column headerText="Supplier">
-                            #{dd3.bill.fromInstitution.name}
+                            #{dd3.billFromInstitutionName}
                         </p:column>
                         <p:column headerText="Billed By">
-                            #{dd3.bill.creater.webUserPerson.name}
+                            #{dd3.billCreaterName}
                         </p:column>    
                         <p:column headerText="Billed At">
-                            <p:outputLabel value="#{dd3.bill.createdAt}" >
+                            <p:outputLabel value="#{dd3.billCreatedAt}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                             </p:outputLabel>
                         </p:column> 
                         <p:column headerText="Purchase Rate">
-                            #{dd3.pharmaceuticalBillItem.purchaseRate}
+                            #{dd3.purchaseRate}
                         </p:column>    
                         <p:column headerText="Sale Rate">
-                            #{dd3.pharmaceuticalBillItem.retailRate}
+                            #{dd3.retailRate}
                         </p:column>    
                         <p:column headerText="Purchase Qty">
-                            #{dd3.pharmaceuticalBillItem.qty}
+                            #{dd3.qty}
                         </p:column>    
                         <p:column headerText="Free Qty">
-                            #{dd3.pharmaceuticalBillItem.freeQty}
+                            #{dd3.freeQty}
                         </p:column>    
                         <p:column headerText="Purchase Value">
-                            #{-dd3.netValue}
+                            #{-dd3.billNetTotal}
                         </p:column> 
                     </p:dataTable>
                 </p:tab>
