@@ -1197,6 +1197,97 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
+    private void saveRsrAdjustmentBillItems(StockDTO dto, double oldRetailRate, double newRetailRate,
+            double retailRateChange, double changeValue) {
+        BillItem tbi = new BillItem();
+        tbi.setBill(getDeptAdjustmentPreBill());
+        PharmaceuticalBillItem ph = tbi.getPharmaceuticalBillItem();
+
+        // Validate DTO and retrieve entities using IDs
+        if (dto.getStockId() == null || dto.getItemBatchId() == null) {
+            throw new RuntimeException("StockDTO stockId or itemBatchId is null");
+        }
+
+        Stock stockEntity = stockFacade.find(dto.getStockId());
+        if (stockEntity == null) {
+            throw new RuntimeException("Stock not found with ID: " + dto.getStockId());
+        }
+
+        ItemBatch ib = itemBatchFacade.find(dto.getItemBatchId());
+        if (ib == null) {
+            throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
+        }
+
+        // Record the adjustment values in PharmaceuticalBillItem
+        ph.setPurchaseRate(dto.getPurchaseRate()); // Keep purchase rate unchanged
+        ph.setRetailRate(oldRetailRate); // Store old retail rate for record
+        ph.setStock(stockEntity);
+
+        // Store batch details in PharmaceuticalBillItem
+        ph.setItemBatch(ib);
+        ph.setQtyInUnit(dto.getStockQty());
+        ph.setQty(dto.getStockQty());
+
+        // Set adjustment-specific data - store new retail rate in lastPurchaseRate field
+        ph.setLastPurchaseRate(newRetailRate); // New retail rate stored for reference
+        // REPURPOSED FIELD: freeQty is temporarily used to store the retail rate change amount
+        // This allows tracking of the adjustment value for audit and display purposes
+        ph.setFreeQty(retailRateChange); // Store rate change in freeQty field (repurposed)
+        
+        // Set before and after adjustment values for proper tracking in reports
+        ph.setBeforeAdjustmentValue(oldRetailRate);
+        ph.setAfterAdjustmentValue(newRetailRate);
+
+        // Validate getDeptAdjustmentPreBill
+        if (getDeptAdjustmentPreBill() == null) {
+            throw new RuntimeException("DeptAdjustmentPreBill is null");
+        }
+
+        // Configure BillItem
+        tbi.setItem(ib.getItem());
+        tbi.setRate(newRetailRate); // New retail rate
+        tbi.setQty(dto.getStockQty()); // Stock quantity
+
+        // Store the change value as the bill item value
+        tbi.setGrossValue(Math.abs(changeValue)); // Absolute change value
+        tbi.setNetValue(changeValue); // Signed change value (+ or -)
+        tbi.setDiscount(0.0); // No discount for adjustments
+
+        // Create and populate BillItemFinanceDetails
+        BillItemFinanceDetails bifd = new BillItemFinanceDetails();
+        bifd.setBillItem(tbi);
+        bifd.setQuantity(java.math.BigDecimal.valueOf(dto.getStockQty()));
+        bifd.setFreeQuantity(java.math.BigDecimal.ZERO);
+        bifd.setLineGrossRate(java.math.BigDecimal.valueOf(newRetailRate));
+        bifd.setLineNetRate(java.math.BigDecimal.valueOf(newRetailRate));
+        bifd.setLineGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bifd.setLineNetTotal(java.math.BigDecimal.valueOf(changeValue));
+        bifd.setLineDiscount(java.math.BigDecimal.ZERO);
+        bifd.setLineCost(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bifd.setRetailSaleRate(java.math.BigDecimal.valueOf(newRetailRate));
+        bifd.setCreatedAt(Calendar.getInstance().getTime());
+        bifd.setCreatedBy(getSessionController().getLoggedUser());
+
+        tbi.setBillItemFinanceDetails(bifd);
+
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setItem(ib.getItem());
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        try {
+            // Save entities
+            getBillItemFacade().create(tbi);
+            getDeptAdjustmentPreBill().getBillItems().add(tbi);
+
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to create retail rate adjustment bill item", e);
+            throw new RuntimeException("Failed to create retail rate adjustment bill item: " + e.getMessage(), e);
+        }
+    }
+
     private void saveRsrAdjustmentBillItems() {
         if (stock == null) {
             JsfUtil.addErrorMessage("Please select a stock");
@@ -1589,8 +1680,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
         printPreview = true;
 
-        makeNull();
-
         JsfUtil.addSuccessMessage("Staff Stock Adjustment Successfully..");
 
     }
@@ -1829,12 +1918,15 @@ public class PharmacyAdjustmentController implements Serializable {
                 continue;
             }
             stock = s;
-            rsr = dto.getNewRetailRate();
 
-            deductBeforeAdjustmentItemFromStock();
-            saveRsrAdjustmentBillItems();
+            double oldRetailRate = dto.getRetailRate();
+            double newRetailRate = dto.getNewRetailRate();
+            double retailRateChange = newRetailRate - oldRetailRate;
+            double changeValue = dto.getStockQty() * retailRateChange;
 
-            s.getItemBatch().setRetailsaleRate(rsr);
+            saveRsrAdjustmentBillItems(dto, oldRetailRate, newRetailRate, retailRateChange, changeValue);
+
+            s.getItemBatch().setRetailsaleRate(newRetailRate);
             itemBatchFacade.edit(s.getItemBatch());
         }
 
