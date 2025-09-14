@@ -2137,7 +2137,7 @@ public class PharmacyReportController implements Serializable {
                     .append("i.code, ")
                     .append("b.deptId, ")
                     .append("ib.batchNo, ")
-                    .append("bi.qty, ")
+                    .append("pbi.qty, ")
                     .append("ib.costRate, ")
                     .append("pbi.retailRate, ")
                     .append("b.netTotal) ")
