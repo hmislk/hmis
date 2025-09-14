@@ -164,6 +164,7 @@ public class PharmacyController implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyGrnItemDTO> grnDtos;
     private List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> grnReturnDtos;
     private List<BillItem> pos;
+    private List<com.divudi.core.data.dto.PharmacyItemPoDTO> poDtos;
     private List<BillItem> directPurchase;
     private List<PharmacyItemPurchaseDTO> directPurchaseDtos;
     private List<Bill> bills;
@@ -5179,7 +5180,8 @@ public class PharmacyController implements Serializable {
         createPendingGrnTable();
         createGrnTable();
         createGrnReturnTable();
-        createPoTable();
+        createPoTableDto();
+        //createPoTable(); // Deprecated - use createPoTableDto() instead
         createDirectPurchaseTableDto();
         //createDirectPurchaseTable();  // Deprecated - use createDirectPurchaseTableDto() instead
         createInstitutionIssue();
@@ -5380,7 +5382,12 @@ public class PharmacyController implements Serializable {
             return;
         }
 
-        String sql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
                 + "b.bill.id, "
                 + "b.bill.deptId, "
                 + "b.bill.fromInstitution.name, "
@@ -5392,29 +5399,36 @@ public class PharmacyController implements Serializable {
                 + "b.pharmaceuticalBillItem.freeQty, "
                 + "b.netValue) "
                 + "FROM BillItem b "
-                + "WHERE type(b.bill) = :class "
-                + "AND b.bill.creater IS NOT NULL "
-                + "AND b.bill.cancelled = false "
-                + "AND b.retired = false "
+                + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
-                + "AND b.bill.billType = :btp "
-                + "AND b.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY b.id DESC";
+                + "AND b.bill.billTypeAtomic in :btas "
+                + "AND b.createdAt BETWEEN :frm AND :to ";
 
-        HashMap<String, Object> hm = new HashMap<>();
-        hm.put("relatedItems", relatedItems);
-        hm.put("frm", getFromDate());
-        hm.put("to", getToDate());
-        hm.put("btp", BillType.PharmacyPurchaseBill);
-        hm.put("class", BilledBill.class);
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Direct Purchases", true);
 
-        directPurchaseDtos = (List<PharmacyItemPurchaseDTO>) getBillItemFacade().findLightsByJpql(sql, hm, TemporalType.TIMESTAMP);
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("relatedItems", relatedItems);
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getDepartment());
+            jpql += "AND b.bill.department=:department ";
+        }
+        params.put("btas", btas);
+
+        jpql += "ORDER BY b.id DESC";
+
+        directPurchaseDtos = (List<PharmacyItemPurchaseDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> getPos() {
         return pos;
     }
 
+    /**
+     * @deprecated Use createPoTableDto() for DTO-based, efficient queries.
+     */
+    @Deprecated
     public void createPoTable() {
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
         if (relatedItems == null || relatedItems.isEmpty()) {
@@ -5441,6 +5455,53 @@ public class PharmacyController implements Serializable {
             t.setTotalGrnQty(getGrnQty(t));
         }
 
+    }
+
+    public void createPoTableDto() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            poDtos = new ArrayList<>();
+            return;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_ORDER);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPoDTO("
+                + "b.bill.id, "
+                + "b.bill.deptId, "
+                + "b.bill.createdAt, "
+                + "b.bill.toInstitution.name, "
+                + "b.bill.creater.webUserPerson.name, "
+                + "b.pharmaceuticalBillItem.qty, "
+                + "b.pharmaceuticalBillItem.freeQty"
+                + ") "
+                + "FROM BillItem b "
+                + "WHERE (b.cancelled IS NULL OR b.retired = FALSE) "
+                + "AND (b.retired IS NULL OR b.retired = FALSE) "
+                + "AND b.item IN :relatedItems "
+                + "AND b.bill.billTypeAtomic in :bta "
+                + "AND b.createdAt BETWEEN :frm AND :to ";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("relatedItems", relatedItems);
+        params.put("bta", btas);
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getDepartment());
+            jpql += "AND b.bill.department=:department ";
+        }
+        jpql += "ORDER BY b.id DESC";
+        poDtos = (List<com.divudi.core.data.dto.PharmacyItemPoDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyItemPoDTO> getPoDtos() {
+        return poDtos;
+    }
+
+    public void setPoDtos(List<com.divudi.core.data.dto.PharmacyItemPoDTO> poDtos) {
+        this.poDtos = poDtos;
     }
 
     public void createPendingGrnTable() {
