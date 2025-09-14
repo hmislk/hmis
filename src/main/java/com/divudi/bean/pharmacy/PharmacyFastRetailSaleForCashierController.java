@@ -4,13 +4,9 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.data.BillClassType;
@@ -19,8 +15,6 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Department;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.data.dto.StockDTO;
-import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.facade.BillFacade;
@@ -42,8 +36,8 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
-import com.divudi.bean.pharmacy.UserStockController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.service.pharmacy.StockSearchService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -73,6 +67,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     SearchController searchController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     TokenController tokenController;
     @EJB
@@ -147,7 +143,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     }
 
     /**
-     * Finalize pre-bill, deduct stock and generate token. Payment will be collected later at cashier.
+     * Finalize pre-bill, deduct stock and generate token. Payment will be
+     * collected later at cashier.
      */
     public void settlePreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
@@ -366,8 +363,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     }
 
     /**
-     * Initialize controller state on first access to prevent NPEs.
-     * This method is called by the preRenderView event in the XHTML.
+     * Initialize controller state on first access to prevent NPEs. This method
+     * is called by the preRenderView event in the XHTML.
      */
     public void initIfNeeded() {
         // Ensure all necessary objects are initialized
@@ -384,7 +381,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
 
     /**
      * Payment method handling for sale for cashier - minimal implementation.
-     * Note: As per issue #14268, no payment data is preserved in sale for cashier.
+     * Note: As per issue #14268, no payment data is preserved in sale for
+     * cashier.
      */
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod == null) {
@@ -421,8 +419,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     }
 
     /**
-     * Payment method change listener - minimal implementation for sale for cashier.
-     * Note: As per issue #14268, no actual payment data is preserved.
+     * Payment method change listener - minimal implementation for sale for
+     * cashier. Note: As per issue #14268, no actual payment data is preserved.
      */
     public void listnerForPaymentMethodChange() {
         // Minimal implementation to prevent NPEs
@@ -436,4 +434,3 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
         }
     }
 }
-
