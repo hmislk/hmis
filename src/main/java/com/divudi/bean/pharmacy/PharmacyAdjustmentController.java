@@ -249,6 +249,7 @@ public class PharmacyAdjustmentController implements Serializable {
             BillType.PharmacyAdjustmentSaleRate,
             BillType.PharmacyAdjustmentWholeSaleRate,
             BillType.PharmacyAdjustmentPurchaseRate,
+            BillType.PharmacyAdjustmentCostRate,
             BillType.PharmacyAdjustmentExpiryDate
         );
 
@@ -629,9 +630,11 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+        getDeptAdjustmentPreBill().setDeptId(deptId);
+        getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentStaffStock);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -712,8 +715,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+        getDeptAdjustmentPreBill().setDeptId(deptId);
+        getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentSaleRate);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -737,8 +741,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
+        getDeptAdjustmentPreBill().setDeptId(deptId);
+        getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentWholeSaleRate);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -760,8 +765,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+        getDeptAdjustmentPreBill().setDeptId(deptId);
+        getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentExpiryDate);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
 
@@ -922,6 +928,10 @@ public class PharmacyAdjustmentController implements Serializable {
         // REPURPOSED FIELD: freeQty is temporarily used to store the purchase rate change amount
         // This allows tracking of the adjustment value for audit and display purposes
         ph.setFreeQty(purchaseRateChange); // Store rate change in freeQty field (repurposed)
+        
+        // Set before and after adjustment values for proper tracking in reports
+        ph.setBeforeAdjustmentValue(oldPurchaseRate);
+        ph.setAfterAdjustmentValue(newPurchaseRate);
 
         // Validate getDeptAdjustmentPreBill
         if (getDeptAdjustmentPreBill() == null) {
@@ -1240,6 +1250,9 @@ public class PharmacyAdjustmentController implements Serializable {
         ph.setPurchaseRate(itemBatch.getPurcahseRate());
         ph.setRetailRate(itemBatch.getRetailsaleRate());
         ph.setWholesaleRate(itemBatch.getWholesaleRate());
+        // Set before and after adjustment values for proper tracking in reports
+        ph.setBeforeAdjustmentValue(itemBatch.getWholesaleRate());
+        ph.setAfterAdjustmentValue(wsr);
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(wsr);
         //pharmaceutical Bill Item
@@ -1280,6 +1293,9 @@ public class PharmacyAdjustmentController implements Serializable {
         // Set before and after adjustment expiry dates for the bill item
         tbi.getPharmaceuticalBillItem().setBeforeAdjustmentExpiry(itemBatch.getDateOfExpire());
         tbi.getPharmaceuticalBillItem().setAfterAdjustmentExpiry(exDate);
+        // For expiry date adjustments, set value fields to 0 to avoid confusion in reports
+        tbi.getPharmaceuticalBillItem().setBeforeAdjustmentValue(0.0);
+        tbi.getPharmaceuticalBillItem().setAfterAdjustmentValue(0.0);
         //tbi.setItem(getStock().getItemBatch().getItem());
         //itemBatch.setDateOfExpire(exDate);
         //tbi.setRate(rsr);

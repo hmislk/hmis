@@ -96,28 +96,28 @@
                                         </h:panelGroup>
                                     </p:column>     
 
-<!--                                    <p:column headerText="Befory Qty" >
-                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
-                                            <f:convertNumber pattern="#,##0"/>
-                                        </h:outputLabel>
-                                    </p:column>   
-
-                                    <p:column headerText="After Qty" >
-                                        <h:outputLabel value="#{pi.qty}" >
-                                            <f:convertNumber pattern="##,##0"/>
-                                        </h:outputLabel>
-                                    </p:column>-->
+                                    <!--                                    <p:column headerText="Befory Qty" >
+                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
+                                                                                <f:convertNumber pattern="#,##0"/>
+                                                                            </h:outputLabel>
+                                                                        </p:column>   
                                     
+                                                                        <p:column headerText="After Qty" >
+                                                                            <h:outputLabel value="#{pi.qty}" >
+                                                                                <f:convertNumber pattern="##,##0"/>
+                                                                            </h:outputLabel>
+                                                                        </p:column>-->
+
                                     <p:column headerText="Adjustment Type" >
                                         <h:outputText value="#{pi.bill.billTypeAtomic.label}"/>
                                     </p:column>
-                                    
+
                                     <p:column>
                                         <p:commandButton 
+                                            id="btnViewReceipt"
                                             ajax="false" 
-                                            action="pharmacy_reprint_adjustment?faces-redirect=true" 
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}" 
                                             value="View Bill">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>
 

@@ -43,6 +43,10 @@
 - **UI Styling Guidelines**: [Complete Reference](developer_docs/ui/ui-styling-guidelines.md)
 - **UI Best Practices**: [Troubleshooting & Patterns](developer_docs/ui-best-practices.md)
 
+### JSF Development Guidelines
+- **JSF AJAX Updates**: [Critical Guidelines](developer_docs/jsf/ajax-update-guidelines.md)
+- **🚨 AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
+
 ### Database Development
 - **MySQL Guide**: [Complete Reference](developer_docs/database/mysql-developer-guide.md)
 - **🚨 CREDENTIALS SECURITY**: MySQL credentials MUST be stored in separate folder (NOT in git)
@@ -67,6 +71,7 @@
 14. **🚨 XHTML STRUCTURE RULE**: Use HTML DOCTYPE with ui:composition and template inside h:body for all XHTML pages
 15. **🚨 PRIMEFACES CSS RULE**: Use PrimeFaces button classes (ui-button-success, ui-button-warning, etc.) instead of Bootstrap button classes
 16. **🚨 XML ENTITY RULE**: Always escape ampersands as &amp; in XHTML attribute values to prevent XML parsing errors
+17. **🚨 JSF AJAX UPDATE RULE**: NEVER use plain HTML elements with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead (see JSF AJAX Guidelines)
 
 ## Wiki Writing Guidelines {#wiki-writing-guidelines}
 
