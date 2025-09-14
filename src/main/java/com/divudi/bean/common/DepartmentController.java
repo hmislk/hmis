@@ -208,6 +208,28 @@ public class DepartmentController implements Serializable {
         }
         return deps;
     }
+    
+    public List<Department> getInstitutionAllLabTypesDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            List<DepartmentType> dtypes = null ;
+            dtypes.add(DepartmentType.Lab);
+            dtypes.add(DepartmentType.External_Lab);
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("types", dtypes);
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType in :types "
+                    + " and TYPE(d) <> Route "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
 
     public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
         List<Department> deps;
