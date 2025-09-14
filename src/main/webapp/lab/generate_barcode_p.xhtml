@@ -521,10 +521,12 @@
                                         class="w-100">
                                         <f:selectItem itemLabel="Any"></f:selectItem>
                                         <f:selectItems 
-                                            value="#{departmentController.getInstitutionLabDepartments(patientInvestigationController.outLabInstitution)}" 
+                                            value="#{departmentController.getInstitutionAllLabTypesDepartments(patientInvestigationController.outLabInstitution)}" 
                                             var="odpt" 
                                             itemLabel="#{odpt.name}" 
                                             itemValue="#{odpt}">
+                                            <p:column headerText="Name" style="padding: 6px; width: 20px;">#{odpt.name}</p:column>
+                                            <p:column headerText="Type" style="padding: 6px; width: 250px;">#{odpt.departmentType}</p:column>
                                         </f:selectItems>
                                     </p:selectOneMenu>
                                 </div>
