@@ -538,7 +538,11 @@ public class PatientInvestigationController implements Serializable {
 
         // Process each selected patient sample
         for (PatientSample ps : canSentOutLabSamples) {
-            ps.setOutsourced(true);
+            if (outLabDepartment.getDepartmentType() == DepartmentType.External_Lab) {
+                ps.setOutsourced(true);
+            } else {
+                ps.setOutsourced(false);
+            }
             ps.setOutsourceSampleTransporter(sampleTransportedToLabByStaff);
             ps.setOutsourceInstitution(outLabInstitution);
             ps.setOutsourceDepartment(outLabDepartment);
@@ -562,7 +566,11 @@ public class PatientInvestigationController implements Serializable {
             tptix.setSampleSentAt(new Date());
             tptix.setSampleSentBy(sessionController.getLoggedUser());
 
-            tptix.setOutsourced(true);
+            if (outLabDepartment.getDepartmentType() == DepartmentType.External_Lab) {
+                tptix.setOutsourced(true);
+            } else {
+                tptix.setOutsourced(false);
+            }
             tptix.setOutsourcedInstitution(outLabInstitution);
             tptix.setOutsourcedDepartment(outLabDepartment);
             tptix.setOutsourcedUser(sessionController.getLoggedUser());
@@ -584,14 +592,14 @@ public class PatientInvestigationController implements Serializable {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
                     if (outLabDepartment.getDepartmentType() == DepartmentType.Lab) {
                         labTestHistoryController.addSampleInternalLabSentHistory(pi, ps, sampleTransportedToLabByStaff, sessionController.getDepartment(), outLabDepartment);
-                    } else{
+                    } else {
                         labTestHistoryController.addSampleOutLabSentHistory(pi, ps, sampleTransportedToLabByStaff, sessionController.getDepartment(), outLabDepartment);
                     }
                 }
             }
         }
 
-        JsfUtil.addSuccessMessage("Selected Samples Sent to OutLab");
+        JsfUtil.addSuccessMessage("Selected Samples Sent to OutLab.");
 
         outLabInstitution = null;
         outLabDepartment = null;
@@ -2129,7 +2137,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            if (ps.getOutsourced()) {
+            if (ps.getOutsourced() && ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent Outsource Lab");
                 return;
             }
@@ -2137,7 +2145,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Accepted");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
                 canAcceptSamples.add(ps);
             }
         }

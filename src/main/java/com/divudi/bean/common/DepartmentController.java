@@ -212,12 +212,10 @@ public class DepartmentController implements Serializable {
     
     public List<Department> getInstitutionAllLabTypesDepartments(Institution ins) {
     List<Department> deps;
-        System.out.println("ins = " + ins);
     if (ins == null) {
         deps = new ArrayList<>();
     } else {
         List<DepartmentType> dtypes = Arrays.asList(DepartmentType.Lab, DepartmentType.External_Lab);
-        System.out.println("dtypes = " + dtypes);
         Map<String, Object> m = new HashMap<>();
         m.put("ins", ins);
         m.put("types", dtypes);
@@ -230,7 +228,6 @@ public class DepartmentController implements Serializable {
                 + " order by d.name";
         
         deps = getFacade().findByJpql(jpql, m);
-        System.out.println("deps = " + deps);
     }
     return deps;
 }
