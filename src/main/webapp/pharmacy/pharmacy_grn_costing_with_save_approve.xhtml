@@ -101,6 +101,13 @@
                                         update="@none">
                                         <i class="fas fa-info-circle" />
                                     </p:commandLink>
+                                    <p:commandButton
+                                        icon="fas fa-history"
+                                        class="ui-button-info mx-1"
+                                        title="View Item History"
+                                        action="#{pharmacyController.selectItemForHistory(bi.item)}"
+                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                        process="@this"/>
                                     <p:dialog id="dialog"
                                               widgetVar="dialog#{i}"
                                               header="Details"
@@ -296,11 +303,12 @@
                                         icon="fas fa-plus"
                                         class="ui-button-warning mx-1"
                                         action="#{grnCostingController.duplicateItem(bi)}"/>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
                                         icon="fas fa-trash"
                                         class="ui-button-danger"
                                         action="#{grnCostingController.removeItem(bi)}"/>
+
 
                                 </p:column>
 
