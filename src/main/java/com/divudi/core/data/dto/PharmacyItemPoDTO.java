@@ -20,9 +20,15 @@ public class PharmacyItemPoDTO implements Serializable {
     private String supplierName; // toInstitution.name
     private String creatorName;  // creater.webUserPerson.name
 
+    // Item details
+    private String itemName;     // item.name
+
     // Item quantities
     private Double qty;         // Ordered quantity (PO)
     private Double freeQty;      // Ordered Free Qty
+
+    private Double completedFreeQty;
+    private Double completedQty;
 
     public PharmacyItemPoDTO() {
     }
@@ -32,15 +38,21 @@ public class PharmacyItemPoDTO implements Serializable {
             Date billCreatedAt,
             String supplierName,
             String creatorName,
+            String itemName,
             Double qty,
-            Double grnQty) {
+            Double freeQty,
+            Double completedQty,
+            Double completedFreeQty) {
         this.billId = billId;
         this.billDeptId = billDeptId;
         this.billCreatedAt = billCreatedAt;
         this.supplierName = supplierName;
         this.creatorName = creatorName;
+        this.itemName = itemName;
         this.qty = qty;
-        this.freeQty = grnQty;
+        this.freeQty = freeQty;
+        this.completedQty = completedQty;
+        this.completedFreeQty = completedFreeQty;
     }
 
     public Long getBillId() {
@@ -83,6 +95,14 @@ public class PharmacyItemPoDTO implements Serializable {
         this.creatorName = creatorName;
     }
 
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
     public Double getQty() {
         return qty;
     }
@@ -98,4 +118,22 @@ public class PharmacyItemPoDTO implements Serializable {
     public void setFreeQty(Double freeQty) {
         this.freeQty = freeQty;
     }
+
+    public Double getCompletedFreeQty() {
+        return completedFreeQty;
+    }
+
+    public void setCompletedFreeQty(Double completedFreeQty) {
+        this.completedFreeQty = completedFreeQty;
+    }
+
+    public Double getCompletedQty() {
+        return completedQty;
+    }
+
+    public void setCompletedQty(Double completedQty) {
+        this.completedQty = completedQty;
+    }
+    
+    
 }

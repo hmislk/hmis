@@ -61,6 +61,9 @@ public class PharmaceuticalBillItem implements Serializable {
 
     private double retailRate;
     private double retailRatePack;
+    
+    private double completedQty;
+    private double completedFreeQty;
 
     private double wholesaleRate;
     private double wholesaleRatePack;
@@ -835,6 +838,22 @@ public class PharmaceuticalBillItem implements Serializable {
 
     public void setCostValue(double costValue) {
         this.costValue = costValue;
+    }
+
+    public double getCompletedQty() {
+        return completedQty;
+    }
+
+    public void setCompletedQty(double completedQty) {
+        this.completedQty = completedQty;
+    }
+
+    public double getCompletedFreeQty() {
+        return completedFreeQty;
+    }
+
+    public void setCompletedFreeQty(double completedFreeQty) {
+        this.completedFreeQty = completedFreeQty;
     }
 
     

@@ -51,7 +51,8 @@ public class EnumController implements Serializable {
     private PaymentScheme paymentScheme;
     private List<Class<? extends Enum<?>>> enumList;
     List<PaymentMethod> paymentMethodsForOpdBilling;
-    private List<PaymentMethod> paymentMethodsForPharmacyPurchase;
+    private List<PaymentMethod> paymentMethodsForGrn;
+    private List<PaymentMethod> paymentMethodsForDirectPurchase;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
@@ -78,7 +79,6 @@ public class EnumController implements Serializable {
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
     }
-    
 
     public Sex[] getSex() {
         return Sex.values();
@@ -135,12 +135,34 @@ public class EnumController implements Serializable {
         }
     }
 
-    public void fillPaymentMethodsFoPharmacyPurchase() {
-        paymentMethodsForPharmacyPurchase = new ArrayList<>();
+    public void fillPaymentMethodsForGrn() {
+        paymentMethodsForGrn = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
-            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Purchase", true);
+            boolean include;
+            if (pm == PaymentMethod.Cash || pm == PaymentMethod.Credit) {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for GRN", true);
+            } else {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for GRN", false);
+            }
             if (include) {
-                paymentMethodsForPharmacyPurchase.add(pm);
+                paymentMethodsForGrn.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForDirectPurchase() {
+        paymentMethodsForDirectPurchase = new ArrayList<>();
+        // Include other methods based on configuration (default false)
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include;
+            if (pm == PaymentMethod.Cash || pm == PaymentMethod.Credit) {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Direct Purchase", true);
+            } else {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Direct Purchase", false);
+            }
+
+            if (include) {
+                paymentMethodsForDirectPurchase.add(pm);
             }
         }
     }
@@ -290,8 +312,8 @@ public class EnumController implements Serializable {
     public List<ScheduledProcess> getScheduledProcesses() {
         return Arrays.asList(ScheduledProcess.values());
     }
-    
-     public List<EmployeeStatus> getEmploymentStatuses() {
+
+    public List<EmployeeStatus> getEmploymentStatuses() {
         return Arrays.asList(EmployeeStatus.values());
     }
 
@@ -327,10 +349,10 @@ public class EnumController implements Serializable {
                 ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
                 ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
-//                ReportViewType.BY_ITEM
+        //                ReportViewType.BY_ITEM
         );
     }
-    
+
     public List<ReportViewType> getPharmacyProcurementByBillItemViewTypes() {
         return Arrays.asList(
                 ReportViewType.BY_BILL,
@@ -735,13 +757,13 @@ public class EnumController implements Serializable {
 
     public BillType[] getPharmacyBillTypes4() {
         BillType[] b = {
-                BillType.PharmacyPre,
-                BillType.PharmacyWholesalePre,
-                BillType.PharmacyAdjustment,
-                BillType.PharmacyTransferIssue,
-                BillType.PharmacyIssue,
-                BillType.PharmacyBhtPre,
-                BillType.PharmacyDisposalIssue};
+            BillType.PharmacyPre,
+            BillType.PharmacyWholesalePre,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre,
+            BillType.PharmacyDisposalIssue};
 
         return b;
     }
@@ -1134,11 +1156,11 @@ public class EnumController implements Serializable {
         this.availableStatusforCancel = availableStatusforCancel;
     }
 
-    public List<PaymentMethod> getPaymentMethodsForPharmacyPurchase() {
-        if (paymentMethodsForPharmacyPurchase == null) {
-            fillPaymentMethodsFoPharmacyPurchase();
+    public List<PaymentMethod> getPaymentMethodsForGrn() {
+        if (paymentMethodsForGrn == null) {
+            fillPaymentMethodsForGrn();
         }
-        return paymentMethodsForPharmacyPurchase;
+        return paymentMethodsForGrn;
     }
 
     public InvestigationItemType getInvestigationItemType(String name) {
@@ -1237,11 +1259,11 @@ public class EnumController implements Serializable {
     public void setAllUtilizedBillTypeAtomicsForPharmacy(List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy) {
         this.allUtilizedBillTypeAtomicsForPharmacy = allUtilizedBillTypeAtomicsForPharmacy;
     }
-    
+
     public TestHistoryType[] getLabTestHistoryList() {
         return TestHistoryType.values();
     }
-    
+
     public TestHistoryType getLabTestHistory(String name) {
         for (TestHistoryType type : TestHistoryType.values()) {
             if (type.toString().equalsIgnoreCase(name)) {
@@ -1250,5 +1272,11 @@ public class EnumController implements Serializable {
         }
         return null;
     }
+
+    public List<PaymentMethod> getPaymentMethodsForDirectPurchase() {
+        return paymentMethodsForDirectPurchase;
+    }
+    
+    
 
 }

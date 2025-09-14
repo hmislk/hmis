@@ -165,6 +165,7 @@ public class PharmacyController implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> grnReturnDtos;
     private List<BillItem> pos;
     private List<com.divudi.core.data.dto.PharmacyItemPoDTO> poDtos;
+    private List<com.divudi.core.data.dto.PharmacyItemPoDTO> pendingPoDtos;
     private List<BillItem> directPurchase;
     private List<PharmacyItemPurchaseDTO> directPurchaseDtos;
     private List<Bill> bills;
@@ -5181,6 +5182,7 @@ public class PharmacyController implements Serializable {
         createGrnTable();
         createGrnReturnTable();
         createPoTableDto();
+        createPendingDto();
         //createPoTable(); // Deprecated - use createPoTableDto() instead
         createDirectPurchaseTableDto();
         //createDirectPurchaseTable();  // Deprecated - use createDirectPurchaseTableDto() instead
@@ -5464,7 +5466,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_ORDER);
+        btas.add(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPoDTO("
                 + "b.bill.id, "
@@ -5472,11 +5474,15 @@ public class PharmacyController implements Serializable {
                 + "b.bill.createdAt, "
                 + "b.bill.toInstitution.name, "
                 + "b.bill.creater.webUserPerson.name, "
+                + "b.item.name, "
                 + "b.pharmaceuticalBillItem.qty, "
-                + "b.pharmaceuticalBillItem.freeQty"
+                + "b.pharmaceuticalBillItem.freeQty, "
+                + "b.pharmaceuticalBillItem.completedQty, "
+                + "b.pharmaceuticalBillItem.completedFreeQty "
                 + ") "
                 + "FROM BillItem b "
-                + "WHERE (b.cancelled IS NULL OR b.retired = FALSE) "
+                + "WHERE (b.bill.cancelled IS NULL OR b.retired = FALSE) "
+                + "AND (b.bill.retired IS NULL OR b.retired = FALSE) "
                 + "AND (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :bta "
@@ -5494,6 +5500,50 @@ public class PharmacyController implements Serializable {
         }
         jpql += "ORDER BY b.id DESC";
         poDtos = (List<com.divudi.core.data.dto.PharmacyItemPoDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public void createPendingDto() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            pendingPoDtos = new ArrayList<>();
+            return;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_ORDER);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPoDTO("
+                + "b.bill.id, "
+                + "b.bill.deptId, "
+                + "b.bill.createdAt, "
+                + "b.bill.toInstitution.name, "
+                + "b.bill.creater.webUserPerson.name, "
+                + "b.item.name, "
+                + "b.pharmaceuticalBillItem.qty, "
+                + "b.pharmaceuticalBillItem.freeQty, "
+                + "b.pharmaceuticalBillItem.completedQty, "
+                + "b.pharmaceuticalBillItem.completedFreeQty "
+                + ") "
+                + "FROM BillItem b "
+                + "WHERE (b.bill.cancelled IS NULL OR b.retired = FALSE) "
+                + "AND (b.bill.retired IS NULL OR b.retired = FALSE) "
+                + "AND (b.retired IS NULL OR b.retired = FALSE) "
+                + "AND b.item IN :relatedItems "
+                + "AND b.bill.billTypeAtomic in :bta "
+                + "AND b.bill.referenceBill  IS NULL  "
+                + "AND b.createdAt BETWEEN :frm AND :to ";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("relatedItems", relatedItems);
+        params.put("bta", btas);
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getDepartment());
+            jpql += "AND b.bill.department=:department ";
+        }
+        jpql += "ORDER BY b.id DESC";
+        pendingPoDtos = (List<com.divudi.core.data.dto.PharmacyItemPoDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<com.divudi.core.data.dto.PharmacyItemPoDTO> getPoDtos() {
@@ -6783,6 +6833,8 @@ public class PharmacyController implements Serializable {
         this.totalCostValue = totalCostValue;
     }
 
+    
+    
     /**
      * Returns the appropriate PrimeFaces UI message CSS class based on item
      * expiry date
@@ -6893,5 +6945,13 @@ public class PharmacyController implements Serializable {
      */
     public List<Map<String, Object>> getStockVarianceReport(Date fromDate, Date toDate, Department department) {
         return createStockVarianceReport(fromDate, toDate, department);
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyItemPoDTO> getPendingPoDtos() {
+        return pendingPoDtos;
+    }
+
+    public void setPendingPoDtos(List<com.divudi.core.data.dto.PharmacyItemPoDTO> pendingPoDtos) {
+        this.pendingPoDtos = pendingPoDtos;
     }
 }

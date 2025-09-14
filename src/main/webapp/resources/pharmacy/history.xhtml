@@ -600,6 +600,7 @@
                     class="w-100"  
                     activeIndex="0" 
                     style="border: 1px solid lightgray; padding: 10px;">
+                    
                     <p:tab 
                         title="Stock" 
                         id="itemDetailsTabStocks"
@@ -666,6 +667,7 @@
                         </p:panel>
 
                     </p:tab>
+                    
                     <p:tab 
                         title="Sale" 
                         id="itemDetailsTabSales"
@@ -753,6 +755,7 @@
 
                         </p:dataTable>                
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabSaleItems"
                         title="Sale Bill Item" 
@@ -798,6 +801,7 @@
 
                         </p:dataTable>
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabWholesale"
                         title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
@@ -884,6 +888,7 @@
 
                         </p:dataTable>                
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabInpatient"
                         title="BHT Issue"
@@ -971,6 +976,7 @@
 
                         </p:dataTable>                
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabTransferIssue"
                         title="Transfer Issue" 
@@ -1058,6 +1064,7 @@
 
                         </p:dataTable>                
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabTransferReceive"
                         title="Transfer Receive"
@@ -1146,6 +1153,7 @@
 
                         </p:dataTable>                
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabConsuption"
                         title="Department Issue" 
@@ -1234,6 +1242,7 @@
 
                         </p:dataTable>                
                     </p:tab>
+                    
                     <p:tab 
                         id="itemDetailsTabGrn"
                         title="GRN" 
@@ -1394,70 +1403,74 @@
                         <p:dataTable
                             styleClass="noBorder" 
                             id="tblPurchaseOrders"
-                            value="#{pharmacyController.pos}" var="dd3" 
+                            value="#{pharmacyController.poDtos}" var="poDto" 
                             rows="10" 
                             paginator="true"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15" >
                             <p:column headerText="Order Number">
-                                #{dd3.bill.deptId}
-                            </p:column>
-                            <p:column headerText="Order Department">
-                                #{dd3.bill.department.name}
+                                <p:outputLabel value="#{poDto.billDeptId}"></p:outputLabel>
                             </p:column>
                             <p:column headerText="Order at">
-                                <p:outputLabel value="#{dd3.bill.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                <p:outputLabel value="#{poDto.billCreatedAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Supplier">
-                                #{dd3.bill.toInstitution.name}
+                                <p:outputLabel value="#{poDto.supplierName}"></p:outputLabel>
                             </p:column>
                             <p:column headerText="Item">
-                                #{dd3.item.name}
+                                <p:outputLabel value="#{poDto.itemName}"></p:outputLabel>
                             </p:column>
                             <p:column headerText="Qty Ordered" class="text-end"> 
-                                <h:outputText value="#{dd3.pharmaceuticalBillItem.qty}"> 
-                                    <f:convertNumber integerOnly="true" /> 
+                                <h:outputText value="#{poDto.qty}"> 
                                 </h:outputText> 
                             </p:column> 
                             <p:column headerText="Free Qty Ordered" class="text-end"> 
-                                <h:outputText value="#{dd3.pharmaceuticalBillItem.freeQty}"> 
-                                    <f:convertNumber integerOnly="true" /> 
+                                <h:outputText value="#{poDto.freeQty}"> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Qty Received" class="text-end"> 
+                                <h:outputText value="#{poDto.completedQty}"> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Free Qty Received" class="text-end"> 
+                                <h:outputText value="#{poDto.completedFreeQty}"> 
                                 </h:outputText> 
                             </p:column> 
                         </p:dataTable>
                     </p:tab>
 
-                    <p:tab title="Pending PO" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending PO Tab', true)}">
-
+                    <p:tab title="Pending POs" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending PO Tab', true)}">
                         <p:dataTable 
-                            styleClass="noBorder" id="ppo" value="#{pharmacyController.pos}" var="dd3"
+                            styleClass="noBorder" 
+                            id="tablePendingPos" 
+                            value="#{pharmacyController.pendingPoDtos}" 
+                            var="pendingPo"
                             rows="10"
                             paginator="true"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15" >
-                            <p:column headerText="Po No">
-                                #{dd3.bill.deptId}
+                            <p:column headerText="PO No">
+                                #{pendingPo.billDeptId}
                             </p:column>
                             <p:column headerText="PO Date">
-                                <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                                <p:outputLabel value="#{pendingPo.billCreatedAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Supplier">
-                                #{dd3.bill.toInstitution.name}
+                                #{pendingPo.supplierName}
                             </p:column>
                             <p:column headerText="PO Qty" class="text-end"> 
-                                #{dd3.pharmaceuticalBillItem.qty} 
+                                <h:outputText value="#{pendingPo.qty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
                             </p:column> 
                             <p:column headerText="Requested By">
-                                #{dd3.totalGrnQty}
-                            </p:column>
-                            <p:column headerText="Status">
-                                #{dd3.totalGrnQty}
+                                #{pendingPo.creatorName}
                             </p:column>
                         </p:dataTable>
                     </p:tab>
@@ -1507,6 +1520,7 @@
                             </p:column>  
                         </p:dataTable>
                     </p:tab>
+                    
                     <p:tab title="Pack Sizes" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pack Sizes Tab', true)}">
                         <p:dataTable value="#{pharmacyController.ampps}" var="p" >
                             <p:column>

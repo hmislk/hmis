@@ -216,7 +216,7 @@
                                                    for="cmbPs"></p:outputLabel>
                                     <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                         <f:selectItem itemLabel="Select Payment method"/>
-                                        <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
+                                        <f:selectItems value="#{enumController.paymentMethodsForGrn}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}">
                                         </f:selectItems>
                                         <p:ajax process="@this" update="po" event="change"/>
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
@@ -435,11 +435,9 @@
 
                     <div class="d-flex justify-content-center">
                         <p:panel style="width: 212mm;" >
-                            <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css" ></h:outputStylesheet>
                             <h:panelGroup id="printPaper" layout="block">
 
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1')}">
-
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}">
                                     <div class="institutionName">
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.name}"/>
                                     </div>
@@ -459,11 +457,9 @@
                                             <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
                                         </div>
                                     </div>
-
                                     <div class="headingBill">
                                         <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
                                     </div>
-
                                     <div class="purchase-order">
                                         <h:panelGrid columns="6" class="my-2 w-100">
                                             <h:outputLabel value="Order No" />
@@ -493,7 +489,6 @@
                                             <h:outputLabel value="#{purchaseOrderRequestController.currentBill.consignment ? 'Yes' : 'No'}" />
                                         </h:panelGrid>
                                     </div>
-
                                     <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
                                         <thead>
                                             <tr style="border: 1px solid black;">
@@ -550,9 +545,7 @@
                                             </tr>
                                         </tfoot>
                                     </table>
-
                                     <br/>
-
                                     <div class="purchase-order">
                                         <div>
                                             <h:outputLabel value="Order Initiated By"/>
