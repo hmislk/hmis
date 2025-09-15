@@ -93,7 +93,7 @@ public class PharmacyRetailConfigController implements Serializable {
         try {
             // Paper Type Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", posPaper);
-            configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", posPaperCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", posPaperCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", fiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", posHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", custom1Paper);
@@ -103,7 +103,7 @@ public class PharmacyRetailConfigController implements Serializable {
             // Token Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", tokenFiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", tokenPosPaper);
-            configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper Custom 1",tokenPosPaperCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper Custom 1", tokenPosPaperCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Bill Support for Native Printers", nativePrinters);
             
             // Feature Settings
