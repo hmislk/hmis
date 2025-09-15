@@ -491,6 +491,8 @@ public class PurchaseOrderRequestController implements Serializable {
                 b.setRetireComments("Retired at Finalising PO");
             }
             totalBillItemsCount += totalUnits.doubleValue();
+            b.getPharmaceuticalBillItem().setRemainingQty(b.getPharmaceuticalBillItem().getQty());
+            b.getPharmaceuticalBillItem().setRemainingFreeQty(b.getPharmaceuticalBillItem().getFreeQty());
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {

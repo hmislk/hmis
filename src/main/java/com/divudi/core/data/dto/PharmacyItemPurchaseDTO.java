@@ -21,6 +21,7 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     private String billInstitutionName;
     private String billDepartmentName;
     private String billFromInstitutionName;
+    private String billCreaterName;
     private BillType billType;
     private Double billTotal;
     private Double billNetTotal;
@@ -158,6 +159,22 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billTotal = billTotal;
     }
 
+    // Constructor for Direct Purchase table (11 parameters)
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName, 
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate, 
+                                   Double retailRate, Double qty, Double freeQty, Double billNetTotal) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billCreaterName = billCreaterName;
+        this.billCreatedAt = billCreatedAt;
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.billNetTotal = billNetTotal;
+    }
+
     public Bill getBill() {
         return bill;
     }
@@ -208,6 +225,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
 
     public String getBillFromInstitutionName() { return billFromInstitutionName; }
     public void setBillFromInstitutionName(String billFromInstitutionName) { this.billFromInstitutionName = billFromInstitutionName; }
+
+    public String getBillCreaterName() { return billCreaterName; }
+    public void setBillCreaterName(String billCreaterName) { this.billCreaterName = billCreaterName; }
 
     public BillType getBillType() { return billType; }
     public void setBillType(BillType billType) { this.billType = billType; }

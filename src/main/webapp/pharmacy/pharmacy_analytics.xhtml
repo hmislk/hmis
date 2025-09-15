@@ -159,7 +159,7 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Taking Report(New)')}" class="w-100 ui-button-warning" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock With Movement')}" class="w-100 ui-button-warning" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" />
 
-                                            
+
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Summary (with Suppliers)')}"
                                                              class="w-100"
@@ -308,13 +308,13 @@
                                                              style="text-align: left" 
                                                              value="Pharmacy Procurement Report"
                                                              action="#{pharmacySummaryReportController.navigateToPharmacyProcurementReport()}"/>
-                                            
+
                                             <p:commandButton 
-                                                             class="w-100 ui-button-warning"
-                                                             ajax="false" 
-                                                             style="text-align: left" 
-                                                             value="Pharmacy Direct purchase Report"
-                                                             action="#{pharmacyReportController.navigateToDirectPurchaseSummeryReport()}"/>
+                                                class="w-100 ui-button-warning"
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="Pharmacy Direct purchase Report"
+                                                action="#{pharmacyReportController.navigateToDirectPurchaseSummeryReport()}"/>
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Summary')}" class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch')}" class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
@@ -451,8 +451,9 @@
 
                                     <p:tab title="Adjustment Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Adjustment Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-vice adjustments', true)}" class="w-100" value="Item-wise adjustments" 
-                                                             action="/pharmacy/pharmacy_report_adjustment_bill_item?faces-redirect=true" ajax="false" />
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-vice adjustments', true)}" class="w-100" value="Item-wise adjustments" 
+                                                action="#{pharmacyAdjustmentController.navigateToViewReportOnItemviceAdjustments}" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiry adjustments', true)}" class="w-100" value="Expiry adjustments" 
                                                              action="/pharmacy/pharmacy_report_adjustment_expiry_date?faces-redirect=true" ajax="false" />
                                         </div>
