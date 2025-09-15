@@ -148,7 +148,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("GRN Return can be done without Approval", true);
 
     }
-
+    
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
         getLongTextValueByKey("Pharmacy Issue Receipt CSS",
                 ".receipt-container {\n"

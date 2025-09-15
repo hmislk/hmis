@@ -35,6 +35,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
@@ -115,17 +116,18 @@ public class ChannelReportController implements Serializable {
     double hospitalFeeCancellededTotal;
     double hospitalFeeRefundededTotal;
     private int channelReportMenuIndex;
-    List<String1Value3> valueList;
-    ReportKeyWord reportKeyWord;
-    Date fromDate;
-    Date toDate;
+    private List<String1Value3> valueList;
+    private ReportKeyWord reportKeyWord;
+    private Date fromDate;
+    private Date toDate;
     private Date newSessionDateTime;
-    Institution institution;
-    WebUser webUser;
-    Staff staff;
-    ChannelBillTotals billTotals;
-    Department department;
+    private Institution institution;
+    private WebUser webUser;
+    private Staff staff;
+    private ChannelBillTotals billTotals;
+    private Department department;
     boolean paid = false;
+    private Category category;
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -445,6 +447,342 @@ public class ChannelReportController implements Serializable {
         ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
         dataBundle = bundle;
 
+    }
+    
+    public static class ChannelIncomeDetailDto{
+        private long bsId;
+        private long billId;
+        private Date appoinmentDate;
+        private Date billedDate;
+        private String billedBy;
+        private String patientName;
+        private String patientPhone;
+        private PaymentMethod paymentMethod;
+        private double doctorFee;
+        private double hosFee;
+        private double totalAppoinmentFee;
+        private String remark;
+        private boolean isCancelled;
+        private boolean isRefunded;
+
+        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate,Date billedDate,String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+            this.bsId = bsId;
+            this.billId = billId;
+            this.appoinmentDate = appoinmentDate;
+            this.billedDate = billedDate;
+            this.billedBy = billedBy;
+            this.patientName = patientName != null ? patientName : "N/A";
+            this.patientPhone = patientPhone != null ? patientPhone : "N/A";
+            this.paymentMethod = paymentMethod;
+            this.doctorFee = doctorFee;
+            this.hosFee = hosFee;
+            this.totalAppoinmentFee = totalAppoinmentFee;
+            this.remark = remark;
+            this.isCancelled = isCancelled;
+            this.isRefunded = isRefunded;
+        }
+
+        public boolean isIsCancelled() {
+            return isCancelled;
+        }
+
+        public void setIsCancelled(boolean isCancelled) {
+            this.isCancelled = isCancelled;
+        }
+
+        public boolean isIsRefunded() {
+            return isRefunded;
+        }
+
+        public void setIsRefunded(boolean isRefunded) {
+            this.isRefunded = isRefunded;
+        }
+        
+
+        public String getBilledBy() {
+            return billedBy;
+        }
+
+        public void setBilledBy(String billedBy) {
+            this.billedBy = billedBy;
+        }
+        
+
+        public Date getAppoinmentDate() {
+            return appoinmentDate;
+        }
+
+        public void setAppoinmentDate(Date appoinmentDate) {
+            this.appoinmentDate = appoinmentDate;
+        }
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientPhone() {
+            return patientPhone;
+        }
+
+        public void setPatientPhone(String patientPhone) {
+            this.patientPhone = patientPhone;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public double getDoctorFee() {
+            return doctorFee;
+        }
+
+        public void setDoctorFee(double doctorFee) {
+            this.doctorFee = doctorFee;
+        }
+
+        public double getHosFee() {
+            return hosFee;
+        }
+
+        public void setHosFee(double hosFee) {
+            this.hosFee = hosFee;
+        }
+
+        public double getTotalAppoinmentFee() {
+            return totalAppoinmentFee;
+        }
+
+        public void setTotalAppoinmentFee(double totalAppoinmentFee) {
+            this.totalAppoinmentFee = totalAppoinmentFee;
+        }
+
+        public String getRemark() {
+            return remark;
+        }
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
+
+        public long getBsId() {
+            return bsId;
+        }
+
+        public void setBsId(long bsId) {
+            this.bsId = bsId;
+        }
+
+        public long getBillId() {
+            return billId;
+        }
+
+        public void setBillId(long billId) {
+            this.billId = billId;
+        }
+
+        public Date getBilledDate() {
+            return billedDate;
+        }
+
+        public void setBilledDate(Date billedDate) {
+            this.billedDate = billedDate;
+        }
+    }
+    
+    public static class WrapperDtoForChannelFutureIncome{
+        private List<ChannelIncomeDetailDto> incomeDtos;
+        private List<ChannelIncomeSummeryDto> summeryDtos;
+        private Institution hospital;
+        private Date processDate;
+        private String processedBy;
+
+        public List<ChannelIncomeDetailDto> getIncomeDtos() {
+            return incomeDtos;
+        }
+
+        public void setIncomeDtos(List<ChannelIncomeDetailDto> incomeDtos) {
+            this.incomeDtos = incomeDtos;
+        }
+
+        public List<ChannelIncomeSummeryDto> getSummeryDtos() {
+            return summeryDtos;
+        }
+
+        public void setSummeryDtos(List<ChannelIncomeSummeryDto> summeryDtos) {
+            this.summeryDtos = summeryDtos;
+        }
+
+        public Institution getHospital() {
+            return hospital;
+        }
+
+        public void setHospital(Institution hospital) {
+            this.hospital = hospital;
+        }
+
+        public Date getProcessDate() {
+            return processDate;
+        }
+
+        public void setProcessDate(Date processDate) {
+            this.processDate = processDate;
+        }
+
+        public String getProcessedBy() {
+            return processedBy;
+        }
+
+        public void setProcessedBy(String processedBy) {
+            this.processedBy = processedBy;
+        }
+        
+        
+    }
+    
+    public static class ChannelIncomeSummeryDto{
+        private Date appoimentDate;
+        private double cashTotal;
+        private double cardTotal;
+        private double creditTotal;
+        private double agentTotal;
+        private double cancelOrRefundTotal;
+        private double totalDocFee;
+        private double totalHosFee;
+        private double totalAmount;
+        private double totalActiveAppoinments;
+        private double totalCancelAppoinments;
+
+        public double getAgentTotal() {
+            return agentTotal;
+        }
+
+        public void setAgentTotal(double agentTotal) {
+            this.agentTotal = agentTotal;
+        }
+
+        public Date getAppoimentDate() {
+            return appoimentDate;
+        }
+
+        public void setAppoimentDate(Date appoimentDate) {
+            this.appoimentDate = appoimentDate;
+        }
+
+        public double getCashTotal() {
+            return cashTotal;
+        }
+
+        public void setCashTotal(double cashTotal) {
+            this.cashTotal = cashTotal;
+        }
+
+        public double getCardTotal() {
+            return cardTotal;
+        }
+
+        public void setCardTotal(double cardTotal) {
+            this.cardTotal = cardTotal;
+        }
+
+        public double getCreditTotal() {
+            return creditTotal;
+        }
+
+        public void setCreditTotal(double creditTotal) {
+            this.creditTotal = creditTotal;
+        }
+
+        public double getCancelOrRefundTotal() {
+            return cancelOrRefundTotal;
+        }
+
+        public void setCancelOrRefundTotal(double cancelOrRefundTotal) {
+            this.cancelOrRefundTotal = cancelOrRefundTotal;
+        }
+
+        public double getTotalDocFee() {
+            return totalDocFee;
+        }
+
+        public void setTotalDocFee(double totalDocFee) {
+            this.totalDocFee = totalDocFee;
+        }
+
+        public double getTotalHosFee() {
+            return totalHosFee;
+        }
+
+        public void setTotalHosFee(double totalHosFee) {
+            this.totalHosFee = totalHosFee;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public void setTotalAmount(double totalAmount) {
+            this.totalAmount = totalAmount;
+        }
+
+        public double getTotalActiveAppoinments() {
+            return totalActiveAppoinments;
+        }
+
+        public void setTotalActiveAppoinments(double totalActiveAppoinments) {
+            this.totalActiveAppoinments = totalActiveAppoinments;
+        }
+
+        public double getTotalCancelAppoinments() {
+            return totalCancelAppoinments;
+        }
+
+        public void setTotalCancelAppoinments(double totalCancelAppoinments) {
+            this.totalCancelAppoinments = totalCancelAppoinments;
+        }
+    }
+    
+    private WrapperDtoForChannelFutureIncome wrapperDto;
+
+    public WrapperDtoForChannelFutureIncome getWrapperDto() {
+        return wrapperDto;
+    }
+
+    public void setWrapperDto(WrapperDtoForChannelFutureIncome wrapperDto) {
+        this.wrapperDto = wrapperDto;
+    }
+    
+    
+    
+    public void fetchChannelIncomeSummeryByUserWise(){
+        if(fromDate == null || toDate == null){
+            JsfUtil.addErrorMessage("Date range is not selected.");
+            return;
+        }
+        
+        if(fromDate.after(toDate)){
+            JsfUtil.addErrorMessage("From date should be before to toDate.");
+            return;
+        }
+        
+       wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, category, reportStatus, reportStatus);
+       
+       if(wrapperDto == null){
+           return;
+       }
+       
+       wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+       
+       if(institution != null){
+           wrapperDto.setHospital(institution);
+       }
     }
 
     public void fetchAgentSessionIncome() {
@@ -4434,6 +4772,14 @@ public class ChannelReportController implements Serializable {
 
     public void setReportStatus(String reportStatus) {
         this.reportStatus = reportStatus;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

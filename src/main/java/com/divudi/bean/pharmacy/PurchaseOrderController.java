@@ -170,7 +170,7 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("This purchase order is already approved");
             return "";
         }
-        
+
         if (getAprovedBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return "";
@@ -453,43 +453,23 @@ public class PurchaseOrderController implements Serializable {
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
 
             double qty;
-            qty = i.getQty() + i.getPharmaceuticalBillItem().getFreeQty();
+            qty = i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
+
+            i.getPharmaceuticalBillItem().setRemainingQty(i.getPharmaceuticalBillItem().getQty());
+            i.getPharmaceuticalBillItem().setRemainingFreeQty(i.getPharmaceuticalBillItem().getFreeQty());
+
             if (qty <= 0.0) {
                 i.setRetired(true);
                 i.setRetirer(sessionController.getLoggedUser());
                 i.setRetiredAt(new Date());
                 i.setRetireComments("Retired at Approving PO");
-
             }
-//            totalBillItemsCount = totalBillItemsCount + qty;
-            PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-            try {
-                if (i.getId() == null) {
-                    getBillItemFacade().create(i);
-                } else {
-                    getBillItemFacade().edit(i);
-                }
-            } catch (Exception e) {
-            }
-
-            phItem.setBillItem(i);
-
-            try {
-                if (phItem.getId() == null) {
-                    getPharmaceuticalBillItemFacade().create(phItem);
-                } else {
-                    getPharmaceuticalBillItemFacade().edit(phItem);
-                }
-            } catch (Exception e) {
-            }
-
-            i.setPharmaceuticalBillItem(phItem);
-            try {
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            } else {
                 getBillItemFacade().edit(i);
-            } catch (Exception e) {
-
             }
+
             getAprovedBill().getBillItems().add(i);
         }
 
