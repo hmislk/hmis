@@ -58,6 +58,10 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean settlePaymentCustom3;
     private boolean settlePaymentPosHeaderPaper;
 
+    // GRN Settings
+    private boolean grnReceiptA4;
+    private boolean grnReceiptCustom1;
+
     public PharmacyRetailConfigController() {
     }
     
@@ -98,6 +102,10 @@ public class PharmacyRetailConfigController implements Serializable {
         settlePaymentCustom2 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", true);
         settlePaymentCustom3 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", true);
         settlePaymentPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", true);
+
+        // GRN Settings
+        grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
+        grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
     }
 
     /**
@@ -137,6 +145,10 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", settlePaymentCustom2);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", settlePaymentCustom3);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", settlePaymentPosHeaderPaper);
+
+            // GRN Settings
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
             
@@ -331,6 +343,22 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setSettlePaymentPosHeaderPaper(boolean settlePaymentPosHeaderPaper) {
         this.settlePaymentPosHeaderPaper = settlePaymentPosHeaderPaper;
+    }
+
+    public boolean isGrnReceiptA4() {
+        return grnReceiptA4;
+    }
+
+    public void setGrnReceiptA4(boolean grnReceiptA4) {
+        this.grnReceiptA4 = grnReceiptA4;
+    }
+
+    public boolean isGrnReceiptCustom1() {
+        return grnReceiptCustom1;
+    }
+
+    public void setGrnReceiptCustom1(boolean grnReceiptCustom1) {
+        this.grnReceiptCustom1 = grnReceiptCustom1;
     }
 
 }

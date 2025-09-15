@@ -85,6 +85,22 @@
                 <!-- Separator Line -->
                 <div class="separator"></div>
 
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                    <div class="billline">
+                        <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill.referenceBill).tokenNumber}" style="font-size: 30px;
+                                       display: inline-block;
+                                       width: 60px;
+                                       height: 60px;
+                                       text-align: center;
+                                       line-height: 60px;
+                                       border-radius: 50%;
+                                       border: solid 2px;
+                                       color: black;"/>
+                    </div>
+                    <div class="separator"></div>
+                </h:panelGroup>
+
+
                 <!-- Item Table -->
                 <table class="receipt-table">
                     <thead>

@@ -7,189 +7,275 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-<cc:interface>
-    <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true"/>
-    <cc:attribute name="billController" required="true"/>
-    <cc:attribute name="dup" type="java.lang.Boolean"/>
-</cc:interface>
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true"/>
+        <cc:attribute name="billController" required="true"/>
+        <cc:attribute name="dup" type="java.lang.Boolean"/>
+    </cc:interface>
 
-<cc:implementation>
+    <cc:implementation>
 
-    <h:outputStylesheet name="printing.css" library="css" />
+        <h:outputStylesheet name="printing.css" library="css" />
 
-    <style type="text/css">
-        .receipt { max-width: 95mm; margin: 0 auto; font-family: Arial, sans-serif; color:#111; line-height:1.35; }
-        .toolbar { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-        .r-title { text-align:center; font-weight:700; font-size:18px; letter-spacing:.5px; }
-        .r-head { text-align:center; margin-top:2mm; line-height:1.35; font-size:12px; }
-        .r-head .small { font-size:11px; }
-        .r-line { height:1px; background:#000; margin:3mm 0; opacity:.85; }
-        .r-center-title { text-align:center; font-weight:700; font-size:18px; margin:4mm 0 3mm; }
-        .meta { width:100%; border-collapse:collapse; font-size:13px; margin-top:2mm; }
-        .meta td { padding:1mm 0; vertical-align:top; }
-        .meta .lbl { width:28mm; }
-        .meta .colon { width:3mm; text-align:center; }
-        .meta .val { word-break:break-word; }
-        .items { width:100%; border-collapse:collapse; margin:5mm 0 2mm; }
-        .items th { text-align:left; font-weight:700; border-bottom:1px solid #000; padding:2mm 0 1.5mm; }
-        .items td { padding:1.8mm 0; font-size:13px; }
-        .items .amt, .totals .amt { text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; }
-        .totals { width:100%; font-size:14px; margin-top:2mm; }
-        .totals tr td { padding:1.2mm 0; }
-        .totals .lbl { text-align:right; padding-right:2mm; }
-        .foot { display:flex; justify-content:space-between; margin-top:6mm; font-size:12px; }
-        .badge { font-weight:700; margin-left:4px; }
-        /* Hide only the toolbar in print */
-        @media print { .toolbar { display:none !important; } }
-    </style>
-    <!-- ====== BUTTONS ON THE RECEIPT ====== -->
-    <div class="toolbar">
-        <p:commandButton value="New Bill"
-                         icon="pi pi-plus"
-                         styleClass="ui-button-success"
-                         ajax="false"
-                         action="#{cc.attrs.billController.prepareNewBill}" />
-        <p:commandButton value="To Cancel Bill"
-                         icon="pi pi-times"
-                         styleClass="ui-button-danger"
-                         ajax="false"
-                         action="#{cc.attrs.billController.prepareToCancelBill}" />
-        <p:commandButton value="Print"
-                         icon="pi pi-print"
-                         styleClass="ui-button-info"
-                         ajax="false"
-                         action="#{billController.printPreview}">
-            <p:printer target="gpBillPreview"/>
-        </p:commandButton>
-    </div>
-    <!-- Single bordered panel containing BOTH toolbar + receipt -->
-    <p:panel id="gpBillPreview" style="border:1px solid #777; margin-top:5mm; padding:8px;">
+        <style type="text/css">
+            .receipt {
+                max-width: 95mm;
+                margin: 0 auto;
+                font-family: Arial, sans-serif;
+                color:#111;
+                line-height:1.35;
+            }
+            .toolbar {
+                display:flex;
+                gap:8px;
+                align-items:center;
+                margin-bottom:8px;
+            }
+            .r-title {
+                text-align:center;
+                font-weight:700;
+                font-size:18px;
+                letter-spacing:.5px;
+            }
+            .r-head {
+                text-align:center;
+                margin-top:2mm;
+                line-height:1.35;
+                font-size:12px;
+            }
+            .r-head .small {
+                font-size:11px;
+            }
+            .r-line {
+                height:1px;
+                background:#000;
+                margin:3mm 0;
+                opacity:.85;
+            }
+            .r-center-title {
+                text-align:center;
+                font-weight:700;
+                font-size:18px;
+                margin:4mm 0 3mm;
+            }
+            .meta {
+                width:100%;
+                border-collapse:collapse;
+                font-size:13px;
+                margin-top:2mm;
+            }
+            .meta td {
+                padding:1mm 0;
+                vertical-align:top;
+            }
+            .meta .lbl {
+                width:28mm;
+            }
+            .meta .colon {
+                width:3mm;
+                text-align:center;
+            }
+            .meta .val {
+                word-break:break-word;
+            }
+            .items {
+                width:100%;
+                border-collapse:collapse;
+                margin:5mm 0 2mm;
+            }
+            .items th {
+                text-align:left;
+                font-weight:700;
+                border-bottom:1px solid #000;
+                padding:2mm 0 1.5mm;
+            }
+            .items td {
+                padding:1.8mm 0;
+                font-size:13px;
+            }
+            .items .amt, .totals .amt {
+                text-align:right;
+                white-space:nowrap;
+                font-variant-numeric: tabular-nums;
+            }
+            .totals {
+                width:100%;
+                font-size:14px;
+                margin-top:2mm;
+            }
+            .totals tr td {
+                padding:1.2mm 0;
+            }
+            .totals .lbl {
+                text-align:right;
+                padding-right:2mm;
+            }
+            .foot {
+                display:flex;
+                justify-content:space-between;
+                margin-top:6mm;
+                font-size:12px;
+            }
+            .badge {
+                font-weight:700;
+                margin-left:4px;
+            }
+            /* Hide only the toolbar in print */
+            @media print {
+                .toolbar {
+                    display:none !important;
+                }
+            }
+        </style>
+        <!-- ====== BUTTONS ON THE RECEIPT ====== -->
+        <div class="toolbar">
+            <p:commandButton value="New Bill"
+                             icon="pi pi-plus"
+                             styleClass="ui-button-success"
+                             ajax="false"
+                             action="#{cc.attrs.billController.prepareNewBill}" />
+            <p:commandButton value="To Cancel Bill"
+                             icon="pi pi-times"
+                             styleClass="ui-button-danger"
+                             ajax="false"
+                             action="#{cc.attrs.billController.prepareToCancelBill}" />
+            <p:commandButton value="Print"
+                             icon="pi pi-print"
+                             styleClass="ui-button-info"
+                             ajax="false"
+                             action="#{billController.printPreview}">
+                <p:printer target="gpBillPreview"/>
+            </p:commandButton>
+        </div>
+        <!-- Single bordered panel containing BOTH toolbar + receipt -->
+        <p:panel id="gpBillPreview" style="border:1px solid #777; margin-top:5mm; padding:8px;">
 
 
 
-        <!-- ====== RECEIPT CONTENT ====== -->
-        <div class="receipt">
+            <!-- ====== RECEIPT CONTENT ====== -->
+            <div class="receipt">
 
-            <div class="r-title"><h:outputText value="#{cc.attrs.bill.department.name}"/></div>
-            <div class="r-head">
-                <h:outputText value="#{cc.attrs.bill.institution.address}"/><br/>
-                <span class="small">
-          <h:outputText value="Tel : #{cc.attrs.bill.institution.phone}"/>&nbsp;&nbsp;&nbsp;
-          <h:outputText value="Email : #{cc.attrs.bill.institution.email}"/>&nbsp;&nbsp;&nbsp;<br/>
-          <h:outputText value="Web : #{cc.attrs.bill.institution.web}"/>
-        </span>
-            </div>
-            <div class="r-line"></div>
+                <div class="r-title"><h:outputText value="#{cc.attrs.bill.department.name}"/></div>
+                <div class="r-head">
+                    <h:outputText value="#{cc.attrs.bill.institution.address}"/><br/>
+                    <span class="small">
+                        <h:outputText value="Tel : #{cc.attrs.bill.institution.phone}"/>&nbsp;&nbsp;&nbsp;
+                        <h:outputText value="Email : #{cc.attrs.bill.institution.email}"/>&nbsp;&nbsp;&nbsp;<br/>
+                        <h:outputText value="Web : #{cc.attrs.bill.institution.web}"/>
+                    </span>
+                </div>
+                <div class="r-line"></div>
 
-            <div class="r-center-title"><h:outputText value="Credit Settlement  Receipt"/></div>
+                <div class="r-center-title"><h:outputText value="Credit Settlement  Receipt"/></div>
 
-            <table class="meta">
-                <tr>
-                    <td class="lbl">Bill ID</td><td class="colon">:</td>
-                    <td class="val">
-                        <h:panelGroup rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
-                            <h:outputText value="#{cc.attrs.bill.cancelledBill.deptId}"/><span class="badge">**Cancelled</span>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
-                            <h:outputText value="#{cc.attrs.bill.deptId}"/>
-                            <h:panelGroup rendered="#{cc.attrs.dup}"><span class="badge">**Duplicate</span></h:panelGroup>
-                        </h:panelGroup>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="lbl">Payment Type</td><td class="colon">:</td>
-                    <td class="val">
-                        <h:outputText value="#{cc.attrs.bill.cancelledBill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/>
-                        <h:outputText value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="lbl">Date</td><td class="colon">:</td>
-                    <td class="val">
-                        <h:outputText value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputText>
-                        <h:outputText value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputText>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="lbl">Time</td><td class="colon">:</td>
-                    <td class="val">
-                        <h:outputText value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                        </h:outputText>
-                        <h:outputText value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                        </h:outputText>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="lbl">Payment</td><td class="colon">:</td>
-                    <td class="val"><h:outputText value="#{cc.attrs.bill.paymentMethod}"/></td>
-                </tr>
-                <tr>
-                    <td class="lbl">Company</td><td class="colon">:</td>
-                    <td class="val"><h:outputText value="#{cc.attrs.bill.fromInstitution.name}"/></td>
-                </tr>
-            </table>
-
-            <table class="items">
-                <thead>
-                <tr>
-                    <th>Bill No</th>
-                    <th>Patient Name</th>
-                    <th class="amt">Value</th>
-                </tr>
-                </thead>
-                <tbody>
-                <ui:repeat value="#{cc.attrs.bill.billItems}" var="b">
+                <table class="meta">
                     <tr>
-                        <td><h:outputText value="#{empty b.patientEncounter ? b.referenceBill.deptId : b.patientEncounter.bhtNo}"/></td>
-                        <td><h:outputText value="#{empty b.patientEncounter ? b.referenceBill.patient.person.name : b.patientEncounter.patient.person.name}"/></td>
+                        <td class="lbl">Bill ID</td><td class="colon">:</td>
+                        <td class="val">
+                            <h:panelGroup rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                                <h:outputText value="#{cc.attrs.bill.cancelledBill.deptId}"/><span class="badge">**Cancelled</span>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                                <h:outputText value="#{cc.attrs.bill.deptId}"/>
+                                <h:panelGroup rendered="#{cc.attrs.dup}"><span class="badge">**Duplicate</span></h:panelGroup>
+                            </h:panelGroup>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Payment Type</td><td class="colon">:</td>
+                        <td class="val">
+                            <h:outputText value="#{cc.attrs.bill.cancelledBill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/>
+                            <h:outputText value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Date</td><td class="colon">:</td>
+                        <td class="val">
+                            <h:outputText value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                            <h:outputText value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Time</td><td class="colon">:</td>
+                        <td class="val">
+                            <h:outputText value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                            </h:outputText>
+                            <h:outputText value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                            </h:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Payment</td><td class="colon">:</td>
+                        <td class="val"><h:outputText value="#{cc.attrs.bill.paymentMethod}"/></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Company</td><td class="colon">:</td>
+                        <td class="val"><h:outputText value="#{cc.attrs.bill.fromInstitution.name}"/></td>
+                    </tr>
+                </table>
+
+                <table class="items">
+                    <thead>
+                        <tr>
+                            <th>Bill No</th>
+                            <th>Patient Name</th>
+                            <th class="amt">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="b">
+                            <tr>
+                                <td><h:outputText value="#{empty b.patientEncounter ? b.referenceBill.deptId : b.patientEncounter.bhtNo}"/></td>
+                                <td><h:outputText value="#{empty b.patientEncounter ? b.referenceBill.patient.person.name : b.patientEncounter.patient.person.name}"/></td>
+                                <td class="amt">
+                                    <h:outputText value="#{b.netValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+
+                <table class="totals">
+                    <tr>
+                        <td class="lbl">Total</td>
                         <td class="amt">
-                            <h:outputText value="#{b.netValue}">
+                            <h:outputText value="#{cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </td>
                     </tr>
-                </ui:repeat>
-                </tbody>
-            </table>
+                    <tr>
+                        <td class="lbl">Net Total</td>
+                        <td class="amt">
+                            <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </table>
 
-            <table class="totals">
-                <tr>
-                    <td class="lbl">Total</td>
-                    <td class="amt">
-                        <h:outputText value="#{cc.attrs.bill.total}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputText>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="lbl">Net Total</td>
-                    <td class="amt">
-                        <h:outputText value="#{cc.attrs.bill.netTotal}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputText>
-                    </td>
-                </tr>
-            </table>
+                <div class="foot">
+                    <div>
+                        Generated By :
+                        <h:outputText value="#{not empty cc.attrs.bill.creater.name ? cc.attrs.bill.creater.name : ''}"/>
+                    </div>
+                    <div>
+                        Settle By :
+                        <h:outputText value="#{not empty cc.attrs.bill.creater.name ? cc.attrs.bill.creater.name : ''}"/>
+                    </div>
+                </div>
 
-            <div class="foot">
-                <div>
-                    Generated By :
-                    <h:outputText value="#{empty sessionController.bill.creater != null and cc.attrs.bill.creater.name ne null ? cc.attrs.bill.creater.name : cc.attrs.bill.creater.id}"/>
-                </div>
-                <div>
-                    Settle By :
-                    <h:outputText value="#{empty cc.attrs.bill.creater != null and cc.attrs.bill.creater.name ne null ? cc.attrs.bill.creater.name : cc.attrs.bill.creater.id}"/>
-                </div>
+
             </div>
+        </p:panel>
 
-        </div>
-    </p:panel>
-
-</cc:implementation>
+    </cc:implementation>
 </html>
