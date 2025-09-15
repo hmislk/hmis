@@ -1,0 +1,321 @@
+            System.err.println("e = " + e);
+        }
+        return paymentMethodsForPharmacyBillCancellations;
+    }
+
+    public void fillPaymentMethodsForPharmacyBilling() {
+        paymentMethodsForPharmacyBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
+            if (include) {
+                paymentMethodsForPharmacyBilling.add(pm);
+            }
+        }
+    }
+
+    public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
+        paymentTypeOfPaymentMethods = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.asList()) {
+            if (pm.getPaymentType() == paymentType) {
+                paymentTypeOfPaymentMethods.add(pm);
+            }
+        }
+        return paymentTypeOfPaymentMethods;
+    }
+
+    public void setPaymentTypeOfPaymentMethods(List<PaymentMethod> paymentTypeOfPaymentMethods) {
+        this.paymentTypeOfPaymentMethods = paymentTypeOfPaymentMethods;
+    }
+
+    public List<SearchDateType> getSearchDateTypes() {
+        return Arrays.asList(SearchDateType.values());
+    }
+
+    public List<String> getEnumValues(String enumClassName) {
+        try {
+            Class<?> enumClass = Class.forName(enumClassName);
+            if (enumClass.isEnum()) {
+                Object[] enumConstants = enumClass.getEnumConstants();
+                return Arrays.stream(enumConstants)
+                        .map(e -> ((Enum<?>) e).name())
+                        .collect(Collectors.toList());
+            }
+        } catch (ClassNotFoundException e) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>();
+    }
+
+    public <E extends Enum<E>> E getEnumValue(Class<E> enumType, String enumName) {
+        for (E enumConstant : enumType.getEnumConstants()) {
+            if (enumConstant.name().equals(enumName)) {
+                return enumConstant;
+            }
+        }
+        return null; // Return null if no match is found
+    }
+
+    public List<Priority> getPriorities() {
+        return Arrays.asList(Priority.values());
+    }
+
+    public List<CategoryType> getCategoryTypes() {
+        return Arrays.asList(CategoryType.values());
+    }
+
+    public List<HistoryType> getHistoryTypes() {
+        return Arrays.asList(HistoryType.values());
+    }
+
+    public List<ScheduledProcess> getScheduledProcesses() {
+        return Arrays.asList(ScheduledProcess.values());
+    }
+    
+     public List<EmployeeStatus> getEmploymentStatuses() {
+        return Arrays.asList(EmployeeStatus.values());
+    }
+
+    public List<ScheduledFrequency> getScheduledFrequencies() {
+        return Arrays.asList(ScheduledFrequency.values());
+    }
+
+    public Dashboard[] getDashboardTypes() {
+        return Dashboard.values();
+    }
+
+    public SessionNumberType[] getSessionNumberTypes() {
+        sessionNumberTypes = SessionNumberType.values();
+        return sessionNumberTypes;
+    }
+
+    public List<PatientInvestigationStatus> getPatientInvestigationStatuses() {
+        patientInvestigationStatuses = Arrays.asList(PatientInvestigationStatus.values());
+        return patientInvestigationStatuses;
+    }
+
+    public List<LoginPage> getLoginPages() {
+        return Arrays.asList(LoginPage.values());
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return Arrays.asList(ReportViewType.values());
+    }
+
+    public List<ReportViewType> getPharmacyIncomeReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+//                ReportViewType.BY_ITEM
+        );
+    }
+    
+    public List<ReportViewType> getPharmacyProcurementByBillItemViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM
+        );
+    }
+
+    public List<ReportViewType> getPharmacyIncomeCostReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM,
+                ReportViewType.BY_BILL_TYPE
+        );
+    }
+
+    public ItemListingStrategy[] getItemListingStrategys() {
+        return ItemListingStrategy.values();
+    }
+
+    public SymanticType[] getSymanticTypes() {
+        return SymanticType.values();
+    }
+
+    public ItemListingStrategy[] getOpdItemListingStrategys() {
+        ItemListingStrategy[] sts
+                = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.SITE_FEE_ITEMS,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
+        return sts;
+    }
+
+    public ItemListingStrategy[] getCcItemListingStrategys() {
+        ItemListingStrategy[] sts
+                = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.ITEMS_OF_SELECTED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_OF_SELECTED_INSTITUTIONS,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_SELECTED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_SELECTED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
+        return sts;
+    }
+
+    public ItemListingStrategy[] getInwardItemListingStrategys() {
+        ItemListingStrategy[] sts
+                = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
+        return sts;
+    }
+
+    public RestAuthenticationType[] getRestAuthenticationTypes() {
+        return RestAuthenticationType.values();
+    }
+
+    public BillItemStatus[] getBillItemStatuses() {
+        return BillItemStatus.values();
+    }
+
+    public AdmissionStatus[] getAdmissionStatuses() {
+        return AdmissionStatus.values();
+    }
+
+    public CssVerticalAlign[] getCssVerticalAlign() {
+        return CssVerticalAlign.values();
+    }
+
+    public DepartmentListMethod[] getDepartmentListMethods() {
+        return DepartmentListMethod.values();
+    }
+
+    public DepartmentType[] getDepartmentType() {
+        return DepartmentType.values();
+    }
+
+    public ApplicationInstitution[] getApplicationInstitutions() {
+        return ApplicationInstitution.values();
+    }
+
+    public PaperType[] getPaperTypes() {
+        return PaperType.values();
+    }
+
+    public ReportItemType[] getReportItemTypes() {
+        Person p;
+        return ReportItemType.values();
+    }
+
+    public LeaveType[] getLeaveType() {
+        LeaveType[] ltp = {LeaveType.Annual,
+            LeaveType.AnnualHalf,
+            LeaveType.Casual,
+            LeaveType.CasualHalf,
+            LeaveType.DutyLeave,
+            LeaveType.DutyLeaveHalf,
+            LeaveType.Lieu,
+            LeaveType.LieuHalf,
+            LeaveType.Maternity1st,
+            LeaveType.Maternity2nd,
+            LeaveType.Medical,
+            LeaveType.No_Pay,
+            LeaveType.No_Pay_Half};
+        return ltp;
+    }
+
+    public Times[] getTimeses() {
+        return new Times[]{Times.inTime, Times.outTime};
+    }
+
+    public void setSessionNumberTypes(SessionNumberType[] sessionNumberTypes) {
+        this.sessionNumberTypes = sessionNumberTypes;
+    }
+
+    public FeeType[] getFeeTypes() {
+        return FeeType.values();
+    }
+
+    public DayType[] getDayTypes() {
+        return DayType.values();
+    }
+
+    public DayType[] getDayTypeForShift() {
+        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.Poya};
+
+        return dayTypes;
+    }
+
+    public DayType[] getDayTypesForPh() {
+        DayType[] dayTypes = {DayType.MurchantileHoliday, DayType.Poya, DayType.PublicHoliday};
+
+        return dayTypes;
+    }
+
+    public InvestigationItemType[] getInvestigationItemTypes() {
+        return InvestigationItemType.values();
+    }
+
+    public InvestigationItemValueType[] getInvestigationItemValueTypes() {
+        return InvestigationItemValueType.values();
+    }
+
+    public PaysheetComponentType[] getAddingComponentTypes() {
+        return PaysheetComponentType.addition.children();
+
+    }
+
+    public BillType[] getBillTypes() {
+        return BillType.values();
+    }
+
+    public BillTypeAtomic[] getBillTypesAtomic() {
+        return BillTypeAtomic.values();
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomicForLabTests() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.CC_BILL);
+        btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.CC_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        return btas;
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomic(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(bt -> bt.getLabel().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> completeBillTypeAtomics(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .map(Enum::toString) // Using toString() to get the string representation of the enum
+                .filter(name -> name.toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> completeReportTemplateColumns(String query) {
+        return Arrays.stream(ReportTemplateColumn.values())
+                .map(ReportTemplateColumn::getLabel) // Using getLabel() to get the user-friendly string
+                .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
+                .collect(Collectors.toList()); // Collecting results into a List
+    }
+
+    public List<String> completeReportTemplateFilters(String query) {
+        return Arrays.stream(ReportTemplateFilter.values())
+                .map(ReportTemplateFilter::getLabel) // Using getLabel() to get the user-friendly string
+                .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
+                .collect(Collectors.toList()); // Collecting results into a List
+    }
+
+    public StaffWelfarePeriod[] getStaffWelfarePeriods() {
+        return StaffWelfarePeriod.values();
+    }
+
+    public BillClassType[] getBillClassTypes() {

@@ -4920,27 +4920,21 @@ public class SearchController implements Serializable {
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
 
-        // Set bill types individually
-        m.put("bType1", BillType.PharmacyAdjustment);
-        m.put("bType2", BillType.PharmacyAdjustmentDepartmentStock);
-        m.put("bType3", BillType.PharmacyAdjustmentDepartmentSingleStock);
-        m.put("bType4", BillType.PharmacyAdjustmentStaffStock);
-        m.put("bType5", BillType.PharmacyAdjustmentSaleRate);
-        m.put("bType6", BillType.PharmacyAdjustmentWholeSaleRate);
-        m.put("bType7", BillType.PharmacyAdjustmentPurchaseRate);
-        m.put("bType8", BillType.PharmacyAdjustmentExpiryDate);
+        // Set bill type atomics for pharmacy adjustments
+        List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
+            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+        );
+        m.put("billTypeAtomics", billTypeAtomics);
 
         sql = "select bi from BillItem bi"
                 + " where type(bi.bill) = :class "
                 + " and bi.bill.institution = :ins"
-                + " and (bi.bill.billType = :bType1"
-                + " or bi.bill.billType = :bType2"
-                + " or bi.bill.billType = :bType3"
-                + " or bi.bill.billType = :bType4"
-                + " or bi.bill.billType = :bType5"
-                + " or bi.bill.billType = :bType6"
-                + " or bi.bill.billType = :bType7"
-                + " or bi.bill.billType = :bType8)"
+                + " and bi.bill.billTypeAtomic in :billTypeAtomics"
                 + " and bi.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
@@ -8429,12 +8423,7 @@ public class SearchController implements Serializable {
     }
 
     public void addToStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         bill = new Bill();
-
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());
         bill.setCreatedAt(new Date());

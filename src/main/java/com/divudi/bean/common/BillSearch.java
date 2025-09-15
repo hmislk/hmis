@@ -113,6 +113,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -256,6 +257,8 @@ public class BillSearch implements Serializable {
     PurchaseReturnController purchaseReturnController;
     @Inject
     DirectPurchaseReturnController directPurchaseReturnController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
 
     @Inject
     GrnReturnWithCostingController grnReturnWithCostingController;
@@ -3981,7 +3984,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_PRE:
                 return navigateToViewPharmacyPreBill();
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
-                return navigateToViewPharmacySettledPreBill();
+                pharmacySaleController.setPrintBill(bill);
+                return pharmacySaleController.navigateToSaleBillForCashierPrint();
+//                return navigateToViewPharmacySettledPreBill();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -4038,7 +4043,25 @@ public class BillSearch implements Serializable {
             case PHARMACY_WHOLESALE_GRN_BILL_REFUND:
             case PHARMACY_GRN_PAYMENT:
             case PHARMACY_GRN_PAYMENT_CANCELLED:
+            // Specific Pharmacy Adjustment Types
+            case PHARMACY_PURCHASE_RATE_ADJUSTMENT:
+                return navigateToPharmacyPurchaseRateAdjustmentReprint();
+            case PHARMACY_RETAIL_RATE_ADJUSTMENT:
+                return navigateToPharmacyRetailRateAdjustmentReprint();
+            case PHARMACY_COST_RATE_ADJUSTMENT:
+                return navigateToPharmacyCostRateAdjustmentReprint();
+            case PHARMACY_WHOLESALE_RATE_ADJUSTMENT:
+                return navigateToPharmacyWholesaleRateAdjustmentReprint();
+            case PHARMACY_STOCK_ADJUSTMENT:
+                return navigateToPharmacyStockAdjustmentReprint();
+            case PHARMACY_STAFF_STOCK_ADJUSTMENT:
+                return navigateToPharmacyStaffStockAdjustmentReprint();
+            case PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT:
+                return navigateToPharmacyExpiryDateAdjustmentReprint();
+            
+            // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
+                return navigateToPharmacyStockAdjustmentReprint();
             case PHARMACY_ADJUSTMENT_CANCELLED:
 //            case PHARMACY_TRANSFER_REQUEST:
             case PHARMACY_TRANSFER_REQUEST_PRE:
@@ -4255,7 +4278,26 @@ public class BillSearch implements Serializable {
             case PHARMACY_WHOLESALE_GRN_BILL_REFUND:
             case PHARMACY_GRN_PAYMENT:
             case PHARMACY_GRN_PAYMENT_CANCELLED:
+            
+            // Specific Pharmacy Adjustment Types
+            case PHARMACY_PURCHASE_RATE_ADJUSTMENT:
+                return navigateToPharmacyPurchaseRateAdjustmentReprint();
+            case PHARMACY_RETAIL_RATE_ADJUSTMENT:
+                return navigateToPharmacyRetailRateAdjustmentReprint();
+            case PHARMACY_COST_RATE_ADJUSTMENT:
+                return navigateToPharmacyCostRateAdjustmentReprint();
+            case PHARMACY_WHOLESALE_RATE_ADJUSTMENT:
+                return navigateToPharmacyWholesaleRateAdjustmentReprint();
+            case PHARMACY_STOCK_ADJUSTMENT:
+                return navigateToPharmacyStockAdjustmentReprint();
+            case PHARMACY_STAFF_STOCK_ADJUSTMENT:
+                return navigateToPharmacyStaffStockAdjustmentReprint();
+            case PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT:
+                return navigateToPharmacyExpiryDateAdjustmentReprint();
+            
+            // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
+                return navigateToPharmacyStockAdjustmentReprint();
             case PHARMACY_ADJUSTMENT_CANCELLED:
             case PHARMACY_TRANSFER_REQUEST:
             case PHARMACY_TRANSFER_REQUEST_PRE:
@@ -4372,6 +4414,7 @@ public class BillSearch implements Serializable {
         return "/pharmacy/view/pharmacy_pre_bill_view?faces-redirect=true";
     }
 
+    @Deprecated // Use pharmacySaleController.navigateToSaleBillForCashierPrint();
     public String navigateToViewPharmacySettledPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -6388,6 +6431,35 @@ public class BillSearch implements Serializable {
         cancelBill = billFacade.findFirstByJpql(jpql, params);
         return cancelBill.getDeptId();
 
+    }
+
+    // Navigation methods for pharmacy adjustment receipts
+    public String navigateToPharmacyStockAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyPurchaseRateAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_purchase_rate_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyRetailRateAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_retail_rate_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyCostRateAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_cost_rate_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyWholesaleRateAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_wholesale_rate_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyStaffStockAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_staff_stock_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyExpiryDateAdjustmentReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_expiry_date_adjustment_reprint?faces-redirect=true";
     }
 
 }
