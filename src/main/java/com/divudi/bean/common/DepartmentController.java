@@ -224,7 +224,7 @@ public class DepartmentController implements Serializable {
                 + " where d.retired=false "
                 + " and d.institution=:ins "
                 + " and d.departmentType in :types "
-                + " and TYPE(d) NOT IN (Route)" // Adjust based on your entity structure
+                + " and TYPE(d) <> (Route)" // Adjust based on your entity structure
                 + " order by d.name";
         
         deps = getFacade().findByJpql(jpql, m);
