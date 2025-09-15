@@ -1805,13 +1805,14 @@ public class GrnCostingController implements Serializable {
     }
 
     /**
-     * Recalculates profit margins for all bill items after discount distribution
+     * Recalculates profit margins for all bill items after discount
+     * distribution
      */
     private void recalculateProfitMarginsForAllItems() {
         if (getBillItems() == null || getBillItems().isEmpty()) {
             return;
         }
-        
+
         for (BillItem item : getBillItems()) {
             if (item != null && item.getBillItemFinanceDetails() != null) {
                 // Recalculate profit margin using the updated total cost (which includes distributed discount)
@@ -2874,37 +2875,62 @@ public class GrnCostingController implements Serializable {
         }
 
         // Process bill items for finalization with full stock management
-        for (BillItem i : getBillItems()) {
-            BillItemFinanceDetails f = i.getBillItemFinanceDetails();
+        for (BillItem grnBillItem : getBillItems()) {
+            BillItemFinanceDetails f = grnBillItem.getBillItemFinanceDetails();
             if (f == null || ((f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) == 0)
                     && (f.getFreeQuantity() == null || f.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0))) {
                 continue;
             }
 
             // Apply standardized finance details conversion
-            applyFinanceDetailsToPharmaceutical(i);
+            applyFinanceDetailsToPharmaceutical(grnBillItem);
 
             // Create/update item batch for stock management with costing respect
             ItemBatch itemBatch;
             if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
-                itemBatch = saveItemBatchWithCosting(i);
+                itemBatch = saveItemBatchWithCosting(grnBillItem);
             } else {
-                itemBatch = saveItemBatch(i);
+                itemBatch = saveItemBatch(grnBillItem);
             }
-            i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
+            grnBillItem.getPharmaceuticalBillItem().setItemBatch(itemBatch);
 
             // Create stock record
-            double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            double addingQty = grnBillItem.getPharmaceuticalBillItem().getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty();
             Stock stock = getPharmacyBean().addToStock(
-                    i.getPharmaceuticalBillItem(),
+                    grnBillItem.getPharmaceuticalBillItem(),
                     Math.abs(addingQty),
                     getSessionController().getDepartment());
 
-            i.getPharmaceuticalBillItem().setStock(stock);
+            grnBillItem.getPharmaceuticalBillItem().setStock(stock);
 
             // Update pharmaceutical bill item with stock calculations
-            getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            getPharmaceuticalBillItemFacade().edit(grnBillItem.getPharmaceuticalBillItem());
+            editBillItem(grnBillItem.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+
+            BillItem poBillItem = grnBillItem.getReferanceBillItem();
+            System.out.println("grnBillItem = " + grnBillItem);
+            System.out.println("poBillItem = " + poBillItem);
+            if (poBillItem != null) {
+                System.out.println("poBillItem = " + poBillItem);
+                if (poBillItem.getId() != null) {
+                    System.out.println("poBillItem.getId() = " + poBillItem.getId());
+                    poBillItem = billItemFacade.findWithoutCache(poBillItem.getId());
+                    if (poBillItem != null) {
+                        System.out.println("poBillItem = " + poBillItem);
+                        PharmaceuticalBillItem poPbi = poBillItem.getPharmaceuticalBillItem();
+                        if (poPbi != null) {
+                            //getRemainingQty() is double, can NOT be null
+                            //At this point grnBillItem.getPharmaceuticalBillItem() is NOT null as it is used above. its getQty is double, so can not be null
+                            poPbi.setRemainingQty(Math.abs(poPbi.getRemainingQty()) - Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty()));
+                            poPbi.setRemainingFreeQty(Math.abs(poPbi.getRemainingFreeQty()) - Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty()));
+                            poPbi.setCompletedQty(Math.abs(poPbi.getCompletedQty()) + Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty()));
+                            poPbi.setCompletedFreeQty(Math.abs(poPbi.getCompletedFreeQty()) + Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty()));
+                            billItemFacade.editAndCommit(poBillItem);
+                        }
+                    }
+                }
+            }
+
         }
 
         String billId;
@@ -3252,7 +3278,7 @@ public class GrnCostingController implements Serializable {
         BigDecimal effectiveCost = BigDecimalUtil.valueOrZero(f.getTotalCost());
         if (effectiveCost.compareTo(BigDecimal.ZERO) == 0) {
             effectiveCost = BigDecimalUtil.valueOrZero(
-                f.getNetTotal() != null ? f.getNetTotal() : f.getLineNetTotal()
+                    f.getNetTotal() != null ? f.getNetTotal() : f.getLineNetTotal()
             );
         }
         if (effectiveCost.compareTo(BigDecimal.ZERO) <= 0) {
@@ -3550,9 +3576,7 @@ public class GrnCostingController implements Serializable {
      */
     public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
         double billed = getTotalQty(po.getBillItem(), BillTypeAtomic.PHARMACY_GRN);
-        System.out.println("billed = " + billed);
         double cancelled = getTotalQty(po.getBillItem(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        System.out.println("cancelled = " + cancelled);
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
         return Math.abs(recieveNet);
     }

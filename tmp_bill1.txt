@@ -1,0 +1,259 @@
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
+ */
+package com.divudi.core.entity;
+
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
+import com.divudi.core.data.IdentifiableWithNameOrCode;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.SurgeryBillType;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.hr.BankAccount;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.pharmacy.StockVarientBillItem;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
+import javax.persistence.Temporal;
+import javax.persistence.Transient;
+
+import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
+
+/**
+ * @author buddhika
+ */
+@Entity
+@Inheritance
+public class Bill implements Serializable, RetirableEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+
+    static final long serialVersionUID = 1L;
+
+    @ManyToOne
+    private Item item;
+    @ManyToOne
+    private MembershipScheme membershipScheme;
+    @Deprecated
+    @OneToOne
+    private CashTransaction cashTransaction;
+    @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
+    private List<StockVarientBillItem> stockVarientBillItems = new ArrayList<>();
+    @OneToMany(mappedBy = "backwardReferenceBill", fetch = FetchType.LAZY)
+    private List<Bill> forwardReferenceBills = new ArrayList<>();
+    @OneToMany(mappedBy = "forwardReferenceBill", fetch = FetchType.LAZY)
+    private List<Bill> backwardReferenceBills = new ArrayList<>();
+    @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
+    private List<Bill> returnPreBills = new ArrayList<>();
+    @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
+    private List<Bill> returnBhtIssueBills = new ArrayList<>();
+    @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
+    private List<Bill> returnCashBills = new ArrayList<>();
+    @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
+    private List<Bill> cashBillsPre = new ArrayList<>();
+    @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
+    private List<Bill> cashBillsOpdPre = new ArrayList<>();
+    @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
+    private List<Bill> refundBills = new ArrayList<>();
+
+    @OneToOne
+    private OnlineBooking onlineBooking;
+
+    @Enumerated(EnumType.STRING)
+    protected BillClassType billClassType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category category;
+    @Transient
+    boolean transError;
+
+    private String ipOpOrCc;
+
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<BillFee> billFees = new ArrayList<>();
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OrderBy("inwardChargeType, searialNo")
+    private List<BillItem> billItems;
+
+    @OneToMany(mappedBy = "expenseBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("searialNo")
+    private List<BillItem> billExpenses;
+
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BillComponent> billComponents = new ArrayList<>();
+    ////////////////////////////////////////////////
+    @Lob
+    private String comments;
+    @Lob
+    private String paymentMemo;
+    @Lob
+    private String indication;
+    // Bank Detail
+    private String creditCardRefNo;
+    private String chequeRefNo;
+    private boolean creditBill;
+    private boolean consignment;
+    private int creditDuration;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution bank;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date chequeDate;
+    //Approve
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser approveUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date approveAt;
+    //Pharmacy
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date invoiceDate;
+    //Theater
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date acceptedAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date releasedAt;
+    //Enum
+    @Enumerated(EnumType.STRING)
+    private BillType billType;
+    @Enumerated(EnumType.STRING)
+    private BillTypeAtomic billTypeAtomic;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BillItem singleBillItem;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BillSession singleBillSession;
+    String qutationNumber;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution referredByInstitution;
+    @Column
+    private String referenceNumber; //referenceNumber
+
+    //Values
+    private double margin;
+
+    private double total;
+    private double netTotal;
+    private double discount;
+    private double vat;
+    private double vatPlusNetTotal;
+
+    @Transient
+    private double absoluteNetTotal;
+
+    private double discountPercent;
+
+    private double billTotal;
+    private double paidAmount;
+    private double settledAmountByPatient;
+    private double settledAmountBySponsor;
+    private double refundAmount;
+    private double balance;
+    private double serviceCharge;
+    private Double tax = 0.0;
+    private Double cashPaid = 0.0;
+    private Double cashBalance = 0.0;
+    private double saleValue = 0.0f;
+    private double freeValue = 0.0f;
+    private double performInstitutionFee;
+    private double staffFee;
+    private double billerFee;
+    private double grantTotal;
+    private double expenseTotal;
+    private double expensesTotalConsideredForCosting;
+    private double expensesTotalNotConsideredForCosting;
+    //with minus tax and discount
+    private double grnNetTotal;
+
+    private double hospitalFee;
+    private double collctingCentreFee;
+    private double professionalFee;
+
+    //Institution
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution paymentSchemeInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution collectingCentre;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution institution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution fromInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution toInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution creditCompany;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution referenceInstitution;
+    //Departments
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department referringDepartment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department department;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department fromDepartment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department toDepartment;
+    //Bill
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill billedBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill cancelledBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill refundedBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill reactivatedBill;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill referenceBill;
+    //Id's
+    private String deptId;
+    private String insId;
+    private String catId;
+    private String sessionId;
+    @Deprecated
+    private String bookingId;
+    private String invoiceNumber;
+    @Transient
+    private int intInvoiceNumber;
+    //Staff
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff staff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser webUser;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff fromStaff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff toStaff;
+    //Booleans
+    private boolean paid;
+    private boolean cancelled;
+    private boolean refunded;
+    private boolean reactivated;
+    //Created Properties
+    @ManyToOne(fetch = FetchType.LAZY)
