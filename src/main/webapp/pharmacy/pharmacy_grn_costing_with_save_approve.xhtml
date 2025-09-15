@@ -687,7 +687,13 @@
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="GRN Preview " class="mt-2"/>
                             <div class="d-flex gap-2">
-
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary"
+                                    type="button"
+                                    onclick="PF('grnConfigDialog').show();" />
                                 <p:commandButton
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
@@ -728,7 +734,12 @@
 
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup class="d-flex justify-content-center">
-                            <pha:grn_with_costing bill="#{grnCostingController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing_custom_1
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
+                                bill="#{grnCostingController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing_custom_2
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 2', true)}"
+                                bill="#{grnCostingController.currentGrnBillPre}"/>
                         </h:panelGroup>
                     </h:panelGroup>
                 </p:panel>
@@ -738,6 +749,78 @@
 
 
         </h:form>
-    </ui:define>  
+
+        <!-- GRN Configuration Dialog -->
+        <p:dialog id="grnConfigDialog"
+                  header="GRN Printer Configuration"
+                  widgetVar="grnConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="400"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="grnConfigForm" />
+
+            <h:form id="grnConfigForm">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> GRN Receipt Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptA4"
+                                        value="#{pharmacyRetailConfigController.grnReceiptA4}" />
+                                    <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptCustom1"
+                                        value="#{pharmacyRetailConfigController.grnReceiptCustom1}" />
+                                    <p:outputLabel for="grnReceiptCustom1" value="Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom GRN receipt format 1</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="grnConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyRetailConfigController.saveConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('grnConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
 
 </ui:composition>

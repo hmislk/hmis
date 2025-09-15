@@ -99,19 +99,39 @@ public class DealerController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void generateCodeForDealor(){
-        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "Prefix/");
+        if(current == null){
+            JsfUtil.addErrorMessage("Please select or add a supplier first.");
+            return;
+        }
+
+        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "SUP");
         List<Institution> allDealors = findAllDealors();
 
-        long number = allDealors.size();
-        String formattedNumber = String.format("%04d", number);
+        long number = 1;
+        String generatedCode;
+        boolean codeExists = true;
 
-        for(Institution i: allDealors){
-            if(i.getInstitutionCode().equalsIgnoreCase(prefix+formattedNumber)){
-                number++;
-                formattedNumber = String.format("%04d", number);
+        // Find the next available code number
+        while(codeExists){
+            String formattedNumber = String.format("%04d", number);
+            generatedCode = prefix + formattedNumber;
+            codeExists = false;
+
+            // Check if this code already exists
+            for(Institution i: allDealors){
+                if(i.getInstitutionCode() != null && i.getInstitutionCode().equalsIgnoreCase(generatedCode)){
+                    codeExists = true;
+                    break;
+                }
             }
+
+            if(!codeExists){
+                current.setInstitutionCode(generatedCode);
+                JsfUtil.addSuccessMessage("Code generated successfully: " + generatedCode);
+                return;
+            }
+            number++;
         }
-        current.setInstitutionCode(prefix+formattedNumber);
     }
 
     public void prepareAdd() {
