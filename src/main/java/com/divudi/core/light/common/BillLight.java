@@ -29,6 +29,9 @@ public class BillLight {
     private BillTypeAtomic billTypeAtomic;
     private Long count;
     private Department toDpartment;
+    private Double ccTotal;
+    private Double hospitalTotal;
+    private String referenceNumber;
 
     public BillLight() {
     }
@@ -102,6 +105,18 @@ public class BillLight {
         this.netValue = netValue;
         this.patientId = patientId;
     }
+
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, String patientName, Double ccTotal, Double hospitalTotal) {
+        this.id = id;
+        this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
+        this.billDate = billDate;
+        this.patientName = patientName;
+        this.ccTotal = ccTotal;
+        this.hospitalTotal = hospitalTotal;
+    }
+    
+    
 
     public Long getId() {
         return id;
@@ -269,4 +284,28 @@ public class BillLight {
         this.toDpartment = toDpartment;
     }
 
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
+    }
+    
 }

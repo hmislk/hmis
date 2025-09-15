@@ -93,7 +93,7 @@ public class ClinicalEntityController implements Serializable {
         return listClinicalEntity(SymanticType.Race);
     }
 
-    public List<ClinicalEntity> getEhnicity() {
+    public List<ClinicalEntity> getEthnicity() {
         return listClinicalEntity(SymanticType.Religion);
     }
 

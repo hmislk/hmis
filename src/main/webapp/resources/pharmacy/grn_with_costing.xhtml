@@ -90,8 +90,12 @@
                 <div class="row">
                     <h:outputLabel value="Payment Method" class="col-3"/>
                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="col-3"/>
-                    <h:outputLabel value="Crd. Duration" class="col-2" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-2" style="text-align: left;" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="Consignment" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" class="col-4"/>
+                </div>
+                <div class="row">
+                    <h:outputLabel value="Crd. Duration" class="col-3" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-3" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
                 </div>
 
             </div>
@@ -157,7 +161,7 @@
                                 </td>
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.qty}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
@@ -196,7 +200,7 @@
 
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRate * bip.billItemFinanceDetails.totalQuantity}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRatePerUnit * bip.billItemFinanceDetails.totalQuantityByUnits}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>

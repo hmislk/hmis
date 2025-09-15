@@ -61,6 +61,7 @@ public class SearchKeyword {
     private Investigation investigation;
     private List<BillType> billTypes;
     private Long id;
+    // Removed legacy Institution distributor; use String fromInstitution in JSF filters
 
 
 
@@ -456,6 +457,8 @@ public class SearchKeyword {
     public void setId(Long id) {
         this.id = id;
     }
+
+    // distributor removed
 
 
 

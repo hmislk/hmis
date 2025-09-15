@@ -85,13 +85,15 @@
                                     action="#{transferRequestController.saveTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-save"
-                                    class="mx-1 ui-button-success"/>
+                                    class="mx-1 ui-button-success"
+                                    />
                                 <p:commandButton
                                     value="Finalize"
                                     action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-check"
-                                    class="mx-1 ui-button-warning"/>
+                                    class="mx-1 ui-button-warning"
+                                    />
                                 <p:commandButton
                                     value="New Bill"
                                     action="#{transferRequestController.recreate}"
@@ -161,21 +163,25 @@
                                             <p:ajax event="keyup" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
                                         </p:inputText>
                                     </div>
-                                    <div class="col-1">
-                                        <p:outputLabel value="Rate" for="txtLineGrossRate"/>
-                                        <p:inputText id="txtLineGrossRate" class="w-100 text-end"
-                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
-                                        </p:inputText>
-                                    </div>
-                                    <div class="col-1">
-                                        <p:outputLabel value="Value" for="txtLineNetValue"/>
-                                        <p:inputText id="txtLineNetValue" class="w-100 text-end"
-                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
-                                    </div>                                                                       
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
+                                        <div class="col-1" >
+                                            <p:outputLabel value="Rate" for="txtLineGrossRate"/>
+                                            <p:inputText id="txtLineGrossRate" class="w-100 text-end"
+                                                         value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                                <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
+                                            </p:inputText>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" >
+                                        <div class="col-1">
+                                            <p:outputLabel value="Value" for="txtLineNetValue"/>
+                                            <p:inputText id="txtLineNetValue" class="w-100 text-end"
+                                                         value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+                                        </div>      
+                                    </h:panelGroup>
 
                                     <div class="col-1">
                                         <p:outputLabel value="&nbsp;"/>
@@ -239,14 +245,14 @@
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Transfer Rate" class="text-end" width="8em">
+                                    <p:column headerText="Transfer Rate" class="text-end" width="8em" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <p:inputText value="#{bi.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax event="blur" listener="#{transferRequestController.onLineGrossRateChange(bi)}" update="itemList requestTotals"/>
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Transfer Value" class="text-end" width="8em">
+                                    <p:column headerText="Transfer Value" class="text-end" width="8em" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -272,17 +278,17 @@
                                 <h:panelGrid columns="3" class="w-100">
                                     <h:outputLabel value="Request From" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.fromDepartment.name}">
+                                    <h:outputLabel class="w-100 text-end" value="#{sessionController.department.name}">
                                     </h:outputLabel>
 
                                     <h:outputLabel value="Request To" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.toDepartment.name}">
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.toDepartment.name}">
                                     </h:outputLabel>
 
-                                    <h:outputLabel value="Approximate Request Value" />
-                                    <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}">
+                                    <h:outputLabel value="Approximate Request Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" />
+                                    <h:outputLabel value=": &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}"/>
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
 
@@ -304,7 +310,7 @@
 
                 </p:panel>
             </p:panel>
-            <p:panel rendered="#{transferRequestController.printPreview}" >
+            <p:panel id="printPanel" rendered="#{transferRequestController.printPreview}" >
                 <div class="d-flex justify-content-between mb-2">
                     <p:commandButton
                         value="New Bill"
@@ -325,6 +331,7 @@
                         <p:commandButton
                             value="#{transferRequestController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
                             icon="fas fa-eye"
+                            id="btnTogglePrintAll"
                             class="ui-button-secondary mx-1"
                             ajax="false"
                             action="#{transferRequestController.toggleShowAllBillFormats}"
@@ -337,7 +344,7 @@
                     <h:panelGroup rendered="true">
                         <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
                     </h:panelGroup>
-                    
+
                     <!-- Additional formats for development - shown only when toggle is enabled -->
                     <!-- Future format variations can be added here with: rendered="#{transferRequestController.showAllBillFormats}" -->
                 </h:panelGroup>

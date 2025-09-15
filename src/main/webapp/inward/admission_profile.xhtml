@@ -437,10 +437,24 @@
                         <p:panel header="Reports" class="m-1">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
-                                    value="Pharmacy Issue Summary" 
+                                    value="Pharmacy Issue Summary (Entity)" 
                                     action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
                                     icon="fa fa-prescription-bottle-alt"
-                                    class="w-100">
+                                    class="w-100"
+                                    title="Traditional entity-based report">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener 
+                                        value="#{null}" 
+                                        target="#{inwardReportControllerBht.department}" />
+                                </p:commandButton>
+                                 <p:commandButton 
+                                    value="Pharmacy Issue Summary (DTO - Fast)" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}" 
+                                    icon="fa fa-rocket"
+                                    class="w-100 ui-button-success"
+                                    title="High-performance DTO-based report - Recommended">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 
                                         target="#{inwardReportControllerBht.patientEncounter}" />

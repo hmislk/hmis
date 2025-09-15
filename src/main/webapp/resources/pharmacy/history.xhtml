@@ -32,35 +32,589 @@
 
                         </p:calendar>
                         <p:commandButton 
-                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}" 
+                            update="panelHistoryData" 
                             process="@this frmDate toDate" 
                             action="#{pharmacyController.fillDetails()}"
-                            class="ui-button-info" icon="far fa-eye" value="View Detail"/>
+                            class="ui-button-info"
+                            icon="far fa-eye" 
+                            value="View Detail"/>
                     </div>
                 </div>
             </f:facet>
 
-            <h:panelGroup 
-                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Blocks', true)}">
-                <div class="row">
-                    <h:panelGroup 
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockStocks"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Block', true)}" >
-                        <p:panel class="w-100" style="font-size: 15px;" >
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                Stock
-                            </div>
-                            <p:dataTable  value="#{pharmacyController.institutionStocks}" var="ins" class="w-100" style="padding: 0; background-color: lightgray" id="stock">
+            <h:panelGroup id="panelHistoryData" >
+                <h:panelGroup 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Blocks', true)}">
+                    <div class="row">
+                        <h:panelGroup 
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockStocks"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Block', true)}" >
+                            <p:panel class="w-100" style="font-size: 15px;" >
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Stock
+                                </div>
+                                <p:dataTable  value="#{pharmacyController.institutionStocks}" var="ins" class="w-100" style="padding: 0; background-color: lightgray" id="stock">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column class="w-75">
+                                                <f:facet name="header">
+                                                    Department Name
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;" class="w-25">
+                                                <f:facet name="header">
+                                                    Qty
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:subTable  value="#{ins.depatmentStocks}" var="dep">
+                                        <f:facet name="header">
+                                            #{ins.institution.name}
+                                        </f:facet>
+                                        <p:column>
+                                            #{dep.department.name}
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.stock}">       
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total Stock"></p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionTotal}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionTotal}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:subTable>  
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Total Institution Stock
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel id="grandTotalBlock" value="#{pharmacyController.grantStock}"> 
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                </p:dataTable> 
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockSales"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Pharmacy Sale
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" id="phSale">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column class="w-50">
+                                                <f:facet name="header">
+                                                    Department Name
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column class="w-25" style="text-align: right;">
+                                                <f:facet name="header">
+                                                    Qty
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column class="w-25" style="text-align: right;">
+                                                <f:facet name="header">
+                                                    Value
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                        <f:facet name="header">
+                                            #{ins.institution.name}
+                                        </f:facet>
+                                        <p:column>
+                                            #{dep.department.name}
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleQty}">   
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleValue}">  
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total "></p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionValue}">
+                                                            <f:convertNumber  pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:subTable>  
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Total Institution
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{pharmacyController.grantSaleQty}">   
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{pharmacyController.grantSaleValue}">
+                                                        <f:convertNumber  pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockInpatientIssue"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    BHT Issue
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" id="bht">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column class="w-50">
+                                                <f:facet name="header">
+                                                    Department Name
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column class="w-25" style="text-align: right;">
+                                                <f:facet name="header">
+                                                    Qty
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column class="w-25" style="text-align: right;">
+                                                <f:facet name="header">
+                                                    Value
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                        <f:facet name="header">
+                                            #{ins.institution.name}
+                                        </f:facet>
+                                        <p:column>
+                                            #{dep.department.name}
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleQty}">   
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleValue}">  
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total "></p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionValue}">
+                                                            <f:convertNumber  pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:subTable>  
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Total Institution
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{pharmacyController.grantBhtIssueQty}">   
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{pharmacyController.grantBhtValue}">
+                                                        <f:convertNumber  pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                </p:dataTable>
+
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockWholesale"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Pharmacy Whole Sale
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins" id="phWhSale">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column >
+                                                <f:facet name="header">
+                                                    Department Name
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header">
+                                                    Qty
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header">
+                                                    Value
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                        <f:facet name="header">
+                                            #{ins.institution.name}
+                                        </f:facet>
+                                        <p:column>
+                                            #{dep.department.name}
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleQty}">   
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleValue}">  
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total "></p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{ins.institutionValue}">
+                                                            <f:convertNumber  pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:subTable>  
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Total Institution
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{pharmacyController.grantWholeSaleQty}">   
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{pharmacyController.grantWholeSaleValue}">
+                                                        <f:convertNumber  pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                </p:dataTable>
+
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockIssue"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Block', true)}" >
+                            <p:panel >
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Transfer Issue
+                                </div>
+                                <p:dataTable styleClass="noBorder" id="trIssueBlock" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column >
+                                                <f:facet name="header">
+                                                    To Depart. Name
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="header">
+                                                    Sent Qty
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="header">
+                                                    Sent Value
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                        <f:facet name="header">
+                                            #{ins.institution.name}
+                                        </f:facet>
+                                        <p:column>
+                                            #{dep.department.name}
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleQtyAbs}">    
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <h:outputLabel value="#{dep.saleValueAbs}">    
+                                                <f:convertNumber  pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total "></p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{0-ins.institutionQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{0-ins.institutionValue}">
+                                                            <f:convertNumber  pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:subTable>  
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Total Institution
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueQty}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueValue}">
+                                                        <f:convertNumber  pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockGrn"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    GRN Details
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnDtos}" var="g">
+                                    <p:column headerText="GRN No">#{g.grnNo}</p:column>
+                                    <p:column headerText="Dept">#{g.departmentName}</p:column>
+                                    <p:column headerText="Date">
+                                        <h:outputLabel value="#{g.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Qty" class="text-end">#{g.quantity}</p:column>
+                                    <p:column headerText="Value" class="text-end">
+                                        <h:outputText value="#{g.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockGrnReturn"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    GRN Return Details
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnReturnDtos}" var="g">
+                                    <p:column headerText="GRN Return No">#{g.grnReturnNo}</p:column>
+                                    <p:column headerText="Dept">#{g.departmentName}</p:column>
+                                    <p:column headerText="Date">
+                                        <h:outputLabel value="#{g.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Qty" class="text-end">#{g.quantityReturned}</p:column>
+                                    <p:column headerText="Value" class="text-end">
+                                        <h:outputText value="#{g.returnValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockPendingGrn"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Pending GRN Details
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
+                                    <p:column headerText="Order No">#{pendingGrn.bill.deptId}</p:column>
+                                    <p:column headerText="Order at">
+                                        <h:outputLabel value="#{pendingGrn.bill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Supplier">#{pendingGrn.bill.toInstitution.name}</p:column>
+                                    <p:column headerText="Qty Ordered" class="text-end">
+                                        <h:outputText value="#{pendingGrn.qty}">
+                                            <f:convertNumber integerOnly="true" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockPurchaseOrders"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Purchase Order Details
+                                </div>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.pos}" var="po">
+                                    <p:column headerText="Order No">#{po.bill.deptId}</p:column>
+                                    <p:column headerText="Order at">
+                                        <h:outputLabel value="#{po.bill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Supplier">#{po.bill.toInstitution.name}</p:column>
+                                    <p:column headerText="Qty Ordered" class="text-end">
+                                        <h:outputText value="#{po.pharmaceuticalBillItem.qty}">
+                                            <f:convertNumber integerOnly="true" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+                <p:tabView  
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Tabview', true)}"
+                    class="w-100"  
+                    activeIndex="0" 
+                    style="border: 1px solid lightgray; padding: 10px;">
+                    
+                    <p:tab 
+                        title="Stock" 
+                        id="itemDetailsTabStocks"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Tab', true)}">
+                        <p:panel header="Stock">
+                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins" class="w-100">
                                 <p:columnGroup type="header">
                                     <p:row>
-                                        <p:column class="w-75">
+                                        <p:column >
                                             <f:facet name="header">
                                                 Department Name
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;" class="w-25">
+                                        <p:column style="text-align: right;">
                                             <f:facet name="header">
                                                 Qty
                                             </f:facet>
@@ -101,7 +655,7 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel id="grandTotalBlock" value="#{pharmacyController.grantStock}"> 
+                                                <h:outputLabel id="grandTotalTab" value="#{pharmacyController.grantStock}">
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -111,498 +665,14 @@
 
                             </p:dataTable> 
                         </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockSales"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                Pharmacy Sale
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" id="phSale">
-                                <p:columnGroup type="header">
-                                    <p:row>
-                                        <p:column class="w-50">
-                                            <f:facet name="header">
-                                                Department Name
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column class="w-25" style="text-align: right;">
-                                            <f:facet name="header">
-                                                Qty
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column class="w-25" style="text-align: right;">
-                                            <f:facet name="header">
-                                                Value
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                                <p:subTable  value="#{ins.departmentSales}" var="dep">
-                                    <f:facet name="header">
-                                        #{ins.institution.name}
-                                    </f:facet>
-                                    <p:column>
-                                        #{dep.department.name}
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleQty}">   
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleValue}">  
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column footerText="Total "></p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{ins.institutionQty}">
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{ins.institutionValue}">
-                                                        <f:convertNumber  pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                </p:subTable>  
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                Total Institution
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantSaleQty}">   
-                                                    <f:convertNumber integerOnly="true" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantSaleValue}">
-                                                    <f:convertNumber  pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
 
-                            </p:dataTable>
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockInpatientIssue"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                BHT Issue
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" id="bht">
-                                <p:columnGroup type="header">
-                                    <p:row>
-                                        <p:column class="w-50">
-                                            <f:facet name="header">
-                                                Department Name
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column class="w-25" style="text-align: right;">
-                                            <f:facet name="header">
-                                                Qty
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column class="w-25" style="text-align: right;">
-                                            <f:facet name="header">
-                                                Value
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                                <p:subTable  value="#{ins.departmentSales}" var="dep">
-                                    <f:facet name="header">
-                                        #{ins.institution.name}
-                                    </f:facet>
-                                    <p:column>
-                                        #{dep.department.name}
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleQty}">   
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleValue}">  
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column footerText="Total "></p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{ins.institutionQty}">
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{ins.institutionValue}">
-                                                        <f:convertNumber  pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                </p:subTable>  
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                Total Institution
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantBhtIssueQty}">   
-                                                    <f:convertNumber integerOnly="true" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantBhtValue}">
-                                                    <f:convertNumber  pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-
-                            </p:dataTable>
-
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockWholesale"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                Pharmacy Whole Sale
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins" id="phWhSale">
-                                <p:columnGroup type="header">
-                                    <p:row>
-                                        <p:column >
-                                            <f:facet name="header">
-                                                Department Name
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column >
-                                            <f:facet name="header">
-                                                Qty
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column >
-                                            <f:facet name="header">
-                                                Value
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                                <p:subTable  value="#{ins.departmentSales}" var="dep">
-                                    <f:facet name="header">
-                                        #{ins.institution.name}
-                                    </f:facet>
-                                    <p:column>
-                                        #{dep.department.name}
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleQty}">   
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleValue}">  
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column footerText="Total "></p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{ins.institutionQty}">
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{ins.institutionValue}">
-                                                        <f:convertNumber  pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                </p:subTable>  
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                Total Institution
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantWholeSaleQty}">   
-                                                    <f:convertNumber integerOnly="true" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantWholeSaleValue}">
-                                                    <f:convertNumber  pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-
-                            </p:dataTable>
-
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockIssue"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Block', true)}" >
-                        <p:panel >
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                Transfer Issue
-                            </div>
-                            <p:dataTable styleClass="noBorder" id="trIssueBlock" value="#{pharmacyController.institutionTransferIssue}" var="ins">
-                                <p:columnGroup type="header">
-                                    <p:row>
-                                        <p:column >
-                                            <f:facet name="header">
-                                                To Depart. Name
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="header">
-                                                Sent Qty
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="header">
-                                                Sent Value
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                                <p:subTable  value="#{ins.departmentSales}" var="dep">
-                                    <f:facet name="header">
-                                        #{ins.institution.name}
-                                    </f:facet>
-                                    <p:column>
-                                        #{dep.department.name}
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleQtyAbs}">    
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{dep.saleValueAbs}">    
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel> 
-                                    </p:column>
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column footerText="Total "></p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{0-ins.institutionQty}">
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="#{0-ins.institutionValue}">
-                                                        <f:convertNumber  pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                </p:subTable>  
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column>
-                                            <f:facet name="footer">
-                                                Total Institution
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueQty}">
-                                                    <f:convertNumber integerOnly="true" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueValue}">
-                                                    <f:convertNumber  pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-
-                            </p:dataTable>
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockGrn"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                GRN Details
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnDtos}" var="g">
-                                <p:column headerText="GRN No">#{g.grnNo}</p:column>
-                                <p:column headerText="Dept">#{g.departmentName}</p:column>
-                                <p:column headerText="Date">
-                                    <h:outputLabel value="#{g.createdAt}">
-                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Qty">#{g.quantity}</p:column>
-                                <p:column headerText="Value">
-                                    <h:outputText value="#{g.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockGrnReturn"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                GRN Return Details
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnReturnDtos}" var="g">
-                                <p:column headerText="GRN Return No">#{g.grnReturnNo}</p:column>
-                                <p:column headerText="Dept">#{g.departmentName}</p:column>
-                                <p:column headerText="Date">
-                                    <h:outputLabel value="#{g.createdAt}">
-                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Qty">#{g.quantityReturned}</p:column>
-                                <p:column headerText="Value">
-                                    <h:outputText value="#{g.returnValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockPendingGrn"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                Pending GRN Details
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
-                                <p:column headerText="Order No">#{pendingGrn.bill.deptId}</p:column>
-                                <p:column headerText="Order at">
-                                    <h:outputLabel value="#{pendingGrn.bill.createdAt}">
-                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Supplier">#{pendingGrn.bill.toInstitution.name}</p:column>
-                                <p:column headerText="Qty Ordered">
-                                    <h:outputText value="#{pendingGrn.qty}">
-                                        <f:convertNumber integerOnly="true" />
-                                    </h:outputText>
-                                </p:column>
-                            </p:dataTable>
-
-                        </p:panel>
-                    </h:panelGroup>
-                    <h:panelGroup
-                        layout="block"
-                        class="col-3"
-                        id="itemDetailsBlockPurchaseOrders"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Block', true)}" >
-                        <p:panel>
-                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                Purchase Order Details
-                            </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pos}" var="po">
-                                <p:column headerText="Order No">#{po.bill.deptId}</p:column>
-                                <p:column headerText="Order at">
-                                    <h:outputLabel value="#{po.bill.createdAt}">
-                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Supplier">#{po.bill.toInstitution.name}</p:column>
-                                <p:column headerText="Qty Ordered">
-                                    <h:outputText value="#{po.pharmaceuticalBillItem.qty}">
-                                        <f:convertNumber integerOnly="true" />
-                                    </h:outputText>
-                                </p:column>
-                            </p:dataTable>
-
-                        </p:panel>
-                    </h:panelGroup>
-                </div>
-            </h:panelGroup>
-            <p:tabView  
-                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Tabview', true)}"
-                class="w-100"  
-                activeIndex="0" 
-                style="border: 1px solid lightgray; padding: 10px;">
-                <p:tab 
-                    title="Stock" 
-                    id="itemDetailsTabStocks"
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Tab', true)}">
-                    <p:panel header="Stock">
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins" class="w-100">
+                    </p:tab>
+                    
+                    <p:tab 
+                        title="Sale" 
+                        id="itemDetailsTabSales"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -610,14 +680,19 @@
                                             Department Name
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column >
                                         <f:facet name="header">
                                             Qty
                                         </f:facet>
                                     </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Value
+                                        </f:facet>
+                                    </p:column>
                                 </p:row>
                             </p:columnGroup>
-                            <p:subTable  value="#{ins.depatmentStocks}" var="dep">
+                            <p:subTable  value="#{ins.departmentSales}" var="dep">
                                 <f:facet name="header">
                                     #{ins.institution.name}
                                 </f:facet>
@@ -625,17 +700,29 @@
                                     #{dep.department.name}
                                 </p:column>
                                 <p:column style="text-align: right;">
-                                    <h:outputLabel value="#{dep.stock}">       
+                                    <h:outputLabel value="#{dep.saleQty}">   
                                         <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleValue}">  
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel> 
                                 </p:column>
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column footerText="Total Stock"></p:column>
-                                        <p:column style="text-align: right;" footerText="#{ins.institutionTotal}">
+                                        <p:column footerText="Total "></p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{ins.institutionTotal}">
+                                                <h:outputLabel value="#{ins.institutionQty}">
                                                     <f:convertNumber integerOnly="true" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{ins.institutionValue}">
+                                                    <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -646,866 +733,807 @@
                                 <p:row>
                                     <p:column>
                                         <f:facet name="footer">
-                                            Total Institution Stock
+                                            Total Institution
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;">
                                         <f:facet name="footer">
-                                            <h:outputLabel id="grandTotalTab" value="#{pharmacyController.grantStock}">
+                                            <h:outputLabel  value="#{pharmacyController.grantSaleQty}">   
                                                 <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{pharmacyController.grantSaleValue}">
+                                                <f:convertNumber  pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
                                 </p:row>
                             </p:columnGroup>
 
-                        </p:dataTable> 
-                    </p:panel>
+                        </p:dataTable>                
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabSaleItems"
+                        title="Sale Bill Item" 
+                        class="w-100"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Bill Item Tab', true)}">
 
-                </p:tab>
-                <p:tab 
-                    title="Sale" 
-                    id="itemDetailsTabSales"
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
-                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Department Name
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Qty
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Value
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable  value="#{ins.departmentSales}" var="dep">
-                            <f:facet name="header">
-                                #{ins.institution.name}
-                            </f:facet>
-                            <p:column>
-                                #{dep.department.name}
+                        <p:commandButton ajax="false" icon="fas fa-file-excel"
+                                         class="ui-button-success" value="Excel" action="#{pharmacyController.createTable()}" >
+                            <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
+
+                        </p:commandButton>
+                        <br/>
+                        <p:dataTable id="tbl" styleClass="noBorder" value="#{pharmacyController.grns}" var="bi"
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15">
+                            <p:column >
+                                <f:facet name="header">
+                                    Ins ID
+                                </f:facet>
+                                <p:outputLabel value="#{bi.bill.insId}" />
                             </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleQty}">   
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel> 
+                            <p:column >
+                                <f:facet name="header">
+                                    dept ID
+                                </f:facet>
+                                <p:outputLabel value="#{bi.bill.deptId}" />
                             </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleValue}">  
+                            <p:column >
+                                <f:facet name="header">
+                                    Department
+                                </f:facet>
+                                <p:outputLabel value="#{bi.bill.department.name}" />
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    Qty
+                                </f:facet>
+                                <p:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabWholesale"
+                        title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Department Name
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Qty
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Value
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                <f:facet name="header">
+                                    #{ins.institution.name}
+                                </f:facet>
+                                <p:column>
+                                    #{dep.department.name}
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleQty}">   
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleValue}">  
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total "></p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{ins.institutionQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{ins.institutionValue}">
+                                                    <f:convertNumber  pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:subTable>  
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            Total Institution
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{pharmacyController.grantWholeSaleQty}">   
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{pharmacyController.grantWholeSaleValue}">
+                                                <f:convertNumber  pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>                
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabInpatient"
+                        title="BHT Issue"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Tab', true)}">
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Department Name
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Qty
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Value
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                <f:facet name="header">
+                                    #{ins.institution.name}
+                                </f:facet>
+                                <p:column>
+                                    #{dep.department.name}
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleQty}">   
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleValue}">  
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total "></p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{ins.institutionQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{ins.institutionValue}">
+                                                    <f:convertNumber  pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:subTable>  
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            Total Institution
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{pharmacyController.grantBhtIssueQty}">   
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{pharmacyController.grantBhtValue}">
+                                                <f:convertNumber  pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>                
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabTransferIssue"
+                        title="Transfer Issue" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Tab', true)}">
+                        <p:dataTable styleClass="noBorder" id="trIssueTab" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            To Department Name
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Sent Qty
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Sent Value
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                <f:facet name="header">
+                                    #{ins.institution.name}
+                                </f:facet>
+                                <p:column>
+                                    #{dep.department.name}
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleQtyAbs}">    
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleValueAbs}">    
+                                        <f:convertNumber  pattern="#,##0.00" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total "></p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-ins.institutionQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-ins.institutionValue}">
+                                                    <f:convertNumber  pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:subTable>  
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            Total Institution
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueQty}">
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueValue}">
+                                                <f:convertNumber  pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>                
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabTransferReceive"
+                        title="Transfer Receive"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Receive Tab', true)}">
+                        <p:dataTable styleClass="noBorder" id="trRceive" 
+                                     value="#{pharmacyController.institutionTransferReceive}" var="ins">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            From Department Name
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Received Qty
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Received Value
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                <f:facet name="header">
+                                    #{ins.institution.name}
+                                </f:facet>
+                                <p:column>
+                                    #{dep.department.name}
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleQtyAbs}"> 
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleValueAbs}"> 
+                                        <f:convertNumber  pattern="#,##0.00" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total "></p:column>
+                                        <p:column style="text-align: right;" footerText="#{0-ins.institutionQty}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-ins.institutionQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{0-ins.institutionValue}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-ins.institutionValue}">
+                                                    <f:convertNumber  pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:subTable>  
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            Total Institution
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{0-pharmacyController.grantTransferReceiveQty}">
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{0-pharmacyController.grantTransferReceiveValue}">
+                                                <f:convertNumber  pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>                
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabConsuption"
+                        title="Department Issue" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Issue Tab', true)}">
+                        <p:dataTable styleClass="noBorder" id="depIssue"
+                                     value="#{pharmacyController.institutionIssue}" var="ins">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            To Department Name
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Sent Qty
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Sent Value
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable  value="#{ins.departmentSales}" var="dep">
+                                <f:facet name="header">
+                                    #{ins.institution.name}
+                                </f:facet>
+                                <p:column>
+                                    #{dep.department.name}
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleQtyAbs}">    
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{dep.saleValueAbs}">    
+                                        <f:convertNumber  pattern="#,##0.00" />
+                                    </h:outputLabel> 
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total "></p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-ins.institutionQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-ins.institutionValue}">
+                                                    <f:convertNumber  pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:subTable>  
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            Total Institution
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{0-pharmacyController.grantIssueQty}">
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel  value="#{0-pharmacyController.grantIssueValue}">
+                                                <f:convertNumber  pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>                
+                    </p:tab>
+                    
+                    <p:tab 
+                        id="itemDetailsTabGrn"
+                        title="GRN" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Tab', true)}">
+
+                        <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grnDtos}"
+                                     var="dd2" scrollable="true"  paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15" >
+                            <p:column headerText="GRN No">
+                                #{dd2.grnNo}
+                            </p:column>
+                            <p:column headerText="Department">
+                                #{dd2.departmentName}
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputLabel value="#{dd2.createdAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="PO No">
+                                <h:outputText value="#{dd2.poNo}" />
+                            </p:column>
+                            <p:column headerText="Supplier">
+                                <h:outputText value="#{dd2.supplierName}" />
+                            </p:column>
+                            <p:column headerText="Item">
+                                <h:outputText value="#{dd2.itemName}" />
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputText value="#{dd2.quantity}" />
+                            </p:column>
+                            <p:column headerText="Fr. Qty">
+                                <h:outputText value="#{dd2.freeQuantity}" />
+                            </p:column>
+                            <p:column headerText="Purchase Rate">
+                                <h:outputText value="#{dd2.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel> 
+                                </h:outputText>
                             </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total "></p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{ins.institutionQty}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{ins.institutionValue}">
-                                                <f:convertNumber  pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>  
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column>
-                                    <f:facet name="footer">
-                                        Total Institution
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{pharmacyController.grantSaleQty}">   
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{pharmacyController.grantSaleValue}">
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-
-                    </p:dataTable>                
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabSaleItems"
-                    title="Sale Bill Item" 
-                    class="w-100"
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Bill Item Tab', true)}">
-
-                    <p:commandButton ajax="false" icon="fas fa-file-excel"
-                                     class="ui-button-success" value="Excel" action="#{pharmacyController.createTable()}" >
-                        <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
-
-                    </p:commandButton>
-                    <br/>
-                    <p:dataTable id="tbl" styleClass="noBorder" value="#{pharmacyController.grns}" var="bi"
-                                 paginator="true" 
-                                 rows="10" 
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
-                        <p:column >
-                            <f:facet name="header">
-                                Ins ID
-                            </f:facet>
-                            <p:outputLabel value="#{bi.bill.insId}" />
-                        </p:column>
-                        <p:column >
-                            <f:facet name="header">
-                                dept ID
-                            </f:facet>
-                            <p:outputLabel value="#{bi.bill.deptId}" />
-                        </p:column>
-                        <p:column >
-                            <f:facet name="header">
-                                Department
-                            </f:facet>
-                            <p:outputLabel value="#{bi.bill.department.name}" />
-                        </p:column>
-                        <p:column >
-                            <f:facet name="header">
-                                Qty
-                            </f:facet>
-                            <p:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" />
-                        </p:column>
-
-                    </p:dataTable>
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabWholesale"
-                    title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
-                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Department Name
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Qty
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Value
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable  value="#{ins.departmentSales}" var="dep">
-                            <f:facet name="header">
-                                #{ins.institution.name}
-                            </f:facet>
-                            <p:column>
-                                #{dep.department.name}
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleQty}">   
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleValue}">  
+                            <p:column headerText="Cost Rate per unit">
+                                <h:outputText value="#{dd2.totalCostRate}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel> 
+                                </h:outputText>
                             </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total "></p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{ins.institutionQty}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{ins.institutionValue}">
-                                                <f:convertNumber  pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>  
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column>
-                                    <f:facet name="footer">
-                                        Total Institution
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{pharmacyController.grantWholeSaleQty}">   
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{pharmacyController.grantWholeSaleValue}">
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-
-                    </p:dataTable>                
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabInpatient"
-                    title="BHT Issue"
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Tab', true)}">
-                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Department Name
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Qty
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Value
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable  value="#{ins.departmentSales}" var="dep">
-                            <f:facet name="header">
-                                #{ins.institution.name}
-                            </f:facet>
-                            <p:column>
-                                #{dep.department.name}
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleQty}">   
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleValue}">  
+                            <p:column headerText="Sale Rate">
+                                <h:outputText value="#{dd2.retailSaleRate}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel> 
+                                </h:outputText>
                             </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total "></p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{ins.institutionQty}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{ins.institutionValue}">
-                                                <f:convertNumber  pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>  
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column>
-                                    <f:facet name="footer">
-                                        Total Institution
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{pharmacyController.grantBhtIssueQty}">   
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{pharmacyController.grantBhtValue}">
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
+                            <p:column headerText="Value">
+                                <h:outputText value="#{dd2.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
 
-                    </p:dataTable>                
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabTransferIssue"
-                    title="Transfer Issue" 
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Tab', true)}">
-                    <p:dataTable styleClass="noBorder" id="trIssueTab" value="#{pharmacyController.institutionTransferIssue}" var="ins">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column >
-                                    <f:facet name="header">
-                                        To Department Name
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Sent Qty
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Sent Value
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable  value="#{ins.departmentSales}" var="dep">
-                            <f:facet name="header">
-                                #{ins.institution.name}
-                            </f:facet>
-                            <p:column>
-                                #{dep.department.name}
+                        </p:dataTable>
+                    </p:tab>
+
+                    <p:tab 
+                        id="itemDetailsTabPendingGrn"
+                        title="Pending GRN" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
+                        <p:dataTable 
+                            id="pendinggrn" 
+                            value="#{pharmacyController.pendingGrns}"
+                            var="pendingGrnRow" scrollable="true"  paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15" >
+
+                            <p:column headerText="PO Number">
+                                #{pendingGrnRow.bill.deptId}
                             </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleQtyAbs}">    
+                            <p:column headerText="Department">
+                                #{pendingGrnRow.bill.department.name}
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputLabel value="#{pendingGrnRow.bill.createdAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Supplier">
+                                #{pendingGrnRow.bill.toInstitution.name}
+                            </p:column>
+                            <p:column headerText="Item">
+                                #{pendingGrnRow.item.name}
+                            </p:column>
+                            <p:column headerText="Qty" class="text-end"> 
+                                #{pendingGrnRow.qty} 
+                            </p:column> 
+                        </p:dataTable>
+
+                    </p:tab>
+
+                    <p:tab
+                        title="GRN Return"
+                        id="itemDetailsTabGrnReturn"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Tab', true)}">
+
+                        <p:dataTable styleClass="noBorder" id="grnr" value="#{pharmacyController.grnReturnDtos}"
+                                     var="dd2" scrollable="true" paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15" >
+                            <p:column headerText="GRN Return No">
+                                #{dd2.grnReturnNo}
+                            </p:column>
+                            <p:column headerText="Department">
+                                #{dd2.departmentName}
+                            </p:column>
+                            <p:column headerText="GRN Return at">
+                                <h:outputLabel value="#{dd2.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Supplier">
+                                #{dd2.supplierName}
+                            </p:column>
+                            <p:column headerText="Item">
+                                #{dd2.itemName}
+                            </p:column>
+                            <p:column headerText="Qty Returned" class="text-end"> 
+                                #{dd2.quantityReturned} 
+                            </p:column> 
+                            <p:column headerText="Free Qty Returned" class="text-end"> 
+                                #{dd2.freeQuantityReturned} 
+                            </p:column> 
+                            <p:column headerText="Purchase Rate" class="text-end"> 
+                                <h:outputText value="#{dd2.purchaseRate}"> 
+                                    <f:convertNumber pattern="#,##0.00" /> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Sale Rate" class="text-end"> 
+                                <h:outputText value="#{dd2.saleRate}"> 
+                                    <f:convertNumber pattern="#,##0.00" /> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Returned Rate" class="text-end"> 
+                                <h:outputText value="#{dd2.returnedRate}"> 
+                                    <f:convertNumber pattern="#,##0.00" /> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Return Value" class="text-end"> 
+                                <h:outputText value="#{dd2.returnValue}"> 
+                                    <f:convertNumber pattern="#,##0.00" /> 
+                                </h:outputText> 
+                            </p:column> 
+                        </p:dataTable>
+                    </p:tab>
+
+                    <p:tab title="Purchase Orders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Tab', true)}">
+
+                        <p:dataTable
+                            styleClass="noBorder" 
+                            id="tblPurchaseOrders"
+                            value="#{pharmacyController.poDtos}" var="poDto" 
+                            rows="10" 
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15" >
+                            <p:column headerText="Order Number">
+                                <p:outputLabel value="#{poDto.billDeptId}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Order at">
+                                <p:outputLabel value="#{poDto.billCreatedAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Supplier">
+                                <p:outputLabel value="#{poDto.supplierName}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Item">
+                                <p:outputLabel value="#{poDto.itemName}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Qty Ordered" class="text-end"> 
+                                <h:outputText value="#{poDto.qty}"> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Free Qty Ordered" class="text-end"> 
+                                <h:outputText value="#{poDto.freeQty}"> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Qty Received" class="text-end"> 
+                                <h:outputText value="#{poDto.completedQty}"> 
+                                </h:outputText> 
+                            </p:column> 
+                            <p:column headerText="Free Qty Received" class="text-end"> 
+                                <h:outputText value="#{poDto.completedFreeQty}"> 
+                                </h:outputText> 
+                            </p:column> 
+                        </p:dataTable>
+                    </p:tab>
+
+                    <p:tab title="Pending POs" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending PO Tab', true)}">
+                        <p:dataTable 
+                            styleClass="noBorder" 
+                            id="tablePendingPos" 
+                            value="#{pharmacyController.pendingPoDtos}" 
+                            var="pendingPo"
+                            rows="10"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15" >
+                            <p:column headerText="PO No">
+                                #{pendingPo.billDeptId}
+                            </p:column>
+                            <p:column headerText="PO Date">
+                                <p:outputLabel value="#{pendingPo.billCreatedAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Supplier">
+                                #{pendingPo.supplierName}
+                            </p:column>
+                            <p:column headerText="PO Qty" class="text-end"> 
+                                <h:outputText value="#{pendingPo.qty}">
                                     <f:convertNumber integerOnly="true" />
-                                </h:outputLabel> 
+                                </h:outputText>
+                            </p:column> 
+                            <p:column headerText="Requested By">
+                                #{pendingPo.creatorName}
                             </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleValueAbs}">    
-                                    <f:convertNumber  pattern="#,##0.00" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total "></p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{0-ins.institutionQty}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{0-ins.institutionValue}">
-                                                <f:convertNumber  pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>  
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column>
-                                    <f:facet name="footer">
-                                        Total Institution
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueQty}">
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueValue}">
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
+                        </p:dataTable>
+                    </p:tab>
 
-                    </p:dataTable>                
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabTransferReceive"
-                    title="Transfer Receive"
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Receive Tab', true)}">
-                    <p:dataTable styleClass="noBorder" id="trRceive" 
-                                 value="#{pharmacyController.institutionTransferReceive}" var="ins">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column >
-                                    <f:facet name="header">
-                                        From Department Name
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Received Qty
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Received Value
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable  value="#{ins.departmentSales}" var="dep">
-                            <f:facet name="header">
-                                #{ins.institution.name}
-                            </f:facet>
+                    <p:tab
+                        title="Direct Purchase"
+                        id="tabDirectPurchase"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Direct Purchase Tab', true)}">
+
+                        <p:dataTable 
+                            styleClass="noBorder" 
+                            id="tblDirectPurchase" 
+                            value="#{pharmacyController.directPurchaseDtos}" var="dd3"
+                            rows="10" 
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15">
+                            <p:column headerText="Bill No">
+                                #{dd3.billDeptId}
+                            </p:column>
+                            <p:column headerText="Supplier">
+                                #{dd3.billFromInstitutionName}
+                            </p:column>
+                            <p:column headerText="Billed By">
+                                #{dd3.billCreaterName}
+                            </p:column>    
+                            <p:column headerText="Billed At">
+                                <p:outputLabel value="#{dd3.billCreatedAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Purchase Rate" class="text-end"> 
+                                #{dd3.purchaseRate} 
+                            </p:column>     
+                            <p:column headerText="Sale Rate" class="text-end"> 
+                                #{dd3.retailRate} 
+                            </p:column>     
+                            <p:column headerText="Purchase Qty" class="text-end"> 
+                                #{dd3.qty} 
+                            </p:column>     
+                            <p:column headerText="Free Qty" class="text-end"> 
+                                #{dd3.freeQty} 
+                            </p:column>     
+                            <p:column headerText="Purchase Value" class="text-end"> 
+                                #{-dd3.billNetTotal} 
+                            </p:column>  
+                        </p:dataTable>
+                    </p:tab>
+                    
+                    <p:tab title="Pack Sizes" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pack Sizes Tab', true)}">
+                        <p:dataTable value="#{pharmacyController.ampps}" var="p" >
                             <p:column>
-                                #{dep.department.name}
+                                <h:outputLabel value="#{p.name}" ></h:outputLabel>
                             </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleQtyAbs}"> 
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleValueAbs}"> 
-                                    <f:convertNumber  pattern="#,##0.00" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total "></p:column>
-                                    <p:column style="text-align: right;" footerText="#{0-ins.institutionQty}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{0-ins.institutionQty}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" footerText="#{0-ins.institutionValue}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{0-ins.institutionValue}">
-                                                <f:convertNumber  pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>  
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column>
-                                    <f:facet name="footer">
-                                        Total Institution
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{0-pharmacyController.grantTransferReceiveQty}">
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{0-pharmacyController.grantTransferReceiveValue}">
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
+                            <p:column class="text-end"> 
+                                <h:outputLabel value="#{p.dblValue}" ></h:outputLabel> 
+                            </p:column> 
 
-                    </p:dataTable>                
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabConsuption"
-                    title="Department Issue" 
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Issue Tab', true)}">
-                    <p:dataTable styleClass="noBorder" id="depIssue"
-                                 value="#{pharmacyController.institutionIssue}" var="ins">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column >
-                                    <f:facet name="header">
-                                        To Department Name
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Sent Qty
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">
-                                        Sent Value
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable  value="#{ins.departmentSales}" var="dep">
-                            <f:facet name="header">
-                                #{ins.institution.name}
-                            </f:facet>
-                            <p:column>
-                                #{dep.department.name}
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleQtyAbs}">    
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dep.saleValueAbs}">    
-                                    <f:convertNumber  pattern="#,##0.00" />
-                                </h:outputLabel> 
-                            </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total "></p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionQty}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{0-ins.institutionQty}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" footerText="#{ins.institutionValue}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{0-ins.institutionValue}">
-                                                <f:convertNumber  pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>  
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column>
-                                    <f:facet name="footer">
-                                        Total Institution
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{0-pharmacyController.grantIssueQty}">
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel  value="#{0-pharmacyController.grantIssueValue}">
-                                            <f:convertNumber  pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-
-                    </p:dataTable>                
-                </p:tab>
-                <p:tab 
-                    id="itemDetailsTabGrn"
-                    title="GRN" 
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Tab', true)}">
-
-                    <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grnDtos}"
-                                 var="dd2" scrollable="true"  paginator="true"
-                                 rows="10"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="GRN No">
-                            #{dd2.grnNo}
-                        </p:column>
-                        <p:column headerText="Department">
-                            #{dd2.departmentName}
-                        </p:column>
-                        <p:column headerText="Date">
-                            <h:outputLabel value="#{dd2.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="PO No">
-                            <h:outputText value="#{dd2.poNo}" />
-                        </p:column>
-                        <p:column headerText="Supplier">
-                            <h:outputText value="#{dd2.supplierName}" />
-                        </p:column>
-                        <p:column headerText="Item">
-                            <h:outputText value="#{dd2.itemName}" />
-                        </p:column>
-                        <p:column headerText="Qty">
-                            <h:outputText value="#{dd2.quantity}" />
-                        </p:column>
-                        <p:column headerText="Fr. Qty">
-                            <h:outputText value="#{dd2.freeQuantity}" />
-                        </p:column>
-                        <p:column headerText="Purchase Rate">
-                            <h:outputText value="#{dd2.purchaseRate}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Cost Rate per unit">
-                            <h:outputText value="#{dd2.totalCostRate}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Sale Rate">
-                            <h:outputText value="#{dd2.retailSaleRate}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Value">
-                            <h:outputText value="#{dd2.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-
-                    </p:dataTable>
-                </p:tab>
-
-                <p:tab 
-                    id="itemDetailsTabPendingGrn"
-                    title="Pending GRN" 
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
-                    <p:dataTable 
-                        id="pendinggrn" 
-                        value="#{pharmacyController.pendingGrns}"
-                        var="pendingGrnRow" scrollable="true"  paginator="true"
-                        rows="10"
-                        paginatorPosition="bottom"
-                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                        rowsPerPageTemplate="5,10,15" >
-
-                        <p:column headerText="PO Number">
-                            #{pendingGrnRow.bill.deptId}
-                        </p:column>
-                        <p:column headerText="Department">
-                            #{pendingGrnRow.bill.department.name}
-                        </p:column>
-                        <p:column headerText="Date">
-                            <h:outputLabel value="#{pendingGrnRow.bill.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Supplier">
-                            #{pendingGrnRow.bill.toInstitution.name}
-                        </p:column>
-                        <p:column headerText="Item">
-                            #{pendingGrnRow.item.name}
-                        </p:column>
-                        <p:column headerText="Qty">
-                            #{pendingGrnRow.qty}
-                        </p:column>
-                    </p:dataTable>
-
-                </p:tab>
-
-                <p:tab
-                    title="GRN Return"
-                    id="itemDetailsTabGrnReturn"
-                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Tab', true)}">
-
-                    <p:dataTable styleClass="noBorder" id="grnr" value="#{pharmacyController.grnReturnDtos}"
-                                 var="dd2" scrollable="true" paginator="true"
-                                 rows="10"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="GRN Return No">
-                            #{dd2.grnReturnNo}
-                        </p:column>
-                        <p:column headerText="Department">
-                            #{dd2.departmentName}
-                        </p:column>
-                        <p:column headerText="GRN Return at">
-                            <h:outputLabel value="#{dd2.createdAt}">
-                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Supplier">
-                            #{dd2.supplierName}
-                        </p:column>
-                        <p:column headerText="Item">
-                            #{dd2.itemName}
-                        </p:column>
-                        <p:column headerText="Qty Returned">
-                            #{dd2.quantityReturned}
-                        </p:column>
-                        <p:column headerText="Free Qty Returned">
-                            #{dd2.freeQuantityReturned}
-                        </p:column>
-                        <p:column headerText="Purchase Rate">
-                            <h:outputText value="#{dd2.purchaseRate}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Sale Rate">
-                            <h:outputText value="#{dd2.saleRate}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Returned Rate">
-                            <h:outputText value="#{dd2.returnedRate}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Return Value">
-                            <h:outputText value="#{dd2.returnValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
-                </p:tab>
-
-                <p:tab title="Purchase Orders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Tab', true)}">
-
-                    <p:dataTable styleClass="noBorder" id="po" value="#{pharmacyController.pos}" var="dd3" 
-                                 rows="10" 
-                                 paginator="true"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="Order Number">
-                            #{dd3.bill.deptId}
-                        </p:column>
-                        <p:column headerText="Order Department">
-                            #{dd3.bill.department.name}
-                        </p:column>
-                        <p:column headerText="Order at">
-                            <p:outputLabel value="#{dd3.bill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Supplier">
-                            #{dd3.bill.toInstitution.name}
-                        </p:column>
-                        <p:column headerText="Item">
-                            #{dd3.item.name}
-                        </p:column>
-                        <p:column headerText="Qty Ordered">
-                            <h:outputText value="#{dd3.pharmaceuticalBillItem.qty}">
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Free Qty Ordered">
-                            <h:outputText value="#{dd3.pharmaceuticalBillItem.freeQty}">
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
-                </p:tab>
-
-                <p:tab title="Pending PO" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending PO Tab', true)}">
-
-                    <p:dataTable styleClass="noBorder" id="ppo" value="#{pharmacyController.pos}" var="dd3"
-                                 rows="10"
-                                 paginator="true"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="Po No">
-                            #{dd3.bill.deptId}
-                        </p:column>
-                        <p:column headerText="PO Date">
-                            <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Supplier">
-                            #{dd3.bill.toInstitution.name}
-                        </p:column>
-                        <p:column headerText="PO Qty">
-                            #{dd3.pharmaceuticalBillItem.qty}
-                        </p:column>
-                        <p:column headerText="Requested By">
-                            #{dd3.totalGrnQty}
-                        </p:column>
-                        <p:column headerText="Status">
-                            #{dd3.totalGrnQty}
-                        </p:column>
-                    </p:dataTable>
-                </p:tab>
-
-                <p:tab title="Direct Purchase" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Direct Purchase Tab', true)}">
-
-                    <p:dataTable styleClass="noBorder" id="dp" value="#{pharmacyController.directPurchase}" var="dd3"
-                                 rows="10" 
-                                 paginator="true"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
-                        <p:column headerText="Bill No">
-                            #{dd3.bill.deptId}
-                        </p:column>
-                        <p:column headerText="Supplier">
-                            #{dd3.bill.fromInstitution.name}
-                        </p:column>
-                        <p:column headerText="Billed By">
-                            #{dd3.bill.creater.webUserPerson.name}
-                        </p:column>    
-                        <p:column headerText="Billed At">
-                            <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
-                            </p:outputLabel>
-                        </p:column> 
-                        <p:column headerText="Purchase Rate">
-                            #{dd3.pharmaceuticalBillItem.purchaseRate}
-                        </p:column>    
-                        <p:column headerText="Sale Rate">
-                            #{dd3.pharmaceuticalBillItem.retailRate}
-                        </p:column>    
-                        <p:column headerText="Purchase Qty">
-                            #{dd3.pharmaceuticalBillItem.qty}
-                        </p:column>    
-                        <p:column headerText="Free Qty">
-                            #{dd3.pharmaceuticalBillItem.freeQty}
-                        </p:column>    
-                        <p:column headerText="Purchase Value">
-                            #{-dd3.netValue}
-                        </p:column> 
-                    </p:dataTable>
-                </p:tab>
-                <p:tab title="Pack Sizes" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pack Sizes Tab', true)}">
-                    <p:dataTable value="#{pharmacyController.ampps}" var="p" >
-                        <p:column>
-                            <h:outputLabel value="#{p.name}" ></h:outputLabel>
-                        </p:column>
-                        <p:column>
-                            <h:outputLabel value="#{p.dblValue}" ></h:outputLabel>
-                        </p:column>
-
-                    </p:dataTable>
-                </p:tab>
-            </p:tabView>
+                        </p:dataTable>
+                    </p:tab>
+                </p:tabView>
+            </h:panelGroup>
         </p:panel>
 
     </cc:implementation>

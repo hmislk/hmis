@@ -1,0 +1,799 @@
+.test{
+    background-color: palegreen;
+    font-size: xx-large ;
+}
+
+/* Custom styles for PrimeFaces panels */
+
+/* Cancelled Panel - header */
+.custom-panel .ui-panel-titlebar {
+    background-color: #dc3545 !important;  /* Red header background */
+    color: white !important;               /* White header text */
+}
+
+/* Cancelled Panel - content */
+.custom-panel .ui-panel-content {
+    color: #dc3545 !important;  /* Red text for body */
+}
+
+/* Paid Booking Panel - header */
+.custom-panel-warning .ui-panel-titlebar {
+    background-color: #ffc107 !important;  /* Yellow header background */
+    color: white !important;               /* White header text */
+}
+
+/* Paid Booking Panel - content */
+.custom-panel-warning .ui-panel-content {
+    color: #ffc107 !important;  /* Yellow text for body */
+}
+
+/* Payment Settled Panel - header */
+.custom-panel-success .ui-panel-titlebar {
+    background-color: #28a745 !important;  /* Green header background */
+    color: white !important;               /* White header text */
+}
+
+/* Payment Settled Panel - content */
+.custom-panel-success .ui-panel-content {
+    color: #28a745 !important;  /* Green text for body */
+}
+
+/* Custom Danger Panel - header */
+.custom-panel-danger .ui-panel-titlebar {
+    background-color: #dc3545 !important;  /* Red header background for danger panel */
+    color: white !important;               /* White header text */
+}
+
+/* Custom Danger Panel - content */
+.custom-panel-danger .ui-panel-content {
+    color: #dc3545 !important;  /* Red text for danger panel content */
+}
+
+
+
+.row-warning {
+    background-color: #fff3cd; /* Bootstrap warning color */
+}
+
+.row-danger {
+    background-color: #f8d7da; /* Bootstrap danger color */
+}
+
+
+th.align-right-header .ui-column-title {
+    text-align: right !important;
+}
+
+.align-right-header .ui-column-title {
+    text-align: right !important;
+}
+
+.discharged-color {
+    color: red;
+}
+
+.not-discharged-color {
+    color: green;
+}
+
+
+.standedicon{
+    width: 2em;
+    height: 2em;
+    border: 1px #888888 solid;
+    margin: 0.1em;
+    -webkit-border-radius: 0.1em;
+    -moz-border-radius: 0.1em;
+    border-radius: 0.1em;
+    -moz-box-shadow: 1px 1px 1px 1px #888888;
+    -webkit-box-shadow: 1px 1px 1px 1px #888888;
+    box-shadow: 1px 1px 1px 1px #888888;
+}
+
+
+.auto-width-datatable{
+    table-layout: auto !important;
+    width: 100% !important;
+}
+
+.dxicon {
+    background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-12h-2V6h-2v2H8v2h2v2h2v-2h2v-2h-2z"/></svg>') no-repeat center;
+    background-size: contain;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
+
+.testRed{
+    color: red!important;
+    background-color: yellow!important;
+    height: 50px;
+    width: 100px;
+}
+
+
+.button-margin-adjusted {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+
+/* Style for screen (if needed) */
+.prescription-text .ql-container.ql-snow {
+    /* Your default styles here */
+}
+
+/* Style for printing */
+@media print {
+    .prescription-text .ui-texteditor .ql-container.ql-snow,
+    .prescription-text .ql-container.ql-snow {
+        border: none !important;
+    }
+}
+
+.condensedTable .ui-datatable-tablewrapper {
+    font-size: 10px; /* Smaller font size */
+}
+
+.condensedTable .ui-datatable-thead > tr > th,
+.condensedTable .ui-datatable-tbody > tr > td {
+    padding: 1px 1px; /* Reduced padding around cells */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.condensedTable .ui-datatable-header,
+.condensedTable .ui-datatable-footer {
+    padding: 1px 1px; /* Reduced padding for header and footer */
+}
+
+.condensedTable .ui-paginator .ui-paginator-pages {
+    padding: 1px 1px; /* Reduced padding for paginator */
+}
+
+.condensedTable .ui-datatable-tablewrapper .ui-datatable-data tr td a {
+    font-size: 10px; /* Adjust the font size as needed */
+    padding: 1px 1px; /* Adjust padding to make it more condensed, if necessary */
+}
+
+.no-header-table .ui-datatable-header {
+    display: none;
+}
+
+.square-image {
+    width: 100%; /* or another fixed width */
+    padding-top: 100%; /* same as width to maintain aspect ratio */
+    position: relative; /* allows absolute positioning inside */
+}
+
+.square-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* cover, so it fills the area, cropping if necessary */
+}
+
+.img-prominent {
+    filter: none; /* No filter for marked activities, image is clear */
+}
+
+.img-light {
+    filter: brightness(50%); /* Dim the image for unmarked activities */
+}
+
+
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+.compact-listbox .ui-selectlistbox-item {
+    padding: 0px !important; /* or even smaller */
+    margin: 0px !important;
+}
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.compact-listbox .ui-selectlistbox-item {
+    padding: 0px !important;  /* Minimal padding to tighten the layout */
+    margin: 0px !important;
+    /*line-height: 0.8;*/
+}
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 0!important;
+    margin: 0!important;
+    /*height: 200px;*/
+}
+
+.compact-listbox .ui-selectlistbox-list {
+    width: 100%!important;
+    margin: 0!important;
+    padding: 0!important;
+    border-collapse: collapse!important;
+}
+
+.compact-listbox .ui-selectlistbox-item {
+    margin: 0!important;
+    padding: 0!important;
+    line-height: 1!important;
+}
+
+.compact-listbox .ui-selectlistbox-item td {
+    padding: 0!important;
+    margin: 0!important;
+    border: none!important;
+}
+
+.compact-listbox .ui-selectlistbox-item span {
+    display: block;
+    margin: 2px!important;
+    padding: 3px!important;
+}
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 1px!important;
+    margin: 1px!important;
+    /*height: 100px;*/
+    overflow-y: auto; /* Ensures proper scrolling */
+}
+
+.compact-listbox table,
+.compact-listbox tbody,
+.compact-listbox tr,
+.compact-listbox th,
+.compact-listbox td,
+.compact-listbox span {
+    margin: 3px!important;
+    padding: 3px!important;
+    border: none!important;
+    line-height: 1.2;
+}
+
+.compact-listbox .ui-selectlistbox-item {
+    background: none; /* Optional: remove any background styles */
+}
+
+.custom-col-40 {
+    width: 40%;
+}
+
+.custom-col-60 {
+    width: 60%;
+}
+
+.custom-col-38 {
+    width: 38%;
+}
+
+.custom-col-58 {
+    width: 58%;
+}
+
+.custom-col-28 {
+    width: 28%;
+}
+
+.custom-col-68 {
+    width: 68%;
+}
+
+.custom-col-25 {
+    width: 25%;
+}
+
+.custom-col-50 {
+    width: 50%;
+}
+
+.custom-col-20 {
+    width: 20%;
+}
+
+
+
+.compact-panelgrid.ui-panelgrid,
+.compact-panelgrid.ui-panelgrid tr,
+.compact-panelgrid.ui-panelgrid td,
+.compact-panelgrid.ui-panelgrid .ui-panelgrid-cell,
+.compact-panelgrid.ui-panelgrid .ui-panelgrid-header {
+    margin: 0 !important;
+    padding: 2px !important;
+    border: none !important; /* optional, if you want minimal borders */
+}
+
+/* Example: set a background to verify it’s applied */
+.compact-panelgrid.ui-panelgrid {
+    background-color: #eef !important;
+}
+
+
+
+.compact-column-borders {
+    --content-padding: 0.0rem; /* Remove padding */
+    --inline-spacing: 0.0rem; /* Remove spacing */
+    --border-radius: 0px; /* No border rounding */
+    border-collapse: collapse; /* Ensures borders align properly */
+    width: 100%;
+}
+
+.compact-column-borders td,
+.compact-column-borders th {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    padding: 1px !important; /* Minimal padding */
+    margin: 0 !important;
+    line-height: 1; /* Remove extra spacing */
+    text-align: left;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Show "..." for cut-off text */
+    max-width: 10em; /* Adjust based on column width */
+}
+
+.compact-column-borders th {
+    font-weight: bold;
+    text-align: center;
+    background: #f8f8f8;
+}
+
+.compact-column-borders tr {
+    height: auto !important; /* Prevent row height increase */
+    border-bottom: none !important; /* Remove row borders */
+    border-top: none !important; /* Remove row borders */
+}
+
+.compact-column-borders th:first-child,
+.compact-column-borders td:first-child {
+    border-left: none; /* Remove left border for first column */
+}
+
+.compact-column-borders th:last-child,
+.compact-column-borders td:last-child {
+    border-right: none; /* Remove right border for last column */
+}
+
+/* Bold footer text */
+.compact-column-borders tfoot td {
+    font-weight: bold !important;
+    border-top: 1px solid black !important; /* Add border above footer */
+}
+
+.compact-column-borders .ui-datatable-header,
+.compact-column-borders .ui-datatable-footer {
+    margin: 0 !important;
+    padding: 1px !important;
+    line-height: 1.1;
+}
+
+/* Hide empty footer cells */
+.compact-column-borders .ui-datatable-footer td:empty {
+    display: none;
+}
+
+.compact-column-borders .ui-state-default {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Border below header */
+.compact-column-borders thead {
+    border-bottom: 1px solid black !important;
+}
+
+
+
+
+
+.light-grey-background {
+    background-color: #e2e3e5; /* Slightly darker grey than before */
+    color: #343a40; /* Dark grey text, ensuring good contrast */
+}
+.light-grey-background,
+.light-grey-background .ui-column-footer,
+.light-grey-background .ui-column-header {
+    background-color: #e2e3e5; /* Slightly darker grey than before */
+    color: #343a40; /* Dark grey text, ensuring good contrast */
+}
+
+
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* OPD Button */
+.ui-button.ui-button-opd,
+.ui-widget.ui-button-opd,
+.ui-state-default.ui-button-opd {
+    background-color: #007bff !important; /* Blue */
+    border-color: #0056b3 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-opd:hover,
+.ui-widget.ui-button-opd:hover,
+.ui-state-default.ui-button-opd:hover {
+    background-color: #0056b3 !important;
+    border-color: #003f7f !important;
+}
+
+/* Pharmacy Button */
+.ui-button.ui-button-pharmacy,
+.ui-widget.ui-button-pharmacy,
+.ui-state-default.ui-button-pharmacy {
+    background-color: #28a745 !important; /* Green */
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-pharmacy:hover,
+.ui-widget.ui-button-pharmacy:hover,
+.ui-state-default.ui-button-pharmacy:hover {
+    background-color: #1e7e34 !important;
+    border-color: #155724 !important;
+}
+
+/* Channelling Button */
+.ui-button.ui-button-channelling,
+.ui-widget.ui-button-channelling,
+.ui-state-default.ui-button-channelling {
+    background-color: #17a2b8 !important; /* Teal */
+    border-color: #117a8b !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-channelling:hover,
+.ui-widget.ui-button-channelling:hover,
+.ui-state-default.ui-button-channelling:hover {
+    background-color: #117a8b !important;
+    border-color: #0d6674 !important;
+}
+
+/* Stores Button */
+.ui-button.ui-button-stores,
+.ui-widget.ui-button-stores,
+.ui-state-default.ui-button-stores {
+    background-color: #ffc107 !important; /* Yellow */
+    border-color: #e0a800 !important;
+    color: #212529 !important;
+}
+
+.ui-button.ui-button-stores:hover,
+.ui-widget.ui-button-stores:hover,
+.ui-state-default.ui-button-stores:hover {
+    background-color: #e0a800 !important;
+    border-color: #c69500 !important;
+}
+
+/* Inpatients Button */
+.ui-button.ui-button-inpatients,
+.ui-widget.ui-button-inpatients,
+.ui-state-default.ui-button-inpatients {
+    background-color: #dc3545 !important; /* Red */
+    border-color: #bd2130 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-inpatients:hover,
+.ui-widget.ui-button-inpatients:hover,
+.ui-state-default.ui-button-inpatients:hover {
+    background-color: #bd2130 !important;
+    border-color: #94171c !important;
+}
+
+/* Human Resource Button */
+.ui-button.ui-button-human-resource,
+.ui-widget.ui-button-human-resource,
+.ui-state-default.ui-button-human-resource {
+    background-color: #6610f2 !important; /* Purple */
+    border-color: #520dc2 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-human-resource:hover,
+.ui-widget.ui-button-human-resource:hover,
+.ui-state-default.ui-button-human-resource:hover {
+    background-color: #520dc2 !important;
+    border-color: #40099a !important;
+}
+
+/* Administration Button */
+.ui-button.ui-button-administration,
+.ui-widget.ui-button-administration,
+.ui-state-default.ui-button-administration {
+    background-color: #6c757d !important; /* Grey */
+    border-color: #545b62 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-administration:hover,
+.ui-widget.ui-button-administration:hover,
+.ui-state-default.ui-button-administration:hover {
+    background-color: #545b62 !important;
+    border-color: #3c4044 !important;
+}
+
+/* Membership Button */
+.ui-button.ui-button-membership,
+.ui-widget.ui-button-membership,
+.ui-state-default.ui-button-membership {
+    background-color: #fd7e14 !important; /* Orange */
+    border-color: #e05a00 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-membership:hover,
+.ui-widget.ui-button-membership:hover,
+.ui-state-default.ui-button-membership:hover {
+    background-color: #e05a00 !important;
+    border-color: #c15000 !important;
+}
+
+/* Lab Button */
+.ui-button.ui-button-lab,
+.ui-widget.ui-button-lab,
+.ui-state-default.ui-button-lab {
+    background-color: #20c997 !important; /* Light Green */
+    border-color: #17a589 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-lab:hover,
+.ui-widget.ui-button-lab:hover,
+.ui-state-default.ui-button-lab:hover {
+    background-color: #17a589 !important;
+    border-color: #127c66 !important;
+}
+
+/* Operating Theatre Button */
+.ui-button.ui-button-operating-theatre,
+.ui-widget.ui-button-operating-theatre,
+.ui-state-default.ui-button-operating-theatre {
+    background-color: #e83e8c !important; /* Pink */
+    border-color: #d63384 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-operating-theatre:hover,
+.ui-widget.ui-button-operating-theatre:hover,
+.ui-state-default.ui-button-operating-theatre:hover {
+    background-color: #d63384 !important;
+    border-color: #b7256b !important;
+}
+
+/* Finance Button */
+.ui-button.ui-button-finance,
+.ui-widget.ui-button-finance,
+.ui-state-default.ui-button-finance {
+    background-color: #343a40 !important; /* Dark Grey */
+    border-color: #23272b !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-finance:hover,
+.ui-widget.ui-button-finance:hover,
+.ui-state-default.ui-button-finance:hover {
+    background-color: #23272b !important;
+    border-color: #121416 !important;
+}
+
+/* EMR Button */
+.ui-button.ui-button-emr,
+.ui-widget.ui-button-emr,
+.ui-state-default.ui-button-emr {
+    background-color: #00d1b2 !important; /* Aqua */
+    border-color: #00a88f !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-emr:hover,
+.ui-widget.ui-button-emr:hover,
+.ui-state-default.ui-button-emr:hover {
+    background-color: #00a88f !important;
+    border-color: #007f6b !important;
+}
+
+/* Ensure the condensed table class applies specifically to this DataTable */
+.condensed-table.ui-datatable {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 1rem !important; /* Adjust font size */
+    line-height: 1 !important;
+    border-collapse: collapse !important;
+}
+
+/* Remove spacing and padding in headers and footers */
+.condensed-table.ui-datatable .ui-datatable-header,
+.condensed-table.ui-datatable .ui-datatable-footer {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Remove padding and spacing for table cells */
+.condensed-table.ui-datatable .ui-datatable-thead > tr > th,
+.condensed-table.ui-datatable .ui-datatable-tbody > tr > td {
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+    border: none !important;
+}
+
+/* Remove padding from the wrapper */
+.condensed-table.ui-datatable .ui-datatable-tablewrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Specific adjustments for labels inside cells */
+.condensed-table.ui-datatable .ui-datatable-tbody > tr > td label {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+/* Ensure the table itself is tightly packed */
+.condensed-table.ui-datatable table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+}
+
+
+@media print {
+    .printingOnly{
+        display: block !important;
+
+    }
+}
+
+@media print {
+    .printingOnly {
+        display: block !important;
+    }
+    .screenOnly {
+        display: none !important;
+    }
+}
+
+@media screen {
+    .printingOnly {
+        display: none !important;
+    }
+    .screenOnly {
+        display: block !important;
+    }
+}
+
+
+/* Adjust the size of the autocomplete dropdown panel */
+.ui-autocomplete.minimized-spacing .ui-autocomplete-panel {
+    max-height: 150px; /* Set a maximum height */
+    overflow-y: auto; /* Enable scrolling for large content */
+    padding: 0; /* Minimize padding inside the panel */
+    margin: 0; /* Remove extra margins */
+    border: 1px solid #ddd; /* Optional: Add a subtle border */
+}
+
+/* Minimize spacing for individual dropdown items */
+.ui-autocomplete.minimized-spacing .ui-autocomplete-item {
+    padding: 4px 8px; /* Reduce padding for items */
+    margin: 0; /* Remove margins */
+    line-height: 1.2; /* Compact line height */
+}
+
+/* Adjust hover effect for dropdown items */
+.ui-autocomplete.minimized-spacing .ui-autocomplete-item:hover {
+    background-color: #f5f5f5; /* Subtle hover effect */
+    color: #000; /* Optional: Change text color */
+}
+
+
+.compact-datatable {
+    --content-padding: 0em; /* No padding */
+    --inline-spacing: 0em; /* No spacing */
+    --border-radius: 0px; /* No rounded corners */
+}
+
+/* Remove row borders */
+.compact-datatable .ui-datatable-tablewrapper table {
+    border-collapse: collapse;
+}
+
+.compact-datatable .ui-datatable-data tr,
+.compact-datatable .ui-datatable-data tr td {
+    border: none !important;
+}
+
+/* Table cells - Minimal padding and prevent wrapping */
+.compact-datatable .ui-datatable-data tr td {
+    margin: 0 !important;
+    padding: 2px 5px !important; /* Minimal padding */
+    line-height: 1.2;
+    font-size: 0.8em; /* Normal text size */
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Cut text beyond column width */
+}
+
+/* Header cells - Minimal padding */
+.compact-datatable th {
+    padding: 4px 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+}
+
+/* Footer text same as normal text */
+.compact-datatable .ui-datatable-footer,
+.compact-datatable tfoot.ui-widget-content,
+.compact-datatable .ui-datatable-footer td {
+    padding: 2px 5px !important;
+    line-height: 1.2;
+    font-size: 0.8em; /* Same as normal text */
+    font-weight: normal;
+}
+
+/* Hide empty footer cells */
+.compact-datatable .ui-datatable-footer td:empty {
+    display: none;
+}
+
+/* Light grey background for specific columns */
+.compact-datatable .light-grey-background,
+.compact-datatable .ui-datatable thead th.light-grey-background,
+.compact-datatable .ui-datatable tfoot td.light-grey-background {
+    background-color: #e2e3e5;
+    color: #343a40;
+}
+
+/* Paginator adjustments */
+.compact-datatable .ui-paginator {
+    padding: 1px !important;
+    font-size: 0.8em !important;
+}
+
+/* Ensure footer text is normal size and weight */
+.compact-datatable .ui-datatable-footer td,
+.compact-datatable tfoot.ui-widget-content td,
+.compact-datatable .ui-datatable-footer td.ui-state-default {
+    font-size: 0.8em !important; /* Match normal text */
+    font-weight: normal !important; /* Remove bold */
+    padding: 2px 5px !important;
+    line-height: 1.2;
+    background: transparent !important;
+}
+
+/* Override PrimeFaces default styles */
+.compact-datatable .ui-state-default {
+    font-size: 0.8em !important; /* Ensure all .ui-state-default follows this */
+    font-weight: normal !important;
+}
+
+/* Target only footer-specific .ui-state-default */
+.compact-datatable .ui-datatable-footer .ui-state-default {
+    font-size: 0.8em !important;
+    font-weight: normal !important;
+    padding: 2px 5px !important;
+}
+
+/* Expiry date styling for pharmacy items */
+.ui-messages-success {
+    background-color: #dff0d8 !important; /* Light green background */
+    color: #3c763d !important; /* Dark green text */
+    border-color: #d6e9c6 !important; /* Green border */
+}
+
+/* Align all table cell contents to top */
+.ui-datatable-data tr td,
+.ui-datatable-thead tr th,
+.ui-datatable-tfoot tr td,
+table td,
+table th {
+    vertical-align: top !important;
+}

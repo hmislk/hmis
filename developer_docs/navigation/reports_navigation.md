@@ -41,6 +41,7 @@ This document lists all pages reachable from the **Reports** menu.
 | **Reports → Collection Center Reports → 12. Collction Centre Investigation List** | `/reports/collectionCenterReports/cc_investigation_list?faces-redirect=true` | `Reports` | |
 | **Reports → Collection Center Reports → 12. Collction Centre Bill Item List** | `/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → Daily return** | `/reports/financialReports/daily_return?faces-redirect=true` | `Reports` | |
+| **Reports → Financial Reports → Daily return (DTO – fast)** | `/reports/financialReports/daily_return_dto.xhtml?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → Income Breakdown by Category** | `/reports/financialReports/income_breakdown_by_category?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → Bills by Category** | `/reports/financialReports/bills_by_item_category?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → 4. Service Category Wise Bill Details** | `/reports/financialReports/service_category_wise_bill_detail?faces-redirect=true` | `Reports` | |

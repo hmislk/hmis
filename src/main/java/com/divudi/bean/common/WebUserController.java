@@ -911,6 +911,9 @@ public class WebUserController implements Serializable {
         getUserPrivilageController().init();
         getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         getUserPrivilageController().setPrivilegesLoaded(false);
+        if (getUserPrivilageController().getDepartment() == null) {
+            getUserPrivilageController().setDepartment(getSessionController().getDepartment());
+        }
         return "/admin/users/user_privileges?faces-redirect=true";
     }
 
@@ -1382,16 +1385,9 @@ public class WebUserController implements Serializable {
     }
 
     public int getUserNotificationCount() {
-        if (userNotificationController.fillLoggedUserNotifications() != null) {
-            userNotificationCount = 0;
-            List<UserNotification> allNotifications = userNotificationController.fillLoggedUserNotifications();
-            for (UserNotification un : allNotifications) {
-                if (!un.isSeen()) {
-                    userNotificationCount++;
-                }
-            }
-        }
-        return userNotificationCount;
+        // User notifications disabled system-wide due to stability issues in JPQL/transactions.
+        // Returning 0 avoids triggering EJB calls during render (e.g., badge in menu).
+        return 0;
     }
 
     public void setUserNotificationCount(int userNotificationCount) {

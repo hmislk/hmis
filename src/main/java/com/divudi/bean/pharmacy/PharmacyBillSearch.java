@@ -8,9 +8,12 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.pharmacy.PreReturnController;
+import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.bean.store.StoreBillSearch;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -134,6 +137,14 @@ public class PharmacyBillSearch implements Serializable {
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
+    @Inject
+    GrnCostingController grnCostingController;
+    @Inject
+    SearchController searchController;
+    @Inject
+    PreReturnController preReturnController;
+    @Inject
+    SaleReturnController saleReturnController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private UploadedFile file;
@@ -176,9 +187,52 @@ public class PharmacyBillSearch implements Serializable {
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
+    public String navigateToReversePharmacyDirectIssueToInpatients() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/dataAdmin/pharmacy_bill_reverse_bht?faces-redirect=true";
+    }
+
+    public String navigateToReversePharmacyDirectIssueToInpatientsById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill ID Provided");
+            return null;
+        }
+        
+        Bill selectedBill = billService.fetchBillById(billId);
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Bill Not Found");
+            return null;
+        }
+        
+        if (selectedBill.getBillType() != BillType.PharmacyBhtPre) {
+            JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return null;
+        }
+        
+        bill = selectedBill;
+        printPreview = false;
+        return "/dataAdmin/pharmacy_bill_reverse_bht?faces-redirect=true";
+    }
+
     public String navigateToReprintPharmacyPurchaseOrder() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No purchase order is selected to view");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
+    }
+
+    public String navigateToReprintPharmacyPurchaseOrderFromDto() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No purchase order is selected to view");
+            return null;
+        }
+        bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Purchase order not found");
             return null;
         }
         return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
@@ -220,9 +274,31 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
+    /**
+     * @deprecated Use {@link #navigateToViewPharmacyTransferRequestById()}
+     * which works with DTO driven tables by accepting only the bill id.
+     */
+    @Deprecated
     public String navigateToViewPharmacyTransferReqest() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
+    /**
+     * Navigation helper when only the bill id is available (e.g. from DTO
+     * tables).
+     */
+    public String navigateToViewPharmacyTransferRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
@@ -293,6 +369,20 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
     }
 
+    public String navigateToReprintInpatientIssueForRequestsById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billService.reloadBill(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_transfer_issue_for_inpatient_requests?faces-redirect=true";
+    }
+
     /**
      * Used by DTO reports where only the bill id is available.
      */
@@ -311,8 +401,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     /**
-     * Used by DTO reports where the bill id is passed as a parameter.
-     * This avoids potential ViewExpiredException issues with f:setPropertyActionListener.
+     * Used by DTO reports where the bill id is passed as a parameter. This
+     * avoids potential ViewExpiredException issues with
+     * f:setPropertyActionListener.
      */
     public String navigateToReprintPharmacyTransferIssueByIdWithParam(Long paramBillId) {
         if (paramBillId == null) {
@@ -397,6 +488,22 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+    }
+    
+    public String navigateToDirectPurchaseBillFromId(Long id){
+        if(id == null){
+            return "";
+        }
+        
+        Bill bill = billService.reloadBill(id);
+        
+        if(bill == null){
+            return "";
+        }
+        
+        this.bill = bill;
+        
+        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
     }
 
     public String cancelInwardPharmacyRequestBillFromInward() {
@@ -1001,6 +1108,54 @@ public class PharmacyBillSearch implements Serializable {
         }
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
+
+    public String navigateToEditSavedGrn() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN_PRE) {
+            JsfUtil.addErrorMessage("Selected bill is not a saved GRN (PRE).");
+            return null;
+        }
+        grnController.setCurrentGrnBillPre(bill);
+        return grnController.navigateToEditGrn();
+    }
+
+    public String navigateToEditSavedGrnCosting() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN_PRE) {
+            JsfUtil.addErrorMessage("Selected bill is not a saved GRN (PRE).");
+            return null;
+        }
+        bill = billService.reloadBill(bill);
+        grnCostingController.setCurrentGrnBillPre(bill);
+        return grnCostingController.navigateToEditGrnCosting();
+    }
+
+//    public String navigateToApproveGrn() {
+//        if (bill == null) {
+//            JsfUtil.addErrorMessage("No Bill Selected");
+//            return null;
+//        }
+//        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN_PRE) {
+//            JsfUtil.addErrorMessage("Invalid Bill Type");
+//            return null;
+//        }
+//        grnController.setCurrentGrnBillPre(bill);
+//        return grnController.navigateToApproveRecieveGrnPreBill();
+//    }
+
+//    public String navigateToViewCompletedGrn() {
+//        if (bill == null) {
+//            JsfUtil.addErrorMessage("No Bill Selected");
+//            return null;
+//        }
+//        return navigateToViewPharmacyGrn();
+//    }
 
     public String navigateToViewPurchaseOrder() {
         if (bill == null) {
@@ -2174,16 +2329,16 @@ public class PharmacyBillSearch implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     private boolean cancellationStarted;
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
-        if(cancellationStarted){
+        if (cancellationStarted) {
             JsfUtil.addErrorMessage("Cancellation already started");
             return;
         }
         cancellationStarted = true;
-        
+
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 cancellationStarted = false;
@@ -2195,7 +2350,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
             if (!webUserController.hasPrivilege("Admin")) {
-                if (configOptionApplicationController.getBooleanValueByKey("Settled pharmacy bills can be cancelled only withing settled day.", false)) {
+                if (configOptionApplicationController.getBooleanValueByKey("Settled pharmacy bills can be cancelled only within settled day.", false)) {
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
                     Date createdDate = formatter.parse(formatter.format(getBill().getCreatedAt()));
                     Date today = formatter.parse(formatter.format(new Date()));
@@ -2382,6 +2537,128 @@ public class PharmacyBillSearch implements Serializable {
 
         printPreview = true;
 
+    }
+
+    private Bill createReversalBillWithCorrectStockAdjustment(Bill originalBill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
+        // Create a new reversal bill using built-in copy method
+        Bill reversalBill = new Bill();
+        reversalBill.copy(originalBill);
+        
+        // Set reversal-specific properties
+        reversalBill.setCreatedAt(new Date());
+        reversalBill.setCreater(user);
+        reversalBill.setDepartment(department);
+        
+        // Set reference relationships
+        reversalBill.setReferenceBill(originalBill);
+        reversalBill.setBilledBill(originalBill);
+        
+        // Initialize bill items collection
+        reversalBill.setBillItems(new ArrayList<>());
+        
+        // Create reversal bill items using built-in methods
+        for (BillItem originalItem : originalBill.getBillItems()) {
+            // Create new bill item using copy method
+            BillItem reversalItem = new BillItem();
+            reversalItem.copy(originalItem);
+            reversalItem.setBill(reversalBill);
+            reversalItem.setCreatedAt(new Date());
+            reversalItem.setCreater(user);
+            
+            // Use built-in invert method
+            reversalItem.invertValue(originalItem);
+            
+            // Handle pharmaceutical bill item if it exists
+            if (originalItem.getPharmaceuticalBillItem() != null) {
+                PharmaceuticalBillItem originalPbi = originalItem.getPharmaceuticalBillItem();
+                
+                // Create new PBI using copy method
+                PharmaceuticalBillItem reversalPbi = new PharmaceuticalBillItem();
+                reversalPbi.copy(originalPbi);
+                reversalPbi.setBillItem(reversalItem);
+                reversalPbi.setCreatedAt(new Date());
+                reversalPbi.setCreater(user);
+                
+                // Use built-in invert method
+                reversalPbi.invertValue(originalPbi);
+                
+                reversalItem.setPharmaceuticalBillItem(reversalPbi);
+                
+                // Apply correct stock adjustment using the reversed quantity
+                if (reversalPbi.getQty() != 0 && reversalPbi.getStock() != null) {
+                    getPharmacyBean().addToStock(reversalPbi.getStock(), reversalPbi.getQty(), reversalPbi, department);
+                }
+            }
+            
+            // Add the bill item to the reversal bill
+            reversalBill.getBillItems().add(reversalItem);
+        }
+        
+        return reversalBill;
+    }
+
+    public void reversePharmacyDirectIssueToBht() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return;
+        }
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("This Bill Already Discharged");
+            return;
+        }
+        if (getBill().getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Checked Bill. Can not reverse");
+            return;
+        }
+        if (getBill().checkActiveReturnBhtIssueBills()) {
+            JsfUtil.addErrorMessage("There are some return bills for this. Please cancel those bills first");
+            return;
+        }
+        if (checkDepartment(getBill())) {
+            return;
+        }
+        if (getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Bill is already cancelled. Cannot reverse cancelled bills");
+            return;
+        }
+
+        // Generate new bill number for reversal
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+            sessionController.getDepartment(), 
+            getBill().getBillTypeAtomic() // Keep the same bill type atomic
+        );
+        
+        // Create reversal bill using custom logic to handle proper stock adjustments
+        Bill reversalBill = createReversalBillWithCorrectStockAdjustment(
+            getBill(), 
+            getSessionController().getLoggedUser(), 
+            getSessionController().getDepartment(), 
+            BillNumberSuffix.PHISSCAN
+        );
+        
+        // Set reversal bill properties - keep original bill type and bill type atomic
+        reversalBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
+        reversalBill.setBillType(getBill().getBillType()); // Keep same bill type
+        reversalBill.setBillTypeAtomic(getBill().getBillTypeAtomic()); // Keep same bill type atomic
+        reversalBill.setDeptId(deptId);
+        reversalBill.setReferenceBill(getBill()); // Reference to original bill
+        reversalBill.setBilledBill(getBill()); // Reference as billedBill
+        
+        // Save the reversal bill
+        getBillFacade().edit(reversalBill);
+        billService.createBillFinancialDetailsForPharmacyBill(reversalBill);
+
+        // Update original bill to mark as reversed
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(reversalBill);
+        getBillFacade().edit(getBill());
+        
+        JsfUtil.addSuccessMessage("Bill Reversed Successfully. Reversal Bill No: " + reversalBill.getDeptId());
+        printPreview = true;
     }
 
     public void cancelPharmacyRequestIssueToBht() {
@@ -2793,6 +3070,41 @@ public class PharmacyBillSearch implements Serializable {
 //            getBill().setBackwardReferenceBill(null);
 //            getBill().setForwardReferenceBill(null);
 //            getBillFacade().edit(getBill());
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    public void pharmacyTransferIssueInpatientCancel() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (pharmacyErrorCheck()) {
+                return;
+            }
+
+            if (checkDepartment(getBill())) {
+                return;
+            }
+
+            CancelledBill cb = pharmacyCreateCancelBill();
+            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
+            cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
+            cb.setReferenceBill(getBill());
+            cb.setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+            if (cb.getId() == null) {
+                getBillFacade().create(cb);
+            }
+
+            pharmacyCancelIssuedItems(cb);
+
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit(getBill());
+
             JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
@@ -3458,7 +3770,7 @@ public class PharmacyBillSearch implements Serializable {
                 case PharmacyIssue:
                     return "pharmacy_reprint_bill_unit_issue?faces-redirect=true";
                 case PharmacyTransferIssue:
-                    return "pharmacy_reprint_transfer_isssue?faces-redirect=true";
+                    return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
                 case PharmacyTransferReceive:
                     return "pharmacy_reprint_transfer_receive?faces-redirect=true";
                 case PharmacyPurchaseBill:
@@ -3474,6 +3786,8 @@ public class PharmacyBillSearch implements Serializable {
                     return "pharmacy_reprint_purchase_return?faces-redirect=true";
                 case PharmacyAdjustment:
                     return "pharmacy_reprint_adjustment?faces-redirect=true";
+                case PharmacyDonationBill:
+                    return "pharmacy_reprint_donation?faces-redirect=true";
                 default:
                     return "pharmacy_reprint_bill_sale?faces-redirect=true";
             }
@@ -3706,7 +4020,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
+
         // Set default email if available
         if (bill.getToInstitution() != null && bill.getToInstitution().getEmail() != null) {
             emailRecipient = bill.getToInstitution().getEmail();
@@ -3720,7 +4034,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
+
         if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter recipient email");
             return;
@@ -3817,6 +4131,54 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     /**
+     * Navigate to Return Items Only page (Payment will be released at the cashier)
+     */
+    public String navigateToReturnItemsOnly() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cancelled bills cannot be returned");
+            return null;
+        }
+        // Set the bill in PreReturnController and navigate directly to return process
+        preReturnController.setBill(bill);
+        return "/pharmacy/pharmacy_bill_return_pre?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to Return Goods and Payment page (Will take goods and return payments)
+     */
+    public String navigateToReturnGoodsAndPayment() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cancelled bills cannot be returned");
+            return null;
+        }
+        // Set the bill in SaleReturnController and navigate directly to return process
+        saleReturnController.setBill(bill);
+        return saleReturnController.navigateToReturnItemsAndPaymentsForPharmacyRetailSale();
+    }
+
+    /**
+     * Navigate back to the reprint bill page from return pages
+     */
+    public String navigateBackToReprintBill() {
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to search sale pre bill page
+     */
+    public String navigateToSearchSalePreBill() {
+        return "/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true";
+    }
+
+    /**
      * Bill id used by DTO report tables to fetch a bill directly.
      */
     public Long getBillId() {
@@ -3825,6 +4187,11 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setBillId(Long billId) {
         this.billId = billId;
+        if (billId != null) {
+            this.bill = billService.reloadBill(billId);
+        } else {
+            this.bill = null;
+        }
     }
 
 }

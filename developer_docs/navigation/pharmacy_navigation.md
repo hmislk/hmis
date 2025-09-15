@@ -39,6 +39,7 @@ This document lists key pages reachable from the **Pharmacy** menu. Each entry s
 | **Pharmacy → Reports → Sale by Date Summary** | `/faces/pharmacy/pharmacy_report_sale_by_date_summery.xhtml` | `ReportsSearchCashCardOwn` | |
 | **Pharmacy → Reports → Stock With Supplier** | `/faces/pharmacy/pharmacy_report_stock_report_with_supplier.xhtml` | `ReportsItemOwn` | |
 | **Pharmacy → Reports → BHT Issue Items With Margin** | `/faces/pharmacy/pharmacy_report_bht_issue_item_with_margin.xhtml` | `ReportsItemOwn` | |
+| **Pharmacy → Analytics → Procurement Reports → Item-wise Procurement** | `/faces/pharmacy/report_item_vice_purchase_and_good_receive.xhtml` | `PharmacyReports` | |
 | **Pharmacy → Settings → Administration** | `/faces/pharmacy/admin/index.xhtml` | `Pharmacy` | |
 | **Pharmacy → Settings → Importer Categories** | `/faces/pharmacy/pharmacy_importer_category.xhtml` | `Pharmacy` | |
 

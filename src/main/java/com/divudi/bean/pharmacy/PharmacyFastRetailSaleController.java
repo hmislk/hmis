@@ -1000,20 +1000,19 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return addedQty;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (patient != null && getBillItem() != null) {
                 // Performance optimization: Lazy load allergy list only when patient is valid
                 if (allergyListOfPatient == null && patient.getId() != null) {
                     allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
                 }
-                boolean allergyStatus = false;
+                String allergyMsg = "";
                 if (allergyListOfPatient != null) {
-                    allergyStatus = pharmacyService.isAllergyForPatient(patient, billItem, allergyListOfPatient);
+                    allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
                 }
-                //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
 
-                if (allergyStatus) {
-                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " should be allergy to this patient according to EMR data.");
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
                     return addedQty;
                 }
             }
@@ -1593,14 +1592,18 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             // Performance optimization: Only check allergies if patient is valid and has bill items
             if (patient != null && patient.getId() != null && !getPreBill().getBillItems().isEmpty()) {
                 if (allergyListOfPatient == null) {
                     allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
                 }
-                if (allergyListOfPatient != null && !pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
-                    JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+                String allergyMsg = null;
+                if (allergyListOfPatient != null) {
+                    allergyMsg = pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient);
+                }
+                if (allergyMsg != null && !allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
                     billSettlingStarted = false;
                     return;
                 }

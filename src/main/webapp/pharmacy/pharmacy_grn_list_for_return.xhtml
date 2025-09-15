@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/pharmacy/purchase_returns_and_cancellations_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <p:panel> 
                 <f:facet name="header">
@@ -55,15 +55,8 @@
                                 icon="fas fa-search"
                                 id="btnSearch"
                                 ajax="false" 
-                                value="Logged Institution Search"
+                                value="Search"
                                 action="#{searchController.createGrnTable}"/>
-                            <p:commandButton 
-                                class="w-100 ui-button-warning"
-                                icon="fas fa-search" 
-                                id="btnSearch2"
-                                ajax="false"
-                                value="All Institution Search" 
-                                action="#{searchController.createGrnTableAllIns()}"/>
 
                         </h:panelGrid>
                     </div>
@@ -81,15 +74,8 @@
                             filterBy="#{p}"
                             widgetVar="billTable"
                             >
-
                             <p:column 
-                                headerText="No" 
-                                width="2em" 
-                                styleClass="text-center">
-                                <h:outputText value="#{n+1}" />
-                            </p:column>
-
-                            <p:column 
+                                width="10em"
                                 headerText="Distributor" 
                                 sortBy="#{p.fromInstitution.name}" 
                                 filterBy="#{p.fromInstitution.name}" 
@@ -136,6 +122,13 @@
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </h:panelGroup>
+                                <h:panelGroup id="gpReturned" rendered="#{p.fullReturned}">
+                                    <br/>
+                                    <h:outputText styleClass="text-success" value="Fully Returned at " />
+                                    <h:outputText styleClass="text-success" value="#{p.fullReturnedAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </h:panelGroup>
                             </p:column>
 
                             <p:column 
@@ -154,6 +147,11 @@
                                     <br/>
                                     <h:outputText styleClass="text-danger" value="Refunded by " />
                                     <h:outputText styleClass="text-danger" value="#{p.refundedBill.creater.webUserPerson.name}" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{p.fullReturned}">
+                                    <br/>
+                                    <h:outputText styleClass="text-success" value="Full Return by " />
+                                    <h:outputText styleClass="text-success" value="#{p.fullReturnedBy.webUserPerson.name}" />
                                 </h:panelGroup>
                             </p:column>
 
@@ -197,7 +195,7 @@
                                     icon="pi pi-undo"
                                     title="Return"
                                     action="#{billSearch.navigateToPharmacyGrnReturnBillView()}"
-                                    disabled="#{p.cancelled}"
+                                    disabled="#{p.cancelled or p.fullReturned}"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
                                     <f:setPropertyActionListener target="#{billSearch.bill}" value="#{p}" />
                                 </p:commandButton>

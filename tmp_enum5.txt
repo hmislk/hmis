@@ -1,0 +1,43 @@
+    public void setPaymentMethodsForMultiplePaymentMethod(List<PaymentMethod> paymentMethodsForMultiplePaymentMethod) {
+        this.paymentMethodsForMultiplePaymentMethod = paymentMethodsForMultiplePaymentMethod;
+    }
+
+    public List<PatientInvestigationStatus> getAvailableStatusforCancel() {
+        availableStatusforCancel = new ArrayList<>();
+        availableStatusforCancel.add(PatientInvestigationStatus.ORDERED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_GENERATED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_SENT);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_REJECTED);
+        return availableStatusforCancel;
+    }
+
+    public void setAvailableStatusforCancel(List<PatientInvestigationStatus> availableStatusforCancel) {
+        this.availableStatusforCancel = availableStatusforCancel;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPharmacyPurchase() {
+        if (paymentMethodsForPharmacyPurchase == null) {
+            fillPaymentMethodsFoPharmacyPurchase();
+        }
+        return paymentMethodsForPharmacyPurchase;
+    }
+
+    public InvestigationItemType getInvestigationItemType(String name) {
+        for (InvestigationItemType type : InvestigationItemType.values()) {
+            if (type.toString().equalsIgnoreCase(name.trim())) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public InvestigationItemValueType getInvestigationItemValueType(String name) {
+        for (InvestigationItemValueType type : InvestigationItemValueType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
