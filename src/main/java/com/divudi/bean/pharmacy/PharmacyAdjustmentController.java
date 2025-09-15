@@ -584,7 +584,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(toDepartment, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDeptId(deptId);
         getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentDepartmentStock);
