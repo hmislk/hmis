@@ -448,13 +448,13 @@
                             <h:panelGroup id="printPaper" layout="block">
 
                                 <po:purchase_order_request_custom_1
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
                                     bill="#{purchaseOrderRequestController.currentBill}"
                                     billItems="#{purchaseOrderRequestController.billItems}">
                                 </po:purchase_order_request_custom_1>
 
                                 <po:purchase_order_request_custom_2
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', false)}"
                                     bill="#{purchaseOrderRequestController.currentBill}"
                                     billItems="#{purchaseOrderRequestController.billItems}">
                                 </po:purchase_order_request_custom_2>

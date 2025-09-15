@@ -5399,7 +5399,7 @@ public class PharmacyController implements Serializable {
                 + "b.pharmaceuticalBillItem.retailRate, "
                 + "b.pharmaceuticalBillItem.qty, "
                 + "b.pharmaceuticalBillItem.freeQty, "
-                + "b.netValue) "
+                + "b.bill.netTotal) "
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "

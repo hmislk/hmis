@@ -1011,16 +1011,16 @@ public class EnumController implements Serializable {
 //        return false;
 //
 //    }
-    public boolean checkPaymentMethod(PaymentMethod paymentMethod, String paymentMathodStr) {
-        if (paymentMethod != null && paymentMathodStr != null && !paymentMathodStr.trim().isEmpty()) {
+    public boolean checkPaymentMethod(PaymentMethod paymentMethod, String paymentMethodStr) {
+        if (paymentMethod != null && paymentMethodStr != null && !paymentMethodStr.trim().isEmpty()) {
             try {
-                PaymentMethod parsedMethod = PaymentMethod.valueOf(paymentMathodStr);
+                PaymentMethod parsedMethod = PaymentMethod.valueOf(paymentMethodStr);
                 return paymentMethod.equals(parsedMethod);
             } catch (IllegalArgumentException e) {
                 // Log the error and return false for invalid enum values
                 java.util.logging.Logger.getLogger(getClass().getName()).log(
                     java.util.logging.Level.WARNING,
-                    "Invalid PaymentMethod string: " + paymentMathodStr, e);
+                    "Invalid PaymentMethod string: " + paymentMethodStr, e);
                 return false;
             }
         }
@@ -1269,6 +1269,9 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForDirectPurchase() {
+        if (paymentMethodsForDirectPurchase == null) {
+            fillPaymentMethodsForDirectPurchase();
+        }
         return paymentMethodsForDirectPurchase;
     }
     

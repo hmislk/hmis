@@ -294,6 +294,8 @@ public class PharmaceuticalBillItem implements Serializable {
         remainingFreeQtyPack = ph.remainingFreeQtyPack;
         remainingQty = ph.remainingQty;
         remainingQtyPack = ph.remainingQtyPack;
+        completedQty = ph.completedQty;
+        completedFreeQty = ph.completedFreeQty;
 
         wholesaleRate = ph.wholesaleRate;
         wholesaleRatePack = ph.wholesaleRatePack;
@@ -332,6 +334,8 @@ public class PharmaceuticalBillItem implements Serializable {
         qtyPacks = 0 - ph.qtyPacks;
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
+        completedQty = 0 - ph.completedQty;
+        completedFreeQty = 0 - ph.completedFreeQty;
     }
 
     public void invertValue() {
@@ -339,6 +343,8 @@ public class PharmaceuticalBillItem implements Serializable {
         qtyPacks = 0 - qtyPacks;
         freeQty = 0 - freeQty;
         freeQtyPacks = 0 - freeQtyPacks;
+        completedQty = 0 - completedQty;
+        completedFreeQty = 0 - completedFreeQty;
     }
 
     public Stock getStock() {
