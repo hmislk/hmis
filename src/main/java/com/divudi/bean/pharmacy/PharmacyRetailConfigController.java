@@ -51,6 +51,13 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean cashierTokenPos;
     private boolean posHeaderPaperGeneral;
 
+    // Settle Payment Settings
+    private boolean settlePaymentPosPaper;
+    private boolean settlePaymentCustom1;
+    private boolean settlePaymentCustom2;
+    private boolean settlePaymentCustom3;
+    private boolean settlePaymentPosHeaderPaper;
+
     public PharmacyRetailConfigController() {
     }
     
@@ -84,6 +91,13 @@ public class PharmacyRetailConfigController implements Serializable {
         cashierBillCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", false);
         cashierTokenPos = configOptionController.getBooleanValueByKey("Pharmacy Sale for Cashier Token Bill is Pos paper", false);
         posHeaderPaperGeneral = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", true);
+
+        // Settle Payment Settings
+        settlePaymentPosPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper", true);
+        settlePaymentCustom1 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 1", true);
+        settlePaymentCustom2 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", true);
+        settlePaymentCustom3 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", true);
+        settlePaymentPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", true);
     }
 
     /**
@@ -116,6 +130,13 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", cashierBillCustom3);
             configOptionController.setBooleanValueByKey("Pharmacy Sale for Cashier Token Bill is Pos paper", cashierTokenPos);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", posHeaderPaperGeneral);
+
+            // Settle Payment Settings
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper", settlePaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 1", settlePaymentCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", settlePaymentCustom2);
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", settlePaymentCustom3);
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", settlePaymentPosHeaderPaper);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
             
@@ -271,6 +292,45 @@ public class PharmacyRetailConfigController implements Serializable {
     public void setTokenPosPaperCustom1(boolean tokenPosPaperCustom1) {
         this.tokenPosPaperCustom1 = tokenPosPaperCustom1;
     }
-    
-    
+
+    public boolean isSettlePaymentPosPaper() {
+        return settlePaymentPosPaper;
+    }
+
+    public void setSettlePaymentPosPaper(boolean settlePaymentPosPaper) {
+        this.settlePaymentPosPaper = settlePaymentPosPaper;
+    }
+
+    public boolean isSettlePaymentCustom1() {
+        return settlePaymentCustom1;
+    }
+
+    public void setSettlePaymentCustom1(boolean settlePaymentCustom1) {
+        this.settlePaymentCustom1 = settlePaymentCustom1;
+    }
+
+    public boolean isSettlePaymentCustom2() {
+        return settlePaymentCustom2;
+    }
+
+    public void setSettlePaymentCustom2(boolean settlePaymentCustom2) {
+        this.settlePaymentCustom2 = settlePaymentCustom2;
+    }
+
+    public boolean isSettlePaymentCustom3() {
+        return settlePaymentCustom3;
+    }
+
+    public void setSettlePaymentCustom3(boolean settlePaymentCustom3) {
+        this.settlePaymentCustom3 = settlePaymentCustom3;
+    }
+
+    public boolean isSettlePaymentPosHeaderPaper() {
+        return settlePaymentPosHeaderPaper;
+    }
+
+    public void setSettlePaymentPosHeaderPaper(boolean settlePaymentPosHeaderPaper) {
+        this.settlePaymentPosHeaderPaper = settlePaymentPosHeaderPaper;
+    }
+
 }
