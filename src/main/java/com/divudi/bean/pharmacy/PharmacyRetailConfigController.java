@@ -27,6 +27,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
     // Paper Type Settings
     private boolean posPaper;
+    private boolean posPaperCustom1;
     private boolean fiveFivePaper;
     private boolean posHeaderPaper;
     private boolean custom1Paper;
@@ -36,6 +37,7 @@ public class PharmacyRetailConfigController implements Serializable {
     // Token Settings
     private boolean tokenFiveFivePaper;
     private boolean tokenPosPaper;
+    private boolean tokenPosPaperCustom1;
     private boolean nativePrinters;
     
     // Feature Settings
@@ -59,6 +61,7 @@ public class PharmacyRetailConfigController implements Serializable {
     public void loadCurrentConfig() {
         // Paper Type Settings
         posPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", true);
+        posPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", false);
         fiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", true);
         posHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", true);
         custom1Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", true);
@@ -68,6 +71,7 @@ public class PharmacyRetailConfigController implements Serializable {
         // Token Settings
         tokenFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", true);
         tokenPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", true);
+        tokenPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper Custom 1", false);
         nativePrinters = configOptionController.getBooleanValueByKey("Pharmacy Bill Support for Native Printers", false);
         
         // Feature Settings
@@ -89,6 +93,7 @@ public class PharmacyRetailConfigController implements Serializable {
         try {
             // Paper Type Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", posPaper);
+            configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", posPaperCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", fiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", posHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", custom1Paper);
@@ -98,6 +103,7 @@ public class PharmacyRetailConfigController implements Serializable {
             // Token Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading", tokenFiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper", tokenPosPaper);
+            configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Token Paper is POS Paper Custom 1",tokenPosPaperCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Bill Support for Native Printers", nativePrinters);
             
             // Feature Settings
@@ -249,4 +255,22 @@ public class PharmacyRetailConfigController implements Serializable {
     public void setPosHeaderPaperGeneral(boolean posHeaderPaperGeneral) {
         this.posHeaderPaperGeneral = posHeaderPaperGeneral;
     }
+
+    public boolean isPosPaperCustom1() {
+        return posPaperCustom1;
+    }
+
+    public void setPosPaperCustom1(boolean posPaperCustom1) {
+        this.posPaperCustom1 = posPaperCustom1;
+    }
+
+    public boolean isTokenPosPaperCustom1() {
+        return tokenPosPaperCustom1;
+    }
+
+    public void setTokenPosPaperCustom1(boolean tokenPosPaperCustom1) {
+        this.tokenPosPaperCustom1 = tokenPosPaperCustom1;
+    }
+    
+    
 }
