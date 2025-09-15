@@ -48,7 +48,8 @@ public class EnumController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-    private PaymentScheme paymentScheme;
+    // PaymentScheme removed from instance field to avoid cross-user state in ApplicationScoped bean
+    // Use local variables or session-scoped beans for user-specific state
     private List<Class<? extends Enum<?>>> enumList;
     List<PaymentMethod> paymentMethodsForOpdBilling;
     private List<PaymentMethod> paymentMethodsForGrn;
@@ -1011,19 +1012,19 @@ public class EnumController implements Serializable {
 //
 //    }
     public boolean checkPaymentMethod(PaymentMethod paymentMethod, String paymentMathodStr) {
-        if (paymentMethod != null) {
-            //System.err.println("Payment method : " + paymentMethod);
-            //System.err.println("Payment Method String : " + PaymentMethod.valueOf(paymentMathodStr));
-            if (paymentMethod.equals(PaymentMethod.valueOf(paymentMathodStr))) {
-                //System.err.println("Returning True");
-                return true;
-            } else {
+        if (paymentMethod != null && paymentMathodStr != null && !paymentMathodStr.trim().isEmpty()) {
+            try {
+                PaymentMethod parsedMethod = PaymentMethod.valueOf(paymentMathodStr);
+                return paymentMethod.equals(parsedMethod);
+            } catch (IllegalArgumentException e) {
+                // Log the error and return false for invalid enum values
+                java.util.logging.Logger.getLogger(getClass().getName()).log(
+                    java.util.logging.Level.WARNING,
+                    "Invalid PaymentMethod string: " + paymentMathodStr, e);
                 return false;
             }
         }
-
         return false;
-
     }
 
     public AdmissionTypeEnum[] getAdmissionTypeEnum() {
@@ -1040,13 +1041,7 @@ public class EnumController implements Serializable {
     public EnumController() {
     }
 
-    public PaymentScheme getPaymentScheme() {
-        return paymentScheme;
-    }
-
-    public void setPaymentScheme(PaymentScheme paymentScheme) {
-        this.paymentScheme = paymentScheme;
-    }
+    // PaymentScheme getters/setters removed - use local variables or session-scoped beans for user-specific state
 
     public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
         paymentMethodsForPatientDeposit = new ArrayList<>();

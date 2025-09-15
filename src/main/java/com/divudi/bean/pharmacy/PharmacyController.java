@@ -3972,7 +3972,7 @@ public class PharmacyController implements Serializable {
             sql += " and i.bill.department=:dep";
         }
         if (item != null) {
-            m.put("item", department);
+            m.put("item", item);
             sql += " and i.item=:item ";
         }
 
@@ -5481,8 +5481,8 @@ public class PharmacyController implements Serializable {
                 + "b.pharmaceuticalBillItem.completedFreeQty "
                 + ") "
                 + "FROM BillItem b "
-                + "WHERE (b.bill.cancelled IS NULL OR b.retired = FALSE) "
-                + "AND (b.bill.retired IS NULL OR b.retired = FALSE) "
+                + "WHERE (b.bill.cancelled IS NULL OR b.bill.cancelled = FALSE) "
+                + "AND (b.bill.retired IS NULL OR b.bill.retired = FALSE) "
                 + "AND (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :bta "
@@ -5524,8 +5524,8 @@ public class PharmacyController implements Serializable {
                 + "b.pharmaceuticalBillItem.completedFreeQty "
                 + ") "
                 + "FROM BillItem b "
-                + "WHERE (b.bill.cancelled IS NULL OR b.retired = FALSE) "
-                + "AND (b.bill.retired IS NULL OR b.retired = FALSE) "
+                + "WHERE (b.bill.cancelled IS NULL OR b.bill.cancelled = FALSE) "
+                + "AND (b.bill.retired IS NULL OR b.bill.retired = FALSE) "
                 + "AND (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :bta "
