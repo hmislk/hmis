@@ -127,26 +127,7 @@
                 }
             }
         </style>
-        <!-- ====== BUTTONS ON THE RECEIPT ====== -->
-        <div class="toolbar">
-            <p:commandButton value="New Bill"
-                             icon="pi pi-plus"
-                             styleClass="ui-button-success"
-                             ajax="false"
-                             action="#{cc.attrs.billController.prepareNewBill}" />
-            <p:commandButton value="To Cancel Bill"
-                             icon="pi pi-times"
-                             styleClass="ui-button-danger"
-                             ajax="false"
-                             action="#{cc.attrs.billController.prepareToCancelBill}" />
-            <p:commandButton value="Print"
-                             icon="pi pi-print"
-                             styleClass="ui-button-info"
-                             ajax="false"
-                             action="#{billController.printPreview}">
-                <p:printer target="gpBillPreview"/>
-            </p:commandButton>
-        </div>
+
         <!-- Single bordered panel containing BOTH toolbar + receipt -->
         <p:panel id="gpBillPreview" style="border:1px solid #777; margin-top:5mm; padding:8px;">
 
