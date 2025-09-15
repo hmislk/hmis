@@ -518,14 +518,25 @@
                                         value="#{patientInvestigationController.outLabDepartment}"
                                         filterMatchMode="contains"
                                         id="sendSampleDept"
+                                        var="c"
                                         class="w-100">
-                                        <f:selectItem itemLabel="Any"></f:selectItem>
                                         <f:selectItems 
-                                            value="#{departmentController.getInstitutionLabDepartments(patientInvestigationController.outLabInstitution)}" 
+                                            value="#{departmentController.getInstitutionAllLabTypesDepartments(patientInvestigationController.outLabInstitution)}" 
                                             var="odpt" 
                                             itemLabel="#{odpt.name}" 
                                             itemValue="#{odpt}">
                                         </f:selectItems>
+                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">
+                                            <h:outputLabel class="w-50" value="#{c.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Type" class="text-center" style="padding: 6px; width: 75px;">
+                                            <p:badge 
+                                                value=" #{c.departmentType.label}" 
+                                                style="font-size: 14px;" 
+                                                class="w-100 d-flex justify-content-center"
+                                                severity="#{c.departmentType eq 'Lab' ? 'info' : 'danger'}">
+                                            </p:badge>
+                                        </p:column>
                                     </p:selectOneMenu>
                                 </div>
 
