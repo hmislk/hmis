@@ -25,16 +25,28 @@
                  font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
+            <div style="text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 12px!important;
+                 font-weight: bold;">
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+            </div>
             <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="Tel: " ></h:outputLabel>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}"/>
+                    <h:outputLabel value="&nbsp; #{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
+                    <h:outputLabel value="Fax: " ></h:outputLabel>
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}/"/> 
+                    <h:outputLabel value="&nbsp;#{cc.attrs.bill.institution.web}" ></h:outputLabel>                                              
                 </div>
             </div>
 
@@ -105,16 +117,6 @@
                         </tr>
                     </h:panelGroup>
 
-                    <tr>
-                        <td style="width: 30% ;text-align: right;" >
-                            <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
-                        </td>
-                        <td style="width: 50px;" class="d-flex justify-content-center">:</td>
-                        <td style="width: 60%; text-align: left;" >
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails"></h:outputLabel>
-                        </td> 
-                    </tr>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
@@ -163,19 +165,19 @@
                 <table width="90%" >
                     <tr>
                         <td style="width: 35%; ">
-                            <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
+                            <h:outputLabel value="ITEM" style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
                         </td>
                         <td  style="width:18%;text-align: right;">
-                            <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
+                            <h:outputLabel value="QTY"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
                         </td>
 
                         <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Remove Rate and Values From Printing on Cashier Sale Bill')}">
                             <td  style="width:18%;text-align: right;">
-                                <h:outputLabel value="RATE"  styleClass="itemHeadings" ></h:outputLabel>
+                                <h:outputLabel value="RATE"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
                             </td>
 
                             <td  style="width:22%;text-align: right;">
-                                <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
+                                <h:outputLabel value="VALUE"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
                             </td>
                         </h:panelGroup>
                     </tr>
@@ -218,6 +220,9 @@
                             </h:panelGroup>
                         </tr>
                     </ui:repeat>
+
+
+
                 </table>
             </div>
 
@@ -227,32 +232,33 @@
 
             <div style="width: 90%; padding-left: 5%;" >
                 <table width="100%" >
+                    <tr>
+                        <td class="totalsItemBlock" style="text-align: left; width: 60%;">
+                            <h:outputLabel value="Total" />
+                        </td>
+                        <td  class="totalsItemBlock" style="text-align: right!important; width: 40%;">
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total On Pharmacy Sale Bill For Cashier')}">
+
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
+                            <td  class="totalsItemBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
                             </td>
-                            <td  class="totalsBlock" style="text-align: right!important; ;">
+                            <td  class="totalsItemBlock" style="text-align: right!important; ;">
                                 <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
                         <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
+                            <td  class="totalsItemBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
                             </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ;">
+                            <td  class="totalsItemBlock" style="text-align: right!important;font-weight: bold; ;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -261,11 +267,11 @@
 
                         <tr>
 
-                            <td  class="totalsBlock" style="text-align: left;">
+                            <td  class="totalsItemBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
                             </td>
 
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; ">
+                            <td  class="totalsItemBlock" style="text-align: right!important;font-weight: bold; ; ">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
                                     <f:convertNumber pattern="#,##0.0" />
                                 </h:outputLabel>
@@ -309,12 +315,31 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    <tr >
+                        <td style="text-align: left;">
+                            <h:outputLabel   value="Prepared by" />
+                        </td>
+                        <td style="text-align: right; ">
+                            <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
 
                     <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
+                        <tr>
+                            <td style="width: 30% ;text-align: right;" >
+                                <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
+                            </td>
+                            <td style="width: 50px;" class="d-flex justify-content-center">:</td>
+                            <td style="width: 60%; text-align: left;" >
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails"></h:outputLabel>
+                            </td> 
+                        </tr>
                         <tr >
                             <td style="text-align: left;">
-                                <h:outputLabel   value="Prepared by" />
+                                <h:outputLabel   value="Billed by" />
                             </td>
                             <td style="text-align: right; ">
                                 <h:outputLabel   value="#{cc.attrs.bill.referenceBill.creater.name}">
@@ -331,6 +356,7 @@
 
 
             <div class="footer">
+                Return accepted within 3 days only
                 <br/>
                 THANK YOU !
                 <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">

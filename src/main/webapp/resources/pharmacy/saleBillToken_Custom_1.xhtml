@@ -27,7 +27,8 @@
             </div>
 
             <div class="headingBill mt-0">
-                <h:outputLabel value="#{cc.attrs.bill.department.name}"   />
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                <br/>
                 <h:outputLabel value="&nbsp;Token"   />
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
