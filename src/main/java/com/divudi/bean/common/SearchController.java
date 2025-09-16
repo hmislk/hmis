@@ -19955,5 +19955,14 @@ public class SearchController implements Serializable {
         return redacted;
     }
 
+    /**
+     * Navigates to the pharmacy transfer request list page and refreshes the data.
+     * This ensures users see up-to-date fullyIssued status after completing an issue operation.
+     */
+    public String navigateToRequestListAndRefresh() {
+        createRequestTableDto();
+        return "pharmacy_transfer_request_list";
+    }
+
     // </editor-fold>
 }
