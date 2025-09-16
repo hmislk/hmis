@@ -340,7 +340,9 @@
                                                         rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>
 
                                     <!-- Pharmacy Credit Bills -->
-                                    <ez:pharmacyCreditBills bundle="#{myBundle}"
+                                    <ez:pharmacyCreditBills
+                                        id="panelPharmacyCreditBills"
+                                        bundle="#{myBundle}"
                                                             rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
                                     <ez:pharmacyCreditCancel bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
