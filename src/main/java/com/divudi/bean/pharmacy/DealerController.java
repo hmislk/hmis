@@ -18,8 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -99,19 +101,38 @@ public class DealerController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void generateCodeForDealor(){
-        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "Prefix/");
+        if(current == null){
+            JsfUtil.addErrorMessage("Please select or add a supplier first.");
+            return;
+        }
+
+        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "SUP");
         List<Institution> allDealors = findAllDealors();
 
-        long number = allDealors.size();
-        String formattedNumber = String.format("%04d", number);
-
-        for(Institution i: allDealors){
-            if(i.getInstitutionCode().equalsIgnoreCase(prefix+formattedNumber)){
-                number++;
-                formattedNumber = String.format("%04d", number);
+        // Build HashSet of existing codes for O(1) lookup
+        Set<String> existingCodes = new HashSet<>();
+        for(Institution dealer : allDealors){
+            if(dealer.getInstitutionCode() != null){
+                existingCodes.add(dealer.getInstitutionCode().toUpperCase());
             }
         }
-        current.setInstitutionCode(prefix+formattedNumber);
+
+        long number = 1;
+        String generatedCode;
+
+        // Find the next available code number using O(1) HashSet lookup
+        while(true){
+            String formattedNumber = String.format("%04d", number);
+            generatedCode = prefix + formattedNumber;
+
+            // O(1) check instead of O(n) loop
+            if(!existingCodes.contains(generatedCode.toUpperCase())){
+                current.setInstitutionCode(generatedCode);
+                JsfUtil.addSuccessMessage("Code generated successfully: " + generatedCode);
+                return;
+            }
+            number++;
+        }
     }
 
     public void prepareAdd() {

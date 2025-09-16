@@ -2094,6 +2094,7 @@ public class PharmacyReportController implements Serializable {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
@@ -2136,7 +2137,7 @@ public class PharmacyReportController implements Serializable {
                     .append("i.code, ")
                     .append("b.deptId, ")
                     .append("ib.batchNo, ")
-                    .append("bi.qty, ")
+                    .append("pbi.qty, ")
                     .append("ib.costRate, ")
                     .append("pbi.retailRate, ")
                     .append("b.netTotal) ")
@@ -2182,7 +2183,10 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyDisposalIssue));
+        List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyDisposalIssue);
+            billTypes.add(BillType.PharmacyIssue);
+        retrieveBillItems("b.billType", billTypes);
         calculateStockConsumptionNetTotal(billItems);
     }
 
@@ -4091,6 +4095,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
 
             Map<String, Double> opDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
             cogsRows.put("Drug Return Op", opDrugReturns);
@@ -4102,7 +4107,11 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateStockConsumption() {
         try {
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", Collections.singletonList(BillType.PharmacyDisposalIssue));
+            
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyDisposalIssue);
+            billTypes.add(BillType.PharmacyIssue);
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(" bi.bill.billType ", billTypes);
             cogsRows.put("Stock Consumption", stockConsumptions);
 
         } catch (Exception e) {

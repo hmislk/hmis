@@ -138,17 +138,17 @@
 
                                 <p:column headerText="Item Name" style="min-width: 8em; max-width: 15em">
                                     <div style="min-width: 10em; display: flex; align-items: center;">
-                                    <h:outputText 
-                                        id="item" 
-                                        value="#{bItm.item.name}" />
-                                    <p:commandButton 
-                                        icon="pi pi-search"
-                                        id="btnViewSelectedItemDetails"
-                                        title="View Item Details"
-                                        action="#{transferIssueController.displayItemDetails(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
-                                        process="@this"
-                                        class="ui-button-icon-only mx-3"/>
+                                        <h:outputText 
+                                            id="item" 
+                                            value="#{bItm.item.name}" />
+                                        <p:commandButton 
+                                            icon="pi pi-search"
+                                            id="btnViewSelectedItemDetails"
+                                            title="View Item Details"
+                                            action="#{transferIssueController.displayItemDetails(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            process="@this"
+                                            class="ui-button-icon-only mx-3"/>
                                     </div>
                                 </p:column>
 
@@ -216,7 +216,7 @@
                                     action="#{transferIssueController.settleDirectIssue}" 
                                     style="float: right;" 
                                     onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                                return false;"
+                                                return false;"
                                     ajax="false" 
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>
@@ -255,6 +255,18 @@
                                     itemLabel="#{w.person.name}" 
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{w.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputText value="#{w.code}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Staff Code">
+                                        <h:outputText value="#{w.staffCode}" ></h:outputText>
+                                    </p:column>
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Transfer Value" />

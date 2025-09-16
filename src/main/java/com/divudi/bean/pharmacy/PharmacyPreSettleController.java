@@ -571,7 +571,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private void saveSaleReturnBill() {
         getSaleReturnBill().copy(getPreBill());
         getSaleReturnBill().copyValue(getPreBill());
-        
+
         // For refunds, all values should be negative
         getSaleReturnBill().setNetTotal(0 - Math.abs(getSaleReturnBill().getNetTotal()));
         getSaleReturnBill().setTotal(0 - Math.abs(getSaleReturnBill().getTotal()));
@@ -807,6 +807,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                 case Agent:
                 case Credit:
+                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                    p.setPaidValue(paymentMethodData.getCredit().getTotalValue());
+                    p.setComments(paymentMethodData.getCredit().getComment());
+                    bill.setToInstitution(paymentMethodData.getCredit().getInstitution());
+                    break;
                 case PatientDeposit:
                 case Slip:
                 case OnCall:
@@ -817,6 +824,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
+            billFacade.edit(bill);
             paymentFacade.create(p);
 
             ps.add(p);
@@ -993,6 +1001,91 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return balance;
     }
 
+    public String settlePaymentAndNavigateToPrint() {
+        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+
+        if (pharmacyBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                financialTransactionController.navigateToFinancialTransactionIndex();
+            }
+        }
+
+        editingQty = null;
+        if (getPreBill().getBillType() == BillType.PharmacyPre
+                && getPreBill().getBillClassType() != BillClassType.PreBill) {
+            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
+            makeNull();
+            return null;
+        }
+        if (errorCheckForSaleBill()) {
+            return null;
+        }
+        if (!billItemCountMatches()) {
+            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
+            return null;
+        }
+        if (errorCheckForSaleBillAraedyAddToStock()) {
+            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
+            return null;
+        }
+        if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Can't settle bills of " + getPreBill().getDepartment().getName());
+            return null;
+        }
+
+        if (errorCheckOnPaymentMethod()) {
+            return null;
+        }
+
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
+            if (checkAndUpdateBalance() > 0) {
+                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
+                return null;
+            }
+        }
+
+        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getPaymentMethodData());
+        if (!discountSchemeValidation.isFlag()) {
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("pre", getPreBill().getId());
+        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("Already Paid");
+            return null;
+        }
+
+        saveSaleBill();
+//        saveSaleBillItems();
+
+        List<Payment> payments = createPaymentsForBill(getSaleBill());
+        drawerController.updateDrawerForIns(payments);
+        saveSaleBillItems();
+
+        getBillFacade().editAndCommit(getPreBill());
+
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        setBill(getBillFacade().find(getSaleBill().getId()));
+
+        paymentService.updateBalances(payments);
+
+        markComplete(getPreBill());
+        billPreview = true;
+        
+        return  navigateToPrintPharmacyRetailBillSettlePrint();
+    }
+    
+    public String navigateToPrintPharmacyRetailBillSettlePrint(){
+        return "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
+    }
+    
+    @Deprecated // Please use settlePaymentAndNavigateToPrint
     public void settleBillWithPay2() {
 
         Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
@@ -1189,7 +1282,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return p;
     }
 
-
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         if (p == null) {
             System.err.println("Payment object is null, cannot set payment method data");
@@ -1220,7 +1312,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
     }
-
 
     @EJB
     CashTransactionBean cashTransactionBean;
@@ -1590,7 +1681,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
-
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;

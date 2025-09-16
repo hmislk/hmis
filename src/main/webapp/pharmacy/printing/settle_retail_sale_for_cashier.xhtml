@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary mx-1"
+                                type="button"
+                                onclick="PF('settleConfigDialog').show();" >
+                            </p:commandButton>
+                            <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
+                                <p:printer target="gpBillPreview" />
+                            </p:commandButton>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                ajax="false"
+                                icon="fas fa-search"
+                                class="ui-button-warning mx-2"
+                                value="Back to token bill Search"
+                                actionListener="#{pharmacyBillSearch.recreateModel()}"
+                                action="/pharmacy/pharmacy_search_pre_bill?faces-redirect=true" >
+                            </p:commandButton>
+
+                            <!-- Conditional action listeners based on token system configuration -->
+                            <p:commandButton
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                style="display: none;"
+                                actionListener="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}" >
+                            </p:commandButton>
+
+                            <p:commandButton
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                style="display: none;"
+                                actionListener="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="New Pharmacy Token"
+                                ajax="false" 
+                                action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
+                            </p:commandButton>
+                        </div>
+                    </div>
+                    <h:panelGroup id="gpBillPreview" >
+
+                        <h:panelGroup   id="gpBillWithItem" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
+                            <div style="page-break-inside: avoid;">
+                                <ph:saleBill bill="#{pharmacyPreSettleController.bill}"></ph:saleBill>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreviewFiveFiveCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 1',true)}"> 
+                            <div>
+                                <ph:sale_for_cashier_bill_five_five_custom_1 bill="#{pharmacyPreSettleController.bill}"/>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreviewFiveFiveCustom2" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 2',true)}"> 
+                            <div>
+                                <ph:sale_for_cashier_bill_five_five_custom_2 bill="#{pharmacyPreSettleController.bill}"/>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 3',true)}"> 
+                            <div>
+                                <ph:sale_for_cashier_bill_five_five_custom_3 bill="#{pharmacyPreSettleController.bill}"/>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
+                            <ph:saleBill_Header bill="#{pharmacyPreSettleController.bill}"></ph:saleBill_Header>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </h:form>
+
+                <!-- Configuration Dialog -->
+                <p:dialog id="settleConfigDialog"
+                          header="Pharmacy Settle Payment Printer Configuration"
+                          widgetVar="settleConfigDialog"
+                          modal="true"
+                          width="700"
+                          height="500"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="settleConfigForm" />
+
+                    <h:form id="settleConfigForm">
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"></i> Settle Payment Bill Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settlePosPaper"
+                                                value="#{pharmacyRetailConfigController.settlePaymentPosPaper}" />
+                                            <p:outputLabel for="settlePosPaper" value="POS Paper with Items" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard thermal printer paper format with item details</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settleCustom1"
+                                                value="#{pharmacyRetailConfigController.settlePaymentCustom1}" />
+                                            <p:outputLabel for="settleCustom1" value="Custom Format 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom settle payment template design 1</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settleCustom2"
+                                                value="#{pharmacyRetailConfigController.settlePaymentCustom2}" />
+                                            <p:outputLabel for="settleCustom2" value="Custom Format 2" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom settle payment template design 2</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settleCustom3"
+                                                value="#{pharmacyRetailConfigController.settlePaymentCustom3}" />
+                                            <p:outputLabel for="settleCustom3" value="Custom Format 3" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom settle payment template design 3</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settlePosHeaderPaper"
+                                                value="#{pharmacyRetailConfigController.settlePaymentPosHeaderPaper}" />
+                                            <p:outputLabel for="settlePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                            <small class="form-text text-muted d-block">POS paper with pre-printed header space</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="settleConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('settleConfigDialog').hide(); return false;"
+                                                    type="button" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
