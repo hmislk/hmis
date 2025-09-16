@@ -18,8 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -107,25 +109,24 @@ public class DealerController implements Serializable {
         String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "SUP");
         List<Institution> allDealors = findAllDealors();
 
+        // Build HashSet of existing codes for O(1) lookup
+        Set<String> existingCodes = new HashSet<>();
+        for(Institution dealer : allDealors){
+            if(dealer.getInstitutionCode() != null){
+                existingCodes.add(dealer.getInstitutionCode().toUpperCase());
+            }
+        }
+
         long number = 1;
         String generatedCode;
-        boolean codeExists = true;
 
-        // Find the next available code number
-        while(codeExists){
+        // Find the next available code number using O(1) HashSet lookup
+        while(true){
             String formattedNumber = String.format("%04d", number);
             generatedCode = prefix + formattedNumber;
-            codeExists = false;
 
-            // Check if this code already exists
-            for(Institution i: allDealors){
-                if(i.getInstitutionCode() != null && i.getInstitutionCode().equalsIgnoreCase(generatedCode)){
-                    codeExists = true;
-                    break;
-                }
-            }
-
-            if(!codeExists){
+            // O(1) check instead of O(n) loop
+            if(!existingCodes.contains(generatedCode.toUpperCase())){
                 current.setInstitutionCode(generatedCode);
                 JsfUtil.addSuccessMessage("Code generated successfully: " + generatedCode);
                 return;

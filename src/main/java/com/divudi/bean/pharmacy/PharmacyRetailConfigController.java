@@ -62,6 +62,18 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean grnReceiptA4;
     private boolean grnReceiptCustom1;
 
+    // Transfer Receive Settings
+    private boolean transferReceiveA4;
+    private boolean transferReceiveTemplate;
+    private boolean transferReceiveA4Detailed;
+    private boolean transferReceiveA4Custom1;
+    private boolean transferReceiveA4Custom2;
+
+    // Transfer Request Settings
+    private boolean transferRequestA4;
+    private boolean transferRequestCustom1;
+    private boolean transferRequestCustom2;
+
     public PharmacyRetailConfigController() {
     }
     
@@ -106,6 +118,18 @@ public class PharmacyRetailConfigController implements Serializable {
         // GRN Settings
         grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
+
+        // Transfer Receive Settings
+        transferReceiveA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", true);
+        transferReceiveTemplate = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Bill is Template", false);
+        transferReceiveA4Detailed = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Detailed", true);
+        transferReceiveA4Custom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", true);
+        transferReceiveA4Custom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", true);
+
+        // Transfer Request Settings
+        transferRequestA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", true);
+        transferRequestCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 1", true);
+        transferRequestCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 2", true);
     }
 
     /**
@@ -149,6 +173,18 @@ public class PharmacyRetailConfigController implements Serializable {
             // GRN Settings
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
+
+            // Transfer Receive Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", transferReceiveA4);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Bill is Template", transferReceiveTemplate);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Detailed", transferReceiveA4Detailed);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", transferReceiveA4Custom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", transferReceiveA4Custom2);
+
+            // Transfer Request Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", transferRequestA4);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 1", transferRequestCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 2", transferRequestCustom2);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
             
@@ -359,6 +395,70 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setGrnReceiptCustom1(boolean grnReceiptCustom1) {
         this.grnReceiptCustom1 = grnReceiptCustom1;
+    }
+
+    public boolean isTransferReceiveA4() {
+        return transferReceiveA4;
+    }
+
+    public void setTransferReceiveA4(boolean transferReceiveA4) {
+        this.transferReceiveA4 = transferReceiveA4;
+    }
+
+    public boolean isTransferReceiveTemplate() {
+        return transferReceiveTemplate;
+    }
+
+    public void setTransferReceiveTemplate(boolean transferReceiveTemplate) {
+        this.transferReceiveTemplate = transferReceiveTemplate;
+    }
+
+    public boolean isTransferReceiveA4Detailed() {
+        return transferReceiveA4Detailed;
+    }
+
+    public void setTransferReceiveA4Detailed(boolean transferReceiveA4Detailed) {
+        this.transferReceiveA4Detailed = transferReceiveA4Detailed;
+    }
+
+    public boolean isTransferReceiveA4Custom1() {
+        return transferReceiveA4Custom1;
+    }
+
+    public void setTransferReceiveA4Custom1(boolean transferReceiveA4Custom1) {
+        this.transferReceiveA4Custom1 = transferReceiveA4Custom1;
+    }
+
+    public boolean isTransferReceiveA4Custom2() {
+        return transferReceiveA4Custom2;
+    }
+
+    public void setTransferReceiveA4Custom2(boolean transferReceiveA4Custom2) {
+        this.transferReceiveA4Custom2 = transferReceiveA4Custom2;
+    }
+
+    public boolean isTransferRequestA4() {
+        return transferRequestA4;
+    }
+
+    public void setTransferRequestA4(boolean transferRequestA4) {
+        this.transferRequestA4 = transferRequestA4;
+    }
+
+    public boolean isTransferRequestCustom1() {
+        return transferRequestCustom1;
+    }
+
+    public void setTransferRequestCustom1(boolean transferRequestCustom1) {
+        this.transferRequestCustom1 = transferRequestCustom1;
+    }
+
+    public boolean isTransferRequestCustom2() {
+        return transferRequestCustom2;
+    }
+
+    public void setTransferRequestCustom2(boolean transferRequestCustom2) {
+        this.transferRequestCustom2 = transferRequestCustom2;
     }
 
 }
