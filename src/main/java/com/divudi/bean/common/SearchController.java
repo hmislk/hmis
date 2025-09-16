@@ -8872,13 +8872,23 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((token.bill.netTotal) = :netTotal )";
-            parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            try {
+                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
+                sql += " and  ((token.bill.netTotal) = :netTotal )";
+                parameters.put("netTotal", netTotal);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  ((token.bill.total) like :total )";
-            parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            try {
+                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
+                sql += " and  ((token.bill.total) = :total )";
+                parameters.put("total", total);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
@@ -8926,13 +8936,23 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((token.bill.netTotal) = :netTotal )";
-            parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            try {
+                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
+                sql += " and  ((token.bill.netTotal) = :netTotal )";
+                parameters.put("netTotal", netTotal);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  ((token.bill.total) like :total )";
-            parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            try {
+                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
+                sql += " and  ((token.bill.total) = :total )";
+                parameters.put("total", total);
+            } catch (NumberFormatException e) {
+                // Ignore invalid number format
+            }
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
