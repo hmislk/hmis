@@ -69,6 +69,11 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean transferReceiveA4Custom1;
     private boolean transferReceiveA4Custom2;
 
+    // Transfer Request Settings
+    private boolean transferRequestA4;
+    private boolean transferRequestCustom1;
+    private boolean transferRequestCustom2;
+
     public PharmacyRetailConfigController() {
     }
     
@@ -120,6 +125,11 @@ public class PharmacyRetailConfigController implements Serializable {
         transferReceiveA4Detailed = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Detailed", true);
         transferReceiveA4Custom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", true);
         transferReceiveA4Custom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", true);
+
+        // Transfer Request Settings
+        transferRequestA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", true);
+        transferRequestCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 1", true);
+        transferRequestCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 2", true);
     }
 
     /**
@@ -170,6 +180,11 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Detailed", transferReceiveA4Detailed);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", transferReceiveA4Custom1);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", transferReceiveA4Custom2);
+
+            // Transfer Request Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", transferRequestA4);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 1", transferRequestCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 2", transferRequestCustom2);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
             
@@ -420,6 +435,30 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setTransferReceiveA4Custom2(boolean transferReceiveA4Custom2) {
         this.transferReceiveA4Custom2 = transferReceiveA4Custom2;
+    }
+
+    public boolean isTransferRequestA4() {
+        return transferRequestA4;
+    }
+
+    public void setTransferRequestA4(boolean transferRequestA4) {
+        this.transferRequestA4 = transferRequestA4;
+    }
+
+    public boolean isTransferRequestCustom1() {
+        return transferRequestCustom1;
+    }
+
+    public void setTransferRequestCustom1(boolean transferRequestCustom1) {
+        this.transferRequestCustom1 = transferRequestCustom1;
+    }
+
+    public boolean isTransferRequestCustom2() {
+        return transferRequestCustom2;
+    }
+
+    public void setTransferRequestCustom2(boolean transferRequestCustom2) {
+        this.transferRequestCustom2 = transferRequestCustom2;
     }
 
 }
