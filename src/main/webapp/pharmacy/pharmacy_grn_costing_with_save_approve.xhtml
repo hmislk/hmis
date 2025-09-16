@@ -728,7 +728,8 @@
 
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup class="d-flex justify-content-center">
-                            <pha:grn_with_costing bill="#{grnCostingController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing bill="#{grnCostingController.currentGrnBillPre}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show GRN Bill Default Format',true)}"/>
+                            <pha:grn_with_costing_custom_1 bill="#{grnCostingController.currentGrnBillPre}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show GRN Bill Custom 1',false)}"/>
                         </h:panelGroup>
                     </h:panelGroup>
                 </p:panel>

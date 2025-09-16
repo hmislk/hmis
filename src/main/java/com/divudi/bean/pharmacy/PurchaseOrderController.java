@@ -428,7 +428,11 @@ public class PurchaseOrderController implements Serializable {
 
         getAprovedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAprovedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        
+//        Approve Date and Time 
+        getAprovedBill().setApproveAt(new Date());
+        getAprovedBill().setApproveUser(getSessionController().getLoggedUser());
+        
         getAprovedBill().setCreater(getSessionController().getLoggedUser());
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
