@@ -498,14 +498,34 @@ public class PaymentService {
                     return componentValidation; // If any component has an error, return immediately with that error
                 }
 
-                multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
+                switch (pm) {
+                    case Cash:
+                        if (pmd.getCash() != null) multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
+                        break;
+                    case Card:
+                        if (pmd.getCreditCard() != null) multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
+                        break;
+                    case Cheque:
+                        if (pmd.getCheque() != null) multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
+                        break;
+                    case ewallet:
+                        if (pmd.getEwallet() != null) multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
+                        break;
+                    case PatientDeposit:
+                        if (pmd.getPatient_deposit() != null) multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
+                        break;
+                    case Slip:
+                        if (pmd.getSlip() != null) multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
+                        break;
+                    case Staff:
+                        if (pmd.getStaffCredit() != null) multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
+                        break;
+                    case OnlineSettlement:
+                        if (pmd.getOnlineSettlement() != null) multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
+                        break;
+                    default:
+                        break;
+                }
 
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
