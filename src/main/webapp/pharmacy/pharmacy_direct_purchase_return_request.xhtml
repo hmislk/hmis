@@ -19,10 +19,10 @@
                     <div class="col-2">
                         <h:panelGrid columns="1" class="w-100" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <h:outputLabel/>
                             <h:outputLabel value="Purchase No"/>
@@ -67,6 +67,7 @@
                     </div>
                     <div class="col-10">
                         <p:dataTable 
+                            id="tblBills"
                             value="#{searchController.bills}" 
                             var="p"
                             class="w-100 va-top"
@@ -108,44 +109,53 @@
                             </p:column>
 
                             <p:column 
+                                id="colDpDetails"
                                 headerText="Purchase Details" 
                                 width="16em">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputText>
                                         <br/>
-                                        <h:outputText styleClass="text-muted small" value="by #{p.creater.webUserPerson.name}" />
+                                        <i class="fas fa-user text-muted me-1"></i>
+                                        <h:outputText styleClass="text-muted small" value="#{p.creater.webUserPerson.name}" />
+                                    </div>
+                                    <div class="mb-1">
+                                        <i class="fas fa-credit-card text-info me-1"></i>
+                                        <h:outputText styleClass="text-info fw-bold" value="#{p.paymentMethod}" />
                                     </div>
                                     <h:panelGroup rendered="#{p.cancelled}">
                                         <div class="mb-1">
                                             <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
                                             <h:outputText styleClass="text-danger" value="#{p.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputText>
                                             <br/>
-                                            <h:outputText styleClass="text-danger small" value="by #{p.cancelledBill.creater.webUserPerson.name}" />
+                                            <i class="fas fa-user text-danger me-1"></i>
+                                            <h:outputText styleClass="text-danger small" value="#{p.cancelledBill.creater.webUserPerson.name}" />
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{p.refunded}">
                                         <div class="mb-1">
                                             <h:outputText styleClass="text-danger fw-bold" value="Refunded at " />
                                             <h:outputText styleClass="text-danger" value="#{p.refundedBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputText>
                                             <br/>
-                                            <h:outputText styleClass="text-danger small" value="by #{p.refundedBill.creater.webUserPerson.name}" />
+                                            <i class="fas fa-user text-danger me-1"></i>
+                                            <h:outputText styleClass="text-danger small" value="#{p.refundedBill.creater.webUserPerson.name}" />
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{p.fullReturned}">
                                         <div class="mb-1">
                                             <h:outputText styleClass="text-success fw-bold" value="Fully Returned at " />
                                             <h:outputText styleClass="text-success" value="#{p.fullReturnedAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputText>
                                             <br/>
-                                            <h:outputText styleClass="text-success small" value="by #{p.fullReturnedBy.webUserPerson.name}" />
+                                            <i class="fas fa-user text-success me-1"></i>
+                                            <h:outputText styleClass="text-success small" value="#{p.fullReturnedBy.webUserPerson.name}" />
                                         </div>
                                     </h:panelGroup>
                                 </div>
