@@ -530,7 +530,7 @@ public class PaymentService {
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue > 1.0) {
+            if (differenceOfBillTotalAndPaymentValue >= 1.0) {
                 bv.setErrorMessage("Mismatch in differences of multiple payment method total and bill total.");
                 bv.setErrorPresent(true);
                 return bv;
