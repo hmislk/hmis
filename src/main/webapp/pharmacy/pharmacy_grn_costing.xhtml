@@ -469,14 +469,14 @@
                                 <p:inputText 
                                     class="w-100"
                                     autocomplete="off" 
-                                    value="#{grnCostingController.invoiceNumber}" >
+                                    value="#{grnCostingController.grnBill.invoiceNumber}" >
                                     <p:ajax process="@this" event="keyup"></p:ajax>
                                 </p:inputText>
                                 <p:outputLabel value="Invoice Date"/>
                                 <p:calendar  
                                     class="w-100"
                                     inputStyleClass="w-100"
-                                    value="#{grnCostingController.invoiceDate}"
+                                    value="#{grnCostingController.grnBill.invoiceDate}"
                                     navigator="true"
                                     pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                     <p:ajax process="@this" ></p:ajax>
