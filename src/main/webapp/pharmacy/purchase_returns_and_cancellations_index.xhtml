@@ -30,10 +30,10 @@
                                 <p:commandButton 
                                     value="Return Received Goods (Legacy)" 
                                     ajax="false"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Return - Legacy Method is available', true) and webUserController.hasPrivilege('ReturnReceviedGoods')}"
                                     action="#{searchController.navigateToReturnReceivedGoods()}"
                                     class="ui-button-info w-100"
-                                    icon="fas fa-undo-alt"
-                                    rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" />
+                                    icon="fas fa-undo-alt" />
                                 <p:commandButton 
                                     value="Create GRN Return" 
                                     ajax="false"
