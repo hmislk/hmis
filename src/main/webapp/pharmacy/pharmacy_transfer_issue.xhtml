@@ -155,6 +155,7 @@
                             <f:facet name="header" >                                  
                                 <h:outputText value="Issue Details" ></h:outputText>
                                 <p:commandButton  
+                                    id="btnSettleIssue"
                                     value="Issue" 
                                     icon="fas fa-check" 
                                     action="#{transferIssueController.settle}" 
@@ -367,12 +368,12 @@
             </p:panel>
             <p:panel rendered="#{transferIssueController.printPreview}">
                 <div class="d-flex justify-content-between mb-2">
-                    <p:commandButton 
-                        ajax="false" 
+                    <p:commandButton
+                        ajax="false"
                         icon="fas fa-list"
                         class="ui-button-warning"
-                        action="pharmacy_transfer_request_list" 
-                        actionListener="#{transferIssueController.makeNull()}" 
+                        action="#{searchController.navigateToRequestListAndRefresh()}"
+                        actionListener="#{transferIssueController.makeNull()}"
                         value="Requested List"/>
 
                     <div class="d-flex">
