@@ -2350,8 +2350,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+        Long id = getPreBill().getId();
+        if (id == null) {
+            JsfUtil.addErrorMessage("Pre-bill is not persisted; cannot load for printing");
+            return;
+        }
+        setPrintBill(getBillFacade().find(id));
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
