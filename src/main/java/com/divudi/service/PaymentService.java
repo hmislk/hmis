@@ -381,19 +381,19 @@ public class PaymentService {
 
         return new ArrayList<>(uniqueMethods);
     }
-    
+
     public List<Payment> fetchPayments(Date fromDate,
-                                 Date toDate,
-                                 Institution institution,
-                                 Institution site,
-                                 Department department,
-                                 WebUser webUser,
-                                 List<BillTypeAtomic> billTypeAtomics,
-                                 AdmissionType admissionType,
-                                 PaymentScheme paymentScheme,
-                                 Institution toInstitution,
-                                 Department toDepartment,
-                                 String visitType
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Department toDepartment,
+            String visitType
     ) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -469,6 +469,8 @@ public class PaymentService {
             List<PaymentMethod> usedPaymentMethods = new ArrayList<>();
 
             // Iterate over each payment component in the multiple payment method
+            double multiplePaymentMethodTotalValue = 0.0;
+
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 PaymentMethod pm = cd.getPaymentMethod();
                 PaymentMethodData pmd = cd.getPaymentMethodData();
@@ -495,6 +497,23 @@ public class PaymentService {
                 if (componentValidation.isErrorPresent()) {
                     return componentValidation; // If any component has an error, return immediately with that error
                 }
+
+                multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
+
+            }
+            double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
+            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
+            if (differenceOfBillTotalAndPaymentValue > 1.0) {
+                bv.setErrorMessage("Mismatch in differences of multiple payment method total and bill total.");
+                bv.setErrorPresent(true);
+                return bv;
             }
         } else {
             switch (paymentMethod) {
