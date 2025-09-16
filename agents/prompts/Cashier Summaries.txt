@@ -1,0 +1,12 @@
+14567-3-cashier-details-report-pharmacy-accepeted-bills-not-show
+
+When a Pharmacy Pre Bills is raised, stock transactions happen. But payments are NOT yet accepted.
+
+These bills with the status of payment are listed in these pages
+
+http://localhost:8080/rh/faces/pharmacy/pharmacy_search_sale_pre_bill.xhtml - To Search Such Bills. It lists the related Payment Bills when present. This is listing as expected
+
+This is the page such bills are listed to make a payment
+http://localhost:8080/rh/faces/pharmacy/pharmacy_search_pre_bill.xhtml
+
+the Search Token Bills , Search Not Paid Tokens buttons are not listing as expected since last few updates.

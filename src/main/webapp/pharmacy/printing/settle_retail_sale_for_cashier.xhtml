@@ -37,13 +37,13 @@
 
                             <!-- Conditional action listeners based on token system configuration -->
                             <p:commandButton
-                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                 style="display: none;"
                                 actionListener="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}" >
                             </p:commandButton>
 
                             <p:commandButton
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                 style="display: none;"
                                 actionListener="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem}" >
                             </p:commandButton>
