@@ -291,7 +291,7 @@
 
                                     <hr/>
 
-                                    <p:commandButton 
+<!--                                    <p:commandButton 
                                         rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
                                         id="btnGenerateBarcodes"
                                         value="Generate Barcodes"
@@ -300,7 +300,7 @@
                                         title="Generate Barcodes"
                                         icon="pi pi-barcode"
                                         styleClass="w-100 ui-button-success" >
-                                    </p:commandButton>
+                                    </p:commandButton>-->
 
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
@@ -520,6 +520,7 @@
                                         id="sendSampleDept"
                                         var="c"
                                         class="w-100">
+                                        <f:selectItem itemLabel="Select To Department"/>
                                         <f:selectItems 
                                             value="#{departmentController.getInstitutionAllLabTypesDepartments(patientInvestigationController.outLabInstitution)}" 
                                             var="odpt" 
