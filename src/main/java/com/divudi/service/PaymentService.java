@@ -508,6 +508,7 @@ public class PaymentService {
                 multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
 
             }
+            
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
