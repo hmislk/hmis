@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div  style="width: 210mm;">
+        <div  style="width: 210mm; border: 1px solid red;">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
@@ -42,7 +42,7 @@
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
             </div>
 
-            <div style="min-width: 90%; margin-left: 5%; margin-right: 5%; font-size: 15px;" class="row justify-content-center" >
+            <div style="min-width: 100%; margin-left: 0; margin-right: 0; font-size: 15px;" class="row justify-content-center" >
                 <div class="row">
                     <h:outputLabel value="P.O.No " class="col-3"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" class="col-3"/>
