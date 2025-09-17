@@ -319,8 +319,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelBooking, "Channel Booking"), channelBooking);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSessionMultipleDeletion, "Channel Sessions Multiple Deletion"), channelBooking);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSessionHolidayMark, "Channel Sessions Holiday Mark"), channelBooking);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSessionManagement, "Channel Sessions Management"), channelBooking);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSheduleManagement, "Channel Shedule Management"), channelBooking);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSessionManagement, "Channel Sessions Management"), channellingNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSheduleManagement, "Channel Shedule Management"), channellingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelBookingByMonth, "Channel Booking by Month"), channellingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelPatientPortal, "Channel Patient portal"), channellingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelDoctorCard, "Channel Doctor card"), channellingNode);
