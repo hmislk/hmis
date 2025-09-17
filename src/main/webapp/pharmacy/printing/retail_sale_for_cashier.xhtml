@@ -42,7 +42,7 @@
                                     accesskey="a"
                                     id="btnPrintToken"
                                     value="Print Token"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     ajax="false"
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
@@ -103,6 +103,10 @@
                                     id="saleBillTokenPos" 
                                     bill="#{pharmacySaleController.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Token Paper is POS Paper', true)}" ></phi:saleBillToken>
+                                <phi:saleBillToken_Custom_1 
+                                    id="saleBillTokenPosCustom1" 
+                                    bill="#{pharmacySaleController.printBill}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Token Paper is POS Paper Custom 1', false)}" ></phi:saleBillToken_Custom_1>    
                             </h:panelGroup>
                             <h:panelGroup 
                                 styleClass="billPrint"  
@@ -113,6 +117,11 @@
                                     bill="#{pharmacySaleController.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper', true)}" >
                                 </phi:saleBill_for_Cashier>
+                                <phi:saleBill_for_Cashier_Pos_paper_Custom_1
+                                    id="gpBillCustom1"
+                                    bill="#{pharmacySaleController.printBill}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1', false)}" >
+                                </phi:saleBill_for_Cashier_Pos_paper_Custom_1>
                                 <phi:saleBill_five_five_for_Cashier 
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header', true)}"
                                     bill="#{pharmacySaleController.printBill}">
@@ -168,6 +177,14 @@
                                                 value="#{pharmacyRetailConfigController.posPaper}" />
                                             <p:outputLabel for="posPaper" value="POS Paper" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard thermal printer paper format</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="posPaperCustom1"
+                                                value="#{pharmacyRetailConfigController.posPaperCustom1}" />
+                                            <p:outputLabel for="posPaperCustom1" value="POS Paper Custom 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom thermal printer paper format</small>
                                         </div>
 
                                         <div class="mb-3">
@@ -236,6 +253,15 @@
                                             <p:outputLabel for="tokenPosPaper" value="Token - POS Paper" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard POS paper format for tokens</small>
                                         </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox 
+                                                id="tokenPosPaperCustom1"
+                                                value="#{pharmacyRetailConfigController.tokenPosPaperCustom1}" />
+                                            <p:outputLabel for="tokenPosPaperCustom1" value="Token - POS Paper Custom 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom POS paper format for tokens</small>
+                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>

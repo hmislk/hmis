@@ -1423,6 +1423,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setDepartment(sessionController.getDepartment());
+        
+        //Copy Payment Method from Direct Purchase
+        currentBill.setPaymentMethod(originalDirectPurchase.getPaymentMethod());
 
         // Generate items from Direct Purchase (similar to legacy prepareReturnBill)
         // generateItemsFromDirectPurchase(); commented out as this method is NOT working correctly

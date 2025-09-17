@@ -97,6 +97,8 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+    @Inject
+    private com.divudi.bean.common.SearchController searchController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
@@ -162,6 +164,11 @@ public class TransferReceiveController implements Serializable {
         fromDate = null;
         toDate = null;
         selectedBillItem = null;
+
+        // Refresh the issued list data to show updated fullyIssued status
+        if (searchController != null) {
+            searchController.createIssueTable();
+        }
     }
 
     public TransferReceiveController() {

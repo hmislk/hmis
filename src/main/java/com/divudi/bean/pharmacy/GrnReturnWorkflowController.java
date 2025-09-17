@@ -1419,6 +1419,9 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setDepartment(sessionController.getDepartment());
+        
+        //Copy Payment Method Details from GRN to GRN Return
+        currentBill.setPaymentMethod(originalGrn.getPaymentMethod());
 
         // Generate items from GRN (similar to legacy prepareReturnBill)
         // generateItemsFromGrn(); commendted out as this method is NOT working correctl

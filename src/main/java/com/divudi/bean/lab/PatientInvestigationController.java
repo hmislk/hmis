@@ -540,8 +540,11 @@ public class PatientInvestigationController implements Serializable {
         for (PatientSample ps : canSentOutLabSamples) {
             if (outLabDepartment.getDepartmentType() == DepartmentType.External_Lab) {
                 ps.setOutsourced(true);
+                ps.setSampleSent(true);
             } else {
                 ps.setOutsourced(false);
+                ps.setSampleSent(true);
+                ps.setSampleSentAt(new Date());
             }
             ps.setOutsourceSampleTransporter(sampleTransportedToLabByStaff);
             ps.setOutsourceInstitution(outLabInstitution);
@@ -2331,6 +2334,10 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
                 return;
             }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent Internal Lab");
+                return;
+            }
 
             String jpql = "SELECT r "
                     + " FROM PatientReport r "
@@ -2348,6 +2355,11 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
 
+            if (! ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is not in your Department. You Cant't Reject.");
+                return;
+            }
+            
             canRejectSamples.add(ps);
 
         }
