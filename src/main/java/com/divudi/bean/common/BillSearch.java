@@ -4007,8 +4007,8 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
 
-            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
-            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+//            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
+//            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
             case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
             case PHARMACY_SALE_WITHOUT_STOCK:
@@ -4060,7 +4060,7 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyStaffStockAdjustmentReprint();
             case PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT:
                 return navigateToPharmacyExpiryDateAdjustmentReprint();
-            
+
             // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
                 return navigateToPharmacyStockAdjustmentReprint();
@@ -4124,7 +4124,10 @@ public class BillSearch implements Serializable {
             case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                 return navigateToPharmacyBhtIssueCancellationBillView();
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
                 return navigateToPharmacyRetailSaleReturnItemOnly();
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                return "/pharmacy/printing/settle_retail_sale_for_cashier";
 
         }
 
@@ -4282,7 +4285,7 @@ public class BillSearch implements Serializable {
             case PHARMACY_WHOLESALE_GRN_BILL_REFUND:
             case PHARMACY_GRN_PAYMENT:
             case PHARMACY_GRN_PAYMENT_CANCELLED:
-            
+
             // Specific Pharmacy Adjustment Types
             case PHARMACY_PURCHASE_RATE_ADJUSTMENT:
                 return navigateToPharmacyPurchaseRateAdjustmentReprint();
@@ -4298,7 +4301,7 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyStaffStockAdjustmentReprint();
             case PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT:
                 return navigateToPharmacyExpiryDateAdjustmentReprint();
-            
+
             // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
                 return navigateToPharmacyStockAdjustmentReprint();
@@ -4428,6 +4431,7 @@ public class BillSearch implements Serializable {
         pharmacyBillSearch.setBill(bill);
         return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
+
     public String navigateToPharmacyRetailSaleReturnItemOnly() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
