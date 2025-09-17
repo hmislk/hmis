@@ -15575,7 +15575,7 @@ public class SearchController implements Serializable {
             opdRefunds.add(BillTypeAtomic.OPD_BILL_REFUND);
 
             // Generate OPD service collection and add to the main bundle
-            ReportTemplateRowBundle opdServiceCollection = generatePaymentColumnForCollections(opdBts, nonCreditPaymentMethods);
+            ReportTemplateRowBundle opdServiceCollection = generatePaymentMethodColumnsByBills(opdBts, nonCreditPaymentMethods);
             opdServiceCollection.setBundleType("cashierSummaryOpd");
             opdServiceCollection.setName("OPD Collection");
             bundle.getBundles().add(opdServiceCollection);
@@ -15622,7 +15622,7 @@ public class SearchController implements Serializable {
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
-            ReportTemplateRowBundle pharmacyCollection = generateTotalPaymentColumnByDepartment(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCollection = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyCollection");
             pharmacyCollection.setName("Pharmacy Collection");
             bundle.getBundles().add(pharmacyCollection);
@@ -15870,16 +15870,6 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(pharmacyCreditRefundBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
 
-            // Calculate net cash collection
-            netCashCollection = collectionForTheDay;
-
-            // Final net cash for the day
-            ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
-            netCashForTheDayBundle.setName("Net Cash");
-            netCashForTheDayBundle.setBundleType("netCash");
-            netCashForTheDayBundle.setTotal(netCashCollection);
-
-            bundle.getBundles().add(netCashForTheDayBundle);
             bundle.calculateTotalsByAllChildBundles();
         }, CashierReports.CASHIER_SUMMARY, sessionController.getLoggedUser());
     }
@@ -16278,16 +16268,6 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(ChannelBookingsRefundBundle);
             collectionForTheDay -= getSafeTotal(ChannelBookingsRefundBundle);
 
-            // Calculate net cash collection
-            netCashCollection = collectionForTheDay;
-
-            // Final net cash for the day
-            ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
-            netCashForTheDayBundle.setName("Net Cash");
-            netCashForTheDayBundle.setBundleType("netCash");
-            netCashForTheDayBundle.setTotal(netCashCollection);
-
-            bundle.getBundles().add(netCashForTheDayBundle);
             bundle.calculateTotalsByAllChildBundles();
         }, CashierReports.CASHIER_DETAILED, sessionController.getLoggedUser());
 
