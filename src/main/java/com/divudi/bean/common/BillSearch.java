@@ -114,6 +114,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.bean.pharmacy.PreReturnController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -276,6 +277,8 @@ public class BillSearch implements Serializable {
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    PreReturnController preReturnController;
     /**
      * Class Variables
      */
@@ -4007,7 +4010,6 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
-            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
             case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
             case PHARMACY_SALE_WITHOUT_STOCK:
             case PHARMACY_SALE_WITHOUT_STOCK_PRE:
@@ -4121,6 +4123,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyBhtRequestBillPreview();
             case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                 return navigateToPharmacyBhtIssueCancellationBillView();
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
+                return navigateToPharmacyRetailSaleReturnItemOnly();
 
         }
 
@@ -4423,6 +4427,17 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         pharmacyBillSearch.setBill(bill);
         return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+    }
+    public String navigateToPharmacyRetailSaleReturnItemOnly() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        preReturnController.setBill(bill.getReferenceBill());
+        preReturnController.setReturnBill(bill);
+        preReturnController.setPrintPreview(true);
+        return "/pharmacy/pharmacy_bill_return_pre?faces-redirect=true";
     }
 
     public String navigateToPharmacyGrnCancellationBillView() {
