@@ -188,6 +188,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
+                                        disabled="#{not configOptionApplicationController.getBooleanValueByKey('Allow Editing the Purchase Rate during Goods Receipt', true)}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.lineGrossRate}"
                                         id="pRate" >

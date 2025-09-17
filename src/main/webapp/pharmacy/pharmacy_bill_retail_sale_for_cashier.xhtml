@@ -508,7 +508,7 @@
                                     accesskey="a"
                                     id="btnPrintToken"
                                     value="Print Token"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     ajax="false"
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
@@ -567,7 +567,7 @@
                             id="billAndTokenPrint">
                             <h:panelGroup 
                                 layout="block"
-                                rendered="#{pharmacySaleController.printBill ne null and configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                rendered="#{pharmacySaleController.printBill ne null and configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                 style="page-break-after: always!important;"
                                 id="tokenPrint">
                                 <h:panelGroup 
