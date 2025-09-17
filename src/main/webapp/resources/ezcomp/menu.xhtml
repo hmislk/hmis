@@ -1365,7 +1365,7 @@
                     <p:menuitem  
                         ajax="false"  
                         value="Channel Scheduling"
-                        rendered="#{webUserController.hasPrivilege('ChannelCreateSessions')}"
+                        rendered="#{webUserController.hasPrivilege('ChannelSessionManagement') or webUserController.hasPrivilege('ChannelSheduleManagement')}"
                         action="/channel/channel_scheduling/index?faces-redirect=true"   icon="fa fa-calendar-check" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false"  icon="fa fa-file-invoice-dollar" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false" icon="fa fa-user-md" ></p:menuitem>
