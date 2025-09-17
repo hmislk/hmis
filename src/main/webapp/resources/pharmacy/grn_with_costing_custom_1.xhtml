@@ -99,6 +99,10 @@
                 </div>
 
             </div>
+            
+            <h1>
+                 #{cc.attrs.bill.approveUser.code}
+            </h1>
 
             <style>
                 table {
@@ -123,9 +127,11 @@
                             <th style="text-align: left!important;min-width: 34%; font-weight: bold!important;">Item</th>
                             <!--<th style="width: 4%; text-align: right!important; font-weight: bold!important;">Code</th>-->
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Expiry</th>
-                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Batch No.</th>
+
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Ordered Qty</th>
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Last PR</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Discount Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Rate</th>
@@ -156,7 +162,8 @@
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.stringValue}">
+                                    <h:outputText value="#{bip.referanceBillItem.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
 
@@ -170,6 +177,12 @@
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
                                         <f:convertNumber pattern="#,##0.00"/>

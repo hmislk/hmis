@@ -6929,7 +6929,7 @@ public class PharmacyController implements Serializable {
 
         } catch (Exception e) {
             // Handle exception appropriately
-            System.err.println("Error creating stock variance report: " + e.getMessage());
+
         }
 
         return varianceData;
