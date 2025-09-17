@@ -294,7 +294,7 @@
 
                     </p:panel>
 
-                    <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
+                    <p:panel id="printSection" rendered="#{pharmacyAdjustmentController.printPreview}">
                         <div class="d-flex gap-2 m-2">
                             <p:commandButton
                                 ajax="false"
@@ -312,7 +312,7 @@
                         </div>
 
                         <h:panelGroup id="print">
-                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                            <ph:adjustmentBill id="adjustmentBill"  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
                         </h:panelGroup>
 
                     </p:panel>

@@ -48,7 +48,7 @@
                                             class="ui-button-success mx-1"
                                             icon="fa-solid fa-check"                                                             
                                             onclick="if (!confirm('Are you sure you want to Settle This Bill ?')) return false;"
-                                            action="#{pharmacyPreSettleController.settleBillWithPay2}" />
+                                            action="#{pharmacyPreSettleController.settlePaymentAndNavigateToPrint}" />
 
                                         <p:defaultCommand target="settle"/>
 
@@ -228,13 +228,13 @@
                                             
                                         </h:panelGrid>
                                         
-                                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                        <h:panelGroup rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                             <div style="height: 105px">
 
                                             </div>
                                         </h:panelGroup>
                                         
-                                        <h:panelGrid rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
+                                        <h:panelGrid rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
                                             <h:outputLabel value="Token" ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" ></h:outputLabel>
@@ -330,6 +330,7 @@
                     </p:panel>
 
 
+<!--                    
                     <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
                         <div class="d-flex justify-content-between">
                             <div>
@@ -340,8 +341,8 @@
                             </div>
                             <div>
                                 <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Back to token bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
-                                    <f:actionListener rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
-                                    <f:actionListener rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
+                                    <f:actionListener rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                    <f:actionListener rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="New Pharmacy Token"
@@ -360,7 +361,7 @@
                             
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
                                 <div>
-                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyPreSettleController.bill}"/>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3 bill="#{pharmacyPreSettleController.bill}"/>
                                 </div>
                             </h:panelGroup>
                             
@@ -370,7 +371,8 @@
                             
                         </h:panelGroup>
                     </p:panel>
-
+-->
+                    
                 </h:form>
             </ui:define>
         </ui:composition>

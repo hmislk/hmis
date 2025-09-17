@@ -8,38 +8,33 @@
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:tkn="http://xmlns.jcp.org/jsf/composite/pharmacy">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form id="bill" >
-
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />
                     <p:growl id="panelErrorMsg"/>
-
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
-                        <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
-                        <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}">
-                            <h:panelGroup  class="mx-4">
-                                <p:outputLabel value="Counter" ></p:outputLabel>
-                                <p:selectOneMenu class="mx-2" value="#{pharmacySaleController.counter}" >
-                                    <f:selectItem itemLabel="Any" ></f:selectItem>
-                                    <f:selectItems
-                                        value="#{sessionController.loggableSubDepartments}"
-                                        var="c"
-                                        itemLabel="#{c.name}"
-                                        itemValue="#{c}" >
-                                    </f:selectItems>
-                                </p:selectOneMenu>
-                            </h:panelGroup>
-                        </p:panel>
+                        
                         <p:panel>
-                            <f:facet name="header" >
+                            <f:facet id="panelHeader" name="header" >
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" />
+                                    <h:outputLabel value="Pharmacy Retail Bill For Cashier - 1" />
+                                    <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 36px; color: purple; "></i>
+
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}" class="d-flex align-items-center">
+                                        <p:outputLabel value="Counter" class="me-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{pharmacySaleController.counter}" >
+                                            <f:selectItem itemLabel="Any" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{sessionController.loggableSubDepartments}"
+                                                var="c"
+                                                itemLabel="#{c.name}"
+                                                itemValue="#{c}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             value="Back"
@@ -65,12 +60,10 @@
                                             icon="fas fa-check"
                                             onclick="if (!confirm('Are you sure?'))
                                                         return false"
-                                            action="#{pharmacySaleController.settlePreBill()}"
+                                            action="#{pharmacySaleController.settlePreBillAndNavigateToPrint()}"
                                             class="ui-button-success"
                                             >
                                         </p:commandButton>
-
-
                                     </div>
                                 </div>
 
@@ -482,6 +475,7 @@
                     </p:panel>
                 </h:form>
 
+<!--                
                 <h:form>
                     <p:panel id="panelPrint"  rendered="#{pharmacySaleController.billPreview}" >
                         <div class="nonPrintBlock row" >
@@ -514,7 +508,7 @@
                                     accesskey="a"
                                     id="btnPrintToken"
                                     value="Print Token"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     ajax="false"
                                     icon="fa fa-print"
                                     class="ui-button-info m-1"
@@ -573,7 +567,7 @@
                             id="billAndTokenPrint">
                             <h:panelGroup 
                                 layout="block"
-                                rendered="#{pharmacySaleController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"
+                                rendered="#{pharmacySaleController.printBill ne null and configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                 style="page-break-after: always!important;"
                                 id="tokenPrint">
                                 <h:panelGroup 
@@ -645,8 +639,8 @@
 
                     </p:panel>
                 </h:form>
-
-
+-->
+           
 
             </ui:define>
         </ui:composition>

@@ -75,7 +75,7 @@
 
                 <div class="row">
                     <h:outputLabel value="P.O.Approve By " class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.code}" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.person.nameWithTitle}&nbsp;#{cc.attrs.bill.referenceBill.creater.webUserPerson.name} " class="col-3"/>
                     <h:outputLabel value="Invoice No" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="col-4"/>
                 </div>
@@ -235,7 +235,7 @@
                             </h:outputText>
                         </td>
                     </tr>
-                    
+
                     <tr style="font-size: 12px; background-color: #f0f8ff;">
                         <td colspan="9" style="text-align: left; padding-left: 20px;">Expenses Considered for Costing</td>
                         <td colspan="2" style="text-align: right;">
@@ -244,7 +244,7 @@
                             </h:outputText>
                         </td>
                     </tr>
-                    
+
                     <tr style="font-size: 12px; background-color: #fff8dc;">
                         <td colspan="9" style="text-align: left; padding-left: 20px;">Expenses Not Considered for Costing</td>
                         <td colspan="2" style="text-align: right;">
@@ -353,7 +353,9 @@
             </div>
 
             <div class="preparedBy mt-3">
-                <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;"/>
+                <h:outputLabel 
+                    value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle} &nbsp; (#{cc.attrs.bill.creater.code})"
+                    style="text-align: right!important;"/>
             </div>
 
             <div class="mb-4">

@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:po="http://xmlns.jcp.org/jsf/composite/pharmacy">
     <ui:define name="content">
         <h:form id="form">
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreatePurchaseOrder')}" >
@@ -216,7 +217,7 @@
                                                    for="cmbPs"></p:outputLabel>
                                     <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                         <f:selectItem itemLabel="Select Payment method"/>
-                                        <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
+                                        <f:selectItems value="#{enumController.paymentMethodsForGrn}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}">
                                         </f:selectItems>
                                         <p:ajax process="@this" update="po" event="change"/>
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
@@ -410,6 +411,14 @@
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary"
+                                    type="button"
+                                    onclick="PF('purchaseOrderConfigDialog').show();" >
+                                </p:commandButton>
+                                <p:commandButton
                                     ajax="false"
                                     value="Print"
                                     icon="fas fa-print"
@@ -434,311 +443,21 @@
                     </f:facet>
 
                     <div class="d-flex justify-content-center">
+                        
                         <p:panel style="width: 212mm;" >
-                            <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css" ></h:outputStylesheet>
                             <h:panelGroup id="printPaper" layout="block">
 
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1')}">
+                                <po:purchase_order_request_custom_1
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                                    bill="#{purchaseOrderRequestController.currentBill}"
+                                    billItems="#{purchaseOrderRequestController.billItems}">
+                                </po:purchase_order_request_custom_1>
 
-                                    <div class="institutionName">
-                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.name}"/>
-                                    </div>
-                                    <div class="institutionContact" >
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.address}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.address}"/>
-                                            <h:outputLabel value="Telephone : " rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.phone or !empty purchaseOrderRequestController.currentBill.creater.department.telephone1}" />
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.phone}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.phone}"/>
-                                            <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
-                                        </div>
-                                        <div >
-                                            <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
-                                        </div>
-                                        <div >
-                                            <h:outputLabel value="Email : &nbsp;" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
-                                        </div>
-                                    </div>
-
-                                    <div class="headingBill">
-                                        <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
-                                    </div>
-
-                                    <div class="purchase-order">
-                                        <h:panelGrid columns="6" class="my-2 w-100">
-                                            <h:outputLabel value="Order No" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.deptId}" />
-                                            <h:outputLabel value="Order Department" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.department.name}" />
-                                            <h:outputLabel value="Supplier" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />
-                                            <h:outputLabel value="Supplier Code" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.code}" />
-                                            <h:outputLabel value="Supplier Phone" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.phone}" />
-                                            <h:outputLabel value="Supplier Address" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
-
-                                            <h:outputLabel value="Payment Method" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.paymentMethod}" />
-                                            <h:outputLabel value="Consignment" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.consignment ? 'Yes' : 'No'}" />
-                                        </h:panelGrid>
-                                    </div>
-
-                                    <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
-                                        <thead>
-                                            <tr style="border: 1px solid black;">
-                                                <th style="border: 1px solid black;">Item Code</th>
-                                                <th style="border: 1px solid black;">Item Name</th>
-                                                <th style="border: 1px solid black;">Qty</th>
-                                                <th style="border: 1px solid black;">Free Qty</th>
-                                                <th style="border: 1px solid black;">Purchase Rate</th>
-                                                <th style="border: 1px solid black;">Purchase Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <ui:repeat value="#{purchaseOrderRequestController.billItems}" var="bi">
-
-                                                <h:panelGroup rendered="#{not bi.retired}" >
-
-                                                    <tr style="border: 1px solid black;">
-                                                        <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.code}"/></td>
-                                                        <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.name}"/></td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.billItemFinanceDetails.quantity}">
-                                                                <f:convertNumber pattern="#,##0"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.billItemFinanceDetails.freeQuantity}">
-                                                                <f:convertNumber pattern="#,##0"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.netValue}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                    </tr>
-
-                                                </h:panelGroup>
-
-                                            </ui:repeat>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr style="border: 1px solid black; font-weight: bold;">
-                                                <td colspan="5" style="text-align: right; border: 1px solid black;">Net Total &nbsp;</td>
-                                                <td style="text-align: right; border: 1px solid black;">
-                                                    <h:outputText value="#{purchaseOrderRequestController.currentBill.netTotal}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-
-                                    <br/>
-
-                                    <div class="purchase-order">
-                                        <div>
-                                            <h:outputLabel value="Order Initiated By"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.webUserPerson.name}"/>
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Order Finalized By"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            #{purchaseOrderRequestController.currentBill.checkedBy.name}
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Order Finalized At"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.checkeAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                            </h:outputLabel>
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Printed At"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{sessionController.currentDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                            </h:outputLabel>
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Total"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-
-                                <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2')}">
-
-                                    <div class="institutionName">
-                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.name}"/>
-                                    </div>
-                                    <div class="institutionContact" >
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.address}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.address}"/>
-                                            <h:outputLabel value="Telephone : " rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.phone or !empty purchaseOrderRequestController.currentBill.creater.department.telephone1}" />
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.phone}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.phone}"/>
-                                            <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
-                                        </div>
-                                        <div >
-                                            <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
-                                        </div>
-                                        <div >
-                                            <h:outputLabel value="Email : &nbsp;" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
-                                        </div>
-                                    </div>
-
-                                    <div class="headingBill">
-                                        <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
-                                    </div>
-
-                                    <div class="purchase-order">
-                                        <h:panelGrid columns="6" class="my-2 w-100">
-                                            <h:outputLabel value="Order No" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.deptId}" />
-                                            <h:outputLabel value="Order Department" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.department.name}" />
-                                            <h:outputLabel value="Supplier" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />
-                                            <h:outputLabel value="Supplier Code" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.code}" />
-                                            <h:outputLabel value="Supplier Phone" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.phone}" />
-                                            <h:outputLabel value="Supplier Address" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
-
-                                            <h:outputLabel value="Payment Method" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.paymentMethod}" />
-                                            <h:outputLabel value="Consignment" />
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.consignment ? 'Yes' : 'No'}" />
-                                        </h:panelGrid>
-                                    </div>
-
-                                    <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
-                                        <thead>
-                                            <tr style="border: 1px solid black;">
-                                                <th style="border: 1px solid black;">Item Code</th>
-                                                <th style="border: 1px solid black;">Item Name</th>
-                                                <th style="border: 1px solid black;">Qty</th>
-                                                <th style="border: 1px solid black;">Free Qty</th>
-                                                <th style="border: 1px solid black;">Purchase Rate</th>
-                                                <th style="border: 1px solid black;">Purchase Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <ui:repeat value="#{purchaseOrderRequestController.billItems}" var="bi">
-
-                                                <h:panelGroup rendered="#{not bi.retired}" >
-
-                                                    <tr style="border: 1px solid black;">
-                                                        <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.code}"/></td>
-                                                        <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.name}"/></td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.billItemFinanceDetails.quantity}">
-                                                                <f:convertNumber pattern="#,##0"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.billItemFinanceDetails.freeQuantity}">
-                                                                <f:convertNumber pattern="#,##0"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                        <td style="text-align: right; border: 1px solid black;">
-                                                            <h:outputLabel value="#{bi.netValue}">
-                                                                <f:convertNumber pattern="#,##0.00"/>
-                                                            </h:outputLabel>
-                                                        </td>
-                                                    </tr>
-
-                                                </h:panelGroup>
-
-                                            </ui:repeat>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr style="border: 1px solid black; font-weight: bold;">
-                                                <td colspan="5" style="text-align: right; border: 1px solid black;">Net Total &nbsp;</td>
-                                                <td style="text-align: right; border: 1px solid black;">
-                                                    <h:outputText value="#{purchaseOrderRequestController.currentBill.netTotal}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-
-                                    <br/>
-
-                                    <div class="purchase-order">
-                                        <div>
-                                            <h:outputLabel value="Order Initiated By"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.webUserPerson.name}"/>
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Order Finalized By"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            #{purchaseOrderRequestController.currentBill.checkedBy.name}
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Order Finalized At"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.checkeAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                            </h:outputLabel>
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Printed At"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{sessionController.currentDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                            </h:outputLabel>
-                                        </div>
-                                        <div>
-                                            <h:outputLabel value="Total"/>
-                                            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
+                                <po:purchase_order_request_custom_2
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', false)}"
+                                    bill="#{purchaseOrderRequestController.currentBill}"
+                                    billItems="#{purchaseOrderRequestController.billItems}">
+                                </po:purchase_order_request_custom_2>
 
                             </h:panelGroup>
                         </p:panel>
@@ -864,6 +583,77 @@
                             oncomplete="PF('emailDialog').hide();"/>
                     </div>
                 </div>
+            </h:form>
+        </p:dialog>
+
+        <!-- Purchase Order Configuration Dialog -->
+        <p:dialog id="purchaseOrderConfigDialog" 
+                  header="Purchase Order Request Printer Configuration" 
+                  widgetVar="purchaseOrderConfigDialog" 
+                  modal="true" 
+                  width="800" 
+                  height="500"
+                  resizable="true" 
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{purchaseOrderConfigController.loadCurrentConfig}" update="purchaseOrderConfigForm" />
+
+            <h:form id="purchaseOrderConfigForm">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> Purchase Order Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox 
+                                        id="custom1Paper"
+                                        value="#{purchaseOrderConfigController.custom1Paper}" />
+                                    <p:outputLabel for="custom1Paper" value="A4 Paper Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 purchase order format - Custom 1</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox 
+                                        id="custom2Paper"
+                                        value="#{purchaseOrderConfigController.custom2Paper}" />
+                                    <p:outputLabel for="custom2Paper" value="A4 Paper Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="purchaseOrderConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            value="Apply &amp; Close" 
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{purchaseOrderConfigController.saveConfig}" />
+                                        <p:commandButton 
+                                            value="Cancel" 
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('purchaseOrderConfigDialog').hide(); return false;" 
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </h:form>
         </p:dialog>
 

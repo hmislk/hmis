@@ -291,7 +291,7 @@
 
                                     <hr/>
 
-                                    <p:commandButton 
+<!--                                    <p:commandButton 
                                         rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
                                         id="btnGenerateBarcodes"
                                         value="Generate Barcodes"
@@ -300,7 +300,7 @@
                                         title="Generate Barcodes"
                                         icon="pi pi-barcode"
                                         styleClass="w-100 ui-button-success" >
-                                    </p:commandButton>
+                                    </p:commandButton>-->
 
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
@@ -316,7 +316,7 @@
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleSeparate')}">
                                         <hr/>
                                     </h:panelGroup>
-                                    
+
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         ajax="false"
@@ -327,7 +327,7 @@
                                         action="#{patientInvestigationController.navigateToSampleSeparate()}"
                                         styleClass="w-100 ui-button-warning" >
                                     </p:commandButton>
-                                    
+
                                     <hr/>
 
                                     <style>
@@ -345,7 +345,7 @@
                                         <p:commandButton
                                             value="Send to Out Lab "
                                             disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                            styleClass="m-1 w-100 ui-button-primary" 
+                                            styleClass="w-100 ui-button-primary" 
                                             icon="fa fa-paper-plane" 
                                             onclick="PF('dlg2').show()">
                                         </p:commandButton>
@@ -356,6 +356,7 @@
                                     <p:autoComplete 
                                         completeMethod="#{staffController.completeStaff}"
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         var="mys" 
                                         class="w-100" 
                                         maxResults="25"
@@ -380,6 +381,26 @@
                                     </p:commandButton>
 
                                     <hr/>
+                                    <h:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('LabSampleRetrieving')}">
+                                        <p:inputText 
+                                            class="w-100"
+                                            placeholder="Sample Retrieving Reason"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            value="#{patientInvestigationController.comments}" >
+                                        </p:inputText>
+
+                                        <p:commandButton
+                                            value="Retrieving the sent sample"
+                                            styleClass="w-100 ui-button-primary" 
+                                            title="Receive Samples"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            action="#{patientInvestigationController.retrievingTheSentSampleToLab()}"
+                                            ajax="false"
+                                            icon="fa fa-reply-all">
+                                        </p:commandButton>
+
+                                        <hr/>
+                                    </h:panelGrid>
 
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
@@ -497,14 +518,26 @@
                                         value="#{patientInvestigationController.outLabDepartment}"
                                         filterMatchMode="contains"
                                         id="sendSampleDept"
+                                        var="c"
                                         class="w-100">
-                                        <f:selectItem itemLabel="Any"></f:selectItem>
+                                        <f:selectItem itemLabel="Select To Department"/>
                                         <f:selectItems 
-                                            value="#{departmentController.getInstitutionLabDepartments(patientInvestigationController.outLabInstitution)}" 
+                                            value="#{departmentController.getInstitutionAllLabTypesDepartments(patientInvestigationController.outLabInstitution)}" 
                                             var="odpt" 
                                             itemLabel="#{odpt.name}" 
                                             itemValue="#{odpt}">
                                         </f:selectItems>
+                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">
+                                            <h:outputLabel class="w-50" value="#{c.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Type" class="text-center" style="padding: 6px; width: 75px;">
+                                            <p:badge 
+                                                value=" #{c.departmentType.label}" 
+                                                style="font-size: 14px;" 
+                                                class="w-100 d-flex justify-content-center"
+                                                severity="#{c.departmentType eq 'Lab' ? 'info' : 'danger'}">
+                                            </p:badge>
+                                        </p:column>
                                     </p:selectOneMenu>
                                 </div>
 

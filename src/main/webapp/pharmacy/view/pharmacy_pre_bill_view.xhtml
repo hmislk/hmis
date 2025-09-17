@@ -57,7 +57,7 @@
                                             accesskey="a"
                                             id="btnPrintToken"
                                             value="Print Token"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                            rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                             ajax="false"
                                             class="ui-button-info m-1"
                                             <p:printer target="tokenPrint" ></p:printer>
@@ -89,7 +89,7 @@
 
                                         <p:commandButton
                                             value="Token"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                            rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                             ajax="false"
                                             icon="fa fa-print"
                                             class="ui-button-warning m-1"
@@ -138,7 +138,7 @@
                             <h:panelGroup id="billAndTokenPrintOriginal" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}">
                                 <h:panelGroup 
                                     layout="block"
-                                    rendered="#{billSearch.bill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"
+                                    rendered="#{billSearch.bill ne null and configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     style="page-break-after: always!important;"
                                     id="tokenPrintOriginal">
                                     <h:panelGroup 
@@ -211,7 +211,7 @@
                             <h:panelGroup id="billAndTokenPrint">
                                 <h:panelGroup 
                                     layout="block"
-                                    rendered="#{billSearch.bill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"
+                                    rendered="#{billSearch.bill ne null and configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     style="page-break-after: always!important;"
                                     id="tokenPrint">
                                     <h:panelGroup 

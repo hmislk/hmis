@@ -257,10 +257,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentBillItem = null;
         // Calculate bill totals using internal methods
         calculateBillTotalsFromItems();
-        
+
         // Distribute bill-level adjustments proportionally to line items
         distributeProportionalBillValuesToItems();
-        
+
         // Recalculate profit margins after distributions have been applied
         recalculateProfitMarginsForAllItems();
 
@@ -867,8 +867,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         //   saveBillComponent();
 
 //        Payment p = createPayment(getBill());
-        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
-
         billItemsTotalQty = 0;
 
         for (BillItem i : getBillItems()) {
@@ -943,6 +941,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 //        getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         getBillFacade().edit(getBill());
+        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
 
         JsfUtil.addSuccessMessage("Direct Purchase Successfully Completed.");
         printPreview = true;

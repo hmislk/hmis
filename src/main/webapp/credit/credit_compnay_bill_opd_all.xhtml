@@ -45,8 +45,8 @@
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
                                     <h:outputText value="Payment" class="mx-4"></h:outputText>
                                 </f:facet>
-                                
-                                 <div class="row my-2 d-flex align-items-center">
+
+                                <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Select credit company" />      
                                     </div>
@@ -70,7 +70,7 @@
                                         </p:autoComplete> 
                                     </div>
                                 </div>
-                                
+
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -101,17 +101,17 @@
                                         </div>
                                     </div>
                                 </div>
-<!--
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Comment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                    </div>
-                                </div>-->
+                                <!--
+                                                                <div class="row my-2 d-flex align-items-center">
+                                                                    <div class="col-md-4">
+                                                                        <p:outputLabel value="Comment" />      
+                                                                    </div>
+                                                                    <div class="col-md-8">
+                                                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
+                                                                    </div>
+                                                                </div>-->
 
-                               
+
 
                                 <div class="row my-2">
                                     <div class="col-md-4"></div>
@@ -233,12 +233,17 @@
                             icon="fa fa-plus"
                             class="ui-button-warning mx-3 my-3">
                         </p:commandButton>
+                        <p:commandButton value="Print"
+                                         icon="pi pi-print"
+                                         styleClass="ui-button-info"
+                                         ajax="false">
+                            <p:printer target="gpBillPreview"/>
+                        </p:commandButton>
                     </div>
-                    <div class="mx-4">
+                    <h:panelGroup id="gpBillPreview" >
                         <bi:CreditReceiveBill controller="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
-                    </div>
+                    </h:panelGroup>
 
-<!--                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       -->
                 </p:panel>
 
             </h:form>
