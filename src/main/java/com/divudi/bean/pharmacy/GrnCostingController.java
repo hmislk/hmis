@@ -2934,7 +2934,7 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setChecked(true);
         getCurrentGrnBillPre().setCheckeAt(new Date());
         getCurrentGrnBillPre().setCheckedBy(sessionController.getLoggedUser());
-
+        getCurrentGrnBillPre().setApproveUser(sessionController.getLoggedUser());
         // Change bill type from PRE to final GRN
         getCurrentGrnBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
 
