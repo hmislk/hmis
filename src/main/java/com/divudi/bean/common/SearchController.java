@@ -15870,6 +15870,9 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(pharmacyCreditRefundBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
 
+            // Calculate net cash collection
+            netCashCollection = collectionForTheDay;
+
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
             netCashForTheDayBundle.setName("Net Cash");
@@ -16274,6 +16277,9 @@ public class SearchController implements Serializable {
             ChannelBookingsRefundBundle.setName("Channel Paid Bookings Refunds");
             bundle.getBundles().add(ChannelBookingsRefundBundle);
             collectionForTheDay -= getSafeTotal(ChannelBookingsRefundBundle);
+
+            // Calculate net cash collection
+            netCashCollection = collectionForTheDay;
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
