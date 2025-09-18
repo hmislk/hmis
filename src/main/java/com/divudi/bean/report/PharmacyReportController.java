@@ -3032,7 +3032,7 @@ public class PharmacyReportController implements Serializable {
 
         if (fromInstitutionList != null && !fromInstitutionList.isEmpty()) {
 
-            jpql.append("and bill.fromInstitution in :fromIns ");
+            jpql.append("and (bill.fromInstitution in :fromIns or bill.toInstitution in :fromIns)");
             params.put("fromIns", fromInstitutionList);
 
         }
