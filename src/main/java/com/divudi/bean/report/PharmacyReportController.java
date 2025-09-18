@@ -179,6 +179,7 @@ public class PharmacyReportController implements Serializable {
     private Institution site;
     private Department department;
     private Institution fromInstitution;
+    private List<Institution> fromInstitutionList;
     private Institution toInstitution;
     private Department fromDepartment;
     private Department toDepartment;
@@ -326,6 +327,14 @@ public class PharmacyReportController implements Serializable {
 
     //Constructor
     public PharmacyReportController() {
+    }
+
+    public List<Institution> getFromInstitutionList() {
+        return fromInstitutionList;
+    }
+
+    public void setFromInstitutionList(List<Institution> fromInstitutionList) {
+        this.fromInstitutionList = fromInstitutionList;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -2184,8 +2193,8 @@ public class PharmacyReportController implements Serializable {
 
     public void processStockConsumption() {
         List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyDisposalIssue);
-            billTypes.add(BillType.PharmacyIssue);
+        billTypes.add(BillType.PharmacyDisposalIssue);
+        billTypes.add(BillType.PharmacyIssue);
         retrieveBillItems("b.billType", billTypes);
         calculateStockConsumptionNetTotal(billItems);
     }
@@ -2978,8 +2987,8 @@ public class PharmacyReportController implements Serializable {
                 + "from Bill bill "
                 + "JOIN bill.billItems bi "
                 + "JOIN bi.pharmaceuticalBillItem pbi "
-                + "where bill.billTypeAtomic = :bta "
-                + "and bill.billType = :bt "
+                + "where bill.billTypeAtomic in :bta "
+                + "and bill.billType in :bt "
                 + "and bill.createdAt between :fromDate and :toDate "
                 + "and bill.retired = :ret "
                 + "and bill.cancelled = :ret "
@@ -2988,8 +2997,17 @@ public class PharmacyReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        params.put("bt", BillType.PharmacyPurchaseBill);
+        
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PurchaseReturn);
+        bts.add(BillType.PharmacyPurchaseBill);
+        
+        params.put("bta", btas);
+        params.put("bt", bts);
         params.put("ret", false);
 
         if (institution != null) {
@@ -3012,10 +3030,14 @@ public class PharmacyReportController implements Serializable {
             params.put("item", amp);
         }
 
-        if (fromInstitution != null) {
-            jpql.append("and bill.fromInstitution = :fromIns ");
-            params.put("fromIns", fromInstitution);
+        if (fromInstitutionList != null && !fromInstitutionList.isEmpty()) {
+
+            jpql.append("and (bill.fromInstitution in :fromIns or bill.toInstitution in :fromIns)");
+            params.put("fromIns", fromInstitutionList);
+
         }
+        
+        jpql.append("order by bill.createdAt desc");
 
         dtoList = (List<DirectPurchaseReportDto>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -4107,7 +4129,7 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateStockConsumption() {
         try {
-            
+
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyDisposalIssue);
             billTypes.add(BillType.PharmacyIssue);
