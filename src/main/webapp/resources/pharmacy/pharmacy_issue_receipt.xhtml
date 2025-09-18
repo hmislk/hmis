@@ -10,6 +10,8 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="duplicate" />
+        <cc:attribute name="cancel" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -39,6 +41,8 @@
 
             <div class="receipt-title">
                 <h:outputLabel value="Pharmacy Disposal Issue Receipt" />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true or cc.attrs.cancel eq true}" />
             </div>
 
             <div class="receipt-separator"><hr /></div>
