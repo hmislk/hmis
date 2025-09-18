@@ -3856,7 +3856,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 
-            StringBuilder jpql = new StringBuilder("SELECT bi.bill.paymentMethod, SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) FROM BillItem bi ")
+            StringBuilder jpql = new StringBuilder("SELECT bi.bill.paymentMethod, SUM(bi.billItemFinanceDetails.quantityByUnits * bi.pharmaceuticalBillItem.purchaseRate), SUM(bi.billItemFinanceDetails.quantityByUnits * bi.pharmaceuticalBillItem.itemBatch.costRate) FROM BillItem bi ")
                     .append("WHERE bi.retired = false ")
                     .append("AND bi.bill.billTypeAtomic IN :bType ")
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
