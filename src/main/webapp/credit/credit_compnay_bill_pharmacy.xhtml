@@ -259,11 +259,18 @@
                             icon="fa fa-plus"
                             class="ui-button-warning mx-3 my-3">
                         </p:commandButton>
+                           <p:commandButton
+                               value="Cancel"
+                               icon="fa fa-cancel"
+                               ajax="false"
+                               action="#" 
+                               styleClass="ui-button-danger mx-3 my-3">  
+                        </p:commandButton>
                         <p:commandButton value="Print"
                                          icon="fa fa-print"
                                          styleClass="ui-button-info"
                                          ajax="false"
-                                         class="ui-button-info  mx-3 my-3"
+                                         class="ui-button-info mx-3 my-3"
                                          >
                             <p:printer target="gpBillPreview"/>
                         </p:commandButton>
