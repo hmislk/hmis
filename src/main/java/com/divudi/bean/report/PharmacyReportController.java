@@ -179,6 +179,7 @@ public class PharmacyReportController implements Serializable {
     private Institution site;
     private Department department;
     private Institution fromInstitution;
+    private List<Institution> fromInstitutionList;
     private Institution toInstitution;
     private Department fromDepartment;
     private Department toDepartment;
@@ -326,6 +327,14 @@ public class PharmacyReportController implements Serializable {
 
     //Constructor
     public PharmacyReportController() {
+    }
+
+    public List<Institution> getFromInstitutionList() {
+        return fromInstitutionList;
+    }
+
+    public void setFromInstitutionList(List<Institution> fromInstitutionList) {
+        this.fromInstitutionList = fromInstitutionList;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -2184,8 +2193,8 @@ public class PharmacyReportController implements Serializable {
 
     public void processStockConsumption() {
         List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyDisposalIssue);
-            billTypes.add(BillType.PharmacyIssue);
+        billTypes.add(BillType.PharmacyDisposalIssue);
+        billTypes.add(BillType.PharmacyIssue);
         retrieveBillItems("b.billType", billTypes);
         calculateStockConsumptionNetTotal(billItems);
     }
@@ -3012,9 +3021,11 @@ public class PharmacyReportController implements Serializable {
             params.put("item", amp);
         }
 
-        if (fromInstitution != null) {
-            jpql.append("and bill.fromInstitution = :fromIns ");
-            params.put("fromIns", fromInstitution);
+        if (fromInstitutionList != null && !fromInstitutionList.isEmpty()) {
+
+            jpql.append("and bill.fromInstitution in :fromIns ");
+            params.put("fromIns", fromInstitutionList);
+
         }
 
         dtoList = (List<DirectPurchaseReportDto>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -4107,7 +4118,7 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateStockConsumption() {
         try {
-            
+
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyDisposalIssue);
             billTypes.add(BillType.PharmacyIssue);
