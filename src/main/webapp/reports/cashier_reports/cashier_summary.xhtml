@@ -262,13 +262,14 @@
                                                           rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
 
 
-                                    <!-- Credit Sections -->
+                                    <!-- OPD Credit Sections -->
                                     <ez:opdServiceBilled bundle="#{myBundle}"
                                                          rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
                                     <ez:opdServiceCancellations bundle="#{myBundle}"
                                                                 rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
                                     <ez:opdServiceRefunds bundle="#{myBundle}"
                                                           rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
+
 
                                     <!-- Pharmacy Collections -->
                                     <ez:pharmacyCollection 
@@ -279,6 +280,18 @@
                                                                      rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
                                     <ez:pharmacyServiceRefunds bundle="#{myBundle}"
                                                                rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
+
+
+                                    <!-- Pharmacy Credit Sections -->
+
+                                    <ez:pharmacyBilled bundle="#{myBundle}"
+                                                       rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                                    <ez:pharmacyCancellations bundle="#{myBundle}"
+                                                              rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                                    <ez:pharmacyRefunds bundle="#{myBundle}"
+                                                        rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
+
+
 
                                     <!-- Professional Payments OPD -->
                                     <ez:professionalPaymentsOpd bundle="#{myBundle}"
@@ -343,7 +356,7 @@
                                     <ez:pharmacyCreditBills
                                         id="panelPharmacyCreditBills"
                                         bundle="#{myBundle}"
-                                                            rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
+                                        rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
                                     <ez:pharmacyCreditCancel bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
                                     <ez:pharmacyCreditRefund bundle="#{myBundle}"
@@ -355,8 +368,8 @@
                                 <h:panelGroup rendered="#{empty myBundle.reportTemplateRows}">
                                     <table class="table w-100">
                                         <thead>
-                                            <tr class="text-light bg-dark">
-                                                <th class="text-light bg-dark">
+                                            <tr class="text-light bg-secondary">
+                                                <th class="text-light bg-secondary">
                                                     <h:outputText value="No Data for #{myBundle.name}"></h:outputText>
                                                 </th>
                                             </tr>

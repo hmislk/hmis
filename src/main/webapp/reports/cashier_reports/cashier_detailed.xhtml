@@ -270,6 +270,14 @@
                         <ez:pharmacyServiceRefunds bundle="#{myBundle}"
                                                    rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
 
+                        <!-- Pharmacy Credit Collections -->
+                        <ez:pharmacyBilled bundle="#{myBundle}"
+                                           rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                        <ez:pharmacyCancellations bundle="#{myBundle}"
+                                                  rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                        <ez:pharmacyRefunds bundle="#{myBundle}"
+                                            rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
+
                         <!-- Professional Payments OPD -->
                         <ez:professionalPaymentsOpd bundle="#{myBundle}"
                                                     rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
