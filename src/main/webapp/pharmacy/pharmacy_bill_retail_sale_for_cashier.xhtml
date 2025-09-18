@@ -349,7 +349,7 @@
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
                                                     <p:ajax process="@this cmbPs "
-                                                            update="pBillDetails creditCard cheque slip credit welfareStaff"
+                                                            update="pBillDetails welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -366,7 +366,7 @@
                                                     <f:selectItem itemLabel="No Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay "
-                                                            update="pBillDetails creditCard cheque slip credit welfareStaff"
+                                                            update="pBillDetails welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -375,6 +375,7 @@
                                     </p:panel>
 
                                     <h:panelGroup
+                                        id="welfareStaff"
                                         class="row"
                                         layout="block"
                                         rendered="#{pharmacySaleController.paymentMethod eq 'Staff_Welfare'}" >
@@ -385,7 +386,6 @@
                                                         minQueryLength="1"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.toStaff}"
-                                                        id="welfareStaff"
                                                         completeMethod="#{staffController.completeStaff}"
                                                         var="mys"
                                                         class="w-100"
