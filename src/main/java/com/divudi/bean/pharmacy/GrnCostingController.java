@@ -22,19 +22,13 @@ import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
-import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.ItemBatch;
-import com.divudi.core.entity.pharmacy.ItemsDistributors;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.core.entity.pharmacy.Stock;
-import com.divudi.core.entity.pharmacy.Vmp;
-import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -46,14 +40,12 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
-import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1217,6 +1209,10 @@ public class GrnCostingController implements Serializable {
 
                 newlyCreatedBillItemForGrn.setBillItemFinanceDetails(fd);
                 recalculateFinancialsBeforeAddingBillItem(fd);
+
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRate(pr);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRateInUnit(pr);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRatePack(pr * fd.getUnitsPerPack().doubleValue());
 
                 getBillItems().add(newlyCreatedBillItemForGrn);
             }
@@ -2799,10 +2795,8 @@ public class GrnCostingController implements Serializable {
             double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns;
 
             System.out.println("Item: " + grnItem.getItem().getName() + " - Previously received: " + previouslyReceivedQty + ", Total to receive: " + (previouslyReceivedQty + currentGrnQty));
-            System.out.println("Item: " + grnItem.getItem().getName() + " - Previously received free: " + previouslyReceivedFreeQty + ", Total free to receive: " + (previouslyReceivedFreeQty + currentGrnFreeQty));
 
             if (orderedQty < previouslyReceivedQty + currentGrnQty) {
-                System.out.println("VALIDATION FAILED: Regular quantity exceeded for " + grnItem.getItem().getName());
                 return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
@@ -2811,7 +2805,6 @@ public class GrnCostingController implements Serializable {
             // Feature flag controlled free quantity validation
             boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
             if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
-                System.out.println("VALIDATION FAILED: Free quantity exceeded for " + grnItem.getItem().getName());
                 return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
@@ -2819,7 +2812,6 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        System.out.println("GRN quantity validation passed for all items");
         return "";
     }
 
@@ -2909,14 +2901,10 @@ public class GrnCostingController implements Serializable {
 
             BillItem poBillItem = grnBillItem.getReferanceBillItem();
             System.out.println("grnBillItem = " + grnBillItem);
-            System.out.println("poBillItem = " + poBillItem);
             if (poBillItem != null) {
-                System.out.println("poBillItem = " + poBillItem);
                 if (poBillItem.getId() != null) {
-                    System.out.println("poBillItem.getId() = " + poBillItem.getId());
                     poBillItem = billItemFacade.findWithoutCache(poBillItem.getId());
                     if (poBillItem != null) {
-                        System.out.println("poBillItem = " + poBillItem);
                         PharmaceuticalBillItem poPbi = poBillItem.getPharmaceuticalBillItem();
                         if (poPbi != null) {
                             //getRemainingQty() is double, can NOT be null
@@ -2935,11 +2923,10 @@ public class GrnCostingController implements Serializable {
 
         String billId;
         // Generate final bill numbers if not already generated
-        if (getCurrentGrnBillPre().getDeptId() == null || getCurrentGrnBillPre().getDeptId().isEmpty()) {
-            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD.PHARMACY_GRN);
-            getCurrentGrnBillPre().setDeptId(billId);
-            getCurrentGrnBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
-        }
+
+        billId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
+        getCurrentGrnBillPre().setDeptId(billId);
+        getCurrentGrnBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
 
         // Set finalization timestamps and user
         getCurrentGrnBillPre().setEditedAt(new Date());
@@ -2947,7 +2934,7 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setChecked(true);
         getCurrentGrnBillPre().setCheckeAt(new Date());
         getCurrentGrnBillPre().setCheckedBy(sessionController.getLoggedUser());
-
+        getCurrentGrnBillPre().setApproveUser(sessionController.getLoggedUser());
         // Change bill type from PRE to final GRN
         getCurrentGrnBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
 

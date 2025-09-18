@@ -2230,7 +2230,7 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
 
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
                 canRetrievingSamples.add(ps);
             }
         }

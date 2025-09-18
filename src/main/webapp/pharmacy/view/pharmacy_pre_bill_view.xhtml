@@ -49,7 +49,7 @@
                                             id="btnPrint"
                                             value="Print Bill"
                                             ajax="false"
-                                            class="ui-button-info m-1"
+                                            class="ui-button-info m-1">
                                             <p:printer target="gpBillPreview" ></p:printer>
                                         </p:commandButton>
 
@@ -59,7 +59,7 @@
                                             value="Print Token"
                                             rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                             ajax="false"
-                                            class="ui-button-info m-1"
+                                            class="ui-button-info m-1">
                                             <p:printer target="tokenPrint" ></p:printer>
                                         </p:commandButton>
 
@@ -68,7 +68,7 @@
                                             id="btnPrintTokenBill"
                                             value="Print Bill &amp; Token"
                                             ajax="false"
-                                            class="ui-button-info m-1"
+                                            class="ui-button-info m-1">
                                             <p:printer target="billAndTokenPrint" ></p:printer>
                                         </p:commandButton>
                                     </div>

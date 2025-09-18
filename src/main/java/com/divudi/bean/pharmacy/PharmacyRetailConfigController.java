@@ -61,6 +61,7 @@ public class PharmacyRetailConfigController implements Serializable {
     // GRN Settings
     private boolean grnReceiptA4;
     private boolean grnReceiptCustom1;
+    private boolean grnReceiptCustom2;
 
     // Transfer Receive Settings
     private boolean transferReceiveA4;
@@ -118,6 +119,7 @@ public class PharmacyRetailConfigController implements Serializable {
         // GRN Settings
         grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
+        grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
 
         // Transfer Receive Settings
         transferReceiveA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", true);
@@ -173,6 +175,7 @@ public class PharmacyRetailConfigController implements Serializable {
             // GRN Settings
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 2", grnReceiptCustom2);
 
             // Transfer Receive Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", transferReceiveA4);
@@ -396,6 +399,15 @@ public class PharmacyRetailConfigController implements Serializable {
     public void setGrnReceiptCustom1(boolean grnReceiptCustom1) {
         this.grnReceiptCustom1 = grnReceiptCustom1;
     }
+    
+     public boolean isGrnReceiptCustom2() {
+        return grnReceiptCustom2;
+    }
+
+    public void setGrnReceiptCustom2(boolean grnReceiptCustom2) {
+        this.grnReceiptCustom2 = grnReceiptCustom2;
+    }
+    
 
     public boolean isTransferReceiveA4() {
         return transferReceiveA4;
@@ -460,5 +472,7 @@ public class PharmacyRetailConfigController implements Serializable {
     public void setTransferRequestCustom2(boolean transferRequestCustom2) {
         this.transferRequestCustom2 = transferRequestCustom2;
     }
+    
+    
 
 }
