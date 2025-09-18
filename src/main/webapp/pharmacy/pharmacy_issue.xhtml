@@ -67,7 +67,7 @@
                                                 var="i"
                                                 itemLabel="#{i.itemBatch.item.name}"
                                                 itemValue="#{i}" >
-                                                <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <p:column style="padding: 3px" headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                         &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
                                                     </h:outputText>
@@ -77,6 +77,7 @@
                                                     <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
                                                 </p:column>
                                                 <p:column
+                                                    style="padding: 3px"
                                                     headerText="Purchase Rate"
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -85,6 +86,7 @@
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column
+                                                    style="padding: 3px"
                                                     headerText="Retail Rate"
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -93,6 +95,7 @@
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column
+                                                    style="padding: 3px"
                                                     headerText="Cost Rate"
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -100,12 +103,12 @@
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Stocks" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <p:column style="padding: 3px" headerText="Stocks" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.stock}" >
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiry" class="text-center" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <p:column style="padding: 3px" headerText="Expiry" class="text-center" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
@@ -372,14 +375,15 @@
                                             completeMethod="#{departmentController.completeDept}"
                                             forceSelection="true"
                                             var="w"
+                                            maxResults="20"
                                             itemLabel="#{w.name}"
                                             itemValue="#{w}"
                                             value="#{pharmacyIssueController.toDepartment}"
                                             id="acDept">
-                                            <p:column headerText="Department Name">
+                                            <p:column headerText="Department Name" style="padding: 3px">
                                                 #{w.name}
                                             </p:column>
-                                            <p:column headerText="Institution Name">
+                                            <p:column headerText="Institution Name" style="padding: 3px">
                                                 #{w.institution.name}
                                             </p:column>
                                             <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} "
@@ -472,7 +476,7 @@
                                     icon="pi pi-plus"
                                     class="ui-button-warning m-1"
                                     ajax="false"
-                                    action="/pharmacy/pharmacy_issue"
+                                    action="/pharmacy/pharmacy_issue?faces-redirect=true"
                                     actionListener="#{pharmacyIssueController.resetAll()}" >
                                 </p:commandButton>
                                 <p:commandButton
