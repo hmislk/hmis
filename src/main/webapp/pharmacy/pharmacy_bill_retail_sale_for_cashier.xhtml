@@ -349,7 +349,7 @@
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
                                                     <p:ajax process="@this cmbPs "
-                                                            update="pBillDetails creditCard cheque slip credit"
+                                                            update="pBillDetails creditCard cheque slip credit welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -366,13 +366,60 @@
                                                     <f:selectItem itemLabel="No Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay "
-                                                            update="pBillDetails creditCard cheque slip credit"
+                                                            update="pBillDetails creditCard cheque slip credit welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
                                     </p:panel>
+
+                                    <h:panelGroup
+                                        class="row"
+                                        layout="block"
+                                        rendered="#{pharmacySaleController.paymentMethod eq 'Staff_Welfare'}" >
+                                        <div class="my-1" id="credit">
+                                            <div class="row mt-1">
+                                                <div class="col-12">
+                                                    <p:autoComplete
+                                                        minQueryLength="1"
+                                                        forceSelection="true"
+                                                        value="#{pharmacySaleController.toStaff}"
+                                                        id="welfareStaff"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="mys"
+                                                        class="w-100"
+                                                        placeholder="Staff (Type Name, Code or EPF No to search)"
+                                                        inputStyleClass="form-control"
+                                                        itemLabel="#{mys.person.name}"
+                                                        itemValue="#{mys}"
+                                                        size="10">
+                                                        <p:column headerText="Name" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Code" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="EPF No" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:ajax process="@this"
+                                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"/>
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
 
                                     <p:panel class="m-1 w-100">
                                         <f:facet name="header" >
