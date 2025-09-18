@@ -196,13 +196,14 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2"/>
-                                <p:outputLabel value="Supplier Name" for="phmItem" class="m-3">
+                                <p:outputLabel value="Supplier Name" for="supplierMenu" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
 
 
 
                             <p:selectCheckboxMenu value="#{pharmacyReportController.fromInstitutionList}" label="Select Suppliers"
+                                                  id="supplierMenu"
                                                   filter="true"
                                                   class="w-100"
                                                   converter="deal"
@@ -244,13 +245,13 @@
                                     target="tbl"/>
                             </p:commandButton>
 
-                            <p:commandButton
+<!--                            <p:commandButton
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 value="PDF"
                                 action="#{pharmacyReportController.exportStockLedgerToPdf()}">
-                            </p:commandButton>
+                            </p:commandButton>-->
 
                         </div>
                         <h:outputScript>
