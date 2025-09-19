@@ -110,7 +110,7 @@
                               maximizable="true"
                               closeOnEscape="true">
 
-                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="reprintTransferIssueConfigForm" />
+                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('reprintTransferIssueCheckboxes',view).clientId}" process="@this" />
 
                         <h:form id="reprintTransferIssueConfigForm">
 
@@ -121,6 +121,7 @@
                                             <h6><i class="fas fa-file-alt"></i> Transfer Issue Reprint Paper Format Settings</h6>
                                         </div>
                                         <div class="card-body">
+                                            <h:panelGroup id="reprintTransferIssueCheckboxes">
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="reprintA4Paper"
@@ -160,6 +161,7 @@
                                                 <p:outputLabel for="reprintTemplate" value="Template Format" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
                                             </div>
+                                            </h:panelGroup>
                                         </div>
                                     </div>
                                 </div>
