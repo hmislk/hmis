@@ -143,6 +143,11 @@
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
+                                         <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="Processed By - "/>
+                                        <h:outputText value="#{sessionController.loggedUser.name}">
+                                           
+                                        </h:outputText>
                                     </div>
                                 </div>
 
