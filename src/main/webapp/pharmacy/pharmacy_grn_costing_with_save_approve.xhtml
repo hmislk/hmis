@@ -735,6 +735,9 @@
 
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup class="d-flex justify-content-center">
+                            <pha:grn_with_costing
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                bill="#{grnCostingController.currentGrnBillPre}"/>
                             <pha:grn_with_costing_custom_1
                                 rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
                                 bill="#{grnCostingController.currentGrnBillPre}"/>
@@ -788,6 +791,15 @@
                                     <p:outputLabel for="grnReceiptCustom1" value="Custom Format 1" class="ms-2" />
                                     <small class="form-text text-muted d-block">Custom GRN receipt format 1</small>
                                 </div>
+                                
+                                 <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptCustom2"
+                                        value="#{pharmacyRetailConfigController.grnReceiptCustom2}" />
+                                    <p:outputLabel for="grnReceiptCustom2" value="Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom GRN receipt format 2</small>
+                                </div>
+                                
                             </div>
                         </div>
                     </div>

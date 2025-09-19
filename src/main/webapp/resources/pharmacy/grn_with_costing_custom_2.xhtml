@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div  style="width: 210mm; border: 1px solid red;">
+        <div  style="width: 210mm; border: 1px solid yellow;">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
@@ -42,54 +42,41 @@
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
             </div>
 
-            <div style="min-width: 90%; margin-left: 5%; margin-right: 5%; font-size: 15px;" class="row justify-content-center" >
+            <div style="font-size: 15px;" class="row justify-content-center" >
                 <div class="row">
-                    <h:outputLabel value="P.O.No " class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" class="col-3"/>
-                    <h:outputLabel value="G.R.N.No " class="col-2"/>
-                    <h:outputLabel value="#{cc.attrs.bill.deptId}" class="col-4"/>
+                    <h:outputLabel value="P.O.No " class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" class="col-4"/>
+                    <h:outputLabel value="P.O.Date/Time" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" class="col-4">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MM/YYYY HH:MM"/>
+                    </h:outputLabel>
                 </div>
 
                 <div class="row">
-                    <h:outputLabel value="P.O.Date" class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" class="col-3">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </h:outputLabel>
-                    <h:outputLabel value="G.R.N.Date" class="col-2"/>
+                     <h:outputLabel value="G.R.N.No " class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.id}" class="col-4"/>
+                    <h:outputLabel value="G.R.N.Date/Time" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-4">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MM/YYYY HH:MM" />
                     </h:outputLabel>
                 </div>
-
                 <div class="row">
-                    <h:outputLabel value="P.O.Time" class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" class="col-3">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="G.R.N.Time" class="col-2"/>
-                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-4">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                    </h:outputLabel>
-                </div>
-
-
-                <div class="row">
-                    <h:outputLabel value="P.O.Approve By " class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.person.nameWithTitle}&nbsp;#{cc.attrs.bill.referenceBill.creater.webUserPerson.name} " class="col-3"/>
                     <h:outputLabel value="Invoice No" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="col-4"/>
-                </div>
-
-                <div class="row">
-                    <h:outputLabel value="Location" class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.name}" class="col-3"/>
-                    <h:outputLabel value="Supplier" class="col-2"/>
+                        <h:outputLabel value="Supplier" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="col-4"/>
                 </div>
 
                 <div class="row">
+                    <h:outputLabel value="Location" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.name}" class="col-4"/>
                     <h:outputLabel value="Payment Method" class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="col-2"/>
+                
+                </div>
+
+                <div class="row">
+                    
                     <h:outputLabel value="Consignment" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" class="col-4"/>
                 </div>
@@ -123,9 +110,10 @@
                             <th style="text-align: left!important;min-width: 34%; font-weight: bold!important;">Item</th>
                             <!--<th style="width: 4%; text-align: right!important; font-weight: bold!important;">Code</th>-->
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Expiry</th>
-                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Batch No.</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Order Qty</th>
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Last P.Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Discount Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Rate</th>

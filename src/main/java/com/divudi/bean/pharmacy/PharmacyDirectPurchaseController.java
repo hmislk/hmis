@@ -561,20 +561,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             // Convert pack rate to unit rate for profit calculation
             purchaseRatePerUnit = packPurchaseRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP);
+            // DEBUG: Log the values to identify AMPP calculation issue
 
             // DEBUG: Log the values to identify AMPP calculation issue
             System.out.println("DEBUG - Item: " + bi.getItem().getName() + " (AMPP)");
             System.out.println("DEBUG - Pack Purchase Rate (stored): " + packPurchaseRate);
             System.out.println("DEBUG - Units Per Pack: " + unitsPerPack);
             System.out.println("DEBUG - Purchase Rate Per Unit (calculated): " + purchaseRatePerUnit);
-            System.out.println("DEBUG - Retail Rate Per Unit: " + retailRatePerUnit);
         } else {
             // For AMP items, grossRate is already per unit
             purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
 
             System.out.println("DEBUG - Item: " + bi.getItem().getName() + " (AMP)");
             System.out.println("DEBUG - Purchase Rate Per Unit (stored): " + purchaseRatePerUnit);
-            System.out.println("DEBUG - Retail Rate Per Unit: " + retailRatePerUnit);
         }
 
         if (purchaseRatePerUnit.compareTo(BigDecimal.ZERO) == 0) {
@@ -587,7 +586,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         double result = margin.multiply(BigDecimal.valueOf(100)).doubleValue();
 
         System.out.println("DEBUG - Calculated Profit Margin: " + result + "%");
-        System.out.println("DEBUG - =====================================");
 
         return result;
     }
@@ -877,7 +875,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 continue;
             }
 
-            System.out.println("DirectPurchase: Processing item '" + i.getItem().getName() + "' (Type: " + i.getItem().getClass().getSimpleName() + ")");
 
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
