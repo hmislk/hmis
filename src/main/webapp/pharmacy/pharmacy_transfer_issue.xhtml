@@ -381,19 +381,9 @@
                             value="Print"
                             icon="fas fa-print"
                             class="ui-button-info mx-2"
-                            ajax="false"
-                            action="#"
-                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
+                            ajax="false">
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton
-                            value="#{transferIssueController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
-                            icon="fas fa-eye"
-                            class="ui-button-secondary mx-1"
-                            ajax="false"
-                            action="#{transferIssueController.toggleShowAllBillFormats}"
-                            rendered="#{webUserController.hasPrivilege('Developers')}"
-                            title="Toggle visibility of all bill formats for development" />
                         <p:commandButton
                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                             value="Settings"
@@ -405,26 +395,35 @@
                 </div>
 
                 <h:panelGroup   id="gpBillPreview" >
-                    <h:panelGroup 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper without details',false)}"
-                        class="noBorder">
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper', true)}"
+                        styleClass="noBorder">
                         <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
-                    <h:panelGroup 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with details',false)}"
-                        class="noBorder">
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper Detailed', false)}"
+                        styleClass="noBorder">
                         <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
+
                     <h:panelGroup
-                        id="gpBillPreviewPosHeader" 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with header',false)}"> 
-                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue POS Paper', false)}">
+                        <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
-                    <h:panelGroup 
-                        id="gpBillTemplate" 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
-                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
+
+                    <h:panelGroup id="gpBillPreviewPosHeader"
+                                  rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper', false)}">
+                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
+
+                    <h:panelGroup
+                        id="gpBillTemplate"
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template', false)}">
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+
                 </h:panelGroup>
             </p:panel>
 

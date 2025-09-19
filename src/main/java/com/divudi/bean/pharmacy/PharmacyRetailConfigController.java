@@ -142,9 +142,9 @@ public class PharmacyRetailConfigController implements Serializable {
 
         // Transfer Issue Settings
         transferIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue A4 Paper", true);
-        transferIssueA4PaperDetailed = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue A4 Paper Detailed", true);
-        transferIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue POS Paper", true);
-        transferIssuePosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", true);
+        transferIssueA4PaperDetailed = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue A4 Paper Detailed", false);
+        transferIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue POS Paper", false);
+        transferIssuePosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", false);
         transferIssueTemplate = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", false);
     }
 
