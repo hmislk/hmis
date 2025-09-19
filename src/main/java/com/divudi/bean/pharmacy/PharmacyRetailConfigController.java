@@ -53,6 +53,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
     // Settle Payment Settings
     private boolean settlePaymentPosPaper;
+    private boolean settlePaymentPosPaperCustom1;
     private boolean settlePaymentCustom1;
     private boolean settlePaymentCustom2;
     private boolean settlePaymentCustom3;
@@ -111,6 +112,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
         // Settle Payment Settings
         settlePaymentPosPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper", true);
+        settlePaymentPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1", false);
         settlePaymentCustom1 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 1", true);
         settlePaymentCustom2 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", true);
         settlePaymentCustom3 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", true);
@@ -167,6 +169,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
             // Settle Payment Settings
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper", settlePaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1", settlePaymentPosPaperCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 1", settlePaymentCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", settlePaymentCustom2);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", settlePaymentCustom3);
@@ -471,6 +474,14 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setTransferRequestCustom2(boolean transferRequestCustom2) {
         this.transferRequestCustom2 = transferRequestCustom2;
+    }
+
+    public boolean isSettlePaymentPosPaperCustom1() {
+        return settlePaymentPosPaperCustom1;
+    }
+
+    public void setSettlePaymentPosPaperCustom1(boolean settlePaymentPosPaperCustom1) {
+        this.settlePaymentPosPaperCustom1 = settlePaymentPosPaperCustom1;
     }
     
     
