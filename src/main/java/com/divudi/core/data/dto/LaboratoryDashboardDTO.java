@@ -1,9 +1,6 @@
 package com.divudi.core.data.dto;
 
-import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -17,49 +14,47 @@ public class LaboratoryDashboardDTO implements Serializable {
     private Long patientInvestigationId;
     private Long billId;
     private String billNumber;
+    private String bhtNo;
     private Date billDate;
     private String orderedInstitution;
     private String orderedDepaerment;
+    private String collectingCentre;
     private String investigationName;
-    private String billStatus;
+    private PatientInvestigationStatus billStatus;
     
     //Patient Variable
-    private String patientName;
-    private String patientAge;
-    private String patientGender;
-    private String patientMobileNo;
-    
-    
+    private Long patientId;
 
     public LaboratoryDashboardDTO() {
         
     }
 
+//  Use for Laboratory Doctor Dashboard
+//    1. List Investigtion
+//    2. List Patient Report
     public LaboratoryDashboardDTO(
             Long patientInvestigationId, 
             Long billId, 
             String billNumber, 
+            String bhtNo,
             Date billDate, 
             String orderedInstitution, 
             String orderedDepaerment, 
+            String collectingCentre, 
             String investigationName, 
-            String billStatus, 
-            String patientName, 
-            String patientAge, 
-            String patientGender, 
-            String patientMobileNo) {
+            PatientInvestigationStatus billStatus, 
+            Long patientId) {
         this.patientInvestigationId = patientInvestigationId;
         this.billId = billId;
         this.billNumber = billNumber;
+        this.bhtNo = bhtNo;
         this.billDate = billDate;
         this.orderedInstitution = orderedInstitution;
         this.orderedDepaerment = orderedDepaerment;
+        this.collectingCentre = collectingCentre;
         this.investigationName = investigationName;
         this.billStatus = billStatus;
-        this.patientName = patientName;
-        this.patientAge = patientAge;
-        this.patientGender = patientGender;
-        this.patientMobileNo = patientMobileNo;
+        this.patientId = patientId;
     }
     
     
@@ -123,46 +118,36 @@ public class LaboratoryDashboardDTO implements Serializable {
         this.investigationName = investigationName;
     }
 
-    public String getBillStatus() {
+    public String getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(String collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
+    public PatientInvestigationStatus getBillStatus() {
         return billStatus;
     }
 
-    public void setBillStatus(String billStatus) {
+    public void setBillStatus(PatientInvestigationStatus billStatus) {
         this.billStatus = billStatus;
     }
 
-    public String getPatientName() {
-        return patientName;
-    }
-
-    public void setPatientName(String patientName) {
-        this.patientName = patientName;
-    }
-
-    public String getPatientAge() {
-        return patientAge;
-    }
-
-    public void setPatientAge(String patientAge) {
-        this.patientAge = patientAge;
-    }
-
-    public String getPatientGender() {
-        return patientGender;
-    }
-
-    public void setPatientGender(String patientGender) {
-        this.patientGender = patientGender;
-    }
-
-    public String getPatientMobileNo() {
-        return patientMobileNo;
-    }
-
-    public void setPatientMobileNo(String patientMobileNo) {
-        this.patientMobileNo = patientMobileNo;
-    }
-
-    
-    
 }
