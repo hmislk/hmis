@@ -210,7 +210,10 @@
                                                   filterMatchMode="contains">
                                 <f:selectItems value="#{dealerController.allDealors}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
+
                             </p:selectCheckboxMenu>
+                            <br></br>
+                            
 
 
 <!--                            <p:autoComplete value="#{pharmacyReportController.fromInstitution}"
@@ -222,6 +225,7 @@
                                             var="sn" itemLabel="#{sn.name}" itemValue="#{sn}"
                                             />-->
                         </h:panelGrid>
+                        <p style="color: red; font-weight: 600">(Please Note: Here List All Suppliers Include Inactive and Retired.)</p>
 
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton
@@ -245,13 +249,13 @@
                                     target="tbl"/>
                             </p:commandButton>
 
-<!--                            <p:commandButton
-                                class="ui-button-danger mx-1"
-                                icon="fas fa-file-pdf"
-                                ajax="false"
-                                value="PDF"
-                                action="#{pharmacyReportController.exportStockLedgerToPdf()}">
-                            </p:commandButton>-->
+                            <!--                            <p:commandButton
+                                                            class="ui-button-danger mx-1"
+                                                            icon="fas fa-file-pdf"
+                                                            ajax="false"
+                                                            value="PDF"
+                                                            action="#{pharmacyReportController.exportStockLedgerToPdf()}">
+                                                        </p:commandButton>-->
 
                         </div>
                         <h:outputScript>
