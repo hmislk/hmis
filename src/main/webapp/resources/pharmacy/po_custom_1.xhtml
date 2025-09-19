@@ -63,9 +63,6 @@
                         <h:outputText value="Payment Method" />
                         <h:outputText value=":" />
                         <h:outputText value="#{cc.attrs.bill.paymentMethod}" />
-                        <h:outputText value="Consignment" />
-                        <h:outputText value=":" />
-                        <h:outputText value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
                     </h:panelGrid>
                 </div>
 
@@ -79,7 +76,7 @@
                         <!-- New Field: Order Department -->
                         <h:outputText value="Order Department" />
                         <h:outputText value=":" />
-                        <h:outputText value="#{cc.attrs.bill.department.name != null ? cc.attrs.bill.department.name : cc.attrs.bill.department.name}" />
+                        <h:outputText value="#{cc.attrs.bill.department.name}" />
 
                         <h:outputText value="P.O. Date" />
                         <h:outputText value=":" />
@@ -92,6 +89,9 @@
                         <h:outputText value="#{cc.attrs.bill.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputText>
+                        <h:outputText value="Consignment" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
                     </h:panelGrid>
                 </div>
             </div>
@@ -166,25 +166,25 @@
             </div>
 
             <div class="preparedBy" style="padding-left: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
-                <h:outputLabel style="margin-right: 30%;" value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
-                <h:outputLabel value="Created Date/Time:"/>
+                <h:outputLabel style="margin-right: 34%;" value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.name}"/>
+                <h:outputLabel value="Created Date/Time :&nbsp;&nbsp;"/>
                 <p:outputLabel value="#{sessionController.currentDate}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                 </p:outputLabel>
 
 
             </div>
 
-            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel value="Authorized By : #{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.nameWithTitle}"/>
+<!--            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
+                <h:outputLabel value="Authorized By : #{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.name}"/>
 
-            </div>
+            </div>-->
 
             <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel style="margin-right: 30%;" value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
-                <h:outputLabel value="Approved Date/Time:"/>
+                <h:outputLabel style="margin-right: 32%;" value="Approved By : #{cc.attrs.bill.creater.webUserPerson.name}"/>
+                <h:outputLabel value="Approved Date/Time :&nbsp;"/>
                 <p:outputLabel value="#{cc.attrs.bill.approveAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                 </p:outputLabel>
 
             </div>
@@ -197,21 +197,24 @@
 
                     <ol type="1">
                         <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
-                        <li>Comments: </li>
+                        <li>If unable to supply above goods within above period 10% penality will be claimed on invoice value.</li>
+                        <li>Good Receiving time - Monday to Friday 9.00 A.M to 3.30 P.M</li>
                     </ol>
 
                     <h5 style="color: #000000;">
-                        Good Receiving time - Monday to Friday 9.00 A.M to 3.30 P.M
+                        Comment :
                     </h5>
 
                 </p>
             </div>
             <div style="width: 90%; margin-top: 4px; margin-left: 5%" >
-                <div class="d-flex justify-content-center align-items-center" style="font-size: 11pt">
+                <div class="d-flex justify-content-end align-items-end" style="font-size: 11pt">
                     <h:outputLabel value="Printed At&nbsp;:&nbsp;"/>
                     <h:outputLabel value="#{sessionController.currentDate}" >
-                        <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
-                    </h:outputLabel>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                    </h:outputLabel>&nbsp;&nbsp;
+                    <h:outputLabel value="Printed By&nbsp;:&nbsp;"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
                 </div>
             </div>
         </div>

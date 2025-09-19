@@ -79,7 +79,7 @@
                         <!-- New Field: Order Department -->
                         <h:outputText value="Order Department" />
                         <h:outputText value=":" />
-                        <h:outputText value="#{cc.attrs.bill.department.name}" />
+                        <h:outputText value="#{cc.attrs.bill.department.name != null ? cc.attrs.bill.department.name : cc.attrs.bill.department.name}" />
 
                         <h:outputText value="P.O. Date" />
                         <h:outputText value=":" />
