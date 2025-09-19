@@ -83,7 +83,14 @@ public class DealerController implements Serializable {
     }
     
     public List<Institution> getAllDealors(){
-        return findAllDealors();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where "
+                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
+
+        m.put("t", InstitutionType.Dealer);
+        return getEjbFacade().findByJpql(sql, m);
     }
 
     public List<Institution> findAllDealors() {
