@@ -75,6 +75,13 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean transferRequestCustom1;
     private boolean transferRequestCustom2;
 
+    // Transfer Issue Settings
+    private boolean transferIssueA4Paper;
+    private boolean transferIssueA4PaperDetailed;
+    private boolean transferIssuePosPaper;
+    private boolean transferIssuePosHeaderPaper;
+    private boolean transferIssueTemplate;
+
     public PharmacyRetailConfigController() {
     }
     
@@ -132,6 +139,13 @@ public class PharmacyRetailConfigController implements Serializable {
         transferRequestA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", true);
         transferRequestCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 1", true);
         transferRequestCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 2", true);
+
+        // Transfer Issue Settings
+        transferIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue A4 Paper", true);
+        transferIssueA4PaperDetailed = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue A4 Paper Detailed", true);
+        transferIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue POS Paper", true);
+        transferIssuePosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", true);
+        transferIssueTemplate = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", false);
     }
 
     /**
@@ -189,13 +203,42 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 1", transferRequestCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is Custom 2", transferRequestCustom2);
 
+            // Transfer Issue Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue A4 Paper", transferIssueA4Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue A4 Paper Detailed", transferIssueA4PaperDetailed);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue POS Paper", transferIssuePosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", transferIssuePosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", transferIssueTemplate);
+
             JsfUtil.addSuccessMessage("Configuration saved successfully");
-            
+
             // Reload current values to ensure consistency
             loadCurrentConfig();
-            
+
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Transfer Issue configuration changes specifically
+     */
+    public void saveTransferIssueConfig() {
+        try {
+            // Transfer Issue Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue A4 Paper", transferIssueA4Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue A4 Paper Detailed", transferIssueA4PaperDetailed);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue POS Paper", transferIssuePosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", transferIssuePosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", transferIssueTemplate);
+
+            JsfUtil.addSuccessMessage("Transfer Issue configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Transfer Issue configuration: " + e.getMessage());
         }
     }
 
@@ -472,7 +515,46 @@ public class PharmacyRetailConfigController implements Serializable {
     public void setTransferRequestCustom2(boolean transferRequestCustom2) {
         this.transferRequestCustom2 = transferRequestCustom2;
     }
-    
-    
+
+    // Transfer Issue Getters and Setters
+    public boolean isTransferIssueA4Paper() {
+        return transferIssueA4Paper;
+    }
+
+    public void setTransferIssueA4Paper(boolean transferIssueA4Paper) {
+        this.transferIssueA4Paper = transferIssueA4Paper;
+    }
+
+    public boolean isTransferIssueA4PaperDetailed() {
+        return transferIssueA4PaperDetailed;
+    }
+
+    public void setTransferIssueA4PaperDetailed(boolean transferIssueA4PaperDetailed) {
+        this.transferIssueA4PaperDetailed = transferIssueA4PaperDetailed;
+    }
+
+    public boolean isTransferIssuePosPaper() {
+        return transferIssuePosPaper;
+    }
+
+    public void setTransferIssuePosPaper(boolean transferIssuePosPaper) {
+        this.transferIssuePosPaper = transferIssuePosPaper;
+    }
+
+    public boolean isTransferIssuePosHeaderPaper() {
+        return transferIssuePosHeaderPaper;
+    }
+
+    public void setTransferIssuePosHeaderPaper(boolean transferIssuePosHeaderPaper) {
+        this.transferIssuePosHeaderPaper = transferIssuePosHeaderPaper;
+    }
+
+    public boolean isTransferIssueTemplate() {
+        return transferIssueTemplate;
+    }
+
+    public void setTransferIssueTemplate(boolean transferIssueTemplate) {
+        this.transferIssueTemplate = transferIssueTemplate;
+    }
 
 }

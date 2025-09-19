@@ -12,9 +12,10 @@
             <ui:define name="content">
                 <h:form>
                     
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}">
-                        <h1>Pharmacy Transfer Received can NOT be cancelled as per the configuration. Please search and enable the following configuration.</h1>
-                        <h1>Pharmacy Transfer Receives can be Cancelled</h1>
+                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}">
+                        <h:outputText value="Pharmacy Transfer Received can NOT be cancelled as per the configuration. Please search and enable the following configuration." styleClass="text-danger fw-bold"/>
+                        <br/>
+                        <h:outputText value="Pharmacy Transfer Receives can be Cancelled" styleClass="text-info fw-bold"/>
                     </h:panelGroup>
                     
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}">
