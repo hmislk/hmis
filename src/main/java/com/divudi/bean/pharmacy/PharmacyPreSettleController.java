@@ -903,13 +903,26 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
 
-            if (paymentMethodData.getStaffCredit().getToStaff() != null && getPreBill().getToStaff() == null) {
-                getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
-            } else if (paymentMethodData.getStaffCredit().getToStaff() == null && getPreBill().getToStaff() != null) {
-                paymentMethodData.getStaffCredit().setToStaff(getPreBill().getToStaff());
+            // Enhanced synchronization logic
+            if (getPaymentMethodData() != null && getPaymentMethodData().getStaffCredit() != null) {
+                if (paymentMethodData.getStaffCredit().getToStaff() != null && getPreBill().getToStaff() == null) {
+                    getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                } else if (paymentMethodData.getStaffCredit().getToStaff() == null && getPreBill().getToStaff() != null) {
+                    paymentMethodData.getStaffCredit().setToStaff(getPreBill().getToStaff());
+                }
             }
 
-            if (getPreBill().getToStaff() == null) {
+            // Check if staff is selected in either location
+            boolean staffSelected = false;
+            if (getPreBill().getToStaff() != null) {
+                staffSelected = true;
+            } else if (getPaymentMethodData() != null && getPaymentMethodData().getStaffCredit() != null && getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                // Synchronize one more time
+                getPreBill().setToStaff(getPaymentMethodData().getStaffCredit().getToStaff());
+                staffSelected = true;
+            }
+
+            if (!staffSelected) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
                 return true;
             }
@@ -978,6 +991,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             // This will auto-initialize staffCredit if null
             getPaymentMethodData().getStaffCredit();
+
+            // Synchronize staff selection if it exists in preBill but not in paymentMethodData
+            if (getPreBill().getToStaff() != null && getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                getPaymentMethodData().getStaffCredit().setToStaff(getPreBill().getToStaff());
+            }
         }
 
         if (getPreBill().getPaymentMethod() != null) {
@@ -1512,6 +1530,21 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 setPreBill(args);
                 getPreBill().setPaymentMethod(args.getPaymentMethod());
                 getPreBill().setPaymentScheme(args.getPaymentScheme());
+
+                // Extract and assign staff for Staff_Welfare payment method
+                if (args.getPaymentMethod() == PaymentMethod.Staff_Welfare && args.getToStaff() != null) {
+                    // Assign staff to preBill
+                    getPreBill().setToStaff(args.getToStaff());
+
+                    // Initialize PaymentMethodData and assign staff to payment method data
+                    if (getPaymentMethodData() == null) {
+                        setPaymentMethodData(new PaymentMethodData());
+                    }
+                    getPaymentMethodData().getStaffCredit().setToStaff(args.getToStaff());
+
+                    System.out.println("Staff extracted from pre-bill and assigned: " + args.getToStaff().getPerson().getName());
+                }
+
                 billSettlingStarted.set(false);
 //                paymentMethod = getPreBill().getPaymentMethod();
                 return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
@@ -1745,8 +1778,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public void calTotals() {
         // Synchronize staff selection for Staff_Welfare payment method
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            if (paymentMethodData != null && paymentMethodData.getStaffCredit() != null && paymentMethodData.getStaffCredit().getToStaff() != null) {
-                getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+            // Ensure PaymentMethodData is initialized
+            if (getPaymentMethodData() != null && getPaymentMethodData().getStaffCredit() != null) {
+                // Get the selected staff from the payment method data
+                if (getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                    // Synchronize to preBill.toStaff for validation
+                    getPreBill().setToStaff(getPaymentMethodData().getStaffCredit().getToStaff());
+                    System.out.println("Staff synchronized: " + getPreBill().getToStaff().getPerson().getName());
+                }
             }
         }
         calculateAllRates();
