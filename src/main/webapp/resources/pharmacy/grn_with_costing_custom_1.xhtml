@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div  style="width: 210mm; border: 1px solid red;">
+        <div  style="width: 210mm; ">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
@@ -346,7 +346,7 @@
 
             <div class="preparedBy mt-3">
                 <h:outputLabel 
-                    value="Prepared By :&nbsp;#{cc.attrs.bill.creater.code}"
+                    value="Prepared By :&nbsp;#{cc.attrs.bill.creater.name}"
                     style="text-align: right!important;"/>&nbsp;
                 <h:outputLabel value="Prepared At :" style="text-align: right!important;">
                 </h:outputLabel>
@@ -357,12 +357,12 @@
             </div>
 
             <div class="mb-5">
-                <h:outputLabel value="Printed By &nbsp;&nbsp;:&nbsp;#{sessionController.loggedUser.code}" style="text-align: right!important;"/>&nbsp;&nbsp;
+                <h:outputLabel value="Printed By &nbsp;&nbsp;:&nbsp;#{sessionController.loggedUser.name}" style="text-align: right!important;"/>&nbsp;&nbsp;
                 <h:outputLabel value="Printed At : &nbsp;" style="text-align: right!important;"/>
                 <h:outputLabel value="#{sessionController.currentDate}" style="text-align: right!important;">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                 </h:outputLabel>&nbsp;<br/>
-                <h:outputLabel value="Authorized By :#{cc.attrs.bill.approveUser.code}"/>
+                <h:outputLabel value="Authorized By :#{cc.attrs.bill.approveUser.name}"/>
                 
             </div>
             <div class="row my-5">

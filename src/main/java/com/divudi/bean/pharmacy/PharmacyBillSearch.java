@@ -504,7 +504,13 @@ public class PharmacyBillSearch implements Serializable {
         
         this.bill = bill;
         
-        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
+        if(bill.getBillType() == BillType.PurchaseReturn){
+            return "/pharmacy/pharmacy_reprint_purchase_return?faces-redirect=true";
+        }else{
+            return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
+        }
+ 
+        
     }
 
     public String cancelInwardPharmacyRequestBillFromInward() {
