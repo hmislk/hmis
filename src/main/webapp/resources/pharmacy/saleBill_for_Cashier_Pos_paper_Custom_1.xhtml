@@ -31,7 +31,7 @@
                  font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
-            <div class="institutionContact" >
+<!--            <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
@@ -48,10 +48,10 @@
                     <h:outputLabel value="#{cc.attrs.bill.institution.email}/"/> 
                     <h:outputLabel value="&nbsp;#{cc.attrs.bill.institution.web}" ></h:outputLabel>                                              
                 </div>
-            </div>
+            </div>-->
 
             <div class="headingBill">
-                <h:outputLabel value="Sale Bill"   />   
+                <h:outputLabel value="Sale for Cashier Bill"   />   
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -60,7 +60,7 @@
             </div>
             <h:panelGroup rendered="#{not empty pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill)}">
                 <div class="billline" >
-                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px; padding: 0px;"/>
+                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
                 </div>
             </h:panelGroup>
 
@@ -176,9 +176,9 @@
                                 <h:outputLabel value="RATE"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
                             </td>
 
-                            <td  style="width:22%;text-align: right;">
+<!--                            <td  style="width:22%;text-align: right;">
                                 <h:outputLabel value="VALUE"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
-                            </td>
+                            </td>-->
                         </h:panelGroup>
                     </tr>
                     <tr>
@@ -212,11 +212,11 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                                <td  styleClass="itemsBlockRight" style="text-align: right; width: 42%" >
+<!--                                <td  styleClass="itemsBlockRight" style="text-align: right; width: 42%" >
                                     <h:outputLabel    value="#{bip.grossValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </td>
+                                </td>-->
                             </h:panelGroup>
                         </tr>
                     </ui:repeat>
@@ -232,7 +232,7 @@
 
             <div style="width: 90%; padding-left: 5%;" >
                 <table width="100%" >
-                    <tr>
+<!--                    <tr>
                         <td class="totalsItemBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Total" />
                         </td>
@@ -241,7 +241,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
-                    </tr>
+                    </tr>-->
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total On Pharmacy Sale Bill For Cashier')}">
 
                         <tr>
@@ -356,9 +356,9 @@
 
 
             <div class="footer">
-                Return accepted within 3 days only
+<!--                Return accepted within 3 days only
                 <br/>
-                THANK YOU !
+                THANK YOU !-->
                 <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
