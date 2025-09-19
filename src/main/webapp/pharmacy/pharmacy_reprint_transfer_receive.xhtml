@@ -46,6 +46,7 @@
                                     icon="fas fa-cancel"
                                     class="ui-button-danger mx-2 mb-2"
                                     action="pharmacy_cancel_transfer_receive"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}"
                                     disabled="#{pharmacyBillSearch.bill.cancelled}">
                                 </p:commandButton>
                                 <p:commandButton
