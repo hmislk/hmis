@@ -969,6 +969,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public double checkAndUpdateBalance() {
+        // Initialize PaymentMethodData if needed
+        if (getPaymentMethodData() == null) {
+            setPaymentMethodData(new PaymentMethodData());
+        }
+
+        // Initialize StaffCredit for Staff_Welfare payment method
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            // This will auto-initialize staffCredit if null
+            getPaymentMethodData().getStaffCredit();
+        }
+
         if (getPreBill().getPaymentMethod() != null) {
             switch (getPreBill().getPaymentMethod()) {
                 case Cash:
@@ -993,6 +1004,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 case MultiplePaymentMethods:
                     cashPaid = 0;
                     balance = getPreBill().getNetTotal() - calculateMultiplePaymentMethodTotal();
+                    break;
+                case Staff_Welfare:
+                    cashPaid = 0;
+                    balance = 0; // Staff welfare covers the full amount
                     break;
             }
         }
@@ -1725,6 +1740,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted.set(billSettlingStarted);
+    }
+
+    public void calTotals() {
+        // Synchronize staff selection for Staff_Welfare payment method
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            if (paymentMethodData != null && paymentMethodData.getStaffCredit() != null && paymentMethodData.getStaffCredit().getToStaff() != null) {
+                getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+            }
+        }
+        calculateAllRates();
+        checkAndUpdateBalance();
     }
 
 }
