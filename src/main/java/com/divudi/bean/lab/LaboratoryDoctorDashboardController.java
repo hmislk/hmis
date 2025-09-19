@@ -6,6 +6,7 @@ import com.divudi.bean.common.ReportTimerController;
 import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.data.PatientReportLight;
 import com.divudi.core.data.ReportType;
+import com.divudi.core.data.dto.LaboratoryDashboardDTO;
 import com.divudi.core.data.lab.BillBarcode;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -170,26 +171,47 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     }
 
     public void searchPatientInvestigations() {
+        System.out.println("searchPatientInvestigations = " );
         items = new ArrayList();
 
         if (sampleId != null) {
             try {
+                System.out.println("try");
                 Long id = Long.valueOf(sampleId);
                 searchPatientInvestigationsWithSampleId(id);
             } catch (NumberFormatException e) {
+                System.out.println("catch = ");
                 searchPatientInvestigationsWithoutSampleId();
             }
         }
         
     }
+    
+    private List<LaboratoryDashboardDTO> patientInvestigationsDtos;
 
     public void searchPatientInvestigationsWithSampleId(Long sampleID) {
+        System.out.println("searchPatientInvestigationsWithSampleId");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        patientInvestigationsDtos = new ArrayList<>();
+        
         // Query PatientSampleComponent to get PatientInvestigations
-        jpql = "SELECT new com.divudi.core.data.dto.PharmacyIncomeBillDTO( psc.patientInvestigation.) "
+        jpql = "SELECT new com.divudi.core.data.dto.LaboratoryDashboardDTO( "
+                + " psc.patientInvestigation.id, "
+                + " psc.patientInvestigation.billItem.bill.id, "
+                + " psc.patientInvestigation.billItem.bill.deptId, "
+                + " psc.patientInvestigation.billItem.bill.patientEncounter.bhtNo, "
+                + " psc.patientInvestigation.billItem.bill.createdAt, "
+                + " psc.patientInvestigation.billItem.bill.institution.name, "
+                + " psc.patientInvestigation.billItem.bill.department.name, "
+                + " psc.patientInvestigation.billItem.bill.collectingCentre.name, "
+                + " psc.patientInvestigation.investigation.name, "
+                + " psc.patientInvestigation.status, "
+                + " psc.patientInvestigation.billItem.bill.patient.id "
+                + " ) "
+                
                 + "FROM PatientSampleComponant psc "
                 + " join psc.patientInvestigation i "
                 + " WHERE psc.retired = :ret "
@@ -271,17 +293,30 @@ public class LaboratoryDoctorDashboardController implements Serializable {
 
         params.put("ret", false);
 
-        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+        patientInvestigationsDtos = (List<LaboratoryDashboardDTO>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("patientInvestigationsDtos = " + patientInvestigationsDtos);
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {
-        
+        System.out.println("searchPatientInvestigationsWithoutSampleId");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        jpql = "SELECT i "
+        jpql = "SELECT new com.divudi.core.data.dto.LaboratoryDashboardDTO( "
+                + " i.id, "
+                + " i.billItem.bill.id, "
+                + " i.billItem.bill.deptId, "
+                + " i.billItem.bill.patientEncounter.bhtNo, "
+                + " i.billItem.bill.createdAt, "
+                + " i.billItem.bill.institution.name, "
+                + " i.billItem.bill.department.name, "
+                + " i.billItem.bill.collectingCentre.name, "
+                + " i.investigation.name, "
+                + " i.status, "
+                + " i.billItem.bill.patient.id "
+                + " ) "
+                
                 + " FROM PatientInvestigation i "
                 + " WHERE i.retired = :ret "
                 + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
@@ -357,7 +392,8 @@ public class LaboratoryDoctorDashboardController implements Serializable {
 
         params.put("ret", false);
 
-        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        patientInvestigationsDtos = (List<LaboratoryDashboardDTO>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("patientInvestigationsDtos = " + patientInvestigationsDtos);
         
     }
 
@@ -874,5 +910,13 @@ public class LaboratoryDoctorDashboardController implements Serializable {
 
     public void setSampleReceiveFromDepartment(Department sampleReceiveFromDepartment) {
         this.sampleReceiveFromDepartment = sampleReceiveFromDepartment;
+    }
+
+    public List<LaboratoryDashboardDTO> getPatientInvestigationsDtos() {
+        return patientInvestigationsDtos;
+    }
+
+    public void setPatientInvestigationsDtos(List<LaboratoryDashboardDTO> patientInvestigationsDtos) {
+        this.patientInvestigationsDtos = patientInvestigationsDtos;
     }
 }
