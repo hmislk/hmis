@@ -112,6 +112,7 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
+import com.divudi.bean.pharmacy.GrnCostingController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.pharmacy.PreReturnController;
@@ -279,6 +280,8 @@ public class BillSearch implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     PreReturnController preReturnController;
+    @Inject
+    GrnCostingController grnCostingController;
     /**
      * Class Variables
      */
@@ -4031,7 +4034,7 @@ public class BillSearch implements Serializable {
 //            case PHARMACY_DIRECT_PURCHASE:
 //            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
 //            case PHARMACY_DIRECT_PURCHASE_REFUND:
-            case PHARMACY_GRN:
+//            case PHARMACY_GRN:
             case PHARMACY_GRN_PRE:
             case PHARMACY_GRN_WHOLESALE:
 //            case PHARMACY_GRN_CANCELLED:
@@ -4128,6 +4131,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyRetailSaleReturnItemOnly();
             case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
                 return "/pharmacy/printing/settle_retail_sale_for_cashier";
+            case PHARMACY_GRN:
+                return navigateToPharmacyGrnBillView();
 
         }
 
@@ -4509,6 +4514,18 @@ public class BillSearch implements Serializable {
         pharmacyPurchaseController.setPrintPreview(true);
         pharmacyPurchaseController.setBill(bb);
         return "/pharmacy/pharmacy_purchase";
+    }
+    public String navigateToPharmacyGrnBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        BilledBill bb = (BilledBill) bill;
+        viewingBill = billBean.fetchBill(bb.getId());
+        loadBillDetails(bb);
+        grnCostingController.setPrintPreview(true);
+        grnCostingController.setCurrentGrnBillPre(bb);
+        return "/pharmacy/pharmacy_grn_costing_with_save_approve";
     }
 
     public String navigateToDonationBillView() {

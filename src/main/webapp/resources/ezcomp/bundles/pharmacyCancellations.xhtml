@@ -15,6 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+
         <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
             <table class="table w-100">
                 <thead>
@@ -28,17 +29,6 @@
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
-
-            <table class="table w-100">
-                <thead>
-                    <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark">
-                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                        </th>
-                    </tr>
-                </thead>
-            </table>
-
             <p:dataTable id="tbl"
                          class="w-100 m-2"
                          value="#{cc.attrs.bundle.reportTemplateRows}"
@@ -76,7 +66,7 @@
                     <f:facet name="header">
                         <h:outputText value="Bill No" />
                     </f:facet>
-                    <h:outputText value="#{row.bill}" />
+                    <h:outputText value="#{row.bill.deptId}" />
                 </p:column>
 
                 <p:column>
@@ -110,7 +100,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column class="text-end"  sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"  rendered="#{cc.attrs.bundle.hasCashTransaction}" >
+                <p:column class="text-end"   rendered="#{cc.attrs.bundle.hasCashTransaction}" >
                     <f:facet name="header">
                         <h:outputText value="Cash" />
                     </f:facet>
@@ -124,7 +114,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Card" sortBy="#{row.cardValue}" filterBy="#{row.cardValue}"  rendered="#{cc.attrs.bundle.hasCardTransaction}" >
+                <p:column  class="text-end"  headerText="Card"  rendered="#{cc.attrs.bundle.hasCardTransaction}" >
                     <h:outputText value="#{row.cardValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -135,7 +125,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Credit" sortBy="#{row.creditValue}" filterBy="#{row.creditValue}"  rendered="#{cc.attrs.bundle.hasCreditTransaction}" >
+                <p:column  class="text-end"  headerText="Credit" rendered="#{cc.attrs.bundle.hasCreditTransaction}" >
                     <h:outputText value="#{row.creditValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -147,7 +137,7 @@
                 </p:column>
 
                 <!-- Continuing from Credit -->
-                <p:column  class="text-end"  headerText="Staff Welfare" sortBy="#{row.staffWelfareValue}" filterBy="#{row.staffWelfareValue}"  rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}" >
+                <p:column  class="text-end"  headerText="Staff Welfare"   rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}" >
                     <h:outputText value="#{row.staffWelfareValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -158,7 +148,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Voucher" sortBy="#{row.voucherValue}" filterBy="#{row.voucherValue}"  rendered="#{cc.attrs.bundle.hasVoucherTransaction}" >
+                <p:column  class="text-end"  headerText="Voucher"  rendered="#{cc.attrs.bundle.hasVoucherTransaction}" >
                     <h:outputText value="#{row.voucherValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -169,7 +159,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="IOU" sortBy="#{row.iouValue}" filterBy="#{row.iouValue}"  rendered="#{cc.attrs.bundle.hasIouTransaction}" >
+                <p:column  class="text-end"  headerText="IOU"   rendered="#{cc.attrs.bundle.hasIouTransaction}" >
                     <h:outputText value="#{row.iouValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -180,7 +170,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Agent" sortBy="#{row.agentValue}" filterBy="#{row.agentValue}"  rendered="#{cc.attrs.bundle.hasAgentTransaction}" >
+                <p:column  class="text-end"  headerText="Agent"  rendered="#{cc.attrs.bundle.hasAgentTransaction}" >
                     <h:outputText value="#{row.agentValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -191,7 +181,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Cheque" sortBy="#{row.chequeValue}" filterBy="#{row.chequeValue}"  rendered="#{cc.attrs.bundle.hasChequeTransaction}" >
+                <p:column  class="text-end"  headerText="Cheque"   rendered="#{cc.attrs.bundle.hasChequeTransaction}" >
                     <h:outputText value="#{row.chequeValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -202,7 +192,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Slip" sortBy="#{row.slipValue}" filterBy="#{row.slipValue}"  rendered="#{cc.attrs.bundle.hasSlipTransaction}" >
+                <p:column  class="text-end"  headerText="Slip"  rendered="#{cc.attrs.bundle.hasSlipTransaction}" >
                     <h:outputText value="#{row.slipValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -213,7 +203,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="eWallet" sortBy="#{row.ewalletValue}" filterBy="#{row.ewalletValue}"  rendered="#{cc.attrs.bundle.hasEWalletTransaction}" >
+                <p:column  class="text-end"  headerText="eWallet"   rendered="#{cc.attrs.bundle.hasEWalletTransaction}" >
                     <h:outputText value="#{row.ewalletValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -224,7 +214,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Patient Deposit" sortBy="#{row.patientDepositValue}" filterBy="#{row.patientDepositValue}"  rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}" >
+                <p:column  class="text-end"  headerText="Patient Deposit" rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}" >
                     <h:outputText value="#{row.patientDepositValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -235,7 +225,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Patient Points" sortBy="#{row.patientPointsValue}" filterBy="#{row.patientPointsValue}"  rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}" >
+                <p:column  class="text-end"  headerText="Patient Points" rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}" >
                     <h:outputText value="#{row.patientPointsValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -246,7 +236,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" filterBy="#{row.onlineSettlementValue}"  rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" >
+                <p:column  class="text-end"  headerText="Online Settlement" rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" >
                     <h:outputText value="#{row.onlineSettlementValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
@@ -259,6 +249,7 @@
 
             </p:dataTable>
         </h:panelGroup>
+
 
 
     </cc:implementation>
