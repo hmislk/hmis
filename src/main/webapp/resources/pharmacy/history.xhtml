@@ -53,12 +53,17 @@
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Block', true)}" >
                             <p:panel class="w-100" style="font-size: 15px;" >
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                    Stock
+                                    Stock*
                                 </div>
                                 <p:dataTable  value="#{pharmacyController.institutionStocks}" var="ins" class="w-100" style="padding: 0; background-color: lightgray" id="stock">
                                     <p:columnGroup type="header">
                                         <p:row>
                                             <p:column class="w-75">
+                                                <f:facet name="header">
+                                                    Site
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;" class="w-25">
                                                 <f:facet name="header">
                                                     Department Name
                                                 </f:facet>
@@ -74,6 +79,9 @@
                                         <f:facet name="header">
                                             #{ins.institution.name}
                                         </f:facet>
+                                         <p:column>
+                                            #{dep.department.site.name}
+                                        </p:column>
                                         <p:column>
                                             #{dep.department.name}
                                         </p:column>
@@ -600,7 +608,7 @@
                     class="w-100"  
                     activeIndex="0" 
                     style="border: 1px solid lightgray; padding: 10px;">
-                    
+
                     <p:tab 
                         title="Stock" 
                         id="itemDetailsTabStocks"
@@ -612,6 +620,11 @@
                                         <p:column >
                                             <f:facet name="header">
                                                 Department Name
+                                            </f:facet>
+                                        </p:column>
+                                         <p:column >
+                                            <f:facet name="header">
+                                                Site Name
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
@@ -626,6 +639,9 @@
                                         #{ins.institution.name}
                                     </f:facet>
                                     <p:column>
+                                        #{dep.department.site.name}
+                                    </p:column>
+                                     <p:column>
                                         #{dep.department.name}
                                     </p:column>
                                     <p:column style="text-align: right;">
@@ -667,7 +683,7 @@
                         </p:panel>
 
                     </p:tab>
-                    
+
                     <p:tab 
                         title="Sale" 
                         id="itemDetailsTabSales"
@@ -755,7 +771,7 @@
 
                         </p:dataTable>                
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabSaleItems"
                         title="Sale Bill Item" 
@@ -801,7 +817,7 @@
 
                         </p:dataTable>
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabWholesale"
                         title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
@@ -888,7 +904,7 @@
 
                         </p:dataTable>                
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabInpatient"
                         title="BHT Issue"
@@ -976,7 +992,7 @@
 
                         </p:dataTable>                
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabTransferIssue"
                         title="Transfer Issue" 
@@ -1064,7 +1080,7 @@
 
                         </p:dataTable>                
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabTransferReceive"
                         title="Transfer Receive"
@@ -1153,7 +1169,7 @@
 
                         </p:dataTable>                
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabConsuption"
                         title="Department Issue" 
@@ -1242,7 +1258,7 @@
 
                         </p:dataTable>                
                     </p:tab>
-                    
+
                     <p:tab 
                         id="itemDetailsTabGrn"
                         title="GRN" 
@@ -1520,7 +1536,7 @@
                             </p:column>  
                         </p:dataTable>
                     </p:tab>
-                    
+
                     <p:tab title="Pack Sizes" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pack Sizes Tab', true)}">
                         <p:dataTable value="#{pharmacyController.ampps}" var="p" >
                             <p:column>
