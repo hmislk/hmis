@@ -83,19 +83,6 @@
 
                     </tr>
 
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total Amount On Pharmacy Token')}">
-                        <tr>
-                            <td style="width: 30% ;text-align: right;" >
-                                <h:outputLabel value="Total" ></h:outputLabel>
-                            </td>
-                            <td style="width: 50px;" class="d-flex justify-content-center">:</td>
-                            <td style="width: 30%; text-align: left;" >
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}"  class="billDetails">
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
@@ -113,6 +100,20 @@
                             <td style="width: 50px;" class="d-flex justify-content-center">:</td>
                             <td style="width: 30%; text-align: left;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.phn}"  class="billDetails"></h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total Amount On Pharmacy Token')}">
+                        <tr>
+                            <td style="width: 30% ;text-align: right;" >
+                                <h:outputLabel value="Total" ></h:outputLabel>
+                            </td>
+                            <td style="width: 50px;" class="d-flex justify-content-center">:</td>
+                            <td style="width: 30%; text-align: left;" >
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}"  class="billDetails">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                             </td>
                         </tr>
                     </h:panelGroup>

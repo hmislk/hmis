@@ -1234,6 +1234,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public Token findTokenFromBill(Bill bill) {
         return tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
     }
+    
+    public String findTokenNumberFromBill(Bill bill) {
+        Token currentToken = tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+        return currentToken.getTokenNumber();
+    }
 
     public void markInProgress(Bill bill) {
         Token t = findTokenFromBill(bill);

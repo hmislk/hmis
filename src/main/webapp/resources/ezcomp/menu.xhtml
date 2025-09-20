@@ -1501,8 +1501,6 @@
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
 
-                    <!--                    agency management command link-->
-
                     <p:menuitem  
                         ajax="false"  
                         action="/agency_management/index?faces-redirect=true"
@@ -1518,7 +1516,6 @@
                         icon="fa-solid fa-globe"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-
 
                     <p:menuitem
                         ajax="false"
@@ -1536,7 +1533,6 @@
                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
 
                     <p:submenu label="Cash">
-
                         <p:menuitem  
                             ajax="false"  
                             action="/payments/recieve_index?faces-redirect=true"
