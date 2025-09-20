@@ -1371,13 +1371,12 @@
                                         <th rowspan="2">Supplier</th>
                                         <th rowspan="2">Item</th>
                                         <th colspan="2" class="text-center">Quantities</th>
-                                        <th colspan="3" class="text-center">Rates &amp; Value</th>
+                                        <th colspan="2" class="text-center">Rates &amp; Value</th>
                                     </tr>
                                     <tr>
                                         <th class="text-end">Qty Returned</th>
                                         <th class="text-end">Free Qty Returned</th>
-                                        <th class="text-end">Purchase Rate</th>
-                                        <th class="text-end">Sale Rate</th>
+                                        <th class="text-end">Return Rate</th>
                                         <th class="text-end">Return Value</th>
                                     </tr>
                                 </thead>
@@ -1417,11 +1416,6 @@
                                                 </h:outputText>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{dd2.saleRate}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
                                                 <h:outputText value="#{dd2.returnValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
@@ -1433,7 +1427,9 @@
                         </div>
                     </p:tab>
 
-                    <p:tab title="Purchase Orders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Tab', true)}">
+                    <p:tab
+                        title="Purchase Orders"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Tab', true)}">
 
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered" id="tblPurchaseOrders">

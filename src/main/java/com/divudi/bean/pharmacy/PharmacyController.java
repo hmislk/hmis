@@ -5409,8 +5409,8 @@ public class PharmacyController implements Serializable {
                 + "COALESCE(fd.freeQuantity, 0), "
                 + "pbi.purchaseRate, "
                 + "fd.retailSaleRate, "
-                + "fd.netRate, "
-                + "fd.netTotal "
+                + "COALESCE(fd.lineGrossRate, 0), "
+                + "COALESCE(fd.lineNetTotal, 0), "
                 + ") "
                 + "FROM BillItem bi "
                 + "LEFT JOIN bi.billItemFinanceDetails fd "
@@ -5604,8 +5604,9 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Creates the list of pending Purchase Orders (POs) that have not been fulfilled or cancelled.
-     * These are orders that are still waiting for goods to be received via GRN.
+     * Creates the list of pending Purchase Orders (POs) that have not been
+     * fulfilled or cancelled. These are orders that are still waiting for goods
+     * to be received via GRN.
      */
     public void createPendingPoDto() {
         System.out.println("  createPendingPoDto() - Starting...");
@@ -5708,8 +5709,9 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Creates the list of pending Goods Receipt Notes (GRNs) that have been created but not yet approved.
-     * These are GRNs where checked = false or null (not yet approved by management).
+     * Creates the list of pending Goods Receipt Notes (GRNs) that have been
+     * created but not yet approved. These are GRNs where checked = false or
+     * null (not yet approved by management).
      */
     public void createPendingGrnTable() {
         System.out.println("  createPendingGrnTable() - Starting...");
