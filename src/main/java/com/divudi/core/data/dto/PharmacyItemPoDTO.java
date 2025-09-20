@@ -30,6 +30,9 @@ public class PharmacyItemPoDTO implements Serializable {
     private Double completedFreeQty;
     private Double completedQty;
 
+    private Double remainingFreeQty;
+    private Double remainingQty;
+
     public PharmacyItemPoDTO() {
     }
 
@@ -42,7 +45,9 @@ public class PharmacyItemPoDTO implements Serializable {
             Double qty,
             Double freeQty,
             Double completedQty,
-            Double completedFreeQty) {
+            Double completedFreeQty,
+            Double remainingQty,
+            Double remainingFreeQty) {
         this.billId = billId;
         this.billDeptId = billDeptId;
         this.billCreatedAt = billCreatedAt;
@@ -53,6 +58,8 @@ public class PharmacyItemPoDTO implements Serializable {
         this.freeQty = freeQty;
         this.completedQty = completedQty;
         this.completedFreeQty = completedFreeQty;
+        this.remainingQty = remainingQty;
+        this.remainingFreeQty = remainingFreeQty;
     }
 
     public Long getBillId() {
@@ -134,6 +141,22 @@ public class PharmacyItemPoDTO implements Serializable {
     public void setCompletedQty(Double completedQty) {
         this.completedQty = completedQty;
     }
-    
-    
+
+    public Double getRemainingFreeQty() {
+        return remainingFreeQty;
+    }
+
+    public void setRemainingFreeQty(Double remainingFreeQty) {
+        this.remainingFreeQty = remainingFreeQty;
+    }
+
+    public Double getRemainingQty() {
+        return remainingQty;
+    }
+
+    public void setRemainingQty(Double remainingQty) {
+        this.remainingQty = remainingQty;
+    }
+
+
 }
