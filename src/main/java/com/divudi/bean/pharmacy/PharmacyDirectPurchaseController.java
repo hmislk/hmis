@@ -38,12 +38,10 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
-import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.core.util.BigDecimalUtil;
-import com.divudi.bean.pharmacy.PharmacyController;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -134,14 +132,42 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
+        // ChatGPT contributed
+        boolean allowAddingDirectPurchaseItemsWhenNormalQuantityIsZeroAndFreeQuantityIsPresent
+                = configOptionApplicationController.getBooleanValueByKey(
+                        "Allow Adding Direct Purchase Items When Normal Quantity Is Zero And Free Quantity Is Present",
+                        false
+                );
+        
         if (f == null || pbi == null) {
             JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
             return;
         }
 
-        if (BigDecimalUtil.isNullOrZero(f.getQuantity()) || BigDecimalUtil.isNegative(f.getQuantity())) {
-            JsfUtil.addErrorMessage("Please enter quantity");
+        // Quantity validation according to configuration
+        // Common: disallow negative quantities
+        if (BigDecimalUtil.isNegative(f.getQuantity())) {
+            JsfUtil.addErrorMessage("Quantity cannot be negative");
             return;
+        }
+        if (BigDecimalUtil.isNegative(f.getFreeQuantity())) {
+            JsfUtil.addErrorMessage("Free quantity cannot be negative");
+            return;
+        }
+        if (allowAddingDirectPurchaseItemsWhenNormalQuantityIsZeroAndFreeQuantityIsPresent) {
+            // Option true: require either quantity or free quantity to be present
+            boolean hasQty = BigDecimalUtil.isPositive(f.getQuantity());
+            boolean hasFree = BigDecimalUtil.isPositive(f.getFreeQuantity());
+            if (!(hasQty || hasFree)) {
+                JsfUtil.addErrorMessage("Please enter quantity or free quantity");
+                return;
+            }
+        } else {
+            // Option false: require quantity > 0; ignore free quantity
+            if (!BigDecimalUtil.isPositive(f.getQuantity())) {
+                JsfUtil.addErrorMessage("Please enter quantity");
+                return;
+            }
         }
 
         if (BigDecimalUtil.isNullOrZero(f.getLineGrossRate()) || BigDecimalUtil.isNegative(f.getLineGrossRate())) {
@@ -875,7 +901,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
-
 
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
