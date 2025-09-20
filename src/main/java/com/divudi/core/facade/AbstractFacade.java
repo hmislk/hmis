@@ -373,7 +373,14 @@ public abstract class AbstractFacade<T> {
     }
 
     public T find(Object id) {
-        return getEntityManager().find(entityClass, id);
+        if (id == null) {
+            return null;
+        }
+        try {
+            return getEntityManager().find(entityClass, id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public T findWithoutCache(Object id) {

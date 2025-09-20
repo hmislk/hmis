@@ -1340,7 +1340,14 @@
                                 #{pendingGrnRow.item.name}
                             </p:column>
                             <p:column headerText="Qty Received" class="text-end">
-                                #{pendingGrnRow.pharmaceuticalBillItem.qty}
+                                <h:outputText value="#{pendingGrnRow.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Free Qty Received" class="text-end">
+                                <h:outputText value="#{pendingGrnRow.pharmaceuticalBillItem.freeQty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Status">
                                 #{pendingGrnRow.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}
@@ -1462,23 +1469,29 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15" >
                             <p:column headerText="PO No">
-                                #{pendingPo.billDeptId}
+                                <p:outputLabel value="#{pendingPo.billDeptId}"></p:outputLabel>
                             </p:column>
                             <p:column headerText="PO Date">
                                 <p:outputLabel value="#{pendingPo.billCreatedAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Supplier">
-                                #{pendingPo.supplierName}
+                            <p:column headerText="Requested By">
+                                <p:outputLabel value="#{pendingPo.creatorName}"/>                                                                
                             </p:column>
-                            <p:column headerText="PO Qty" class="text-end"> 
+
+                            <p:column headerText="Supplier">
+                                <p:outputLabel value="#{pendingPo.supplierName}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="PO Qty" class="text-end">
                                 <h:outputText value="#{pendingPo.qty}">
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputText>
-                            </p:column> 
-                            <p:column headerText="Requested By">
-                                #{pendingPo.creatorName}
+                            </p:column>
+                            <p:column headerText="Free Qty" class="text-end">
+                                <h:outputText value="#{pendingPo.freeQty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
                             </p:column>
                         </p:dataTable>
                     </p:tab>
