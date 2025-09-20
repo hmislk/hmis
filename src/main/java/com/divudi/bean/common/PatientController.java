@@ -3063,7 +3063,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
      *
      * @param patient Patient whose name should be capitalized
      */
-    private void applyPatientNameCapitalization(Patient patient) {
+    public void applyPatientNameCapitalization(Patient patient) {
         if (patient == null || patient.getPerson() == null) {
             return;
         }
