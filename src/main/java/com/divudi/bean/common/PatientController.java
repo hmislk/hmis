@@ -2176,7 +2176,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Family is Selected");
             return null;
         }
-        currentFamily=family;
+        currentFamily = family;
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
@@ -2195,7 +2195,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String deleteFamilyMembershipAndMembers() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family is Selected");
-            return null ;
+            return null;
         }
         membershipService.deleteFamilyAndMembers(currentFamily, sessionController.getLoggedUser());
         families = null;
@@ -2986,17 +2986,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     /**
      * Applies patient name capitalization based on configuration settings
+     *
      * @param patient Patient whose name should be capitalized
      */
     public void applyPatientNameCapitalization(Patient patient) {
         if (patient == null || patient.getPerson() == null) {
             return;
         }
-        
+
         boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
         boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
         String personName = patient.getPerson().getName();
-        
+
         if (personName != null) {
             if (capitalizeAll) {
                 personName = personName.toUpperCase();
@@ -3245,7 +3246,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void saveSelectedPatient() {
         applyPatientNameCapitalization(getCurrent());
-        
+
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());

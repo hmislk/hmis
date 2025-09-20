@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.PaymentMethod;
@@ -100,7 +101,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
     @Inject
-    com.divudi.bean.common.PatientController patientController;
+    PatientController patientController;
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
