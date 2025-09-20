@@ -81,6 +81,17 @@ public class DealerController implements Serializable {
 
         return institutionList;
     }
+    
+    public List<Institution> getAllDealors(){
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where "
+                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
+
+        m.put("t", InstitutionType.Dealer);
+        return getEjbFacade().findByJpql(sql, m);
+    }
 
     public List<Institution> findAllDealors() {
 
@@ -88,7 +99,7 @@ public class DealerController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t order by c.name";
+                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
         //////// // System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         institutionList = getEjbFacade().findByJpql(sql, m);

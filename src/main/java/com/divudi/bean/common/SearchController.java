@@ -147,7 +147,7 @@ public class SearchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
@@ -4146,7 +4146,7 @@ public class SearchController implements Serializable {
             jpql += " and  (upper(b.toDepartment.name) like :toDept )";
             params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             jpql += " and  (upper(b.department.name) like :dept )";
             params.put("dept", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
@@ -4404,7 +4404,6 @@ public class SearchController implements Serializable {
         params.put("toDep", getSessionController().getDepartment());
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
-
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql += " and ((b.deptId) like :billNo)";
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
@@ -4416,12 +4415,9 @@ public class SearchController implements Serializable {
         }
 
         jpql += " order by b.createdAt desc";
-        
 
-        
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
-        
-        
+
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {
                 dto.setIssuedBills(fetchIssuedBillDtos(dto.getBillId()));
@@ -4453,14 +4449,11 @@ public class SearchController implements Serializable {
         HashMap<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.PHARMACY_ISSUE);
         params.put("rid", requestId);
-        
-        
+
         List<PharmacyTransferRequestIssueDTO> result = (List<PharmacyTransferRequestIssueDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
-        
+
         return result;
     }
-    
 
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
@@ -4916,12 +4909,12 @@ public class SearchController implements Serializable {
 
         // Set bill type atomics for pharmacy adjustments
         List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
-            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
-            BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
-            BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
-            BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
-            BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
-            BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
         );
         m.put("billTypeAtomics", billTypeAtomics);
 
@@ -5373,22 +5366,22 @@ public class SearchController implements Serializable {
         bills = null;
         return "/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyGrnApprove() {
         bills = null;
         return "/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyGrnListForReturn() {
         bills = null;
         return "/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyGrnReturnRequest() {
         bills = null;
         return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyPurchaseOrderReceive() {
         bills = null;
         return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
@@ -5421,18 +5414,18 @@ public class SearchController implements Serializable {
         sql += createKeySqlSearchForPoCancelDto(tmp);
 
         sql += " order by b.createdAt desc  ";
-        
+
         // Ensure all required parameters are set to prevent NullPointerException
         if (getToDate() == null || getFromDate() == null) {
             pharmacyPurchaseOrderDtos = new ArrayList<>();
             return;
         }
-        
+
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", InstitutionType.Dealer);
         tmp.put("bTp", BillType.PharmacyOrder);
-        
+
         if (sessionController != null && sessionController.getDepartment() != null) {
             tmp.put("dept", sessionController.getDepartment());
         } else {
@@ -6099,9 +6092,10 @@ public class SearchController implements Serializable {
     }
 
     /**
-     * @deprecated This method has been deprecated for security reasons.
-     * The "All Institution Search" functionality has been removed from pharmacy pages
-     * to prevent cross-institution access and maintain data security boundaries.
+     * @deprecated This method has been deprecated for security reasons. The
+     * "All Institution Search" functionality has been removed from pharmacy
+     * pages to prevent cross-institution access and maintain data security
+     * boundaries.
      */
     @Deprecated
     public void createGrnTableAllIns() {
@@ -6264,14 +6258,14 @@ public class SearchController implements Serializable {
                 + " and b.department = :dept "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.createdAt desc";
-        
+
         HashMap params = new HashMap();
         params.put("bTp", BillTypeAtomic.PHARMACY_GRN_PRE);
         params.put("completed", false);
         params.put("dept", sessionController.getDepartment());
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
-        
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
@@ -6279,7 +6273,7 @@ public class SearchController implements Serializable {
         bills = null;
         String jpql;
         HashMap params = new HashMap();
-        
+
         SearchKeyword sk = getSearchKeyword();
         if (sk == null || sk.getItem() == null) {
             jpql = "Select b From Bill b "
@@ -6544,7 +6538,6 @@ public class SearchController implements Serializable {
 
         return result;
     }
-
 
     private List<Bill> getIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
@@ -11785,10 +11778,9 @@ public class SearchController implements Serializable {
         }
 
     }
-    
+
     private boolean cancelled = false;
     private boolean refunded = false;
-    
 
     public void listBills() {
         bills = null;
@@ -11804,11 +11796,11 @@ public class SearchController implements Serializable {
             params.put("ins", institution);
             jpql.append(" and b.department.institution = :ins ");
         }
-        
+
         if (refunded) {
             params.put("ref", refunded);
             jpql.append(" and b.refunded = :ref ");
-        }else if (cancelled) {
+        } else if (cancelled) {
             params.put("can", cancelled);
             jpql.append(" and b.cancelled = :can ");
         }
@@ -15642,13 +15634,36 @@ public class SearchController implements Serializable {
             List<BillTypeAtomic> pharmacyRefunds = new ArrayList<>();
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+
 
             ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds, nonCreditPaymentMethods);
             pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
             pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
             bundle.getBundles().add(pharmacyServiceRefunds);
             collectionForTheDay += getSafeTotal(pharmacyServiceRefunds);
+
+// Generate Pharmacy service collection for credit and add to the main bundle
+            ReportTemplateRowBundle pharmacyServiceCollectionCredit = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, creditPaymentMethods);
+            pharmacyServiceCollectionCredit.setBundleType("cashierSummaryPharmacyCredit");
+            pharmacyServiceCollectionCredit.setName("Pharmacy Collection Bills - Credit");
+            bundle.getBundles().add(pharmacyServiceCollectionCredit);
+            collectionForTheDay += getSafeTotal(pharmacyServiceCollectionCredit);
+
+            // Generate OPD service cancellations for credit and add to the main bundle
+            ReportTemplateRowBundle pharmacyServiceCancellationsCredit = generatePaymentMethodColumnsByBills(pharmacyCancellations, creditPaymentMethods);
+            pharmacyServiceCancellationsCredit.setBundleType("pharmacyCancellationsCredit");
+            pharmacyServiceCancellationsCredit.setName("Pharmacy Cancellations - Credit");
+            bundle.getBundles().add(pharmacyServiceCancellationsCredit);
+            collectionForTheDay += getSafeTotal(pharmacyServiceCancellationsCredit);
+
+            // Generate OPD service refunds for credit and add to the main bundle
+            ReportTemplateRowBundle pharmacyServiceRefundsCredit = generatePaymentMethodColumnsByBills(pharmacyRefunds, creditPaymentMethods);
+            pharmacyServiceRefundsCredit.setBundleType("pharmacyRefundsCredit");
+            pharmacyServiceRefundsCredit.setName("Pharmacy Refunds - Credit");
+            bundle.getBundles().add(pharmacyServiceRefundsCredit);
+            collectionForTheDay += getSafeTotal(pharmacyServiceRefundsCredit);
 
 // Generate Professional Payments OPD and add to the main bundle
             List<BillTypeAtomic> professionalPaymentsOpd = new ArrayList<>();
@@ -15847,8 +15862,7 @@ public class SearchController implements Serializable {
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
             List<BillTypeAtomic> pharmacyCreditBills = new ArrayList<>();
             pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills, creditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills);
             pharmacyCreditBillsBundle.setBundleType("PharmacyCreditBills");
             pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
             bundle.getBundles().add(pharmacyCreditBillsBundle);
@@ -15856,7 +15870,7 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel, creditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel);
             pharmacyCreditCancelBundle.setBundleType("PharmacyCreditCancel");
             pharmacyCreditCancelBundle.setName("Pharmacy Credit Cancellations");
             bundle.getBundles().add(pharmacyCreditCancelBundle);
@@ -15864,14 +15878,11 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
-            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund);
             pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
             bundle.getBundles().add(pharmacyCreditRefundBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
-
-            // Calculate net cash collection
-            netCashCollection = collectionForTheDay;
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
@@ -15996,12 +16007,34 @@ public class SearchController implements Serializable {
             List<BillTypeAtomic> pharmacyRefunds = new ArrayList<>();
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
             ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds);
             pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
             pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
             bundle.getBundles().add(pharmacyServiceRefunds);
             collectionForTheDay += getSafeTotal(pharmacyServiceRefunds);
+
+// Generate Pharmacy service collection for credit and add to the main bundle
+            ReportTemplateRowBundle pharmacyServiceCollectionCredit = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, creditPaymentMethods);
+            pharmacyServiceCollectionCredit.setBundleType("cashierSummaryPharmacyCredit");
+            pharmacyServiceCollectionCredit.setName("Pharmacy Collection Bills - Credit");
+            bundle.getBundles().add(pharmacyServiceCollectionCredit);
+            collectionForTheDay += getSafeTotal(pharmacyServiceCollectionCredit);
+
+            // Generate Pharmacy service cancellations for credit and add to the main bundle
+            ReportTemplateRowBundle pharmacyServiceCancellationsCredit = generatePaymentMethodColumnsByBills(pharmacyCancellations, creditPaymentMethods);
+            pharmacyServiceCancellationsCredit.setBundleType("pharmacyCancellationsCredit");
+            pharmacyServiceCancellationsCredit.setName("Pharmacy Cancellations - Credit");
+            bundle.getBundles().add(pharmacyServiceCancellationsCredit);
+            collectionForTheDay += getSafeTotal(pharmacyServiceCancellationsCredit);
+
+            // Generate Pharmacy service refunds for credit and add to the main bundle
+            ReportTemplateRowBundle pharmacyServiceRefundsCredit = generatePaymentMethodColumnsByBills(pharmacyRefunds, creditPaymentMethods);
+            pharmacyServiceRefundsCredit.setBundleType("pharmacyRefundsCredit");
+            pharmacyServiceRefundsCredit.setName("Pharmacy Refunds - Credit");
+            bundle.getBundles().add(pharmacyServiceRefundsCredit);
+            collectionForTheDay += getSafeTotal(pharmacyServiceRefundsCredit);
 
 // Generate Professional Payments OPD and add to the main bundle
             List<BillTypeAtomic> professionalPaymentsOpd = new ArrayList<>();
@@ -16209,8 +16242,7 @@ public class SearchController implements Serializable {
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
             List<BillTypeAtomic> pharmacyCreditBills = new ArrayList<>();
             pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills, creditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills);
             pharmacyCreditBillsBundle.setBundleType("PharmacyCreditBills");
             pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
             bundle.getBundles().add(pharmacyCreditBillsBundle);
@@ -16218,7 +16250,7 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel, creditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel);
             pharmacyCreditCancelBundle.setBundleType("PharmacyCreditCancel");
             pharmacyCreditCancelBundle.setName("Pharmacy Credit Cancellations");
             bundle.getBundles().add(pharmacyCreditCancelBundle);
@@ -16226,7 +16258,7 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
-            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund);
             pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
             bundle.getBundles().add(pharmacyCreditRefundBundle);
@@ -16277,9 +16309,6 @@ public class SearchController implements Serializable {
             ChannelBookingsRefundBundle.setName("Channel Paid Bookings Refunds");
             bundle.getBundles().add(ChannelBookingsRefundBundle);
             collectionForTheDay -= getSafeTotal(ChannelBookingsRefundBundle);
-
-            // Calculate net cash collection
-            netCashCollection = collectionForTheDay;
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
@@ -19947,9 +19976,10 @@ public class SearchController implements Serializable {
                     .collect(Collectors.toList());
         }
     }
-    
+
     /**
      * Redacts potentially sensitive PII from parameter map for safe logging
+     *
      * @param parameters The parameter map to redact
      * @return A new map with sensitive values masked
      */
@@ -19957,13 +19987,13 @@ public class SearchController implements Serializable {
         if (parameters == null) {
             return null;
         }
-        
+
         Map<String, Object> redacted = new HashMap<>();
         Set<String> sensitiveKeys = new HashSet<>(Arrays.asList(
-            "patient", "person", "phone", "nic", "stf", "staffname", 
-            "patientname", "personname", "name", "email", "address"
+                "patient", "person", "phone", "nic", "stf", "staffname",
+                "patientname", "personname", "name", "email", "address"
         ));
-        
+
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             String key = entry.getKey().toLowerCase();
             if (sensitiveKeys.stream().anyMatch(key::contains)) {
@@ -19976,8 +20006,9 @@ public class SearchController implements Serializable {
     }
 
     /**
-     * Navigates to the pharmacy transfer request list page and refreshes the data.
-     * This ensures users see up-to-date fullyIssued status after completing an issue operation.
+     * Navigates to the pharmacy transfer request list page and refreshes the
+     * data. This ensures users see up-to-date fullyIssued status after
+     * completing an issue operation.
      */
     public String navigateToRequestListAndRefresh() {
         createRequestTableDto();

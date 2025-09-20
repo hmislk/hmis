@@ -64,6 +64,7 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
+    @Deprecated
     private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
@@ -1340,14 +1341,17 @@ public class TransferReceiveController implements Serializable {
         this.selectedBillItem = selectedBillItem;
     }
 
+    @Deprecated
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
 
+    @Deprecated
     public void setShowAllBillFormats(boolean showAllBillFormats) {
         this.showAllBillFormats = showAllBillFormats;
     }
 
+    @Deprecated
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";

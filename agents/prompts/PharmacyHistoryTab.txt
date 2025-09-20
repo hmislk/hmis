@@ -19,4 +19,11 @@ The old method createDirectPurchaseTable
 The new method createDirectPurchaseTableDto
 
 
+page \src\main\webapp\resources\pharmacy\history.xhtml - 
+datatable id="tablePendingPos"
+
+It needs new fields as given in the comments in each column by fixing jpql and creating a new constructor
+
+Relevant Controller - PharmacyController
+Relevant Method - createPendingDto()
 

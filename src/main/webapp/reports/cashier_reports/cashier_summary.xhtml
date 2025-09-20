@@ -254,99 +254,114 @@
                                 <h:panelGroup rendered="#{not empty myBundle.reportTemplateRows}">
 
 
-                                    <ez:cashierSummaryOpd bundle="#{myBundle}"
+                                    <ez:cashierSummaryOpd id="cashierSummaryOpd" bundle="#{myBundle}"
                                                           rendered="#{myBundle.bundleType eq 'cashierSummaryOpd'}"/>
-                                    <ez:opdServiceCancellations bundle="#{myBundle}"
+                                    <ez:opdServiceCancellations id="opdServiceCancellations" bundle="#{myBundle}"
                                                                 rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
-                                    <ez:opdServiceRefunds bundle="#{myBundle}"
+                                    <ez:opdServiceRefunds id="opdServiceRefunds" bundle="#{myBundle}"
                                                           rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
 
 
-                                    <!-- Credit Sections -->
-                                    <ez:opdServiceBilled bundle="#{myBundle}"
+                                    <!-- OPD Credit Sections -->
+                                    <ez:opdServiceBilled id="opdServiceBilledCredit" bundle="#{myBundle}"
                                                          rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
-                                    <ez:opdServiceCancellations bundle="#{myBundle}"
+                                    <ez:opdServiceCancellations id="opdServiceCancellationsCredit" bundle="#{myBundle}"
                                                                 rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
-                                    <ez:opdServiceRefunds bundle="#{myBundle}"
+                                    <ez:opdServiceRefunds id="opdServiceRefundsCredit" bundle="#{myBundle}"
                                                           rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
+
 
                                     <!-- Pharmacy Collections -->
                                     <ez:pharmacyCollection 
                                         id="panelPharmacyCollection"
                                         bundle="#{myBundle}"
                                         rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
-                                    <ez:pharmacyServiceCancellations bundle="#{myBundle}"
+                                    <ez:pharmacyServiceCancellations id="pharmacyServiceCancellations" bundle="#{myBundle}"
                                                                      rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
-                                    <ez:pharmacyServiceRefunds bundle="#{myBundle}"
-                                                               rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
+                                    <ez:pharmacyServiceRefunds 
+                                        id="pharmacyServiceRefunds"
+                                        bundle="#{myBundle}"
+                                        rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
+
+
+                                    <!-- Pharmacy Credit Sections -->
+
+                                    <ez:pharmacyBilled id="pharmacyBilledCredit" bundle="#{myBundle}"
+                                                       rendered="#{myBundle.bundleType eq 'cashierSummaryPharmacyCredit'}"/>
+                                    <ez:pharmacyCancellations id="pharmacyCancellationsCredit" bundle="#{myBundle}"
+                                                             rendered="#{myBundle.bundleType eq 'pharmacyCancellationsCredit'}"/>
+                                    <ez:pharmacyRefunds id="pharmacyRefundsCredit" bundle="#{myBundle}"
+                                                       rendered="#{myBundle.bundleType eq 'pharmacyRefundsCredit'}"/>
+
+
 
                                     <!-- Professional Payments OPD -->
-                                    <ez:professionalPaymentsOpd bundle="#{myBundle}"
-                                                                rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
-                                    <ez:professionalPaymentsOpdCancel bundle="#{myBundle}"
+                                    <ez:professionalPaymentsOpd id="professionalPaymentsOpd" bundle="#{myBundle}"
+                                                               rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
+                                    <ez:professionalPaymentsOpdCancel id="professionalPaymentsOpdCancel" bundle="#{myBundle}"
                                                                       rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPDCancel'}"/>
 
                                     <!-- Professional Payments Inward -->
-                                    <ez:professionalPaymentsInward bundle="#{myBundle}"
-                                                                   rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
-                                    <ez:professionalPaymentsInwardCancel bundle="#{myBundle}"
-                                                                         rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
+                                    <ez:professionalPaymentsInward id="professionalPaymentsInward" bundle="#{myBundle}"
+                                                                  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
+                                    <ez:professionalPaymentsInwardCancel id="professionalPaymentsInwardCancel" bundle="#{myBundle}"
+                                                                        rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
 
                                     <!-- Petty Cash Payments -->
-                                    <ez:pettyCashPayment bundle="#{myBundle}"
+                                    <ez:pettyCashPayment id="pettyCashPayment" bundle="#{myBundle}"
                                                          rendered="#{myBundle.bundleType eq 'PettyCashPayment'}"/>
-                                    <ez:pettyCashPaymentCancel bundle="#{myBundle}"
+                                    <ez:pettyCashPaymentCancel id="pettyCashPaymentCancel" bundle="#{myBundle}"
                                                                rendered="#{myBundle.bundleType eq 'PettyCashPaymentCancel'}"/>
 
                                     <!-- Inward Payments -->
-                                    <ez:inwardPayments bundle="#{myBundle}"
-                                                       rendered="#{myBundle.bundleType eq 'InwardPayments'}"/>
-                                    <ez:inwardPaymentsCancel bundle="#{myBundle}"
+                                    <ez:inwardPayments id="inwardPayments" bundle="#{myBundle}"
+                                                      rendered="#{myBundle.bundleType eq 'InwardPayments'}"/>
+                                    <ez:inwardPaymentsCancel id="inwardPaymentsCancel" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'InwardPaymentsCancel'}"/>
-                                    <ez:inwardPaymentsRefund bundle="#{myBundle}"
-                                                             rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
+                                    <ez:inwardPaymentsRefund id="inwardPaymentsRefund" bundle="#{myBundle}"
+                                                            rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
                                     <!-- Credit Company Payments OPD -->
-                                    <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}"
+                                    <ez:creditCompanyPaymentOpReceive id="creditCompanyPaymentOpReceive" bundle="#{myBundle}"
                                                                       rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
-                                    <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}"
-                                                                     rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
+                                    <ez:creditCompanyPaymentOpCancel id="creditCompanyPaymentOpCancel" bundle="#{myBundle}"
+                                                                    rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
 
                                     <!-- Credit Company Payments Inpatient -->
-                                    <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}"
+                                    <ez:creditCompanyPaymentIpReceive id="creditCompanyPaymentIpReceive" bundle="#{myBundle}"
                                                                       rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
-                                    <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}"
+                                    <ez:creditCompanyPaymentIpCancel id="creditCompanyPaymentIpCancel" bundle="#{myBundle}"
                                                                      rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
 
                                     <!-- Patient Deposits -->
-                                    <ez:patientDeposit bundle="#{myBundle}"
+                                    <ez:patientDeposit id="patientDeposit" bundle="#{myBundle}"
                                                        rendered="#{myBundle.bundleType eq 'PatientDeposit'}"/>
-                                    <ez:patientDepositCancel bundle="#{myBundle}"
+                                    <ez:patientDepositCancel id="patientDepositCancel" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PatientDepositCancel'}"/>
-                                    <ez:patientDepositRefund bundle="#{myBundle}"
+                                    <ez:patientDepositRefund id="patientDepositRefund" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PatientDepositRefund'}"/>
 
                                     <!-- Collecting Centre Payments -->
-                                    <ez:collectingCentrePaymentReceive bundle="#{myBundle}"
+                                    <ez:collectingCentrePaymentReceive id="collectingCentrePaymentReceive" bundle="#{myBundle}"
                                                                        rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
-                                    <ez:collectingCentrePaymentCancel bundle="#{myBundle}"
-                                                                      rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
+                                    <ez:collectingCentrePaymentCancel id="collectingCentrePaymentCancel" bundle="#{myBundle}"
+                                                                     rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
 
                                     <!-- OPD Credits -->
-                                    <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
-                                    <ez:opdCreditCancelled bundle="#{myBundle}"
+                                    <ez:opdCredit id="opdCredit" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
+                                    <ez:opdCreditCancelled id="opdCreditCancelled" bundle="#{myBundle}"
                                                            rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
-                                    <ez:opdCreditRefund bundle="#{myBundle}"
+                                    <ez:opdCreditRefund id="opdCreditRefund" bundle="#{myBundle}"
                                                         rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>
 
                                     <!-- Pharmacy Credit Bills -->
                                     <ez:pharmacyCreditBills
                                         id="panelPharmacyCreditBills"
                                         bundle="#{myBundle}"
-                                                            rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
-                                    <ez:pharmacyCreditCancel bundle="#{myBundle}"
+                                        rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
+                                    <ez:pharmacyCreditCancel id="pharmacyCreditCancel" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
-                                    <ez:pharmacyCreditRefund bundle="#{myBundle}"
+                                    <ez:pharmacyCreditRefund id="pharmacyCreditRefund" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
                                     <p:splitterPanel></p:splitterPanel>
@@ -355,8 +370,8 @@
                                 <h:panelGroup rendered="#{empty myBundle.reportTemplateRows}">
                                     <table class="table w-100">
                                         <thead>
-                                            <tr class="text-light bg-dark">
-                                                <th class="text-light bg-dark">
+                                            <tr class="text-light bg-secondary">
+                                                <th class="text-light bg-secondary">
                                                     <h:outputText value="No Data for #{myBundle.name}"></h:outputText>
                                                 </th>
                                             </tr>
@@ -367,7 +382,7 @@
                             </ui:repeat>
                         </h:panelGroup>
                         <!-- Net Cash Summary -->
-                        <ez:netCash  id="panelNetCollection" bundle="#{searchController.bundle}"/>
+                        <ez:netCash id="netCash" bundle="#{searchController.bundle}"/>
 
 
                     </p:panel>
