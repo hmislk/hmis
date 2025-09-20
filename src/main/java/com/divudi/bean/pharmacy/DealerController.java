@@ -18,10 +18,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -81,17 +79,6 @@ public class DealerController implements Serializable {
 
         return institutionList;
     }
-    
-    public List<Institution> getAllDealors(){
-        String sql;
-        Map m = new HashMap();
-
-        sql = "select c from Institution c where "
-                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
-
-        m.put("t", InstitutionType.Dealer);
-        return getEjbFacade().findByJpql(sql, m);
-    }
 
     public List<Institution> findAllDealors() {
 
@@ -99,7 +86,7 @@ public class DealerController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
+                + " c.institutionType =:t order by c.name";
         //////// // System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         institutionList = getEjbFacade().findByJpql(sql, m);
@@ -112,38 +99,19 @@ public class DealerController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void generateCodeForDealor(){
-        if(current == null){
-            JsfUtil.addErrorMessage("Please select or add a supplier first.");
-            return;
-        }
-
-        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "SUP");
+        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "Prefix/");
         List<Institution> allDealors = findAllDealors();
 
-        // Build HashSet of existing codes for O(1) lookup
-        Set<String> existingCodes = new HashSet<>();
-        for(Institution dealer : allDealors){
-            if(dealer.getInstitutionCode() != null){
-                existingCodes.add(dealer.getInstitutionCode().toUpperCase());
+        long number = allDealors.size();
+        String formattedNumber = String.format("%04d", number);
+
+        for(Institution i: allDealors){
+            if(i.getInstitutionCode().equalsIgnoreCase(prefix+formattedNumber)){
+                number++;
+                formattedNumber = String.format("%04d", number);
             }
         }
-
-        long number = 1;
-        String generatedCode;
-
-        // Find the next available code number using O(1) HashSet lookup
-        while(true){
-            String formattedNumber = String.format("%04d", number);
-            generatedCode = prefix + formattedNumber;
-
-            // O(1) check instead of O(n) loop
-            if(!existingCodes.contains(generatedCode.toUpperCase())){
-                current.setInstitutionCode(generatedCode);
-                JsfUtil.addSuccessMessage("Code generated successfully: " + generatedCode);
-                return;
-            }
-            number++;
-        }
+        current.setInstitutionCode(prefix+formattedNumber);
     }
 
     public void prepareAdd() {

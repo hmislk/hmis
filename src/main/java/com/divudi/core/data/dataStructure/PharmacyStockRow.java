@@ -65,7 +65,6 @@ public class PharmacyStockRow {
         this.saleValue = saleValue;
     }
 
-
     public Double getFreeQty() {
         return freeQty;
     }

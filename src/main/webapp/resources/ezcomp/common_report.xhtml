@@ -68,68 +68,19 @@
                     layout="block"
                     style=" #{myCli.description}"    >
                 </h:panelGroup>
-                
-                
-<!--            Patient Name-->
-                <h:panelGroup rendered="#{cc.attrs.patientReport.patientName eq null}">
-                    <h:outputText 
-                        rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  
-                        value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nameWithTitle}" 
-                        style="#{myCli.innerCssStyle};" 
-                        escape="false" >
-                    </h:outputText>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.patientReport.patientName ne null}">
-                    <h:outputText 
-                        rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  
-                        value="#{cc.attrs.patientReport.patientName}" 
-                        style="#{myCli.innerCssStyle};" 
-                        escape="false" >
-                    </h:outputText>
-                </h:panelGroup>
 
-<!--            Patient Gender-->
-                <h:panelGroup rendered="#{cc.attrs.patientReport.patientGender eq null}">
-                    <h:outputText 
-                        rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  
-                        value="#{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" 
-                        style="#{myCli.innerCssStyle};" 
-                        escape="false" >
-                    </h:outputText>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.patientReport.patientGender ne null}">
-                    <h:outputText 
-                        rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  
-                        value="#{cc.attrs.patientReport.patientGender}" 
-                        style="#{myCli.innerCssStyle};" 
-                        escape="false" >
-                    </h:outputText>
-                </h:panelGroup>
-
-<!--            Patient Age-->
-                <h:panelGroup rendered="#{cc.attrs.patientReport.patientAge eq null}">
-                    <h:outputText 
-                        rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  
-                        value="#{cc.attrs.patientReport.patientInvestigation.patient.ageOnBilledDate(cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt)}" 
-                        style="#{myCli.innerCssStyle};" 
-                        escape="false" >
-                    </h:outputText>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.patientReport.patientAge ne null}">
-                    <h:outputText 
-                        rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  
-                        value="#{cc.attrs.patientReport.patientAge}" 
-                        style="#{myCli.innerCssStyle};" escape="false" >
-                    </h:outputText>
-                </h:panelGroup>
-
-               
                 <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Phn' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Phone' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.phone}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAge' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.ageAsShortString}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.ageOnBilledDate(cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt)}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeandGender' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.ageAsShortString}  /  #{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'NicNo' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nic}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.sample.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >

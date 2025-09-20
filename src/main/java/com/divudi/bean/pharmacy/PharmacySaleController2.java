@@ -8,7 +8,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
@@ -113,9 +112,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     StockController stockController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    ConfigOptionController configOptionController;
-
     @Inject
     DrawerController drawerController;
     @Inject
@@ -979,6 +975,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             bi.setDiscountRate(calculateBillItemDiscountRate(bi));
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
 
+
             bi.setGrossValue(bi.getRate() * bi.getQty());
             bi.setDiscount(bi.getDiscountRate() * bi.getQty());
             bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
@@ -1164,9 +1161,9 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
                 return;
             }
         }
-        if (addedQty < requestedQty) {
+        if(addedQty < requestedQty){
             errorMessage = "Quantity is not Enough...!";
-            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) + " is Available form the Requested Quantity");
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) +" is Available form the Requested Quantity");
         }
 
     }
@@ -1689,7 +1686,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
-        if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier")) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
@@ -1762,7 +1759,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     @EJB
     private CashTransactionBean cashTransactionBean;
 
-    public boolean errorCheckOnPaymentMethod() {
+    public boolean errorCheckOnPaymentMethod(){
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -1794,6 +1791,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 //                return true;
 //            }
 //        }
+
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
@@ -2086,6 +2084,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 //        if (checkAllBillItem()) {
 //            return;
 //        }
+
         calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());

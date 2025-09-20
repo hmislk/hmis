@@ -9,18 +9,6 @@
 
 
     <ui:define name="subcontent">
-        <style>
-            .batch-color-0 { background-color: #f8f9fa !important; }
-            .batch-color-1 { background-color: #e3f2fd !important; }
-            .batch-color-2 { background-color: #f3e5f5 !important; }
-            .batch-color-3 { background-color: #e8f5e8 !important; }
-            .batch-color-4 { background-color: #fff3e0 !important; }
-            .batch-color-5 { background-color: #fce4ec !important; }
-            .batch-color-6 { background-color: #f1f8e9 !important; }
-            .batch-color-7 { background-color: #e0f2f1 !important; }
-            .batch-color-8 { background-color: #fafafa !important; }
-            .batch-color-9 { background-color: #eceff1 !important; }
-        </style>
 
         <h:form>
             <p:panel header="Pharmacy Bin Card" >
@@ -106,8 +94,7 @@
                              rowKey="#{sh.id}"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,20,50,100,500,1000"
-                             rowStyleClass="#{pharmacyErrorChecking.getBatchColorClass(sh.batchNo)}">
+                             rowsPerPageTemplate="10,20,50,100,500,1000">
 
 
                     <p:column 
@@ -137,45 +124,36 @@
                         <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
                     </p:column>
 
-                    <!-- Batch Number -->
-                    <p:column headerText="Batch Number" class="text-end">
-                        <h:outputText value="#{sh.batchNo}" />
+                    <!-- Item -->
+                    <p:column headerText="Item">
+                        <h:outputText value="#{sh.itemName}" />
                     </p:column>
-
-                    <!-- Quantity In -->
-                    <p:column headerText="Qty In" class="text-end">
-                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
-                                      rendered="#{sh.transThisIsStockIn}"
-                                      styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
+                    <p:column headerText="Qty In" styleClass="text-end">
+                        <h:outputText
+                            value="#{sh.transAbsoluteQtyPlusFreeQty}"
+                            rendered="#{sh.transThisIsStockIn}"
+                            styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <!-- Quantity Out -->
-                    <p:column headerText="Qty Out" class="text-end">
-                        <h:outputText 
-                            value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                    <p:column headerText="Qty Out" styleClass="text-end">
+                        <h:outputText
+                            value="#{sh.transAbsoluteQtyPlusFreeQty}"
                             rendered="#{sh.transThisIsStockOut}"
                             styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Batch Number" class="text-end">
-                        <h:outputText value="#{sh.batchNo}" />
-                    </p:column>
 
-                    <p:column headerText="Closing Stock for Batch" class="text-end">
-                        <h:outputText value="#{sh.stockQty}">
-                            <f:convertNumber pattern="#.#"/>
-                        </h:outputText>
-                    </p:column>
 
-                    <p:column headerText="Closing Stock for Item" class="text-end">
+                    <p:column headerText="Closing Stock" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
-                            <f:convertNumber pattern="#.#"/>
+                            <f:convertNumber pattern="#,##0.#"/>
                         </h:outputText>
                     </p:column>
+
 
 
                 </p:dataTable>

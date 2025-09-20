@@ -91,8 +91,6 @@ public class LabTestHistory implements Serializable {
     
     @ManyToOne
     private PatientSampleComponant sampleComponent;
-    
-    private String comment;
 
     public Long getId() {
         return id;
@@ -285,14 +283,6 @@ public class LabTestHistory implements Serializable {
 
     public void setEmail(AppEmail email) {
         this.email = email;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
     
 }

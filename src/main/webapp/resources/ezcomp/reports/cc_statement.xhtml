@@ -249,8 +249,8 @@
                     sortBy="#{agentHx.bill.fromInstitution.code}" 
                     filterBy="#{agentHx.bill.fromInstitution.code}" 
                     filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.agency.code}" rendered="#{agentHx.historyType eq 'RepaymentToCollectingCentre'}" style="text-align: right; display: block;"/>
-                    <h:outputText value="#{agentHx.bill.fromInstitution.code}" rendered="#{agentHx.historyType ne 'RepaymentToCollectingCentre'}" style="text-align: right; display: block;" />
+<!--                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>-->
+                    <h:outputText value="#{agentHx.bill.fromInstitution.code}" style="text-align: right; display: block;" />
                 </p:column>
 
                 <p:column
@@ -260,8 +260,7 @@
                     sortBy="#{agentHx.bill.fromInstitution.name}" 
                     filterBy="#{agentHx.bill.fromInstitution.name}" 
                     filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.agency.name}" rendered="#{agentHx.historyType eq 'RepaymentToCollectingCentre'}"/>
-                    <h:outputText value="#{agentHx.bill.fromInstitution.name}" rendered="#{agentHx.historyType ne 'RepaymentToCollectingCentre'}"/>
+                    <h:outputText value="#{agentHx.bill.fromInstitution.name}" />
                 </p:column>
 
                 <p:column 

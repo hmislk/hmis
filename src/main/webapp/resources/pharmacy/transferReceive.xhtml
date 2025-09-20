@@ -17,99 +17,92 @@
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div>
 
-<!--            <table style="width: 100%; border-collapse: collapse; font-size: 10pt !important;">-->
-<!--                &lt;!&ndash; Institution Details &ndash;&gt;-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center; font-weight: bold;">-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}"/>-->
-<!--                        <h:outputLabel value=" / " rendered="#{not empty cc.attrs.bill.creater.department.telephone2}"/>-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="Fax: #{cc.attrs.bill.creater.department.fax}"-->
-<!--                                       rendered="#{not empty cc.attrs.bill.creater.department.fax}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="Email: #{cc.attrs.bill.creater.department.email}"-->
-<!--                                       rendered="#{not empty cc.attrs.bill.creater.department.email}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
+            <table style="width: 100%; border-collapse: collapse; font-size: 10pt !important;">
+                <!-- Institution Details -->
+                <tr>
+                    <td colspan="2" style="text-align: center; font-weight: bold;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}"/>
+                        <h:outputLabel value=" / " rendered="#{not empty cc.attrs.bill.creater.department.telephone2}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="Fax: #{cc.attrs.bill.creater.department.fax}"
+                                       rendered="#{not empty cc.attrs.bill.creater.department.fax}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="Email: #{cc.attrs.bill.creater.department.email}"
+                                       rendered="#{not empty cc.attrs.bill.creater.department.email}"/>
+                    </td>
+                </tr>
 
-<!--                &lt;!&ndash; Bill Heading &ndash;&gt;-->
-<!--                <tr>-->
-<!--                    <td colspan="2"-->
-<!--                        style="text-align: center; font-size: 1.2em; text-decoration: underline;font-weight: bold;">-->
-<!--                        <h:outputLabel value="Transfer Receive Note"/>-->
-<!--                        <h:outputLabel value="**Cancelled**" style="color: red;"-->
-<!--                                       rendered="#{cc.attrs.bill.billedBill.cancelled eq true}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                &lt;!&ndash; Bill Details &ndash;&gt;-->
-<!--                <tr>-->
-<!--                    <td style="width: 50%; padding: 1px;">-->
-<!--                        <h:outputLabel value="Location From: #{cc.attrs.bill.fromDepartment.name}"/>-->
-<!--                    </td>-->
-<!--                    <td style="width: 50%; padding: 1px;">-->
-<!--                        <h:outputLabel value="Location To: #{cc.attrs.bill.department.name}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel value="Received Person: #{cc.attrs.bill.creater.webUserPerson.name}"/>-->
-<!--                    </td>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel-->
-<!--                            value="Issued Person: #{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel value="Receive No: #{cc.attrs.bill.deptId}"/>-->
-<!--                    </td>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel value="Issue No: #{cc.attrs.bill.backwardReferenceBill.deptId}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:panelGroup>-->
-<!--                            <h:outputLabel value="Received Time: &nbsp;"/>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">-->
-<!--                                <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a"/>-->
-<!--                            </h:outputLabel>-->
-<!--                        </h:panelGroup>-->
-<!--                    </td>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:panelGroup>-->
-<!--                            <h:outputLabel value="Issue Time: &nbsp;"/>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.createdAt}">-->
-<!--                                <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a"/>-->
-<!--                            </h:outputLabel>-->
-<!--                        </h:panelGroup>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </table>-->
-
-            <div class="receipt-bill-details">
-                <h:outputText
-                        value="#{transferReceiveController.fillHeaderDataOfTransferReceiveNote(configOptionApplicationController.getLongTextValueByKey('Transfer Receive Note Header'), cc.attrs.bill)}"
-                        escape="false">
-                </h:outputText>
-            </div>
+                <!-- Bill Heading -->
+                <tr>
+                    <td colspan="2"
+                        style="text-align: center; font-size: 1.2em; text-decoration: underline;font-weight: bold;">
+                        <h:outputLabel value="Transfer Receive Note"/>
+                        <h:outputLabel value="**Cancelled**" style="color: red;"
+                                       rendered="#{cc.attrs.bill.billedBill.cancelled eq true}"/>
+                    </td>
+                </tr>
+                <!-- Bill Details -->
+                <tr>
+                    <td style="width: 50%; padding: 1px;">
+                        <h:outputLabel value="Location From: #{cc.attrs.bill.fromDepartment.name}"/>
+                    </td>
+                    <td style="width: 50%; padding: 1px;">
+                        <h:outputLabel value="Location To: #{cc.attrs.bill.department.name}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Received Person: #{cc.attrs.bill.creater.webUserPerson.name}"/>
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel
+                            value="Issued Person: #{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Receive No: #{cc.attrs.bill.deptId}"/>
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Issue No: #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:panelGroup>
+                            <h:outputLabel value="Received Time: &nbsp;"/>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:panelGroup>
+                            <h:outputLabel value="Issue Time: &nbsp;"/>
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </td>
+                </tr>
+            </table>
 
             <div>
 
@@ -153,7 +146,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Receive QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.qty}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qtyInUnit}">
                             <f:convertNumber pattern="#0.00"/>
                         </h:outputLabel>
                     </p:column>
@@ -164,14 +157,14 @@
                         <f:facet name="header">
                             <h:outputLabel value="Issued QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.qty}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#0.00"/>
                         </h:outputLabel>
                     </p:column>
 
                     
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', false)}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
@@ -182,7 +175,7 @@
                     </p:column>
                     
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', false)}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
@@ -192,15 +185,14 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}"
-                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
                                 <f:convertNumber pattern="#0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Rate', false)}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate"/>
@@ -211,7 +203,7 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Value', false)}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Retail Value"/>
@@ -222,15 +214,14 @@
                         </h:outputLabel>
 
                         <f:facet name="footer">
-                            <h:outputLabel styleClass="totalRetailValue" value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}"
-                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                            <h:outputLabel styleClass="totalRetailValue" value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Rate', false)}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Rate"/>
@@ -241,7 +232,7 @@
                     </p:column>
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', false)}"
                         width="4em" class="text-end">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Value"/>
@@ -251,8 +242,7 @@
                         </h:outputLabel>
 
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}"
-                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>

@@ -5,8 +5,7 @@ public enum InventoryReports implements IReportType {
     STOCK_TRANSFER_REPORT("Stock Transfer Report"),
     GOOD_IN_TRANSIT_REPORT("Good In Transit"),
     CONSUMPTION_REPORT("Consumption Report"),
-    GRN_REPORT("GRN Report"),
-    STOCK_LEDGER_REPORT("Stock Ledger Report");
+    GRN_REPORT("GRN Report");
 
     private final String displayName;
 

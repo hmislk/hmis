@@ -22,18 +22,16 @@
                                 id="acIx" 
                                 value="#{itemController.current}" 
                                 var="itemIx"
-                                maxResults="20"
                                 itemValue="#{itemIx}" 
                                 itemLabel="#{itemIx.name}"
                                 completeMethod="#{itemController.completeInvestigation}"
                                 >
-                                <p:column headerText="Code" style="padding: 6px; width: 10px;">
-                                    <h:outputText value="#{itemIx.code}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Name" style="padding: 6px; width: 20px;">
+                                <p:column headerText="Name">
                                     <h:outputText value="#{itemIx.name}" ></h:outputText>
                                 </p:column>
-                                
+                                <p:column headerText="Code">
+                                    <h:outputText value="#{itemIx.code}" ></h:outputText>
+                                </p:column>
                             </p:autoComplete>
                             <p:commandButton 
                                 ajax="false" 

@@ -28,11 +28,10 @@ body {
     min-height: 100vh;
     background-color: #f9fafb;
     padding: 1rem;
-    min-width: 100vw;
 }
 
 .main-wrapper {
-    max-width: 90vw;
+    max-width: 75vw;
     margin: 0 auto;
 }
 
@@ -249,7 +248,7 @@ body {
 
 .th-cell {
     text-align: left;
-    padding: 0.5rem 0.7rem;
+    padding: 0.75rem 1rem;
     font-weight: 600;
     color: #374151;
 }
@@ -272,7 +271,7 @@ body {
 }
 
 .td-cell {
-    padding: 0.5rem;
+    padding: 1rem;
 }
 
 .stage-name {
@@ -285,11 +284,6 @@ body {
 }
 
 .location-name {
-    color: #4b5563;
-    font-size: 0.875rem;
-}
-
-.cooment {
     color: #4b5563;
     font-size: 0.875rem;
 }

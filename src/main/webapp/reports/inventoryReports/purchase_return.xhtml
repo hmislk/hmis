@@ -259,7 +259,7 @@
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="QTY" width="5em">
-                                <h:outputText value="#{f.billItemFinanceDetails.quantityByUnits}" >
+                                <h:outputText value="#{f.qty}" >
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
@@ -272,7 +272,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Purchase Value" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.billItemFinanceDetails.quantityByUnits}" >
+                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
@@ -282,7 +282,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Cost Value">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.billItemFinanceDetails.quantityByUnits}" >
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>

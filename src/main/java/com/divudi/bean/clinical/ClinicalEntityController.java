@@ -89,17 +89,8 @@ public class ClinicalEntityController implements Serializable {
         return c;
     }
 
-    public List<ClinicalEntity> getRaces() {
-        return listClinicalEntity(SymanticType.Race);
-    }
-
-    @Deprecated
     public List<ClinicalEntity> getEhnicity() {
         // Kept for backward compatibility with older views
-        return listClinicalEntity(SymanticType.Religion);
-    }
-
-    public List<ClinicalEntity> getEthnicity() {
         return listClinicalEntity(SymanticType.Religion);
     }
 

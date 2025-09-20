@@ -56,7 +56,6 @@ public class CashbookService {
 
     }
 
-    // Redeploy comment
     public void updateBalances(PaymentMethod pm, Double Value, CashBookEntry cbe) {
         Map m = new HashMap<>();
         String jpql = "Select cbe from CashBookEntry cbe where "

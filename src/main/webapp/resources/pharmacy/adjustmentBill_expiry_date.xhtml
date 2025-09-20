@@ -52,22 +52,25 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
+                    <p:column style="text-align: right!important;" >
+                        
+                    </p:column>
                     
                     <p:column style="text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry Before Adjusted" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel id="lblPreviousExpiary" value="#{bip.pharmaceuticalBillItem.beforeAdjustmentExpiry}" >
-                             <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Expiry Date Pattern', 'MMM yyyy')}" ></f:convertDateTime>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}" >
+                             <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
                         </h:outputLabel>
                     </p:column>
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="New Expiry" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel id="lblNewExpiary" value="#{bip.pharmaceuticalBillItem.afterAdjustmentExpiry}">
-                            <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Expiry Date Pattern', 'MMM yyyy')}" ></f:convertDateTime>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
                         </h:outputLabel>
                         
                     </p:column>                  

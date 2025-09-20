@@ -39,9 +39,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-    // NOTE: No UNIQUE constraint on institutionCode - different institution types
-    // (suppliers, labs, hospitals) can legitimately have the same codes (e.g., RH2003)
-    // since they serve different purposes and contexts
     String institutionCode;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;

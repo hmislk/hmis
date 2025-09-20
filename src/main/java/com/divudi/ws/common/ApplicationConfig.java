@@ -18,12 +18,12 @@ public class ApplicationConfig extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();
-        // Use Jackson 2.x JAXB-aware provider and fail fast if not found
+        // following code can be used to customize Jersey 1.x JSON provider:
         try {
-            Class<?> jacksonProvider = Class.forName("com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider");
+            Class jacksonProvider = Class.forName("org.codehaus.jackson.jaxrs.JacksonJsonProvider");
             resources.add(jacksonProvider);
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("Jackson JSON provider not found", ex);
+            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         addRestResourceClasses(resources);
         return resources;

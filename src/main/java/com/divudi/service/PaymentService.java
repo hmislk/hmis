@@ -197,7 +197,7 @@ public class PaymentService {
                 break;
             case Cash:
 //                payment.getBill().getNetTotal();
-                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                payment.setPaidValue(payment.getBill().getNetTotal());
                 payment.setComments(payment.getBill().getComments());
                 break;
             case ewallet:
@@ -381,19 +381,19 @@ public class PaymentService {
 
         return new ArrayList<>(uniqueMethods);
     }
-
+    
     public List<Payment> fetchPayments(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme,
-            Institution toInstitution,
-            Department toDepartment,
-            String visitType
+                                 Date toDate,
+                                 Institution institution,
+                                 Institution site,
+                                 Department department,
+                                 WebUser webUser,
+                                 List<BillTypeAtomic> billTypeAtomics,
+                                 AdmissionType admissionType,
+                                 PaymentScheme paymentScheme,
+                                 Institution toInstitution,
+                                 Department toDepartment,
+                                 String visitType
     ) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -469,8 +469,6 @@ public class PaymentService {
             List<PaymentMethod> usedPaymentMethods = new ArrayList<>();
 
             // Iterate over each payment component in the multiple payment method
-            double multiplePaymentMethodTotalValue = 0.0;
-
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 PaymentMethod pm = cd.getPaymentMethod();
                 PaymentMethodData pmd = cd.getPaymentMethodData();
@@ -497,44 +495,6 @@ public class PaymentService {
                 if (componentValidation.isErrorPresent()) {
                     return componentValidation; // If any component has an error, return immediately with that error
                 }
-
-                switch (pm) {
-                    case Cash:
-                        if (pmd.getCash() != null) multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
-                        break;
-                    case Card:
-                        if (pmd.getCreditCard() != null) multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
-                        break;
-                    case Cheque:
-                        if (pmd.getCheque() != null) multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
-                        break;
-                    case ewallet:
-                        if (pmd.getEwallet() != null) multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
-                        break;
-                    case PatientDeposit:
-                        if (pmd.getPatient_deposit() != null) multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
-                        break;
-                    case Slip:
-                        if (pmd.getSlip() != null) multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
-                        break;
-                    case Staff:
-                        if (pmd.getStaffCredit() != null) multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
-                        break;
-                    case OnlineSettlement:
-                        if (pmd.getOnlineSettlement() != null) multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
-                        break;
-                    default:
-                        break;
-                }
-
-            }
-            
-            double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
-            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue >= 1.0) {
-                bv.setErrorMessage("Mismatch in differences of multiple payment method total and bill total.");
-                bv.setErrorPresent(true);
-                return bv;
             }
         } else {
             switch (paymentMethod) {

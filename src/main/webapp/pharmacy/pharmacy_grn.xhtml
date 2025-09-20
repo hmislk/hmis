@@ -15,23 +15,14 @@
                 rendered="#{!grnController.printPreview}">
                 <f:facet name="header">
                     <h:outputLabel value="GRN Receive" />
-                    <p:commandButton
-                        ajax="false"
-                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
-                        actionListener="#{searchController.makeListNull()}"
-                        class="ui-button-warning"
-                        icon="fa fa-arrow-left"
-                        style="float: right; margin-right: 0.5em;"
-                        value="Back to PO List">
-                    </p:commandButton>
-                    <p:commandButton
-                        value="Settle"
+                    <p:commandButton  
+                        value="Settle" 
                         action="#{grnController.settle}"
                         class="ui-button-success"
                         icon="fas fa-check"
-                        ajax="false"
+                        ajax="false"  
                         style="float: right;">
-                    </p:commandButton>
+                    </p:commandButton> 
                 </f:facet>
 
 
@@ -389,14 +380,14 @@
                     <div class="d-flex justify-content-between">
                         <h:outputLabel value="GRN Preview " class="mt-2"/>
                         <div class="d-flex gap-2">
-                            <p:commandButton
-                                ajax="false"
-                                action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
-                                actionListener="#{searchController.makeListNull()}"
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_purchase_order_list_for_recieve"
                                 class="ui-button-warning"
                                 icon="fa fa-arrow-left"
-                                value="Back to PO List">
-                            </p:commandButton>
+                                actionListener="#{grnController.viewPoList()}" 
+                                value="Back to PO List"> 
+                            </p:commandButton>                   
                             <p:commandButton 
                                 value="Print" 
                                 ajax="false" 

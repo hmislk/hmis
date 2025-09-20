@@ -206,10 +206,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
     private Vmp vmp;
-    @ManyToOne
-    private Amp amp;
-    @ManyToOne
-    private Vmpp vmpp;
 
     @ManyToOne
     private Machine machine;
@@ -290,8 +286,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private boolean canRemoveItemfromPackage;
     
     private boolean consideredForCosting = true;
-    
-    private boolean refundsAllowed = false;
 
     public double getVatPercentage() {
         return 0;
@@ -994,22 +988,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.vmp = vmp;
     }
 
-    public Amp getAmp() {
-        return amp;
-    }
-
-    public void setAmp(Amp amp) {
-        this.amp = amp;
-    }
-
-    public Vmpp getVmpp() {
-        return vmpp;
-    }
-
-    public void setVmpp(Vmpp vmpp) {
-        this.vmpp = vmpp;
-    }
-
     public Date getEffectiveTo() {
         return effectiveTo;
     }
@@ -1546,14 +1524,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setConsideredForCosting(boolean consideredForCosting) {
         this.consideredForCosting = consideredForCosting;
-    }
-
-    public boolean isRefundsAllowed() {
-        return refundsAllowed;
-    }
-
-    public void setRefundsAllowed(boolean refundsAllowed) {
-        this.refundsAllowed = refundsAllowed;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

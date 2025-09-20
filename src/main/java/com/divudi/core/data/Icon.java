@@ -135,8 +135,7 @@ public enum Icon {
     Report_Execution_Logs("Report Execution Logs"),
     Purchase_Orders_Finalize("Finalize Purchase Orders"),
     pharmacy_bill_search("Pharmacy Bill Search"),
-    pharmacy_bill_search_new("Pharmacy Bill Search (New)"),
-    pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue");
+    pharmacy_bill_search_new("Pharmacy Bill Search (New)");
 
     private final String label;
 

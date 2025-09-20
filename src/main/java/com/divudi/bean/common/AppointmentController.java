@@ -10,7 +10,6 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
-import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -31,14 +30,10 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.inward.Reservation;
-import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -56,7 +51,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class AppointmentController implements Serializable, ControllerWithPatient {
+public class AppointmentController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -73,8 +68,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -101,9 +94,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
     private Reservation reservation;
-    private PaymentMethod paymentMethod;
-    private boolean patientDetailsEditable;
-    private Patient patient;
 
     public Title[] getTitle() {
         return Title.values();
@@ -128,6 +118,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 //        }
 //        return a;
 //    }
+
     private Patient savePatient(Patient p) {
 
         if (p == null) {
@@ -209,7 +200,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        Patient p = savePatient(getPatient());
+        Patient p = savePatient(getSearchedPatient());
 
         saveBill(p);
         saveAppointment(p);
@@ -294,17 +285,17 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 //            }
 //        }
         //if (getPatientTabId().toString().equals("tabNewPt")) {
-        if (getPatient() == null) {
+        if (getSearchedPatient() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
             return false;
         }
 
-        if (getPatient().getPerson() == null) {
+        if (getSearchedPatient().getPerson() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
             return false;
         }
 
-        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("")) {
+        if (getSearchedPatient().getPerson().getName() == null || getSearchedPatient().getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name");
             return true;
         }
@@ -319,30 +310,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 //
         return false;
-    }
-
-    public List<Reservation> checkAppointmentsForRoom(RoomFacilityCharge r) {
-        String jpql = "SELECT res FROM Reservation res "
-                + "WHERE res.Room = :room "
-                + "AND res.reservedFrom BETWEEN :today AND :endDate "
-                + "ORDER BY res.reservedFrom";
-
-        Double lookupDays = configOptionApplicationController.getDoubleValueByKey("Inward - Appoiment Lookup Duration (Days)", 30.0);
-
-        Date today = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(today);
-        cal.add(Calendar.DAY_OF_YEAR, lookupDays.intValue());
-        Date endDate = cal.getTime();
-        
-        HashMap hm = new HashMap();
-        hm.put("room", r);
-        hm.put("today", today);
-        hm.put("endDate", endDate);
-        
-        List<Reservation> reservations = reservationFacade.findByJpql(jpql,hm);
-        
-        return reservations;
     }
 
     public String prepareNewBill() {
@@ -583,7 +550,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     public void prepereForInwardAppointPatient() {
         printPreview = false;
         searchedPatient = null;
-        patient = null;
         currentBill = null;
         currentAppointment = null;
         reservation = null;
@@ -594,11 +560,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public String navigateToInwardAppointmentFromMenu() {
         prepereForInwardAppointPatient();
-        setSearchedPatient(getPatient());
-        setPatient(getNewPatient());
-        getCurrentBill().setPatient(getPatient());
-        getCurrentAppointment().setPatient(getPatient());
-        return "/inward/inward_appointment?faces-redirect=true;";
+        setSearchedPatient(getNewPatient());
+        getCurrentBill().setPatient(getSearchedPatient());
+        getCurrentAppointment().setPatient(getSearchedPatient());
+        return "/inward/inward_appointment";
     }
 
     public ReservationFacade getReservationFacade() {
@@ -607,52 +572,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setReservationFacade(ReservationFacade reservationFacade) {
         this.reservationFacade = reservationFacade;
-    }
-    
-    @Override
-    public Patient getPatient() {
-        if (patient == null) {
-            Person p = new Person();
-            patient = new Patient();
-            patientDetailsEditable = true;
-            patient.setPerson(p);
-        }
-        return patient;
-    }
-
-    @Override
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
-    
-    @Override
-    public void toggalePatientEditable() {
-        patientDetailsEditable = !patientDetailsEditable;
-    }
-    
-    @Override
-    public boolean isPatientDetailsEditable() {
-        return patientDetailsEditable;
-    }
-
-    @Override
-    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
-        this.patientDetailsEditable = patientDetailsEditable;
-    }
-    
-    @Override
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    @Override
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-    
-    @Override
-    public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
     }
 
     /**

@@ -64,7 +64,7 @@
 
 
                         <p:panel id="gpBillPreview" styleClass="noBorder normalFont">
-                            <p:dataTable id="tbl"  value="#{reportsTransfer.disposalIssueBillItemDtos}"
+                            <p:dataTable id="tbl"  value="#{reportsTransfer.itemCountWithOutMargins}"
                                          stickyHeader="true"
                                          var="i"  >
                                 <f:facet name="header" >
@@ -88,19 +88,19 @@
                                     <f:facet name="header" >
                                         <p:outputLabel value="Item" />
                                     </f:facet>
-                                    <p:outputLabel value="#{i.itemName}" />
+                                    <p:outputLabel value="#{i.item.name}" />
                                 </p:column>
                                 <p:column headerText="Count" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Count" />
                                     </f:facet>
-                                    <p:outputLabel value="#{i.qty}" />
+                                    <p:outputLabel value="#{i.count}" />
                                 </p:column>
                                 <p:column headerText="Net Value" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.billNetTotal}">
+                                    <h:outputLabel value="#{i.net}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">

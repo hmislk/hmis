@@ -573,12 +573,8 @@
                                 <!--                            Report Details                      -->
                                 <p:panel header="Report Details" class="my-2" >
                                     <p:panelGrid columns="2" >
-                                        <p:outputLabel for="sampleIDs" value="sample IDs" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="sampleIDs" 
-                                            value="#{patientReportController.currentPatientReport.sampleIDs}"
-                                            class="w-100">
-                                        </p:inputText>
+                                        <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
+                                        <p:inputText id="sampleIDs" value="#{patientReportController.currentPatientReport.sampleIDs}" ></p:inputText>
 
                                         <p:outputLabel for="refIns" value="Referring Institution" ></p:outputLabel>
                                         <p:autoComplete 
@@ -665,108 +661,38 @@
                                             </p:dialog>
                                         </h:panelGroup>
 
+
                                         <p:outputLabel value="Ordered Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" 
-                                            class="w-100" 
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
+                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                                         <p:outputLabel value="Sampelled Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" 
-                                            class="w-100" 
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
+                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                                         <p:outputLabel value="Received to Lab At" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" 
-                                            class="w-100" 
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
 
                                         <p:outputLabel value="Peformed Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  
-                                            class="w-100" 
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
+                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                                         <p:outputLabel value="Data Entered Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" 
-                                            class="w-100" 
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
+                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                                         <p:outputLabel value="Reported Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.createdAt}" 
-                                            class="w-100"
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
+                                        <p:calendar value="#{patientReportController.currentPatientReport.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                                         <p:outputLabel value="Approved Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.approveAt}" 
-                                            class="w-100" 
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
+                                        <p:calendar value="#{patientReportController.currentPatientReport.approveAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                                         <p:outputLabel value="Approved By" ></p:outputLabel>
-                                        <p:outputLabel 
-                                            value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}" 
-                                            class="w-100">
-                                        </p:outputLabel>
+                                        <p:outputLabel value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}"
+                                                       ></p:outputLabel>
 
                                         <p:outputLabel value="Report ID" ></p:outputLabel>
-                                        <p:outputLabel 
-                                            value="#{patientReportController.currentPatientReport.id}" 
-                                            class="w-100">
-                                        </p:outputLabel>
+                                        <p:outputLabel value="#{patientReportController.currentPatientReport.id}" ></p:outputLabel>
 
                                         <p:outputLabel value="Printed Time" ></p:outputLabel>
-                                        <p:calendar 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}" 
-                                            class="w-100" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        </p:calendar>
-
-                                    </p:panelGrid>
-
-                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
-
-                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
-
-                                        <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientName" 
-                                            value="#{patientReportController.currentPatientReport.patientName}" 
-                                            class="w-100">
-                                        </p:inputText>
-
-                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientAge" 
-                                            value="#{patientReportController.currentPatientReport.patientAge}" 
-                                            class="w-100">
-                                        </p:inputText>
-
-                                        <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientGender" 
-                                            value="#{patientReportController.currentPatientReport.patientGender}" 
-                                            class="w-100">
-                                        </p:inputText>
-
+                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
                                     </p:panelGrid>
                                 </p:panel>
 
@@ -790,7 +716,7 @@
                                         action="#{laboratoryManagementController.navigateToOtherPatientReport(patientReportController.currentPatientReport.patientInvestigation.billItem.bill)}">
                                     </p:commandButton>
                                 </h:panelGroup>
-
+                                
                                 <div class="mb-1 row w-100" >
                                     <p:panel class="mx-2" header="Patient details" >
                                         <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>

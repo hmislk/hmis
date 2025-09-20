@@ -47,6 +47,8 @@ public class DrawerService {
     }
 
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
+        System.out.println("paidValue = " + paidValue);
+        System.out.println("payment = " + payment);
         if (payment == null || payment.getCreater() == null) {
             System.err.println("Payment or payment creator is null.");
             return;
@@ -179,6 +181,7 @@ public class DrawerService {
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
+        System.out.println("Drawer Entry Update");
         if (payment == null) {
             return;
         }
@@ -254,7 +257,10 @@ public class DrawerService {
         }
 
         drawerEntry.setBeforeInHandValue(beforeInHandValue);
+        System.out.println("beforeInHandValue = " + beforeInHandValue);
+        System.out.println("payment.getPaidValue() = " + payment.getPaidValue());
         drawerEntry.setAfterInHandValue(beforeInHandValue + payment.getPaidValue());
+        System.out.println("drawerEntry.getAfterInHandValue() = " + drawerEntry.getAfterInHandValue());
         double totalBalance;
         if (currentDrawer.getCashInHandValue() == null) {
             totalBalance = 0.0;
@@ -284,6 +290,7 @@ public class DrawerService {
 
 
     public void drawerEntryUpdate(Bill bill, Drawer currentDrawer, PaymentMethod paymentMethod, WebUser user, Double value) {
+        System.out.println("Drawer Entry Update");
         if (bill == null) {
             return;
         }
@@ -409,6 +416,8 @@ public class DrawerService {
     }
 
     public void updateDrawer(Payment payment, double paidValue) {
+        System.out.println("paidValue = " + paidValue);
+        System.out.println("payment = " + payment);
         if (payment == null || payment.getCreater() == null) {
             System.err.println("Payment or payment creator is null.");
             return;

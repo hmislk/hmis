@@ -443,14 +443,6 @@ public class SaleReturnController implements Serializable {
             return;
         }
 
-        // Check if any items with quantity > 0 have refundsAllowed set to false
-        for (BillItem bi : getBillItems()) {
-            if (bi.getQty() > 0 && bi.getItem() != null && !bi.getItem().isRefundsAllowed()) {
-                JsfUtil.addErrorMessage("Item '" + bi.getItem().getName() + "' is not allowed to be returned. Refunds are not permitted for this item.");
-                return;
-            }
-        }
-
         if (returnPaymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a payment method to return");
             return;

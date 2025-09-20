@@ -99,26 +99,13 @@ public class AgentReferenceBookController implements Serializable {
         refBookEditDetails = auditEventController.fillAllAuditEvents(refBookID, eventTrigger);
     }
 
-    public static String escapeSingleBackslash(String json) {
-        if (json == null) {
-            return null;
-        }
-        // Replace a single backslash (\) with double backslash (\\)
-        return json.replace("\\", "\\\\")
-                .replace("\b", "\\b")
-                .replace("\f", "\\f")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
-    }
-
     public static String findDifferences(String beforeJson, String afterJson) {
         Map<String, String> differences = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-            Map<String, Object> map1 = mapper.readValue(escapeSingleBackslash(beforeJson), Map.class);
-            Map<String, Object> map2 = mapper.readValue(escapeSingleBackslash(afterJson), Map.class);
+            Map<String, Object> map1 = mapper.readValue(beforeJson, Map.class);
+            Map<String, Object> map2 = mapper.readValue(afterJson, Map.class);
 
             Set<String> allKeys = new HashSet<>();
             allKeys.addAll(map1.keySet());
@@ -154,10 +141,11 @@ public class AgentReferenceBookController implements Serializable {
 
         sql = "select c from Institution c where c.retired=false and "
                 + " c.institutionType =:t and c.name like :q order by c.name";
-
+        //////System.out.println(sql);
         m.put("t", InstitutionType.Agency);
         m.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getInstitutionFacade().findByJpql(sql, m);
+        //////System.out.println("suggestions = " + suggestions);
 
         return suggestions;
     }
@@ -272,10 +260,8 @@ public class AgentReferenceBookController implements Serializable {
         hm.put("rfe", bookEnum);
         hm.put("sbNumber", agentReferenceBook.getStrbookNumber().trim());
 
-        AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
-
-        if (arb != null) {
-            JsfUtil.addErrorMessage("Book Number Is Already use in " + arb.getInstitution().getCode() + " - " + arb.getInstitution().getName());
+        if (!getAgentReferenceBookFacade().findByJpql(sql, hm).isEmpty()) {
+            JsfUtil.addErrorMessage("Book Number Is Already Given.");
             return;
         }
 
@@ -301,7 +287,6 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public void updateAgentBook(AgentReferenceBook book) {
-
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");
             return;
@@ -320,33 +305,13 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("You have No Privilege for Edit Book.");
             return;
         }
+        book.setEditedAt(new Date());
+        book.setEditor(sessionController.getLoggedUser());
+        getAgentReferenceBookFacade().edit(book);
 
-        // Check if book number already exists
-        String sql = "SELECT a FROM AgentReferenceBook a "
-                + " WHERE a.retired=false "
-                + " AND a.deactivate=false "
-                + " AND a.referenceBookEnum=:rfe "
-                + " AND a.strbookNumber=:sbNumber";
-        HashMap hm = new HashMap();
-        hm.put("rfe", ReferenceBookEnum.LabBook);
-        hm.put("sbNumber", book.getStrbookNumber() == null ? null : book.getStrbookNumber().trim());
+        auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
 
-        AgentReferenceBook arb = getAgentReferenceBookFacade().findFirstByJpql(sql, hm);
-
-        if (arb != null) {
-            searchReferenceBooks();
-            JsfUtil.addErrorMessage("Book number is already used in " + arb.getInstitution().getCode() + " - " + arb.getInstitution().getName());
-            return;
-        } else {
-            book.setEditedAt(new Date());
-            book.setEditor(sessionController.getLoggedUser());
-            getAgentReferenceBookFacade().edit(book);
-
-            auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
-
-            JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
-        }
-        searchReferenceBooks();
+        JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
     }
 
     public void deleteAgentBook(AgentReferenceBook agentReferenceBook) {

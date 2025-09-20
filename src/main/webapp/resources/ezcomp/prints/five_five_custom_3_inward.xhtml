@@ -215,34 +215,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                            <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
-                                <tr>
-                                    <!-- Display the item number across all items -->
-                                    <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                    <td>#{item.item.name}</td>
-                                    <td style="text-align: right">
-                                        <h:outputLabel value="#{item.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </ui:repeat>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                            <ui:repeat value="#{billSearch.groupBillItemByNameFromBill(cc.attrs.bill)}" var="item" varStatus="s">
-                                <tr>
-                                    <!-- Display the item number across all items -->
-                                    <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                    <td>#{item.item.name}</td>
-                                    <td style="text-align: right">
-                                        <h:outputLabel value="#{item.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </ui:repeat>
-                        </h:panelGroup>
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
+                            <tr>
+                                <!-- Display the item number across all items -->
+                                <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
+                                <td>#{item.item.name}</td>
+                                <td style="text-align: right">
+                                    <h:outputLabel value="#{item.netValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
                     </tbody>
                 </table>
 
@@ -280,28 +264,14 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                        <tr>
-                            <td >No of Items:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-                    
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
-                        <tr>
-                            <td >No of Items:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{billSearch.billItemSize}">
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-                    
+                    <tr>
+                        <td >No of Items:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{billBeanController.fetchBillItems(cc.attrs.bill).size()}">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
 
                 <table  style="font-size: 8pt;">

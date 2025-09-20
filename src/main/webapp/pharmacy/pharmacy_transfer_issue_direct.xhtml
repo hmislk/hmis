@@ -21,21 +21,7 @@
                         <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
                                          forceSelection="true" 
                                          var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                         value="#{transferIssueController.issuedBill.toStaff}" >
-
-                            <p:column headerText="Name">
-                                <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Speciality">
-                                <h:outputText value="#{w.speciality.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Code">
-                                <h:outputText value="#{w.code}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Staff Code">
-                                <h:outputText value="#{w.staffCode}" ></h:outputText>
-                            </p:column>
-                        </p:autoComplete>
+                                         value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
                         <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" ajax="false" class="ui-button-success mx-2" >
                         </p:commandButton>                        
                     </h:panelGrid>

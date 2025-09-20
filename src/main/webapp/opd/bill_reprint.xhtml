@@ -54,7 +54,6 @@
                                             ajax="false" 
                                             value="To Cancel" 
                                             action="#{billSearch.navigateToCancelOpdBill()}" 
-                                            rendered="#{webUserController.hasPrivilege('OpdIndividualCancel')}"
                                             disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
                                         </p:commandButton>

@@ -530,18 +530,7 @@ public class DataAdministrationController implements Serializable {
                                 BigDecimal costRate = BigDecimal.valueOf(itemBatch.getCostRate());
                                 BigDecimal transferValue = BigDecimal.valueOf(bi.getNetValue());
                                 BigDecimal grossValue = BigDecimal.valueOf(bi.getGrossValue());
-                                
-                                if(bi.getPharmaceuticalBillItem().getRetailValue()==0.0){
-                                    bi.getPharmaceuticalBillItem().setRetailValue(bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty() * bi.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
-                                }
 
-                                if(bi.getNetRate()==0.0){
-                                    bi.setNetRate(bi.getRate());
-                                }
-                                if(bi.getGrossValue()==0.0){
-                                    bi.setGrossValue(bi.getNetValue());
-                                }
-                                
                                 // Populate BillItemFinanceDetails
                                 if (bi.getBillItemFinanceDetails().getQuantity() == null || bi.getBillItemFinanceDetails().getQuantity().compareTo(BigDecimal.ZERO) == 0) {
                                     bi.getBillItemFinanceDetails().setQuantity(qtyBD);

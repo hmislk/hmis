@@ -111,18 +111,10 @@ public class BigDecimalPerformanceTest {
             Math.abs(utilTime - traditionalTime),
             Math.max(utilTime, traditionalTime) / (double) Math.min(utilTime, traditionalTime));
         
-        // BigDecimalUtil should not be more than 10x slower than traditional approach
-        // This accounts for the additional method call overhead for null safety and JVM warm-up variations
-        // Handle case where traditionalTime is 0 (too fast to measure)
-        if (traditionalTime == 0) {
-            // If traditional approach is 0ms, allow BigDecimalUtil to take up to 50ms (reasonable overhead)
-            assertTrue(utilTime <= 50, 
-                String.format("BigDecimalUtil is too slow: %d ms when traditional approach is unmeasurable", utilTime));
-        } else {
-            double performanceRatio = (double) utilTime / traditionalTime;
-            assertTrue(performanceRatio < 10.0, 
-                String.format("BigDecimalUtil is too slow: %.2fx traditional time", performanceRatio));
-        }
+        // BigDecimalUtil should not be more than 50% slower than traditional approach
+        double performanceRatio = (double) utilTime / traditionalTime;
+        assertTrue(performanceRatio < 1.5, 
+            String.format("BigDecimalUtil is too slow: %.2fx traditional time", performanceRatio));
     }
     
     @Test

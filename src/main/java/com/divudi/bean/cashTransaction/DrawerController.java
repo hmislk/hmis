@@ -87,6 +87,8 @@ public class DrawerController implements Serializable {
     }
 
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
+        System.out.println("paidValue = " + paidValue);
+        System.out.println("payment = " + payment);
         if (payment == null || webUser == null) {
             System.err.println("Payment or payment creator is null.");
             return;
@@ -185,6 +187,9 @@ public class DrawerController implements Serializable {
     }
 
     public void updateDrawer(Bill bill, double paidValue, PaymentMethod paymentMethod, WebUser webUser) {
+        System.out.println("paidValue = " + paidValue);
+        System.out.println("bill = " + bill);
+        System.out.println("webUser = " + webUser);
         if (bill == null || webUser == null) {
             System.err.println("Payment or payment creator is null.");
             return;

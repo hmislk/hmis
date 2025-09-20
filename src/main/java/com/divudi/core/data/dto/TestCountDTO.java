@@ -34,13 +34,6 @@ public class TestCountDTO implements Serializable {
         this.total = total;
     }
 
-    public TestCountDTO(Long testId, String testName, Long count, Double reagentFee) {
-        this.testId = testId;
-        this.testName = testName;
-        this.count = count;
-        this.reagentFee = reagentFee;
-    }
-    
     public Long getTestId() {
         return testId;
     }

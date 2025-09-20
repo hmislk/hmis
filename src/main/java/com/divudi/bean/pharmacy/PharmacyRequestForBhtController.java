@@ -9,7 +9,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.ConfigOptionApplicationController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
@@ -28,11 +27,9 @@ import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.ejb.PharmacyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
@@ -42,8 +39,6 @@ import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
-import com.divudi.core.entity.clinical.ClinicalFindingValue;
-import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -51,7 +46,6 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
-import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import java.io.Serializable;
@@ -63,7 +57,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.BillService;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -86,8 +79,6 @@ public class PharmacyRequestForBhtController implements Serializable {
     SessionController sessionController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
 
 ////////////////////////
     @EJB
@@ -107,15 +98,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
-    private PrescriptionFacade prescriptionFacade;
-    @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
-    com.divudi.ejb.PrescriptionService prescriptionService;
-    @EJB
-    com.divudi.ejb.PrescriptionToItemService prescriptionToItemService;
-    @EJB
-    private PharmacyService pharmacyService;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -142,17 +125,11 @@ public class PharmacyRequestForBhtController implements Serializable {
     /////////////////////////
     private UserStockContainer userStockContainer;
 
-    private List<ClinicalFindingValue> allergyListOfPatient;
-
     private Bill batchBill;
     @Inject
     private BillBeanController billBean;
     @Inject
     NotificationController notificationController;
-    @Inject
-    MeasurementUnitController measurementUnitController;
-    @EJB
-    BillService billService;
     private String comment;
 
     public void selectSurgeryBillListener() {
@@ -384,9 +361,11 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void makeStockAsBillItemStock() {
+        ////// // System.out.println("replacableStock = " + replacableStock);
         setStock(replacableStock);
         getBillItem().getPharmaceuticalBillItem().setStock(getStock());
         calculateRates(billItem);
+        ////// // System.out.println("getStock() = " + getStock());
     }
 
     public void fillReplaceableStocksForAmp(Amp ampIn) {
@@ -484,6 +463,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
+        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -516,6 +496,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         items = getStockFacade().findByJpql(sql, m, 20);
         //  itemsWithoutStocks = completeRetailSaleItems(qry);
+        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -527,9 +508,6 @@ public class PharmacyRequestForBhtController implements Serializable {
             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
             pbi.setBillItem(billItem);
             billItem.setPharmaceuticalBillItem(pbi);
-        }
-        if (billItem.getPrescription() == null) {
-            billItem.setPrescription(new Prescription());
         }
         return billItem;
     }
@@ -598,41 +576,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
-    private void savePreBillFinallyPreservingToDepartment(Patient pt, Department matrixDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {
-        // Store the current toDepartment and toInstitution before updating
-        Department currentToDepartment = getPreBill().getToDepartment();
-        Institution currentToInstitution = getPreBill().getToInstitution();
-
-        getPreBill().setBillType(billType);
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
-
-        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getPreBill().setCreater(getSessionController().getLoggedUser());
-
-        getPreBill().setPatient(pt);
-        getPreBill().setPatientEncounter(getPatientEncounter());
-
-        // Preserve the existing toDepartment and toInstitution instead of nullifying them
-        getPreBill().setToDepartment(currentToDepartment);
-        getPreBill().setToInstitution(currentToInstitution);
-        getPreBill().setBillDate(new Date());
-        getPreBill().setBillTime(new Date());
-
-        getPreBill().setFromDepartment(matrixDepartment);
-        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getBillBean().setSurgeryData(getPreBill(), getBatchBill(), SurgeryBillType.PharmacyItem);
-
-        if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
-        }
-
-    }
-
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
             if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
@@ -644,12 +587,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
-
-            // Set prescription metadata if prescription exists
-            if (tbi.getPrescription() != null && tbi.getPrescription().getId() == null) {
-                tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
-                tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
-            }
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
@@ -759,17 +696,6 @@ public class PharmacyRequestForBhtController implements Serializable {
             tbi.setCreatedAt(Calendar.getInstance().getTime());
             tbi.setCreater(getSessionController().getLoggedUser());
 
-            // Set prescription metadata if prescription exists
-            if (tbi.getPrescription() != null) {
-                if (tbi.getPrescription().getId() == null) {
-                    tbi.getPrescription().setCreatedAt(Calendar.getInstance().getTime());
-                    tbi.getPrescription().setCreater(getSessionController().getLoggedUser());
-                } else {
-                    tbi.getPrescription().setEditedAt(Calendar.getInstance().getTime());
-                    tbi.getPrescription().setEditer(getSessionController().getLoggedUser());
-                }
-            }
-
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
@@ -831,17 +757,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter().getPatient();
-            if (allergyListOfPatient == null) {
-                allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-            }
-            String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
-            if (!allergyMsg.isEmpty()) {
-                JsfUtil.addErrorMessage(allergyMsg);
-                return;
-            }
-        }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
 
     }
@@ -854,19 +769,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter().getPatient();
-            if (allergyListOfPatient == null) {
-                allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-            }
-            String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
-            if (!allergyMsg.isEmpty()) {
-                JsfUtil.addErrorMessage(allergyMsg);
-                return;
-            }
-        }
-
-        if (getPreBill().getBillItems().isEmpty()) {
+        if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
@@ -875,123 +778,13 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
-    @Deprecated // Use settleBhtRequest
     public void settlePharmacyBhtIssueRequest() {
         if (errorCheck()) {
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter().getPatient();
-            if (allergyListOfPatient == null) {
-                allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-            }
-            String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
-            if (!allergyMsg.isEmpty()) {
-                JsfUtil.addErrorMessage(allergyMsg);
-                return;
-            }
-        }
         BillTypeAtomic bta = BillTypeAtomic.REQUEST_MEDICINE_INWARD;
         BillType bt = BillType.InwardPharmacyRequest;
         settleBhtIssueRequest(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
-    }
-
-    public void settleBhtRequest() {
-        if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
-            JsfUtil.addErrorMessage("Please Select a BHT");
-            return;
-        }
-
-        if (getPatientEncounter().getCurrentPatientRoom() == null) {
-            JsfUtil.addErrorMessage("Please Select Patient Room");
-            return;
-        }
-
-        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
-            JsfUtil.addErrorMessage("Please Set Room");
-            return;
-        }
-
-        if (getPatientEncounter().isDischarged()) {
-            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
-            return;
-        }
-
-        if (getPatientEncounter().isPaymentFinalized()) {
-            JsfUtil.addErrorMessage("Sorry this BHT was Settled !!!");
-            return;
-        }
-
-        if (getPreBill().getBillItems() == null) {
-            return;
-        }
-        if (getPreBill().getBillItems().isEmpty()) {
-            return;
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter().getPatient();
-            if (allergyListOfPatient == null) {
-                allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-            }
-            String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
-            if (!allergyMsg.isEmpty()) {
-                JsfUtil.addErrorMessage(allergyMsg);
-                return;
-            }
-        }
-
-        BillTypeAtomic bta = BillTypeAtomic.REQUEST_MEDICINE_INWARD;
-        BillType bt = BillType.InwardPharmacyRequest;
-        Patient pt = getPatientEncounter().getPatient();
-        getPreBill().setPaidAmount(0);
-        // From: ward (patient's current room department)
-        Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-
-        getPreBill().setDepartment(sessionController.getDepartment());
-        getPreBill().setInstitution(sessionController.getInstitution());
-
-        getPreBill().setFromDepartment(fromDept);
-        getPreBill().setFromInstitution(fromDept.getInstitution());
-        // To: selected department (Pharmacy)
-        getPreBill().setToDepartment(department);
-        getPreBill().setToInstitution(department.getInstitution());
-        getPreBill().setPatientEncounter(patientEncounter);
-        getPreBill().setBillTypeAtomic(bta);
-        getPreBill().setBillType(bt);
-        getPreBill().setComments(comment);
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), bta);
-        getPreBill().setDeptId(deptId);
-        getPreBill().setInsId(deptId);
-        if (getPreBill().getId() == null) {
-            getPreBill().setCreatedAt(new Date());
-            getPreBill().setCreater(sessionController.getLoggedUser());
-            getPreBill().setCompleted(true);
-            getPreBill().setCompletedAt(new Date());
-            getPreBill().setCompletedBy(sessionController.getLoggedUser());
-            billFacade.create(getPreBill());
-        } else {
-            getPreBill().setCompleted(true);
-            getPreBill().setCompletedAt(new Date());
-            getPreBill().setCompletedBy(sessionController.getLoggedUser());
-            billFacade.edit(getPreBill());
-        }
-        for (BillItem savingBillItem : getPreBill().getBillItems()) {
-            savingBillItem.setBill(getPreBill());
-            if (savingBillItem.getId() == null) {
-                savingBillItem.setCreatedAt(new Date());
-                savingBillItem.setCreater(sessionController.getLoggedUser());
-                billItemFacade.create(savingBillItem);
-            } else {
-                billItemFacade.edit(savingBillItem);
-            }
-        }
-        setPrintBill(billService.reloadBill(getPreBill()));
-        notificationController.createNotification(getPrintBill());
-        clearBill();
-        clearBillItem();
-        comment = "";
-        billPreview = true;
     }
 
     public void settleStoreBhtIssue() {
@@ -1046,7 +839,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().getBillItems().clear();
+        getPreBill().setBillItems(null);
 
         savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
@@ -1101,7 +894,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
-    @Deprecated
     private void settleBhtIssueRequest(BillType bt, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
@@ -1112,7 +904,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().getBillItems().clear();
+        getPreBill().setBillItems(null);
 
         savePreBillFinallyRequest(pt, matrixDepartment, bt, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
@@ -1144,14 +936,14 @@ public class PharmacyRequestForBhtController implements Serializable {
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
-        getPreBill().getBillItems().clear();
+        List<BillItem> tmpBillItems = getBillItems();
+        getPreBill().setBillItems(null);
 
-        if (!tmpBillItems.isEmpty()) {
-            getPreBill().setReferenceBill(tmpBillItems.get(0).getReferanceBillItem().getBill());
+        if (!getBillItems().isEmpty()) {
+            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
         }
 
-        savePreBillFinallyPreservingToDepartment(pt, matrixDepartment, btp, billNumberSuffix);
+        savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin
@@ -1237,81 +1029,29 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (billItem == null) {
             return;
         }
-
-        if (billItem.getItem() == null) {
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (getItem() == null) {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-
         if (getQty() == null) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Quantity?");
             return;
         }
 
-        // Create a new billItem for the collection to avoid entity state issues
-        BillItem newBillItem = new BillItem();
-        newBillItem.setItem(billItem.getItem());
-        newBillItem.setQty(getQty());
-        newBillItem.setInwardChargeType(InwardChargeType.Medicine);
-        newBillItem.setBill(getPreBill());
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
-        // Handle prescription only if prescription data is available
-        boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
 
-        if (hasPrescriptionData) {
-            // Create a detached prescription instance for in-memory use only
-            // This will be persisted later during settle operations
-            Prescription inMemoryPrescription = new Prescription();
-            inMemoryPrescription.setItem(billItem.getItem());
-            inMemoryPrescription.setDose(billItem.getPrescription().getDose());
-            inMemoryPrescription.setDoseUnit(billItem.getPrescription().getDoseUnit());
-            inMemoryPrescription.setFrequencyUnit(billItem.getPrescription().getFrequencyUnit());
-            inMemoryPrescription.setDuration(billItem.getPrescription().getDuration());
-            inMemoryPrescription.setDurationUnit(billItem.getPrescription().getDurationUnit());
-            inMemoryPrescription.setPrescribedFrom(billItem.getPrescription().getPrescribedFrom());
-            inMemoryPrescription.setPrescribedTo(billItem.getPrescription().getPrescribedTo());
-            inMemoryPrescription.setComment(billItem.getPrescription().getComment());
-            inMemoryPrescription.setPatient(getPatientEncounter().getPatient());
-            inMemoryPrescription.setEncounter(getPatientEncounter());
-            inMemoryPrescription.setIndoor(true);
+        billItem.setItem(getItem());
+        billItem.setQty(getQty());
+        billItem.setBill(getPreBill());
 
-            // Attach prescription to bill item for later persistence (but don't persist now)
-            newBillItem.setPrescription(inMemoryPrescription);
-
-            // Compute description from in-memory prescription object
-            String prescriptionText = inMemoryPrescription.getFormattedPrescriptionWithoutIndoorOutdoor();
-            if (inMemoryPrescription.getComment() != null && !inMemoryPrescription.getComment().trim().isEmpty()) {
-                prescriptionText += " - " + inMemoryPrescription.getComment();
-            }
-            newBillItem.setDescreption(prescriptionText);
-        } else {
-            // No meaningful prescription data, use simple description
-            newBillItem.setDescreption(billItem.getItem().getName() + " - Qty: " + getQty());
-        }
-
-        // Create pharmaceutical bill item with quantity
-        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
-        pharmaceuticalBillItem.setQty(-getQty()); // Negative quantity for requests
-        pharmaceuticalBillItem.setBillItem(newBillItem);
-        newBillItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
-
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-                }
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, newBillItem, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
-
-        newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
-        getPreBill().getBillItems().add(newBillItem);
+        billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+        getPreBill().getBillItems().add(billItem);
 
         clearBillItem();
         setActiveIndex(1);
@@ -1396,9 +1136,14 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
+        //////// // System.out.println("calculateBillItemForEditing");
+        //////// // System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
+            //////// // System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
+        //////// // System.out.println("bi.getQty() = " + bi.getQty());
+        //////// // System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
@@ -1408,123 +1153,6 @@ public class PharmacyRequestForBhtController implements Serializable {
     public void handleSelect(SelectEvent event) {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
-    }
-
-    public void handleMedicineSelect(SelectEvent event) {
-        if (billItem != null && billItem.getPrescription() != null && billItem.getPrescription().getItem() != null) {
-            autoSetDoseUnitForMedicine(billItem.getPrescription().getItem());
-        }
-    }
-
-    /**
-     * Automatically set dose unit for AMP or VMP based on their properties
-     */
-    private void autoSetDoseUnitForMedicine(Item selectedItem) {
-        com.divudi.core.entity.pharmacy.MeasurementUnit preferredDoseUnit = null;
-
-        if (selectedItem instanceof com.divudi.core.entity.pharmacy.Amp) {
-            preferredDoseUnit = getPreferredDoseUnitForAmp((com.divudi.core.entity.pharmacy.Amp) selectedItem);
-        } else if (selectedItem instanceof com.divudi.core.entity.pharmacy.Vmp) {
-            preferredDoseUnit = getPreferredDoseUnitForVmp((com.divudi.core.entity.pharmacy.Vmp) selectedItem);
-        }
-
-        // Set the dose unit if found
-        if (preferredDoseUnit != null && billItem.getPrescription() != null) {
-            billItem.getPrescription().setDoseUnit(preferredDoseUnit);
-        }
-    }
-
-    /**
-     * Get preferred dose unit for AMP Priority order: issueUnit > strengthUnit
-     * > VMP issueUnit > VMP strengthUnit
-     */
-    private com.divudi.core.entity.pharmacy.MeasurementUnit getPreferredDoseUnitForAmp(com.divudi.core.entity.pharmacy.Amp amp) {
-        if (amp.getIssueUnit() != null) {
-            return amp.getIssueUnit();
-        } else if (amp.getStrengthUnit() != null) {
-            return amp.getStrengthUnit();
-        } else if (amp.getVmp() != null) {
-            if (amp.getVmp().getIssueUnit() != null) {
-                return amp.getVmp().getIssueUnit();
-            } else if (amp.getVmp().getStrengthUnit() != null) {
-                return amp.getVmp().getStrengthUnit();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get preferred dose unit for VMP Priority order: issueUnit > strengthUnit
-     * > dosage form default
-     */
-    private com.divudi.core.entity.pharmacy.MeasurementUnit getPreferredDoseUnitForVmp(com.divudi.core.entity.pharmacy.Vmp vmp) {
-        if (vmp.getIssueUnit() != null) {
-            return vmp.getIssueUnit();
-        } else if (vmp.getStrengthUnit() != null) {
-            return vmp.getStrengthUnit();
-        } else {
-            // Try to get default dose unit based on dosage form
-            if (vmp.getDosageForm() != null) {
-                com.divudi.core.entity.pharmacy.MeasurementUnit defaultUnit = getDefaultDoseUnitForDosageForm(vmp.getDosageForm());
-                if (defaultUnit != null) {
-                    return defaultUnit;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get default dose unit based on dosage form
-     */
-    private com.divudi.core.entity.pharmacy.MeasurementUnit getDefaultDoseUnitForDosageForm(com.divudi.core.entity.Category dosageForm) {
-        if (dosageForm == null || dosageForm.getName() == null) {
-            return null;
-        }
-
-        String formName = dosageForm.getName().toLowerCase();
-
-        // Try to get a suitable dose unit from measurement unit controller
-        if (measurementUnitController != null) {
-            java.util.List<com.divudi.core.entity.pharmacy.MeasurementUnit> doseUnits = measurementUnitController.getDoseUnits();
-
-            // Map common dosage forms to appropriate dose units
-            if (formName.contains("tablet") || formName.contains("capsule") || formName.contains("pill")) {
-                // For solid forms, look for "tablet", "capsule", or count-based units
-                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
-                    String unitName = unit.getName().toLowerCase();
-                    if (unitName.contains("tablet") || unitName.contains("capsule") || unitName.equals("nos") || unitName.equals("each")) {
-                        return unit;
-                    }
-                }
-            } else if (formName.contains("syrup") || formName.contains("liquid") || formName.contains("suspension") || formName.contains("solution")) {
-                // For liquid forms, look for "ml", "mL", or volume-based units
-                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
-                    String unitName = unit.getName().toLowerCase();
-                    if (unitName.equals("ml") || unitName.equals("ml") || unitName.contains("milliliter")) {
-                        return unit;
-                    }
-                }
-            } else if (formName.contains("cream") || formName.contains("ointment") || formName.contains("gel")) {
-                // For topical forms, look for "g", "gram", or weight-based units
-                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
-                    String unitName = unit.getName().toLowerCase();
-                    if (unitName.equals("g") || unitName.equals("gm") || unitName.contains("gram")) {
-                        return unit;
-                    }
-                }
-            } else if (formName.contains("injection") || formName.contains("ampoule") || formName.contains("vial")) {
-                // For injections, look for "ml", "ampoule", or "vial"
-                for (com.divudi.core.entity.pharmacy.MeasurementUnit unit : doseUnits) {
-                    String unitName = unit.getName().toLowerCase();
-                    if (unitName.equals("ml") || unitName.equals("ml") || unitName.contains("ampoule") || unitName.contains("vial")) {
-                        return unit;
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     public void paymentSchemeChanged(AjaxBehaviorEvent ajaxBehavior) {
@@ -1544,7 +1172,9 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
+        //////// // System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
+            //////// // System.out.println("stock is null");
             return;
         }
         getBillItem();
@@ -1596,7 +1226,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
+            //// // System.out.println("i.getQtyInUnit() = " + i.getItemBatch().getItem().getName());
+            //// // System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
             double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
+            //// // System.out.println("billedIssue = " + billedIssue);
             double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
             double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
 
@@ -1688,8 +1321,10 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void handleSelectAction() {
         if (stock == null) {
+            //////// // System.out.println("Stock NOT selected.");
         }
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
+            //////// // System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
         }
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
@@ -1710,6 +1345,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         item = null;
+
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
@@ -1739,7 +1375,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().getBillItems().clear();
+        getPreBill().setBillItems(null);
         getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
         getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
 
@@ -1796,14 +1432,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
-    }
-
-    public PrescriptionFacade getPrescriptionFacade() {
-        return prescriptionFacade;
-    }
-
-    public void setPrescriptionFacade(PrescriptionFacade prescriptionFacade) {
-        this.prescriptionFacade = prescriptionFacade;
     }
 
     public ItemFacade getItemFacade() {
@@ -2035,131 +1663,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    // Prescription Date and Duration Calculation Methods
-    public void calculateDurationFromDates() {
-        if (billItem != null && billItem.getPrescription() != null) {
-            prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
-        }
-    }
-
-    public void calculateToDateFromDuration() {
-        if (billItem != null && billItem.getPrescription() != null) {
-            prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
-        }
-    }
-
-    public void calculateFromDateFromDuration() {
-        if (billItem != null && billItem.getPrescription() != null) {
-            prescriptionService.autoCalculatePrescriptionDates(billItem.getPrescription());
-        }
-    }
-
-    public void validatePrescriptionDates() {
-        if (billItem != null && billItem.getPrescription() != null) {
-            String validationMessage = prescriptionService.validatePrescriptionDates(billItem.getPrescription());
-            if (validationMessage != null && !validationMessage.isEmpty()) {
-                setErrorMessage(validationMessage);
-            } else {
-                setErrorMessage(""); // Clear error message if valid
-            }
-        }
-    }
-
-    /**
-     * Auto-calculate item and quantity from prescription details
-     */
-    public void calculateItemAndQuantityFromPrescription() {
-        if (billItem == null || billItem.getPrescription() == null) {
-            setErrorMessage("No prescription available for calculation");
-            return;
-        }
-
-        try {
-            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
-                    = prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
-
-            if (result.isSuccess()) {
-                // Set the calculated item and quantity
-                if (result.getItem() != null) {
-                    setItem(result.getItem());
-                    billItem.setItem(result.getItem());
-                }
-
-                if (result.getQuantity() != null) {
-                    setQty(result.getQuantity());
-                }
-
-                // Clear any previous error messages
-                setErrorMessage("");
-
-                // Show calculation note if available
-                if (result.getCalculationNote() != null && !result.getCalculationNote().isEmpty()) {
-                    // You could store this in a separate field or display it in UI
-                    // For now, we'll use it internally
-                }
-
-            } else {
-                // Show error message
-                setErrorMessage("Calculation Error: " + result.getErrorMessage());
-            }
-
-        } catch (Exception e) {
-            setErrorMessage("Error calculating item and quantity: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Check if prescription has enough information for item/quantity
-     * calculation
-     */
-    public boolean isCalculationPossible() {
-        if (billItem == null || billItem.getPrescription() == null) {
-            return false;
-        }
-        return prescriptionToItemService.isCalculationPossible(billItem.getPrescription());
-    }
-
-    /**
-     * Get calculation explanation for display
-     */
-    public String getCalculationExplanation() {
-        if (billItem == null || billItem.getPrescription() == null) {
-            return "No prescription available";
-        }
-        return prescriptionToItemService.getCalculationExplanation(billItem.getPrescription());
-    }
-
-    /**
-     * Check if the prescription has meaningful data that warrants persistence
-     *
-     * @param prescription The prescription to check
-     * @return true if prescription has meaningful data, false otherwise
-     */
-    private boolean hasMeaningfulPrescriptionData(Prescription prescription) {
-        if (prescription == null) {
-            return false;
-        }
-
-        // Check if any of the key prescription fields have meaningful values
-        return prescription.getDose() != null
-                || prescription.getDoseUnit() != null
-                || prescription.getFrequencyUnit() != null
-                || prescription.getDuration() != null
-                || prescription.getDurationUnit() != null
-                || prescription.getPrescribedFrom() != null
-                || prescription.getPrescribedTo() != null
-                || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
-                || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
-    }
-
-    public List<ClinicalFindingValue> getAllergyListOfPatient() {
-        return allergyListOfPatient;
-    }
-
-    public void setAllergyListOfPatient(List<ClinicalFindingValue> allergyListOfPatient) {
-        this.allergyListOfPatient = allergyListOfPatient;
     }
 
 }

@@ -122,8 +122,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="text-align: right;"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Rate"/>
                         </f:facet>
@@ -139,8 +138,7 @@
                         <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
                     </p:column>                    
 
-                    <p:column style="text-align: right;"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Value"/>
                         </f:facet>
@@ -150,8 +148,7 @@
                     </p:column>
 
 
-                    <p:columnGroup type="footer"
-                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                    <p:columnGroup type="footer">
                         <p:row>
                             <p:column colspan="6">
                                 <f:facet name="footer">

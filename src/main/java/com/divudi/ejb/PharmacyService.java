@@ -17,7 +17,6 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
-import com.divudi.core.entity.pharmacy.Atm;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
@@ -75,85 +74,44 @@ public class PharmacyService {
     }
 
     public boolean isAllergyForPatient(Patient patient, BillItem billItem, List<ClinicalFindingValue> allergyListOfPatient) {
-        return !getAllergyMessageForPatient(patient, billItem, allergyListOfPatient).isEmpty();
-    }
-
-    /**
-     * Build a human readable warning if the bill item matches any recorded allergies.
-     * Checks the Amp, Atm, Vmp, and Vtm hierarchy for conflicts.
-     *
-     * @param patient patient whose allergies are evaluated
-     */
-    public String getAllergyMessageForPatient(Patient patient, BillItem billItem, List<ClinicalFindingValue> allergyListOfPatient) {
-
-        if (billItem == null) {
-            return "";
-        }
 
         if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
             allergyListOfPatient = getAllergyListForPatient(patient);
         }
 
         if (allergyListOfPatient.isEmpty()) {
-            return "";
-        }
-
-        Item item = null;
-        if (billItem.getPharmaceuticalBillItem() != null && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
-            item = billItem.getPharmaceuticalBillItem().getItemBatch().getItem();
-        }
-        if (item == null) {
-            item = billItem.getItem();
-        }
-        if (item == null) {
-            return "";
-        }
-
-        Amp amp = null;
-        if (item instanceof Ampp) {
-            amp = ((Ampp) item).getAmp();
-        } else if (item instanceof Amp) {
-            amp = (Amp) item;
-        }
-
-        Atm atm = null;
-        Vmp vmp = null;
-        Vtm vtm = null;
-
-        if (amp != null) {
-            atm = amp.getAtm();
-            vmp = amp.getVmp();
-        }
-
-        if (atm != null) {
-            vtm = atm.getVtm();
-        }
-
-        if (vtm == null && vmp != null) {
-            // TODO: Temporarily stopped searching for VTM of VMP - need to remember how to get VTM from VMP
-            // vtm = vmp.getVtm(); // Commented out to prevent compilation error
+            return false;
         }
 
         for (ClinicalFindingValue c : allergyListOfPatient) {
-            if (c.getItemValue() == null) {
-                continue;
-            }
-            Item a = c.getItemValue();
-            if (a.equals(item)
-                    || (amp != null && a.equals(amp))
-                    || (atm != null && a.equals(atm))
-                    || (vmp != null && a.equals(vmp))
-                    || (vtm != null && a.equals(vtm))) {
-                return item.getName() + " is not allowed as patient is allergic to " + a.getName();
-            }
-        }
+            if (c.getItemValue() != null) {
+                if (billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
+                    if (c.getItemValue().equals(billItem.getPharmaceuticalBillItem().getItemBatch().getItem())) {
+                        return true;
+                    }
+                }
+                if (billItem.getPharmaceuticalBillItem().getItemBatch().getItem() != null) {
+                    if (c.getItemValue().equals(billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getVmp())) {
+                        return true;
+                    }
+                }
 
-        return "";
+                if (billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getVmp() != null) {
+                    if (c.getItemValue().equals(billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getVmp().getVtm())) {
+                        return true;
+                    }
+                }
+            }
+
+        }
+        return false;
     }
 
     public String isAllergyForPatient(Patient patient, List<BillItem> items, List<ClinicalFindingValue> allergyLisForPatient) {
 
-        List<String> allergyMessages = new ArrayList<>();
+        boolean hasAllergicMedicines = false;
+        List<Item> allergyItems = new ArrayList<>();
+        StringBuilder allergyMsg = new StringBuilder();
 
         if (allergyLisForPatient == null || allergyLisForPatient.isEmpty()) {
             allergyLisForPatient = getAllergyListForPatient(patient);
@@ -164,14 +122,25 @@ public class PharmacyService {
         }
 
         for (BillItem billItem : items) {
-            String msg = getAllergyMessageForPatient(patient, billItem, allergyLisForPatient);
-            if (!msg.isEmpty()) {
-                allergyMessages.add(msg);
+            boolean thisItemIsAllergy = isAllergyForPatient(patient, billItem, allergyLisForPatient);
+
+            if (thisItemIsAllergy) {
+                allergyItems.add(billItem.getItem());
+                hasAllergicMedicines = true;
             }
         }
 
-        if (!allergyMessages.isEmpty()) {
-            return String.join(" , ", allergyMessages);
+        if (hasAllergicMedicines) {
+            allergyMsg.append("This patient should be allergy of ");
+
+            for (Item i : allergyItems) {
+                allergyMsg.append(i.getName()).append(" , ");
+            }
+
+            if (allergyMsg.length() > 0) {
+                allergyMsg.setLength(allergyMsg.length() - 2);
+            }
+            return allergyMsg.toString();
         }
 
         return "";

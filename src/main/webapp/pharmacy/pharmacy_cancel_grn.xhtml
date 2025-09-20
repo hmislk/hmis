@@ -10,184 +10,175 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
-                <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}">
-                    <h1>Configuration Settings has disabled GRN Cancellations. Please change the option <span>GRN Cancellations are allowed</span>  </h1>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}">
-                    <h:form>
-                        <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
-                            <p:panel  header="Cancellation">
-                                <f:facet name="header">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <h:outputLabel value="Cancellation" class="mt-2"></h:outputLabel>
-
-                                        <div class="d-flex gap-2">
-                                            <p:inputText value="#{pharmacyBillSearch.bill.comments}" style="width: 50em;" placeholder="Enter Comments to Cancel Bill"/>
-                                            <p:commandButton 
-                                                value="Cancel" 
-                                                ajax="false"
-                                                icon="fa fa-cancel"
-                                                class="ui-button-danger" 
-                                                action="#{pharmacyBillSearch.pharmacyGrnCancel()}" >
-                                            </p:commandButton> 
-                                        </div>
-                                    </div>
-                                </f:facet>
-
-                                <div class="row">
-                                    <div class="col-md-4 d-grid gap-2">
-                                        <p:panel header="Supplier Details">
-
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <h:outputLabel value="Supplier ​Name" ></h:outputLabel>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <h:outputLabel value="#{pharmacyBillSearch.bill.fromInstitution.name}" ></h:outputLabel>
-                                                </div>
-                                            </div>
-
-                                            <div class="row mt-1">
-                                                <div class="col-md-4"><h:outputLabel value="Payment Method" class="mt-2"></h:outputLabel></div>
-                                                <div class="col-md-8">
-                                                    <p:selectOneMenu id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true" disabled="true" >
-                                                        <f:selectItems value="#{enumController.paymentMethods}"/>
-                                                    </p:selectOneMenu>
-                                                </div>
-                                            </div>
-                                        </p:panel>
-
-                                        <p:panel header="Bill Details">
-
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <h:outputLabel value="Bill No " ></h:outputLabel>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <h:outputLabel value="Total " ></h:outputLabel>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <h:outputLabel value="#{pharmacyBillSearch.bill.total}" >
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <h:outputLabel value="Discount " ></h:outputLabel>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" >
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <h:outputLabel value="Net Total " ></h:outputLabel>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" >
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </div>
-                                            </div>
-
-                                        </p:panel>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:panel header="Bill Item Details">
-                                            <p:dataTable 
-                                                rowIndexVar="rowIndex" 
-                                                value="#{pharmacyBillSearch.bill.billItems}" 
-                                                var="bip" 
-                                                class="w-100">
-                                                <p:column width="50px;">
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-
-                                                <p:column>
-                                                    <f:facet name="header">Item</f:facet>
-                                                        #{bip.item.name}
-                                                </p:column>
-
-                                                <p:column width="100px;">
-                                                    <f:facet name="header">Qty</f:facet>
-
-                                                    <h:outputLabel value="#{bip.qty}" >
-                                                        <f:convertNumber pattern="#,##0"/>
-                                                    </h:outputLabel>
-                                                </p:column>
-
-                                                <p:column width="100px;" style="text-align: right;">
-                                                    <f:facet name="header">Value</f:facet>
-
-                                                    <h:outputLabel value="#{-bip.netValue}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-
-                                                </p:column>
-                                            </p:dataTable>
-
-                                        </p:panel>
-                                    </div>
-                                </div>
-                            </p:panel>
-                        </h:panelGroup>
-
-                        <p:panel  rendered="#{pharmacyBillSearch.printPreview}" >
+                <h:form>
+                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
+                        <p:panel  header="Cancellation">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between w-100">
-                                    <h:outputLabel value="Cancel Bill Preview" class="mt-2"></h:outputLabel>
+                                    <h:outputLabel value="Cancellation" class="mt-2"></h:outputLabel>
 
                                     <div class="d-flex gap-2">
+                                        <p:inputText value="#{pharmacyBillSearch.bill.comments}" style="width: 50em;" placeholder="Enter Comments to Cancel Bill"/>
                                         <p:commandButton 
-                                            ajax="false" 
-                                            action="pharmacy_purchase_order_list_for_recieve"
-                                            class="ui-button-warning"
-                                            icon="fa fa-arrow-left"
-                                            actionListener="#{grnController.viewPoList()}" 
-                                            value="Back to PO List"> 
-                                        </p:commandButton>   
-
-                                        <p:commandButton 
-                                            value="Print" 
-                                            ajax="false" 
-                                            icon="fa fa-print"
-                                            class="ui-button-info">
-                                            <p:printer target="gpBillPreview" ></p:printer>
-                                        </p:commandButton>
+                                            value="Cancel" 
+                                            ajax="false"
+                                            icon="fa fa-cancel"
+                                            class="ui-button-danger" 
+                                            action="#{pharmacyBillSearch.pharmacyGrnCancel()}" >
+                                        </p:commandButton> 
                                     </div>
                                 </div>
                             </f:facet>
+                            
+                            <div class="row">
+                                <div class="col-md-4 d-grid gap-2">
+                                    <p:panel header="Supplier Details">
 
-                            <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-     <!--                        <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Supplier ​Name" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <h:outputLabel value="#{pharmacyBillSearch.bill.fromInstitution.name}" ></h:outputLabel>
+                                            </div>
+                                        </div>
 
-                                <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                                        <div class="row mt-1">
+                                            <div class="col-md-4"><h:outputLabel value="Payment Method" class="mt-2"></h:outputLabel></div>
+                                            <div class="col-md-8">
+                                                <p:selectOneMenu id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true" disabled="true" >
+                                                    <f:selectItems value="#{enumController.paymentMethods}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </p:panel>
 
+                                    <p:panel header="Bill Details">
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Bill No " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Total " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <h:outputLabel value="#{pharmacyBillSearch.bill.total}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Discount " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Net Total " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                    </p:panel>
+                                </div>
+                                <div class="col-md-8">
+                                    <p:panel header="Bill Item Details">
+                                        <p:dataTable 
+                                            rowIndexVar="rowIndex" 
+                                            value="#{pharmacyBillSearch.bill.billItems}" 
+                                            var="bip" 
+                                            class="w-100">
+                                            <p:column width="50px;">
+                                                <f:facet name="header">No</f:facet>
+                                                    #{rowIndex+1}
+                                            </p:column>
+
+                                            <p:column>
+                                                <f:facet name="header">Item</f:facet>
+                                                    #{bip.item.name}
+                                            </p:column>
+
+                                            <p:column width="100px;">
+                                                <f:facet name="header">Qty</f:facet>
+
+                                                <h:outputLabel value="#{bip.qty}" >
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputLabel>
+                                            </p:column>
+
+                                            <p:column width="100px;" style="text-align: right;">
+                                                <f:facet name="header">Value</f:facet>
+
+                                                <h:outputLabel value="#{-bip.netValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+
+                                            </p:column>
+                                        </p:dataTable>
+                                        
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <p:panel  rendered="#{pharmacyBillSearch.printPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between w-100">
+                                <h:outputLabel value="Cancel Bill Preview" class="mt-2"></h:outputLabel>
+                                
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="pharmacy_purchase_order_list_for_recieve"
+                                        class="ui-button-warning"
+                                        icon="fa fa-arrow-left"
+                                        actionListener="#{grnController.viewPoList()}" 
+                                        value="Back to PO List"> 
+                                    </p:commandButton>   
+
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="false" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
+ <!--                        <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
+
+                            <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                            
 
 <!--                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                                 <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                             </h:panelGroup>-->
-                            </h:panelGroup>
-
-                        </p:panel>
-                    </h:form>   
-
-                </h:panelGroup>
-
+                        </h:panelGroup>
+                        
+                    </p:panel>
+                </h:form>                
             </ui:define>
         </ui:composition>
     </h:body>

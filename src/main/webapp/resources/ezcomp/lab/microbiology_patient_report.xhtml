@@ -10,7 +10,6 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="showBackground" type="java.lang.Boolean" default="false"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -19,8 +18,7 @@
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
 
             <div id="divReportM"  class="labReport"   >
-                <ez:common_report showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}" 
-                                  commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                <ez:common_report showBackground="#{patientReportController.showBackground}" commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                   patientReport="#{patientReportController.currentPatientReport}"/>
                 <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                     <div id="ixName" >

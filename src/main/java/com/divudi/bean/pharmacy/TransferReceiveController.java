@@ -8,10 +8,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import javax.persistence.TemporalType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -64,7 +60,6 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
-    @Deprecated
     private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
@@ -98,8 +93,6 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
-    @Inject
-    private com.divudi.bean.common.SearchController searchController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
@@ -136,11 +129,6 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to received");
             return null;
         }
-        // Check if already fully received to prevent over-receiving
-        if (isAlreadyReceived(issuedBill)) {
-            JsfUtil.addErrorMessage("Already Received!");
-            return null;
-        }
         printPreview=false;
         generateBillComponent();
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
@@ -165,11 +153,6 @@ public class TransferReceiveController implements Serializable {
         fromDate = null;
         toDate = null;
         selectedBillItem = null;
-
-        // Refresh the issued list data to show updated fullyIssued status
-        if (searchController != null) {
-            searchController.createIssueTable();
-        }
     }
 
     public TransferReceiveController() {
@@ -218,12 +201,6 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void generateBillComponent() {
-        // Final safety check before creating any bill items
-        if (isAlreadyReceived(issuedBill)) {
-            JsfUtil.addErrorMessage("Already Received - Cannot generate receive items!");
-            return;
-        }
-        
         receivedBill = new BilledBill();
         getReceivedBill();
         getReceivedBill().setReferenceBill(issuedBill);
@@ -238,8 +215,8 @@ public class TransferReceiveController implements Serializable {
 
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
-            double remainingQty = calculateRemainingQtyWithFreshData(issuedBillItem);
-            if (remainingQty <= 0.001) { // Add tolerance for floating point precision
+            double remainingQty = calculateRemainingQty(issuedBillItem);
+            if (remainingQty <= 0) {
                 continue;
             }
 
@@ -326,112 +303,18 @@ public class TransferReceiveController implements Serializable {
         if (bill == null) {
             return false;
         }
-        
-        // Get fresh data from the database to avoid caching issues
-        Bill freshIssueBill = billFacade.find(bill.getId());
-        if (freshIssueBill == null) {
-            return false;
-        }
-        
-        List<BillItem> issueItems = billService.fetchBillItems(freshIssueBill);
+        List<BillItem> issueItems = billService.fetchBillItems(bill);
         for (BillItem bi : issueItems) {
-            double remainingQty = calculateRemainingQtyWithFreshData(bi);
-            if (remainingQty > 0.001) { // Add small tolerance for floating point precision
-                return false; // Still has items remaining to receive
+            if (calculateRemainingQty(bi) > 0) {
+                return false;
             }
         }
-        return true; // All items are fully received
-    }
-    
-    private double calculateRemainingQtyWithFreshData(BillItem issuedItem) {
-        double issuedQtyInUnits = 0.0;
-        if (issuedItem != null && issuedItem.getPharmaceuticalBillItem() != null) {
-            issuedQtyInUnits = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
-        }
-
-        // Get fresh receive data from database - only saved bills
-        String jpql = "SELECT b FROM Bill b WHERE b.backwardReferenceBill.id = :issueBillId AND b.billType = :receiveType AND b.id IS NOT NULL";
-        Map<String, Object> params = new HashMap<>();
-        params.put("issueBillId", issuedItem.getBill().getId());
-        params.put("receiveType", BillType.PharmacyTransferReceive);
-        
-        List<Bill> receiveBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            
-        double totalReceivedQty = 0.0;
-        for (Bill receiveBill : receiveBills) {
-            if (receiveBill.getBillClassType() == BillClassType.CancelledBill) {
-                continue; // Skip cancelled receives
-            }
-            
-            // Include all receive bills including the current one being processed
-            // (We want to count all receives to determine if the issue is fully complete)
-            
-            List<BillItem> receiveItems = billService.fetchBillItems(receiveBill);
-            for (BillItem receiveItem : receiveItems) {
-                // Only count items that reference the same issued item
-                if (receiveItem.getReferanceBillItem() != null && 
-                    Objects.equals(receiveItem.getReferanceBillItem().getId(), issuedItem.getId()) &&
-                    receiveItem.getPharmaceuticalBillItem() != null) {
-                    totalReceivedQty += Math.abs(receiveItem.getPharmaceuticalBillItem().getQty());
-                }
-            }
-        }
-
-        return issuedQtyInUnits - totalReceivedQty;
-    }
-    
-    private boolean wouldCauseOverReceiving() {
-        if (getReceivedBill() == null || getIssuedBill() == null) {
-            return false;
-        }
-        
-        List<BillItem> receivingItems = getReceivedBill().getBillItems();
-        
-        if (receivingItems == null || receivingItems.isEmpty()) {
-            return false;
-        }
-        
-        // Check each receiving item against its reference issued item
-        for (BillItem receivingItem : receivingItems) {
-            if (receivingItem.getReferanceBillItem() == null) {
-                continue; // Skip items without reference
-            }
-            
-            BillItem issuedItem = receivingItem.getReferanceBillItem();
-            
-            // Get current remaining quantity (excluding this receive bill)
-            double currentRemainingQty = calculateRemainingQtyWithFreshData(issuedItem);
-            
-            // Get the quantity being received for this specific item
-            double quantityBeingReceived = 0.0;
-            if (receivingItem.getPharmaceuticalBillItem() != null) {
-                quantityBeingReceived = Math.abs(receivingItem.getPharmaceuticalBillItem().getQty());
-            }
-            
-            // Check if this receive would cause over-receiving
-            if (quantityBeingReceived > currentRemainingQty + 0.001) { // Add tolerance
-                return true; // Would cause over-receiving
-            }
-        }
-        
-        return false; // All quantities are within limits
+        return true;
     }
 
     public void settle() {
         if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
-            return;
-        }
-        
-        // Additional validation: Check if trying to over-receive
-        if (isAlreadyReceived(getIssuedBill())) {
-            JsfUtil.addErrorMessage("Cannot receive - already fully received!");
-            return;
-        }
-        
-        // Validate that current receive quantities don't exceed remaining quantities
-        if (wouldCauseOverReceiving()) {
-            JsfUtil.addErrorMessage("Cannot receive - quantities exceed remaining amounts!");
             return;
         }
 
@@ -480,17 +363,6 @@ public class TransferReceiveController implements Serializable {
         fillData(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
         getBillFacade().edit(getReceivedBill());
-        
-        // Check if Transfer Issue is fully received and update fullyIssued status
-        if (getIssuedBill() != null && !getIssuedBill().isFullyIssued()) {
-            if (isAlreadyReceived(getIssuedBill())) {
-                getIssuedBill().setFullyIssued(true);
-                getIssuedBill().setFullyIssuedAt(new Date());
-                getIssuedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
-                getBillFacade().edit(getIssuedBill());
-            }
-        }
-        
         printPreview = true;
     }
 
@@ -745,18 +617,6 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
-        // Additional validation: Check if trying to over-receive
-        if (isAlreadyReceived(getIssuedBill())) {
-            JsfUtil.addErrorMessage("Cannot receive - already fully received!");
-            return;
-        }
-        
-        // Validate that current receive quantities don't exceed remaining quantities
-        if (wouldCauseOverReceiving()) {
-            JsfUtil.addErrorMessage("Cannot receive - quantities exceed remaining amounts!");
-            return;
-        }
 
         getReceivedBill().setApproveAt(new Date());
         getReceivedBill().setApproveUser(getSessionController().getLoggedUser());
@@ -825,16 +685,6 @@ public class TransferReceiveController implements Serializable {
 
         getBillFacade().edit(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
-
-        // Check if Transfer Issue is fully received and update fullyIssued status
-        if (getIssuedBill() != null && !getIssuedBill().isFullyIssued()) {
-            if (isAlreadyReceived(getIssuedBill())) {
-                getIssuedBill().setFullyIssued(true);
-                getIssuedBill().setFullyIssuedAt(new Date());
-                getIssuedBill().setFullyIssuedBy(getSessionController().getLoggedUser());
-                getBillFacade().edit(getIssuedBill());
-            }
-        }
 
         printPreview = true;
     }
@@ -1251,80 +1101,6 @@ public class TransferReceiveController implements Serializable {
         return list;
     }
 
-    public String fillHeaderDataOfTransferReceiveNote(String s, Bill b) {
-        if (b != null) {
-            String filledHeader;
-
-            // Institution details
-            String institutionName = b.getCreater().getDepartment().getPrintingName();
-            String institutionAddress = b.getCreater().getDepartment().getAddress() != null ?
-                    b.getCreater().getDepartment().getAddress() : "";
-
-            // Phone numbers handling
-            String phone1 = b.getCreater().getDepartment().getTelephone1() != null ?
-                    b.getCreater().getDepartment().getTelephone1() : "";
-            String phone2 = b.getCreater().getDepartment().getTelephone2() != null ?
-                    b.getCreater().getDepartment().getTelephone2() : "";
-            String institutionPhones = phone1;
-            if (!phone2.isEmpty()) {
-                institutionPhones += " / " + phone2;
-            }
-
-            // Fax and Email
-            String institutionFax = "";
-            if (b.getCreater().getDepartment().getFax() != null &&
-                    !b.getCreater().getDepartment().getFax().trim().isEmpty()) {
-                institutionFax = "Fax: " + b.getCreater().getDepartment().getFax();
-            }
-
-            String institutionEmail = "";
-            if (b.getCreater().getDepartment().getEmail() != null &&
-                    !b.getCreater().getDepartment().getEmail().trim().isEmpty()) {
-                institutionEmail = "Email: " + b.getCreater().getDepartment().getEmail();
-            }
-
-            // Cancelled status
-            String cancelledStatus = "";
-            if (b.getBilledBill() != null && b.getBilledBill().isCancelled() == Boolean.TRUE) {
-                cancelledStatus = " <span class=\"receipt-cancelled\">**Cancelled**</span>";
-            }
-
-            // Bill details
-            String locationFrom = b.getFromDepartment() != null ? b.getFromDepartment().getName() : "";
-            String locationTo = b.getDepartment() != null ? b.getDepartment().getName() : "";
-            String receivedPerson = b.getCreater().getWebUserPerson().getName();
-            String issuedPerson = b.getBackwardReferenceBill() != null &&
-                    b.getBackwardReferenceBill().getCreater() != null ?
-                    b.getBackwardReferenceBill().getCreater().getWebUserPerson().getName() : "";
-            String receiveNo = b.getDeptId() != null ? b.getDeptId() : "";
-            String issueNo = b.getBackwardReferenceBill() != null ?
-                    b.getBackwardReferenceBill().getDeptId() : "";
-
-            // Date formatting
-            String receivedTime =  (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
-            String issueTime = (b != null ? CommonFunctions.getDateFormat(b.getBackwardReferenceBill().getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
-
-            filledHeader = s.replace("{{institution_name}}", institutionName)
-                    .replace("{{institution_address}}", institutionAddress)
-                    .replace("{{institution_phones}}", institutionPhones)
-                    .replace("{{institution_fax}}", institutionFax)
-                    .replace("{{institution_email}}", institutionEmail)
-                    .replace("{{cancelled_status}}", cancelledStatus)
-                    .replace("{{location_from}}", locationFrom)
-                    .replace("{{location_to}}", locationTo)
-                    .replace("{{received_person}}", receivedPerson)
-                    .replace("{{issued_person}}", issuedPerson)
-                    .replace("{{receive_no}}", receiveNo)
-                    .replace("{{issue_no}}", issueNo)
-                    .replace("{{received_time}}", receivedTime)
-                    .replace("{{issue_time}}", issueTime);
-
-            return filledHeader;
-        } else {
-            return s;
-        }
-    }
-
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
@@ -1341,17 +1117,14 @@ public class TransferReceiveController implements Serializable {
         this.selectedBillItem = selectedBillItem;
     }
 
-    @Deprecated
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
 
-    @Deprecated
     public void setShowAllBillFormats(boolean showAllBillFormats) {
         this.showAllBillFormats = showAllBillFormats;
     }
 
-    @Deprecated
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";

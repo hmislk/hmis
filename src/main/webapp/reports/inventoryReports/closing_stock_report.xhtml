@@ -14,7 +14,22 @@
                     <h:panelGrid columns="8" class="w-100">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                            <p:outputLabel value="Date" for="toDate" class="m-3">
+                            <p:outputLabel value="From Date" for="fromDate" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{pharmacyReportController.fromDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="To Date" for="toDate" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
                         <p:calendar
@@ -40,9 +55,6 @@
                             <f:selectItem itemLabel="Item Wise" itemValue="itemWise"/>
                             <f:selectItem itemLabel="Batch Wise" itemValue="batchWise"/>
                         </p:selectOneMenu>
-                        <p:spacer width="20"/>
-                        <p:spacer width="20"/>
-                        <p:spacer width="20"/>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-university mr-2"/>
@@ -173,7 +185,7 @@
                         <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.amp}"
-                                completeMethod="#{ampController.completeAmp}"
+                                completeMethod="#{ampController.getPharmaceuticalAndStoreItemAmp}"
                                 var="item"
                                 class="w-100"
                                 minQueryLength="3"
@@ -207,7 +219,7 @@
                                          ajax="false"
                                          value="Print All"
                                          onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="printPanel" />
+                            <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
                         </p:commandButton>
                         <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'itemWise'}"

@@ -1589,34 +1589,13 @@ public class PatientReportController implements Serializable {
         }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String smsBody = "";
         String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
         String url = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
-
-        String template = configOptionApplicationController.getLongTextValueByKey("Custom SMS Body Massage for Lab Report");
-        if (!template.equalsIgnoreCase("")) {
-            smsBody = replaceReporSMSBody(template,r,url);
-        } else {
-            smsBody = "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready. " + url;
-        }
-        return smsBody;
-    }
-    
-    public String replaceReporSMSBody(String template, PatientReport patientReport, String url) {
-        String output;
-        String processedTemplate = template.replace("\\n", "\n");
-        String location = "";
-        if("CC".equalsIgnoreCase(patientReport.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc())){
-            location = patientReport.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getName();
-        }else{
-            location = patientReport.getPatientInvestigation().getBillItem().getBill().getDepartment().getPrintingName();
-        }
-        output = processedTemplate
-                .replace("{patient_name}", patientReport.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle())
-                .replace("{patient_report}", patientReport.getPatientInvestigation().getInvestigation().getName())
-                .replace("{report_url}", url)
-                .replace("{collecting_location}",location );
-        return output;
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + " is ready. "
+                + url;
+        return b;
     }
 
     public String emailBody(PatientReport r) {
@@ -2615,10 +2594,6 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
-            r.setPatientName(pt.getPerson().getNameWithTitle());
-            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
-            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
@@ -2656,10 +2631,7 @@ public class PatientReportController implements Serializable {
         List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(pi);
         if (pscs != null) {
             for (PatientSampleComponant psc : pscs) {
-                if(! psc.getPatientSample().getSampleRejected()){
-                    sampleIDs += psc.getPatientSample().getIdStr() + " ";
-                }
-                
+                sampleIDs += psc.getPatientSample().getIdStr() + " ";
             }
         }
         return createNewPatientReport(pi, ix, sampleIDs);
@@ -2681,10 +2653,6 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
-            r.setPatientName(pt.getPerson().getNameWithTitle());
-            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
-            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setReportType(ReportType.GENARATE);
             r.setSampleIDs(sampleIds);
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -2732,10 +2700,6 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
-            r.setPatientName(pt.getPerson().getNameWithTitle());
-            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
-            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setSampleIDs(sampleIds);
             r.setReportType(ReportType.UPLOAD);
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -2816,10 +2780,6 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
-            r.setPatientName(pt.getPerson().getNameWithTitle());
-            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
-            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setReportType(ReportType.GENARATE);
             r.setCreater(getSessionController().getLoggedUser());
@@ -3277,7 +3237,6 @@ public class PatientReportController implements Serializable {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
-
     }
 
     @FacesConverter(forClass = PatientReport.class)

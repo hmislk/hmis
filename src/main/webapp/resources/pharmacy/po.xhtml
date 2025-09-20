@@ -63,9 +63,6 @@
                         <h:outputText value="Payment Method" />
                         <h:outputText value=":" />
                         <h:outputText value="#{cc.attrs.bill.paymentMethod}" />
-                        <h:outputText value="Consignment" />
-                        <h:outputText value=":" />
-                        <h:outputText value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
                     </h:panelGrid>
                 </div>
 
@@ -125,23 +122,23 @@
 
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
+                                        <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
+                                        <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
+                                        <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
 
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
-                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossTotal}">
+                                        <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate * bip.pharmaceuticalBillItem.qty}">
                                             <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </td>

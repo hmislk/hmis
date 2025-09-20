@@ -434,40 +434,6 @@ public class CreditCompanyBillSearch implements Serializable {
 
     }
 
-    public void cancelPharmacyCreditCompanyPaymentBill() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (errorCheck()) {
-                return;
-            }
-
-            CancelledBill cb = createCancelBill(BillNumberSuffix.PHACCPAYCAN);
-
-            //Copy & paste
-            //  if (webUserController.hasPrivilege("LabBillCancelling")) {
-            if (true) {
-                cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-                getCancelledBillFacade().create(cb);
-                cancelBillItems(cb);
-                getBill().setCancelled(true);
-                getBill().setCancelledBill(cb);
-                getBilledBillFacade().edit(getBill());
-                JsfUtil.addSuccessMessage("Cancelled");
-                WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
-                getSessionController().setLoggedUser(wb);
-                paymentService.createPayment(cb, getPaymentMethodData());
-                printPreview = true;
-                paymentMethodData = null;
-            } else {
-                getEjbApplication().getBillsToCancel().add(cb);
-                JsfUtil.addSuccessMessage("Awaiting Cancellation");
-            }
-
-        } else {
-            JsfUtil.addErrorMessage("No Bill to cancel");
-        }
-
-    }
-
     public void listnerForPaymentMethodChange(Bill b) {
         if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());

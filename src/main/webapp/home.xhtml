@@ -16,9 +16,6 @@
         </h:outputStylesheet>
 
         <div class="row" >
-            
-            
-            
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
                 <!-- Cashier Drawer -->
@@ -1041,7 +1038,7 @@
                         <p:commandLink 
                             id="Purchase_Orders_Approval"
                             ajax="false" 
-                            action="/pharmacy/pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_to_approve?faces-redirect=true"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Purchase Orders Approval" />
@@ -1160,7 +1157,7 @@
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_issue'}">
                     <h:form>
                         <p:tooltip for="pharmacy_issue" value="Pharmacy Issue"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink
+                        <p:commandLink 
                             id="pharmacy_issue"
                             ajax="false" 
                             action="/pharmacy/pharmacy_issue?faces-redirect=true"  
@@ -1168,22 +1165,6 @@
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Issue" />
-                        </p:commandLink>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Pharmacy Disposal Direct Issue -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_disposal_issue' and webUserController.hasPrivilege('PharmacyDisposalIssue')}">
-                    <h:form>
-                        <p:tooltip for="pharmacy_disposal_issue" value="Pharmacy Disposal Direct Issue"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink
-                            id="pharmacy_disposal_issue"
-                            ajax="false"
-                            action="/pharmacy/pharmacy_issue?faces-redirect=true"
-                            actionListener="#{pharmacyIssueController.resetAll()}"
-                            styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-disposal-issue.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Pharmacy Disposal - Direct Issue" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>

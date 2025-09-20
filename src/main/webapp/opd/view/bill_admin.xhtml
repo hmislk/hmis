@@ -73,11 +73,7 @@
                                                 </h:outputText>
 
 
-                                                <h:outputLabel value="From" />
-                                                <h:outputText value="#{billSearch.viewingBill.fromDepartment.name}" />
 
-                                                <h:outputLabel value="To" />
-                                                <h:outputText value="#{billSearch.viewingBill.toDepartment.name}" />
 
 
                                                 <h:outputLabel value="Cancelled?" />
@@ -97,7 +93,7 @@
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
                                             <div class="my-2">
-                                                <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
+                                            <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
                                             </div>
                                         </p:panel>
                                     </p:tab>
@@ -172,7 +168,7 @@
                                                         target="#{billSearch.payment}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                             </p:column>
-                                        </p:dataTable>
+                                    </p:dataTable>
                                     </p:tab>
 
                                     <p:tab title="Finance Summary" >

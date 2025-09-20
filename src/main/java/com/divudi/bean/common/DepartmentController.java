@@ -17,7 +17,6 @@ import com.divudi.core.data.InstitutionType;
 import com.divudi.core.entity.Route;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -209,28 +208,6 @@ public class DepartmentController implements Serializable {
         }
         return deps;
     }
-    
-    public List<Department> getInstitutionAllLabTypesDepartments(Institution ins) {
-    List<Department> deps;
-    if (ins == null) {
-        deps = new ArrayList<>();
-    } else {
-        List<DepartmentType> dtypes = Arrays.asList(DepartmentType.Lab, DepartmentType.External_Lab);
-        Map<String, Object> m = new HashMap<>();
-        m.put("ins", ins);
-        m.put("types", dtypes);
-        
-        String jpql = "Select d From Department d "
-                + " where d.retired=false "
-                + " and d.institution=:ins "
-                + " and d.departmentType in :types "
-                + " and TYPE(d) <> (Route)" // Adjust based on your entity structure
-                + " order by d.name";
-        
-        deps = getFacade().findByJpql(jpql, m);
-    }
-    return deps;
-}
 
     public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
         List<Department> deps;

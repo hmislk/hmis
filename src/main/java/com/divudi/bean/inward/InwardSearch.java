@@ -7,7 +7,6 @@ package com.divudi.bean.inward;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
-import com.divudi.bean.lab.LabTestHistoryController;
 
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.core.data.BillClassType;
@@ -115,8 +114,6 @@ public class InwardSearch implements Serializable {
     PatientDepositController patientDepositController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    LabTestHistoryController labTestHistoryController;
 
     /**
      * Properties
@@ -624,7 +621,7 @@ public class InwardSearch implements Serializable {
         }
 
         if (getBill().getPatientEncounter() == null) {
-            JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+            JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
             return true;
         }
 
@@ -710,7 +707,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
                 return;
             }
 
@@ -749,17 +746,6 @@ public class InwardSearch implements Serializable {
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
-
-            try {
-                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
-                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Error = " + e);
-            }
-
             //To null payment methord
             getBill().setPaymentMethod(null);
             cb.setPaymentMethod(null);
@@ -1003,7 +989,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
                 return;
             }
 
@@ -1064,7 +1050,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
                 return;
             }
 
@@ -1316,7 +1302,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter() == null) {
-                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
                 return;
             }
 

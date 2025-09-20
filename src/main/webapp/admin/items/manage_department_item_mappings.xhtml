@@ -25,12 +25,11 @@
                                     var="pasindu"
                                     itemLabel="#{pasindu.name}"
                                     itemValue="#{pasindu}"
-                                    maxResults="20"
                                     >
-                                    <p:column headerText="Institution" style="padding : 10px;">
+                                    <p:column headerText="Institution" >
                                         <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
                                     </p:column>
-                                    <p:column headerText="Department" style="padding : 10px;">
+                                    <p:column headerText="Department" >
                                         <h:outputText value="#{pasindu.name}" ></h:outputText>
                                     </p:column>
                                 </p:autoComplete>
@@ -49,11 +48,9 @@
                                     action="#{itemMappingController.addAllSelectedItemsToDepartment()}">
                                 </p:commandButton>
                             </p:panelGrid>
-                        </div>
-                    </div>
 
-                    <div class="row" >
-                        <div class="col-6" >
+
+
                             <p:dataTable 
                                 value="#{itemController.items}" 
                                 var="item" 
@@ -68,16 +65,14 @@
                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                 >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="All Items" style="font-weight: 700;"></p:outputLabel>
+                                    <p:outputLabel value="All Items" ></p:outputLabel>
                                 </f:facet>
 
                                 <p:column selectionBox="true" width="15"></p:column>
-
-                                <p:column 
-                                    headerText="Name"  
-                                    sortBy="#{item.name}" 
-                                    filterBy="#{item.name}" 
-                                    filterMatchMode="contains">
+                                <p:column headerText="Created At"  sortBy="#{item.createdAt}" filterBy="#{item.createdAt}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.createdAt}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name"  sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{item.name}" ></h:outputText>
                                 </p:column>
                                 <p:column 
@@ -95,27 +90,28 @@
                                     <h:outputText value="#{item.department.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
-                                    width="100"
-                                    headerText="Base Value">
-                                    <h:outputText value="#{item.total}" ></h:outputText>
+                                    headerText="Base Value"  
+                                    sortBy="#{item.total}" 
+                                    filterBy="#{item.total}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.name}" ></h:outputText>
                                 </p:column>
                             </p:dataTable>
                         </div>
                         <div class="col-6" >
 
-                            <p:dataTable 
-                                value="#{itemMappingController.items}" 
-                                rowKey="#{im.id}"
-                                selection="#{itemMappingController.selectedItemMappings}"
-                                var="im"
-                                rows="100"
-                                selectionMode="multiple"
-                                paginator="true" 
-                                paginatorPosition="bottom"
-                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                >
+                            <p:dataTable value="#{itemMappingController.items}" 
+                                         rowKey="#{im.id}"
+                                         selection="#{itemMappingController.selectedItemMappings}"
+                                         var="im"
+                                         rows="100"
+                                         selectionMode="multiple"
+                                         paginator="true" 
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                         rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                         >
                                 <f:facet name="header" >
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
@@ -132,21 +128,11 @@
                                         </div>
                                     </div>
                                 </f:facet>
-                                
                                 <p:column selectionBox="true" width="15"></p:column>
-                                
-                                <p:column 
-                                    headerText="Name"  
-                                    sortBy="#{im.item.name}" 
-                                    filterBy="#{im.item.name}" 
-                                    filterMatchMode="contains">
+                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{im.item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.name}" ></h:outputText>
                                 </p:column>
-                                <p:column 
-                                    headerText="Item Department"  
-                                    sortBy="#{im.item.department.name}" 
-                                    filterBy="#{im.item.department.name}" 
-                                    filterMatchMode="contains">
+                                <p:column headerText="Item Department"  sortBy="#{im.item.department.name}" filterBy="#{im.item.department.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.department.name}" ></h:outputText>
                                 </p:column>
                                 <p:column 
@@ -164,8 +150,10 @@
                                     <h:outputText value="#{im.department.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
-                                    width="100"
-                                    headerText="Base Value">
+                                    headerText="Base Value"  
+                                    sortBy="#{im.item.total}" 
+                                    filterBy="#{im.item.total}" 
+                                    filterMatchMode="contains">
                                     <h:outputText value="#{im.item.total}" ></h:outputText>
                                 </p:column>
 
@@ -173,8 +161,27 @@
                         </div>
                     </div>
 
+
+
+
+
+
+
+
                 </p:panel>
+
             </h:form>
+
         </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
     </ui:define>
+
 </ui:composition>

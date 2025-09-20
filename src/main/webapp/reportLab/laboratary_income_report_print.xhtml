@@ -67,7 +67,7 @@
                                 
                                 tfoot{
                                     font-weight: 700!important;
-                                    font-size: 10px!important;
+                                    font-size: 11px!important;
                                 }
                             }
 
@@ -76,7 +76,7 @@
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
-                                        font-size: 9pt;
+                                        font-size: 10pt;
                                     }
                                 }
 
@@ -94,13 +94,13 @@
                                 .header{
                                     line-height: 1.1;
                                     margin: 0mm!important;
-                                    font-size: 10px!important;
+                                    font-size: 13px!important;
                                 }
 
                                 table {
                                     border-collapse: collapse;
                                     width: 99.9%;
-                                    font-size: 10px!important;
+                                    font-size: 12px!important;
                                     margin-top: 1mm!important;
                                 }
                                 th, td {
@@ -115,7 +115,7 @@
                                 }
                                 tfoot{
                                     font-weight: 700!important;
-                                    font-size: 10px!important;
+                                    font-size: 11px!important;
                                 }
                             }
                         </style>
@@ -132,12 +132,6 @@
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
                                                 <h:outputText value="#{laborataryReportController.department.name}"/>
-                                            </div>
-                                        </h:panelGroup>
-                                        <h:panelGroup  rendered="#{laborataryReportController.admissionType ne null}">
-                                            <div class="d-flex gap-2">
-                                                <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
-                                                <h:outputText value="#{laborataryReportController.admissionType.name}"/>
                                             </div>
                                         </h:panelGroup>
                                     </div>
@@ -188,46 +182,43 @@
                                                 <th style="width: 25mm;font-weight: 700;">
                                                     <h:outputText value="OrderNo" style="margin-left: 1mm;"/>
                                                 </th>
-                                                <th style="width: 59mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 67mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Patient Name" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 18mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="BHT No" style="margin-left:  1mm;"/>
-                                                </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Date" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Net Total" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Cash" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Card" style="margin-right: 1mm;"/>
                                                 </th>
                                                 <th style="width: 10mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="#" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="IP Credit" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="OP Credit" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: center;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Staff Credit" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: center;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Agent Credit" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Discount" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: center;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Service Charge" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 16mm; font-weight: 700; text-align: center;">
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Actual Total" style="margin-right: 1mm;"/>
                                                 </th>
                                             </tr>
@@ -241,67 +232,64 @@
                                                     <td style="width: 25mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
-                                                    <td style="width: 59mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.patient.person.nameWithTitle}" style="margin-left: 1mm;"/>
+                                                    <td style="width: 67mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.patient.person.nameWithTitle}" style="margin-left: 1mm;"></h:outputText>
                                                     </td>
-                                                    <td style="width: 18mm; text-align: left;">
-                                                        <h:outputText value="#{row.bhtNo}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 16mm; text-align: left;">
+                                                    <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.createdAt}" style="margin-left: 1mm;">
                                                             <f:convertDateTime pattern="dd/MM/YY" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.bill.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.cashValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.cardValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 10mm; text-align: center;">
-                                                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                                                        <h:outputText value="-" style="margin-right: 1mm;"></h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.inpatientCreditValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.opdCreditValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.staffValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.agentValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.discount}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
+                                                    <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{row.serviceCharge}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 16mm; text-align: right;">
-                                                        <h:outputText value="#{row.actualTotal}" style="margin-right: 1mm;">
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -310,29 +298,29 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="5" style="width: 8mm; text-align: center" >
-                                                    <h:outputText value="Totals" />
-                                                </td>
-
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 8mm;" ></td>
+                                                <td style="width: 25mm; text-align: left;"></td>
+                                                <td style="width: 67mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.cashValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.cardValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 10mm; text-align: center;">
-                                                    <h:outputText value="-" style="margin-right: 1mm;"/>
+                                                    <h:outputText value="-" style="margin-right: 1mm;"></h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.inpatientCreditValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
@@ -342,28 +330,28 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.staffValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.agentValue}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.discount}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{laborataryReportController.bundle.summaryRow.serviceCharge}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 16mm; text-align: right;">
-                                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.actualTotal}" style="margin-right: 1mm;">
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>

@@ -544,20 +544,6 @@ public class BillService {
         }
         return billFacade.findWithoutCache(bill.getId());
     }
-    
-    public Bill reloadBill(Long billId) {
-        if (billId == null) {
-            return null;
-        }
-        Bill bill = fetchBillById(billId);
-        if (bill == null) {
-            return null;
-        }
-        if (bill.getId() == null) {
-            return bill;
-        }
-        return billFacade.findWithoutCache(bill.getId());
-    }
 
     public List<BillFee> fetchBillFees(BillItem billItem) {
         String jpql = "select bf "

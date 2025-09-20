@@ -96,28 +96,29 @@
                                         </h:panelGroup>
                                     </p:column>     
 
-                                    <!--                                    <p:column headerText="Befory Qty" >
-                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
-                                                                                <f:convertNumber pattern="#,##0"/>
-                                                                            </h:outputLabel>
-                                                                        </p:column>   
+<!--                                    <p:column headerText="Befory Qty" >
+                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputLabel>
+                                    </p:column>   
+
+                                    <p:column headerText="After Qty" >
+                                        <h:outputLabel value="#{pi.qty}" >
+                                            <f:convertNumber pattern="##,##0"/>
+                                        </h:outputLabel>
+                                    </p:column>-->
                                     
-                                                                        <p:column headerText="After Qty" >
-                                                                            <h:outputLabel value="#{pi.qty}" >
-                                                                                <f:convertNumber pattern="##,##0"/>
-                                                                            </h:outputLabel>
-                                                                        </p:column>-->
-
                                     <p:column headerText="Adjustment Type" >
-                                        <h:outputText value="#{pi.bill.billTypeAtomic.label}"/>
+                                        <h:outputText value="Department Stock" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentDepartmentStock'}"/>
+                                        <h:outputText value="Purchase Rate" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentPurchaseRate'}"/>
+                                        <h:outputText value="Sale Rate" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentSaleRate'}"/>
+                                        <h:outputText value="Expiry Date" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentExpiryDate'}"/>
+                                        <h:outputText value="WholeSale Rate " rendered="#{pi.bill.billType eq 'PharmacyAdjustmentWholeSaleRate'}"/>
                                     </p:column>
-
+                                    
                                     <p:column>
-                                        <p:commandButton 
-                                            id="btnViewReceipt"
-                                            ajax="false" 
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(pi.bill.id)}" 
-                                            value="View Bill">
+                                        <p:commandButton ajax="false" action="pharmacy_reprint_adjustment?faces-redirect=true" value="View Bill">
+                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>
 

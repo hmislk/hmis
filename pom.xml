@@ -13,23 +13,8 @@
         <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
-        <log4j2.version>2.23.1</log4j2.version>
     </properties>
-
-    <!-- Dependency Management for Version Consistency -->
-    <dependencyManagement>
-        <dependencies>
-            <!-- Jackson BOM for version alignment and security -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>2.15.4</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
+    
     <dependencies>
         <!-- HAPI FHIR -->
         <dependency>
@@ -57,33 +42,16 @@
             <artifactId>hapi-structures-v24</artifactId>
             <version>2.3</version>
         </dependency>
-        <!-- Jackson Dependencies - Updated for CVE-2019-10202 Security Fix -->
-        <!-- Replaced vulnerable org.codehaus.jackson:jackson-jaxrs 1.9.13 -->
+        <!-- Jackson -->
         <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+            <version>1.9.13</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
-        </dependency>
-        <!-- Jackson JAXB Annotations Module for JAXB annotation support -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <version>2.14.1</version>
         </dependency>
 
         <!-- Commons -->
@@ -108,11 +76,10 @@
             <artifactId>commons-fileupload</artifactId>
             <version>1.6.0</version>
         </dependency>
-        <!-- Bridge JCL to SLF4J so all logs go to Log4j2 -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.36</version>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1</version>
         </dependency>
 
         <!-- Joda Time -->
@@ -231,23 +198,11 @@
             </exclusions>
         </dependency>
 
-        <!-- Log4j - Updated for Security (Log4Shell CVE-2021-44228 protection) -->
-        <!-- Using stable 2.x version instead of alpha 3.x for production security -->
+        <!-- Log4j -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <!-- Log4j SLF4J binding for compatibility -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
+            <version>3.0.0-alpha1</version>
         </dependency>
 
         <!-- Eclipse Persistence -->
@@ -448,30 +403,6 @@
                     <release>8</release> <!-- Compile with Java 8 compatibility -->
                     <debug>false</debug>
                 </configuration>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.4.1</version>
-                <executions>
-                    <execution>
-                        <id>enforce-banned-dependencies</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <bannedDependencies>
-                                    <excludes>
-                                        <exclude>org.codehaus.jackson:*:*</exclude>
-                                    </excludes>
-                                </bannedDependencies>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Maven WAR Plugin -->
