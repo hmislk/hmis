@@ -1361,56 +1361,76 @@
                         id="itemDetailsTabGrnReturn"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Tab', true)}">
 
-                        <p:dataTable styleClass="noBorder" id="grnr" value="#{pharmacyController.grnReturnDtos}"
-                                     var="dd2" scrollable="true" paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15" >
-                            <p:column headerText="GRN Return No">
-                                #{dd2.grnReturnNo}
-                            </p:column>
-                            <p:column headerText="Department">
-                                #{dd2.departmentName}
-                            </p:column>
-                            <p:column headerText="GRN Return at">
-                                <h:outputLabel value="#{dd2.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Supplier">
-                                #{dd2.supplierName}
-                            </p:column>
-                            <p:column headerText="Item">
-                                #{dd2.itemName}
-                            </p:column>
-                            <p:column headerText="Qty Returned" class="text-end"> 
-                                #{dd2.quantityReturned} 
-                            </p:column> 
-                            <p:column headerText="Free Qty Returned" class="text-end"> 
-                                #{dd2.freeQuantityReturned} 
-                            </p:column> 
-                            <p:column headerText="Purchase Rate" class="text-end"> 
-                                <h:outputText value="#{dd2.purchaseRate}"> 
-                                    <f:convertNumber pattern="#,##0.00" /> 
-                                </h:outputText> 
-                            </p:column> 
-                            <p:column headerText="Sale Rate" class="text-end"> 
-                                <h:outputText value="#{dd2.saleRate}"> 
-                                    <f:convertNumber pattern="#,##0.00" /> 
-                                </h:outputText> 
-                            </p:column> 
-                            <p:column headerText="Returned Rate" class="text-end"> 
-                                <h:outputText value="#{dd2.returnedRate}"> 
-                                    <f:convertNumber pattern="#,##0.00" /> 
-                                </h:outputText> 
-                            </p:column> 
-                            <p:column headerText="Return Value" class="text-end"> 
-                                <h:outputText value="#{dd2.returnValue}"> 
-                                    <f:convertNumber pattern="#,##0.00" /> 
-                                </h:outputText> 
-                            </p:column> 
-                        </p:dataTable>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="grnr">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th rowspan="2">GRN Return No</th>
+                                        <th rowspan="2">Department</th>
+                                        <th rowspan="2">Return Date</th>
+                                        <th rowspan="2">Supplier</th>
+                                        <th rowspan="2">Item</th>
+                                        <th colspan="2" class="text-center">Quantities</th>
+                                        <th colspan="3" class="text-center">Rates &amp; Value</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-end">Qty Returned</th>
+                                        <th class="text-end">Free Qty Returned</th>
+                                        <th class="text-end">Purchase Rate</th>
+                                        <th class="text-end">Sale Rate</th>
+                                        <th class="text-end">Return Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{pharmacyController.grnReturnDtos}" var="dd2">
+                                        <tr>
+                                            <td>
+                                                <h:outputText value="#{dd2.grnReturnNo}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{dd2.departmentName}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{dd2.createdAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{dd2.supplierName}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{dd2.itemName}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{dd2.quantityReturned}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{dd2.freeQuantityReturned}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{dd2.purchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{dd2.saleRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{dd2.returnValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
                     </p:tab>
 
                     <p:tab title="Purchase Orders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Tab', true)}">

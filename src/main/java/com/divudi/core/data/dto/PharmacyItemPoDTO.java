@@ -36,6 +36,30 @@ public class PharmacyItemPoDTO implements Serializable {
     public PharmacyItemPoDTO() {
     }
 
+    // Original constructor for backward compatibility
+    public PharmacyItemPoDTO(Long billId,
+            String billDeptId,
+            Date billCreatedAt,
+            String supplierName,
+            String creatorName,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double completedQty,
+            Double completedFreeQty) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.supplierName = supplierName;
+        this.creatorName = creatorName;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.completedQty = completedQty;
+        this.completedFreeQty = completedFreeQty;
+    }
+
+    // Extended constructor with remaining quantities
     public PharmacyItemPoDTO(Long billId,
             String billDeptId,
             Date billCreatedAt,
