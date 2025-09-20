@@ -117,7 +117,7 @@
                         </tr>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Staff Name" class="billDetails"></h:outputLabel>
@@ -127,9 +127,9 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  class="billDetails"></h:outputLabel>
                             </td> 
                         </tr>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="To Unit" class="billDetails"></h:outputLabel>
@@ -139,9 +139,9 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  class="billDetails"></h:outputLabel>
                             </td> 
                         </tr>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Company" class="billDetails"></h:outputLabel>
@@ -151,7 +151,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  class="billDetails"></h:outputLabel>
                             </td> 
                         </tr>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
                 </table>
 
             </div>
@@ -162,7 +162,7 @@
 
             <div style="padding-left: 5%;">
 
-                <table width="90%" >
+                <table width="95%" >
                     <tr>
                         <td style="width: 35%; ">
                             <h:outputLabel value="ITEM" style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
@@ -230,7 +230,7 @@
                 <h:outputLabel value="-----------------------------------------------------"   />                         
             </div>
 
-            <div style="width: 90%; padding-left: 5%;" >
+            <div style="width: 95%; padding-left: 5%;" >
                 <table width="100%" >
 <!--                    <tr>
                         <td class="totalsItemBlock" style="text-align: left; width: 60%;">
@@ -242,7 +242,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>-->
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total On Pharmacy Sale Bill For Cashier')}">
+<!--                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total On Pharmacy Sale Bill For Cashier')}">
 
                         <tr>
                             <td  class="totalsItemBlock" style="text-align: left;">
@@ -303,7 +303,7 @@
                                 </td>
                             </tr>
                         </h:panelGroup>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
 
                     <tr>
                         <td  class="totalsItemBlock" style="text-align: left;">
@@ -326,8 +326,7 @@
                         </td>
                     </tr>
 
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
@@ -347,25 +346,11 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </h:panelGroup>
-
+                    </h:panelGroup>-->
 
                 </table>
 
             </div>
-
-
-            <div class="footer">
-<!--                Return accepted within 3 days only
-                <br/>
-                THANK YOU !-->
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
-                    <br/>
-                </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
-            </div>
-
-
 
         </div>
     </cc:implementation>
