@@ -5634,23 +5634,21 @@ public class PharmacyController implements Serializable {
             return;
         }
 
-        String jpql = "SELECT b FROM BillItem b "
-                + "WHERE type(b.bill)=:class "
-                + "AND b.bill.creater IS NOT NULL "
-                + "AND b.bill.cancelled=false "
-                + "AND b.retired=false "
-                + "AND b.item IN :relatedItems "
-                + "AND b.bill.billTypeAtomic=:bta "
-                + "AND (b.bill.referenceBill IS NULL "
-                + "     OR b.bill.referenceBill.billTypeAtomic NOT IN :refBtas) "
-                + "AND b.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY b.id DESC";
+        // Query for actual GRNs that are created but not yet approved
+        // PHARMACY_GRN_PRE: Saved but not finalized
+        // PHARMACY_GRN: Finalized but awaiting approval (when manage costing is true)
+        String jpql = "SELECT bi FROM BillItem bi "
+                + "WHERE (bi.bill.retired is not null or bi.bill.retired=false) "
+                + "AND (bi.retired is not null or bi.retired=false) "
+                + "AND bi.bill.cancelled is not null or bi.bill.cancelled=false "
+                + "AND bi.item IN :relatedItems "
+                + "AND bi.bill.billTypeAtomic IN :btaList "
+                + "AND bi.bill.createdAt BETWEEN :frm AND :to "
+                + "ORDER BY bi.id DESC";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("class", BilledBill.class);
         params.put("relatedItems", relatedItems);
-        params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
-        params.put("refBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_PRE, BillTypeAtomic.PHARMACY_GRN));
+        params.put("btaList", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_PRE, BillTypeAtomic.PHARMACY_GRN));
         params.put("frm", getFromDate());
         params.put("to", getToDate());
 

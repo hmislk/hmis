@@ -560,17 +560,20 @@
                                     Pending GRN Details
                                 </div>
                                 <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
-                                    <p:column headerText="Order No">#{pendingGrn.bill.deptId}</p:column>
-                                    <p:column headerText="Order at">
+                                    <p:column headerText="GRN No">#{pendingGrn.bill.deptId}</p:column>
+                                    <p:column headerText="GRN Date">
                                         <h:outputLabel value="#{pendingGrn.bill.createdAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Supplier">#{pendingGrn.bill.toInstitution.name}</p:column>
-                                    <p:column headerText="Qty Ordered" class="text-end">
-                                        <h:outputText value="#{pendingGrn.qty}">
+                                    <p:column headerText="Supplier">#{pendingGrn.bill.fromInstitution.name}</p:column>
+                                    <p:column headerText="Qty Received" class="text-end">
+                                        <h:outputText value="#{pendingGrn.pharmaceuticalBillItem.qty}">
                                             <f:convertNumber integerOnly="true" />
                                         </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Status">
+                                        <h:outputText value="#{pendingGrn.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}" />
                                     </p:column>
                                 </p:dataTable>
 
@@ -1326,25 +1329,28 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15" >
 
-                            <p:column headerText="PO Number">
+                            <p:column headerText="GRN Number">
                                 #{pendingGrnRow.bill.deptId}
                             </p:column>
                             <p:column headerText="Department">
                                 #{pendingGrnRow.bill.department.name}
                             </p:column>
-                            <p:column headerText="Date">
+                            <p:column headerText="GRN Date">
                                 <h:outputLabel value="#{pendingGrnRow.bill.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Supplier">
-                                #{pendingGrnRow.bill.toInstitution.name}
+                                #{pendingGrnRow.bill.fromInstitution.name}
                             </p:column>
                             <p:column headerText="Item">
                                 #{pendingGrnRow.item.name}
                             </p:column>
-                            <p:column headerText="Qty" class="text-end"> 
-                                #{pendingGrnRow.qty} 
+                            <p:column headerText="Qty Received" class="text-end">
+                                #{pendingGrnRow.pharmaceuticalBillItem.qty}
+                            </p:column>
+                            <p:column headerText="Status">
+                                #{pendingGrnRow.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}
                             </p:column> 
                         </p:dataTable>
 
