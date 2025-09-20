@@ -4246,6 +4246,7 @@ public class PharmacyController implements Serializable {
 
     private List<InstitutionStock> institutionStocks;
     private List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> institutionStockDtos;
+    private Map<Long, Double> institutionTotals = new HashMap<>();
     private Set<Long> displayedInstitutionIds = new HashSet<>();
 
     public List<Object[]> calDepartmentStock(Institution institution) {
@@ -4836,6 +4837,7 @@ public class PharmacyController implements Serializable {
      */
     public void createInstitutionStockDto() {
         institutionStockDtos = new ArrayList<>();
+        institutionTotals = new HashMap<>();
         displayedInstitutionIds = new HashSet<>(); // Reset for fresh display
         grantStock = 0;
 
@@ -4846,7 +4848,7 @@ public class PharmacyController implements Serializable {
             item = pharmacyItem;
         }
 
-        // Simple JPQL to get department stocks - similar to original calDepartmentStock
+        // JPQL with deterministic ORDER BY institutionId then departmentId for consistent ordering
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyInstitutionStockDTO("
                 + "i.department.institution.id, "
                 + "i.department.institution.name, "
@@ -4862,7 +4864,7 @@ public class PharmacyController implements Serializable {
                 + "GROUP BY i.department.institution.id, i.department.institution.name, "
                 + "i.department.id, i.department.name, i.department.site.id, i.department.site.name "
                 + "HAVING SUM(i.stock) > 0 "
-                + "ORDER BY i.department.institution.name, i.department.name";
+                + "ORDER BY i.department.institution.id, i.department.id";
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("i", item);
@@ -4873,18 +4875,25 @@ public class PharmacyController implements Serializable {
                 (List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO>)
                 getBillItemFacade().findLightsByJpql(sql, parameters);
 
-            // Process and aggregate the data
             institutionStockDtos = departmentStocks;
 
-            // Calculate grand total
+            // Precompute institution totals and grand total in a single pass
             for (com.divudi.core.data.dto.PharmacyInstitutionStockDTO dto : institutionStockDtos) {
                 if (dto.getStockQuantity() != null) {
-                    grantStock += dto.getStockQuantity();
+                    Long institutionId = dto.getInstitutionId();
+                    Double stockQuantity = dto.getStockQuantity();
+
+                    // Add to grand total
+                    grantStock += stockQuantity;
+
+                    // Add to institution total
+                    institutionTotals.merge(institutionId, stockQuantity, Double::sum);
                 }
             }
         } catch (Exception e) {
             // Log error and fall back to empty list
             institutionStockDtos = new ArrayList<>();
+            institutionTotals = new HashMap<>();
             displayedInstitutionIds = new HashSet<>();
             grantStock = 0;
             System.err.println("Error in createInstitutionStockDto: " + e.getMessage());
@@ -6197,6 +6206,14 @@ public class PharmacyController implements Serializable {
         this.institutionStockDtos = institutionStockDtos;
     }
 
+    public Map<Long, Double> getInstitutionTotals() {
+        return institutionTotals;
+    }
+
+    public void setInstitutionTotals(Map<Long, Double> institutionTotals) {
+        this.institutionTotals = institutionTotals;
+    }
+
     /**
      * Helper method to determine if this is the first department of an institution
      * Used for displaying institution header rows only once per institution
@@ -6218,18 +6235,15 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Helper method to calculate institution total for display
-     * Sums up all department stocks for a given institution
+     * Helper method to get precomputed institution total for display
+     * Uses the institutionTotals map populated by createInstitutionStockDto()
+     * O(1) lookup instead of O(n) streaming operation
      */
     public Double getInstitutionTotal(Long institutionId) {
-        if (institutionStockDtos == null || institutionId == null) {
+        if (institutionTotals == null || institutionId == null) {
             return 0.0;
         }
-
-        return institutionStockDtos.stream()
-                .filter(dto -> institutionId.equals(dto.getInstitutionId()))
-                .mapToDouble(dto -> dto.getStockQuantity() != null ? dto.getStockQuantity() : 0.0)
-                .sum();
+        return institutionTotals.getOrDefault(institutionId, 0.0);
     }
 
     public List<InstitutionSale> getInstitutionSales() {
