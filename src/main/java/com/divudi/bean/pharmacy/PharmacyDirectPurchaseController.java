@@ -197,6 +197,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Setup basic quantity and rate fields for AMP/AMPP handling
         BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+
+        // Ensure free quantity is properly initialized when left blank
+        if (f.getFreeQuantity() == null) {
+            f.setFreeQuantity(BigDecimal.ZERO);
+        }
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
 
         if (item instanceof Ampp) {
@@ -309,6 +314,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
+
+        // Ensure free quantity is properly initialized when left blank
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f.getFreeQuantity() == null) {
+            f.setFreeQuantity(BigDecimal.ZERO);
+        }
+
         // Recalculate item totals when free quantity changes
         calculateItemTotals(bi);
     }
@@ -1119,6 +1131,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         f.setLineCost(itemNet);
 
         // Ensure unit-based calculations are updated for UI display
+        // Ensure free quantity is properly initialized when left blank
+        if (f.getFreeQuantity() == null) {
+            f.setFreeQuantity(BigDecimal.ZERO);
+        }
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
         BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
 
@@ -1553,6 +1569,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (totalCost.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
+        }
+
+        // Ensure free quantity is properly initialized when left blank
+        if (freeQty == null) {
+            freeQty = BigDecimal.ZERO;
         }
 
         // Total Potential Income from qty + free qty multiplied by retail rate
