@@ -809,13 +809,13 @@
 
                     <h:panelGroup id="gpBillPreview" >
                         <pharmacy:direct_purhcase
-                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4', true)}"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Bill Print - A4', true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase>
                         <pharmacy:direct_purhcase_with_costing
-                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 Details ',true)}"
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 Details',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
