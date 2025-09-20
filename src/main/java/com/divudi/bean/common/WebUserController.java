@@ -967,6 +967,40 @@ public class WebUserController implements Serializable {
         JsfUtil.addSuccessMessage(output);
     }
 
+    public void addStaffStaffCodesFromCodes() {
+        output = null;
+        String jpql = "select s from Staff s "
+                + " where s.retired=false "
+                + " and (s.staffCode is null or length(s.staffCode)=0) "
+                + " and s.code is not null and length(s.code)>0";
+        List<Staff> staffList = getStaffFacade().findByJpql(jpql);
+        int updated = 0;
+        if (staffList != null) {
+            for (Staff s : staffList) {
+                if (s == null) {
+                    continue;
+                }
+                String c = s.getCode();
+                if (c == null) {
+                    continue;
+                }
+                String trimmed = c.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                s.setStaffCode(trimmed);
+                try {
+                    getStaffFacade().edit(s);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated staff.staffCode: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
     public String navigateToEditPasswordByAdmin() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");

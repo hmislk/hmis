@@ -78,6 +78,21 @@
                                         #{webUserController.output}
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td><strong>Copy Staff Code → Staff StaffCode</strong></td>
+                                    <td>
+                                        Copy each Staff's existing code into Staff StaffCode where Staff StaffCode is empty.
+                                    </td>
+                                    <td>
+                                        <p:commandButton 
+                                            action="#{webUserController.addStaffStaffCodesFromCodes()}"
+                                            ajax="false"
+                                            value="Copy to StaffCode"  />
+                                    </td>
+                                    <td>
+                                        #{webUserController.output}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </p:tab>
