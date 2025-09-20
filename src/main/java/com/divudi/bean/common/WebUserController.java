@@ -159,6 +159,7 @@ public class WebUserController implements Serializable {
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
+    private String output;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -893,6 +894,45 @@ public class WebUserController implements Serializable {
         return "/hr/hr_staff_admin?faces-redirect=true";
     }
 
+    public void addStaffCodesFromUserCodes() {
+        output = null;
+        String jpql = "select wu from WebUser wu "
+                + " where wu.retired=false "
+                + " and wu.staff is not null "
+                + " and (wu.staff.code is null or length(wu.staff.code)=0) "
+                + " and wu.code is not null and length(wu.code)>0";
+        List<WebUser> users = getFacade().findByJpql(jpql);
+        int updated = 0;
+        if (users != null) {
+            for (WebUser wu : users) {
+                if (wu == null) {
+                    continue;
+                }
+                Staff s = wu.getStaff();
+                if (s == null) {
+                    continue;
+                }
+                String ucode = wu.getCode();
+                if (ucode == null) {
+                    continue;
+                }
+                String trimmed = ucode.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                s.setCode(trimmed);
+                try {
+                    getStaffFacade().edit(s);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated staff codes: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
     public String navigateToEditPasswordByAdmin() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -1042,6 +1082,14 @@ public class WebUserController implements Serializable {
         }
         current = selected;
         return sessionController.navigateToManageWebUserPreferences(current);
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 
     public void addWebUserDashboard() {
