@@ -797,15 +797,6 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton
-                                    value="#{pharmacyDirectPurchaseController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
-                                    icon="fas fa-eye"
-                                    id="btnTogglePrintAll"
-                                    class="ui-button-secondary mx-1"
-                                    ajax="false"
-                                    action="#{pharmacyDirectPurchaseController.toggleShowAllBillFormats}"
-                                    rendered="#{webUserController.hasPrivilege('Developers')}"
-                                    title="Toggle visibility of all bill formats for development" />
-                                <p:commandButton
                                     ajax="false"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
