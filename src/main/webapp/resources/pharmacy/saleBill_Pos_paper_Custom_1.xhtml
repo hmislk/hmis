@@ -309,7 +309,7 @@
                         </td>
                         <td  class="totalsItemBlock" style="text-align: right; ">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0.00" />
+                                <f:convertNumber integerOnly="true" />
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -339,7 +339,6 @@
                             </td>
                             <td style="text-align: right; ">
                                 <h:outputLabel   value="#{cc.attrs.bill.referenceBill.creater.name}">
-                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -349,7 +348,6 @@
                             </td>
                             <td style="text-align: right; ">
                                 <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
-                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>

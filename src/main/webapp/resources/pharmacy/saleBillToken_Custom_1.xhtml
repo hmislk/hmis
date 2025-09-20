@@ -112,6 +112,7 @@
                             <td style="width: 50px;" class="d-flex justify-content-center">:</td>
                             <td style="width: 30%; text-align: left;" >
                                 <h:outputLabel value="#{cc.attrs.bill.netTotal}"  class="billDetails">
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
