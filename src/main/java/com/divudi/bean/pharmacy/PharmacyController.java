@@ -4245,6 +4245,8 @@ public class PharmacyController implements Serializable {
     }
 
     private List<InstitutionStock> institutionStocks;
+    private List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> institutionStockDtos;
+    private Set<Long> displayedInstitutionIds = new HashSet<>();
 
     public List<Object[]> calDepartmentStock(Institution institution) {
         //   //System.err.println("Cal Department Stock");
@@ -4784,6 +4786,13 @@ public class PharmacyController implements Serializable {
 
     }
 
+    /**
+     * @deprecated Use createInstitutionStockDto() instead.
+     * This method uses entity-based approach which is less efficient for display.
+     * The new DTO-based method provides better performance for UI rendering.
+     * Reference: createInstitutionStockDto()
+     */
+    @Deprecated
     public void createInstitutionStock() {
         //   //System.err.println("Institution Stock");
         List<Institution> insList = getCompany();
@@ -4818,6 +4827,69 @@ public class PharmacyController implements Serializable {
             }
         }
 
+    }
+
+    /**
+     * DTO-based method to replace createInstitutionStock()
+     * Gets department stocks first, then aggregates by institution in Java
+     * More efficient than entity-based approach for UI display
+     */
+    public void createInstitutionStockDto() {
+        institutionStockDtos = new ArrayList<>();
+        displayedInstitutionIds = new HashSet<>(); // Reset for fresh display
+        grantStock = 0;
+
+        Item item;
+        if (pharmacyItem instanceof Ampp) {
+            item = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            item = pharmacyItem;
+        }
+
+        // Simple JPQL to get department stocks - similar to original calDepartmentStock
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyInstitutionStockDTO("
+                + "i.department.institution.id, "
+                + "i.department.institution.name, "
+                + "i.department.id, "
+                + "i.department.name, "
+                + "COALESCE(i.department.site.id, 0L), "
+                + "COALESCE(i.department.site.name, 'No Site'), "
+                + "SUM(i.stock)) "
+                + "FROM Stock i "
+                + "WHERE i.itemBatch.item = :i "
+                + "AND i.department.institution.institutionType = :type "
+                + "AND i.department.institution.retired = false "
+                + "GROUP BY i.department.institution.id, i.department.institution.name, "
+                + "i.department.id, i.department.name, i.department.site.id, i.department.site.name "
+                + "HAVING SUM(i.stock) > 0 "
+                + "ORDER BY i.department.institution.name, i.department.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("i", item);
+        parameters.put("type", InstitutionType.Company);
+
+        try {
+            List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> departmentStocks =
+                (List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO>)
+                getBillItemFacade().findLightsByJpql(sql, parameters);
+
+            // Process and aggregate the data
+            institutionStockDtos = departmentStocks;
+
+            // Calculate grand total
+            for (com.divudi.core.data.dto.PharmacyInstitutionStockDTO dto : institutionStockDtos) {
+                if (dto.getStockQuantity() != null) {
+                    grantStock += dto.getStockQuantity();
+                }
+            }
+        } catch (Exception e) {
+            // Log error and fall back to empty list
+            institutionStockDtos = new ArrayList<>();
+            displayedInstitutionIds = new HashSet<>();
+            grantStock = 0;
+            System.err.println("Error in createInstitutionStockDto: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void createInstitutionSale() {
@@ -5175,7 +5247,8 @@ public class PharmacyController implements Serializable {
         createInstitutionSale();
         createInstitutionWholeSale();
         createInstitutionBhtIssue();
-        createInstitutionStock();
+        createInstitutionStockDto(); // DTO-based approach for better performance
+        //createInstitutionStock(); // Deprecated - use createInstitutionStockDto() instead
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
         createPendingGrnTable();
@@ -6116,6 +6189,49 @@ public class PharmacyController implements Serializable {
 
     public void setInstitutionStocks(List<InstitutionStock> institutionStocks) {
         this.institutionStocks = institutionStocks;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> getInstitutionStockDtos() {
+        return institutionStockDtos;
+    }
+
+    public void setInstitutionStockDtos(List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> institutionStockDtos) {
+        this.institutionStockDtos = institutionStockDtos;
+    }
+
+    /**
+     * Helper method to determine if this is the first department of an institution
+     * Used for displaying institution header rows only once per institution
+     * Uses a Set to track which institutions have already been displayed
+     */
+    public boolean isFirstDepartmentOfInstitution(com.divudi.core.data.dto.PharmacyInstitutionStockDTO dto) {
+        if (dto == null || dto.getInstitutionId() == null) {
+            return false;
+        }
+
+        // Check if we've already displayed this institution
+        if (displayedInstitutionIds.contains(dto.getInstitutionId())) {
+            return false; // Already displayed
+        }
+
+        // Mark this institution as displayed and return true
+        displayedInstitutionIds.add(dto.getInstitutionId());
+        return true;
+    }
+
+    /**
+     * Helper method to calculate institution total for display
+     * Sums up all department stocks for a given institution
+     */
+    public Double getInstitutionTotal(Long institutionId) {
+        if (institutionStockDtos == null || institutionId == null) {
+            return 0.0;
+        }
+
+        return institutionStockDtos.stream()
+                .filter(dto -> institutionId.equals(dto.getInstitutionId()))
+                .mapToDouble(dto -> dto.getStockQuantity() != null ? dto.getStockQuantity() : 0.0)
+                .sum();
     }
 
     public List<InstitutionSale> getInstitutionSales() {

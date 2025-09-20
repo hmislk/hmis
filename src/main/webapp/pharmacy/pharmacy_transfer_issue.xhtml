@@ -377,51 +377,154 @@
                         value="Requested List"/>
 
                     <div class="d-flex">
-                        <p:commandButton 
-                            value="Print" 
+                        <p:commandButton
+                            value="Print"
                             icon="fas fa-print"
                             class="ui-button-info mx-2"
-                            ajax="false" 
-                            action="#"
-                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
+                            ajax="false">
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:commandButton
-                            value="#{transferIssueController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
-                            icon="fas fa-eye"
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
                             class="ui-button-secondary mx-1"
-                            ajax="false"
-                            action="#{transferIssueController.toggleShowAllBillFormats}"
-                            rendered="#{webUserController.hasPrivilege('Developers')}"
-                            title="Toggle visibility of all bill formats for development" />
+                            type="button"
+                            onclick="PF('transferIssueConfigDialog').show();" />
                     </div>
                 </div>
 
                 <h:panelGroup   id="gpBillPreview" >
-                    <h:panelGroup 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper without details',false)}"
-                        class="noBorder">
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper', true)}"
+                        styleClass="noBorder">
                         <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
-                    <h:panelGroup 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with details',false)}"
-                        class="noBorder">
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper Detailed', false)}"
+                        styleClass="noBorder">
                         <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
+
                     <h:panelGroup
-                        id="gpBillPreviewPosHeader" 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with header',false)}"> 
-                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue POS Paper', false)}">
+                        <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
-                    <h:panelGroup 
-                        id="gpBillTemplate" 
-                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
-                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
+
+                    <h:panelGroup id="gpBillPreviewPosHeader"
+                                  rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper', false)}">
+                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
+
+                    <h:panelGroup
+                        id="gpBillTemplate"
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template', false)}">
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+
                 </h:panelGroup>
             </p:panel>
 
+            <!-- Transfer Issue Configuration Dialog -->
+            <p:dialog id="transferIssueConfigDialog"
+                      header="Transfer Issue Receipt Printer Configuration"
+                      widgetVar="transferIssueConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="500"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('transferIssueCheckboxes',view).clientId}" process="@this" />
+
+                <h:form id="transferIssueConfigForm">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> Transfer Issue Receipt Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h:panelGroup id="transferIssueCheckboxes">
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferIssueA4Paper"
+                                            value="#{pharmacyRetailConfigController.transferIssueA4Paper}" />
+                                        <p:outputLabel for="transferIssueA4Paper" value="A4 Paper Format" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Standard A4 size paper format (transferIssue component)</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferIssueA4PaperDetailed"
+                                            value="#{pharmacyRetailConfigController.transferIssueA4PaperDetailed}" />
+                                        <p:outputLabel for="transferIssueA4PaperDetailed" value="A4 Paper Format (Detailed)" class="ms-2" />
+                                        <small class="form-text text-muted d-block">A4 format with detailed item information (transferIssue_detailed component)</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferIssuePosPaper"
+                                            value="#{pharmacyRetailConfigController.transferIssuePosPaper}" />
+                                        <p:outputLabel for="transferIssuePosPaper" value="POS Paper Format" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferIssuePosHeaderPaper"
+                                            value="#{pharmacyRetailConfigController.transferIssuePosHeaderPaper}" />
+                                        <p:outputLabel for="transferIssuePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                        <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferIssueTemplate"
+                                            value="#{pharmacyRetailConfigController.transferIssueTemplate}" />
+                                        <p:outputLabel for="transferIssueTemplate" value="Template Format" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                    </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p:messages id="transferIssueConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Apply &amp; Close"
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                ajax="false"
+                                                action="#{pharmacyRetailConfigController.saveTransferIssueConfig}" />
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('transferIssueConfigDialog').hide(); return false;"
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </p:dialog>
+
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

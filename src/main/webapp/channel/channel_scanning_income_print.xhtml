@@ -12,10 +12,10 @@
             <ui:define name="content">
 
                 <h:form>
-                    <p:panel header="Channel Income Report Print View" styleClass="w-100">
+                    <p:panel header="Channel Scanning Income Report Print View" styleClass="w-100">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <h:outputText value="Channel Income Report Print View" class="mt-2"/>
+                                <h:outputText value="Channel Scanning Income Report Print View" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton
                                         icon="fa-solid fa-print"
@@ -31,7 +31,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="channel_income?faces-redirect=true">
+                                        action="income_for_scanning_bookings?faces-redirect=true">
                                     </p:commandButton>
                                 </div>
 
@@ -128,20 +128,25 @@
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2"
                                          style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
-                                        <h:outputText value="Channel Income Report"/>
+                                        <h:outputText value="Channel Scanning Income Report"/>
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2"
                                          style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
                                         <h:outputText value="From Date - "/>
-                                        <h:outputText value="#{searchController.fromDate}">
+                                        <h:outputText value="#{channelReportController.fromDate}">
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
                                         <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                                         <h:outputText value="To Date - "/>
-                                        <h:outputText value="#{searchController.toDate}">
+                                        <h:outputText value="#{channelReportController.toDate}">
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                         <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="Processed By - "/>
+                                        <h:outputText value="#{sessionController.loggedUser.name}">
+                                           
                                         </h:outputText>
                                     </div>
                                 </div>
@@ -163,50 +168,50 @@
                                                     <th style="text-align: center;">Discount</th>
                                                     <th style="text-align: center;">Net Total</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasCashTransaction}">
                                                     <th style="text-align: center;">Cash</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasCardTransaction}">
                                                     <th style="text-align: center;">Card</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasCreditTransaction}">
                                                     <th style="text-align: center;">Credit</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasStaffWelfareTransaction}">
                                                     <th style="text-align: center;">Staff Welfare</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasVoucherTransaction}">
                                                     <th style="text-align: center;">Voucher</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasIouTransaction}">
                                                     <th style="text-align: center;">IOU</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasAgentTransaction}">
                                                     <th style="text-align: center;">Agent</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasChequeTransaction}">
                                                     <th style="text-align: center;">Cheque</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasSlipTransaction}">
                                                     <th style="text-align: center;">Slip</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasEWalletTransaction}">
                                                     <th style="text-align: center;">eWallet</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasPatientDepositTransaction}">
                                                     <th style="text-align: center;">Patient Deposit</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasPatientPointsTransaction}">
                                                     <th style="text-align: center;">Patient Points</th>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasOnlineSettlementTransaction}">
                                                     <th style="text-align: center;">Online Settlement</th>
                                                 </h:panelGroup>
 
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{searchController.bundle.reportTemplateRows}" var="row" varStatus="status">
+                                            <ui:repeat value="#{channelReportController.dataBundle.reportTemplateRows}" var="row" varStatus="status">
                                                 <tr>
                                                     <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
                                                     <td>
@@ -275,7 +280,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasCashTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="cashValue" value="#{row.cashValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -283,7 +288,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasCardTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="cardValue" value="#{row.cardValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -291,7 +296,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasCreditTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="creditValue" value="#{row.creditValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -299,7 +304,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasStaffWelfareTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="staffWelfareValue" value="#{row.staffWelfareValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -307,7 +312,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasVoucherTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="voucherValue" value="#{row.voucherValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -315,7 +320,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasIouTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="iouValue" value="#{row.iouValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -323,7 +328,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasAgentTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="agentValue" value="#{row.agentValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -332,7 +337,7 @@
                                                     </h:panelGroup>
 
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasChequeTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="chequeValue" value="#{row.chequeValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -340,7 +345,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasSlipTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="slipValue" value="#{row.slipValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -348,7 +353,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasEWalletTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="ewalletValue" value="#{row.ewalletValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -356,7 +361,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasPatientDepositTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="patientDepositValue" value="#{row.patientDepositValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -364,7 +369,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasPatientPointsTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="patientPointsValue" value="#{row.patientPointsValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -372,7 +377,7 @@
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                                    <h:panelGroup rendered="#{channelReportController.dataBundle.hasOnlineSettlementTransaction}">
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="onlineSettlementValue" value="#{row.onlineSettlementValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -419,7 +424,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasCashTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="cashValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -427,7 +432,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasCardTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="cardValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -435,7 +440,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasCreditTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="creditValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -443,7 +448,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasStaffWelfareTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="staffWelfareValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -451,7 +456,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasVoucherTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="voucherValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -459,7 +464,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasIouTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="iouValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -467,7 +472,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasAgentTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="agentValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -476,7 +481,7 @@
                                                 </h:panelGroup>
 
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasChequeTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="chequeValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -484,7 +489,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasSlipTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="slipValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -492,7 +497,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasEWalletTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="ewalletValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -500,7 +505,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasPatientDepositTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="patientDepositValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -508,7 +513,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasPatientPointsTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="patientPointsValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -516,7 +521,7 @@
                                                     </td>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                                <h:panelGroup rendered="#{channelReportController.dataBundle.hasOnlineSettlementTransaction}">
                                                     <td style="text-align: right;">
                                                         <h:outputText styleClass="onlineSettlementValueTotal" value="0.00">
                                                             <f:convertNumber pattern="#,##0.00"/>

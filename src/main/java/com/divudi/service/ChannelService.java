@@ -1210,7 +1210,7 @@ public class ChannelService {
     public List<Payment> fetchCardPaymentsFromChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus) {
         String jpql = "Select p from Payment p where "
                 + " p.bill.billType = :bt and p.bill.billTypeAtomic in :bta "
-                + " and p.bill.paymentMethod = :type"
+                + " and p.paymentMethod = :type"
                 + " and p.bill.retired = false "
                 + " and p.bill.createdAt between :fromDate and :toDate ";
 
