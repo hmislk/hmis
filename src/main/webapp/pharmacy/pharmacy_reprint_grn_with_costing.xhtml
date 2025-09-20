@@ -47,6 +47,7 @@
                                         <p:fileDownload value="#{pharmacyBillSearch.exportAsJson()}"/>
                                     </p:commandButton>
                                     <p:commandButton 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}"
                                         ajax="false" 
                                         value="To Cancel" 
                                         class="ui-button-danger"
