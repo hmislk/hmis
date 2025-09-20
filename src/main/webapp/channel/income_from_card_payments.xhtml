@@ -12,8 +12,8 @@
 
             <ui:define name="subContent">
                 <h:form>
-                    <p:panel header="Income By Institution with Card Paid Appoinments" >
-                        <h:panelGrid columns="19" class="my-2" >
+                    <p:panel header="Income By Institution with Card Paid Appointments" >
+                        <h:panelGrid columns="20" class="my-2" >
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="From " />
@@ -45,7 +45,7 @@
                             <h:outputLabel class="mx-2"  value="Institution"  ></h:outputLabel>
                             <h:outputLabel value=":" />
 
-                            <p:selectOneMenu class="w-50" value="#{channelReportController.institution}" filter="true" >
+                            <p:selectOneMenu class="w-50 mx-4" value="#{channelReportController.institution}" filter="true" >
                                 <f:selectItem itemLabel="Select Institution" ></f:selectItem>
                                 <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
@@ -53,7 +53,7 @@
 
                             <p:spacer width="50"/>
                             <i class="fa-solid fa-circle-check"></i>
-                            <h:outputLabel class="mx-2"  value="Report Status"  ></h:outputLabel>
+                            <h:outputLabel class="mx-2"  value="Status"  ></h:outputLabel>
                             <h:outputLabel value=":" />
                             <p:selectOneMenu
                                 id="cmbDept"
@@ -65,6 +65,7 @@
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
 
                             </p:selectOneMenu>
+                            <p:spacer width="50"/>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.getPaymentsForChannelCardAppoinments()}" ajax="false" ></p:commandButton>
@@ -76,7 +77,7 @@
                                 rendered="true"
                                 icon="fas fa-file-pdf"
                                 value="Export as PDF">
-                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Scanning_Income_Report"/>
+                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Card_Income_Report"/>
                             </p:commandButton>
 
                             <p:commandButton
@@ -85,7 +86,7 @@
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"
-                                action="channel_income_bill_print?faces-redirect=true">
+                                action="channel_card_income_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton
@@ -93,7 +94,7 @@
                                 class="m-1 ui-button-success"
                                 icon="fas fa-file-excel"
                                 ajax="false" value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Scanning_Income_Report"/>
+                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Card_Income_Report"/>
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -241,31 +242,31 @@
 
                         </p:dataTable>
 
-<!--                        <script>
-                            function calculateTotals(selector, targeter) {
-                                const values = Array.from(document.querySelectorAll(selector));
-                                const totalValue = values
-                                        .map(value => {
-                                            const cleanValue = value.innerText.replace(/,/g, "");
-                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                        })
-                                        .reduce((total, value) => total + value, 0);
-                        
-                                const targetElement = document.querySelector(targeter);
-                                if (targetElement) {
-                                    targetElement.innerText = totalValue.toFixed(2);
-                                }
-                        
-                            }
-                        
-                            function updateTotals() {
-                                calculateTotals('.grossFee', '.grossTotal');
-                                calculateTotals('.staffFee', '.staffFeeTotal');
-                                calculateTotals('.hosFee', '.hosFeeTotal');
-                            }
-                        
-                            setTimeout(updateTotals, 500);
-                        </script>-->
+                        <!--                        <script>
+                                                    function calculateTotals(selector, targeter) {
+                                                        const values = Array.from(document.querySelectorAll(selector));
+                                                        const totalValue = values
+                                                                .map(value => {
+                                                                    const cleanValue = value.innerText.replace(/,/g, "");
+                                                                    return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                                                })
+                                                                .reduce((total, value) => total + value, 0);
+                                                
+                                                        const targetElement = document.querySelector(targeter);
+                                                        if (targetElement) {
+                                                            targetElement.innerText = totalValue.toFixed(2);
+                                                        }
+                                                
+                                                    }
+                                                
+                                                    function updateTotals() {
+                                                        calculateTotals('.grossFee', '.grossTotal');
+                                                        calculateTotals('.staffFee', '.staffFeeTotal');
+                                                        calculateTotals('.hosFee', '.hosFeeTotal');
+                                                    }
+                                                
+                                                    setTimeout(updateTotals, 500);
+                                                </script>-->
 
                     </p:panel>
                 </h:form>

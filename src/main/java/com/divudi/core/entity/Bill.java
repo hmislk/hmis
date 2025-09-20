@@ -120,6 +120,7 @@ public class Bill implements Serializable, RetirableEntity {
     private String creditCardRefNo;
     private String chequeRefNo;
     private boolean creditBill;
+    private boolean consignment;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -266,9 +267,12 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
     //Checking Property
+    private boolean checked=false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -346,6 +350,18 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser completedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
+
+    private boolean fullyIssued;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullyIssuedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullyIssuedAt;
+
+    private boolean fullReturned;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullReturnedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullReturnedAt;
 
     //Print Information
     private boolean printed;
@@ -464,6 +480,7 @@ public class Bill implements Serializable, RetirableEntity {
         reactivated = false;
         refunded = false;
         cancelled = false;
+        consignment = false;
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
@@ -812,10 +829,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
@@ -995,6 +1016,7 @@ public class Bill implements Serializable, RetirableEntity {
         this.tax = bill.getTax();
         this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
+        this.consignment = bill.isConsignment();
         this.settledAmountByPatient = bill.getSettledAmountByPatient();
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
@@ -1045,6 +1067,7 @@ public class Bill implements Serializable, RetirableEntity {
         sessionId = bill.getSessionId();
         ipOpOrCc = bill.getIpOpOrCc();
         chequeRefNo = bill.getChequeRefNo();
+        consignment = bill.isConsignment();
         settledAmountByPatient = bill.getSettledAmountByPatient();
         settledAmountBySponsor = bill.getSettledAmountBySponsor();
         qty = bill.getQty();
@@ -2651,6 +2674,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.creditBill = creditBill;
     }
 
+    public boolean isConsignment() {
+        return consignment;
+    }
+
+    public void setConsignment(boolean consignment) {
+        this.consignment = consignment;
+    }
+
     public boolean isCompleted() {
         return completed;
     }
@@ -2681,6 +2712,54 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setCompletedAt(Date completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public boolean isFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
+    }
+
+    public WebUser getFullyIssuedBy() {
+        return fullyIssuedBy;
+    }
+
+    public void setFullyIssuedBy(WebUser fullyIssuedBy) {
+        this.fullyIssuedBy = fullyIssuedBy;
+    }
+
+    public Date getFullyIssuedAt() {
+        return fullyIssuedAt;
+    }
+
+    public void setFullyIssuedAt(Date fullyIssuedAt) {
+        this.fullyIssuedAt = fullyIssuedAt;
+    }
+
+    public boolean isFullReturned() {
+        return fullReturned;
+    }
+
+    public void setFullReturned(boolean fullReturned) {
+        this.fullReturned = fullReturned;
+    }
+
+    public WebUser getFullReturnedBy() {
+        return fullReturnedBy;
+    }
+
+    public void setFullReturnedBy(WebUser fullReturnedBy) {
+        this.fullReturnedBy = fullReturnedBy;
+    }
+
+    public Date getFullReturnedAt() {
+        return fullReturnedAt;
+    }
+
+    public void setFullReturnedAt(Date fullReturnedAt) {
+        this.fullReturnedAt = fullReturnedAt;
     }
 
     public BankAccount getBankAccount() {
@@ -2943,6 +3022,8 @@ public class Bill implements Serializable, RetirableEntity {
     public void setIndication(String indication) {
         this.indication = indication;
     }
+    
+    
 
     public Institution getTransientSupplier() {
         if (this.getBillTypeAtomic() == null) {
@@ -2956,5 +3037,13 @@ public class Bill implements Serializable, RetirableEntity {
                 transientSupplier = this.getFromInstitution();
         }
         return transientSupplier;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 }

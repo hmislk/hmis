@@ -139,12 +139,17 @@
                             <th class="item-name">Item</th>
                             <th class="item-name">Batch</th>
                             <th class="item-qty">DOE</th>
-                            <th class="item-rate">PR</th>
-                            <th class="item-rate">RR</th>
-                            <th class="item-rate">CR</th>
+                            <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                <th class="item-rate">PR</th>
+                        
+                                <th class="item-rate">RR</th>
+                                <th class="item-rate">CR</th>
+                            </ui:fragment>
                             <th class="item-qty">Qty</th>
-                            <th class="item-rate">Rate</th>
-                            <th class="item-value">Value</th>
+                            <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                <th class="item-rate">Rate</th>
+                                <th class="item-value">Value</th>
+                            </ui:fragment>
                         </tr>
                     </thead>
                     <tbody>
@@ -163,36 +168,40 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                 </td>
-                                <td class="item-rate">
-                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td class="item-rate">
-                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td class="item-rate">
-                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.costRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                    <td class="item-rate">
+                                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="item-rate">
+                                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="item-rate">
+                                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.costRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </ui:fragment>
                                 <td class="item-qty">
                                     <h:outputLabel value="#{bip.qty}">
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
-                                <td class="item-rate">
-                                    <h:outputLabel value="#{bip.rate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td class="item-value">
-                                    <h:outputLabel value="#{bip.netValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                    <td class="item-rate">
+                                        <h:outputLabel value="#{bip.rate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="item-value">
+                                        <h:outputLabel value="#{bip.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </ui:fragment>
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -201,26 +210,28 @@
 
             <div class="receipt-separator"><hr /></div>
 
-            <div class="receipt-summary">
-                <table class="receipt-summary-table">
-                    <tr>
-                        <td class="summary-label">Total</td>
-                        <td class="summary-value">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" styleClass="total-amount">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="summary-label">Number of Items</td>
-                        <td class="summary-value">
-                            <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                <div class="receipt-summary">
+                    <table class="receipt-summary-table">
+                        <tr>
+                            <td class="summary-label">Total</td>
+                            <td class="summary-value">
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" styleClass="total-amount">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">Number of Items</td>
+                            <td class="summary-value">
+                                <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </h:panelGroup>
 
             <div class="receipt-cashier">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.name}" />

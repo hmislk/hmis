@@ -111,7 +111,7 @@ jobs:
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
-            rm /tmp/payara-admin-pass.txt
+            rm -f /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
@@ -122,7 +122,7 @@ jobs:
             else
               echo 'Application failed to start.'
             fi
-            rm /tmp/payara-admin-pass.txt
+            rm -f /tmp/payara-admin-pass.txt
           "
  
           # Check if the application is reachable

@@ -85,13 +85,15 @@
                                     action="#{transferRequestController.saveTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-save"
-                                    class="mx-1 ui-button-success"/>
+                                    class="mx-1 ui-button-success"
+                                    />
                                 <p:commandButton
                                     value="Finalize"
                                     action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-check"
-                                    class="mx-1 ui-button-warning"/>
+                                    class="mx-1 ui-button-warning"
+                                    />
                                 <p:commandButton
                                     value="New Bill"
                                     action="#{transferRequestController.recreate}"
@@ -161,21 +163,25 @@
                                             <p:ajax event="keyup" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
                                         </p:inputText>
                                     </div>
-                                    <div class="col-1">
-                                        <p:outputLabel value="Rate" for="txtLineGrossRate"/>
-                                        <p:inputText id="txtLineGrossRate" class="w-100 text-end"
-                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
-                                        </p:inputText>
-                                    </div>
-                                    <div class="col-1">
-                                        <p:outputLabel value="Value" for="txtLineNetValue"/>
-                                        <p:inputText id="txtLineNetValue" class="w-100 text-end"
-                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
-                                    </div>                                                                       
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
+                                        <div class="col-1" >
+                                            <p:outputLabel value="Rate" for="txtLineGrossRate"/>
+                                            <p:inputText id="txtLineGrossRate" class="w-100 text-end"
+                                                         value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                                <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
+                                            </p:inputText>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" >
+                                        <div class="col-1">
+                                            <p:outputLabel value="Value" for="txtLineNetValue"/>
+                                            <p:inputText id="txtLineNetValue" class="w-100 text-end"
+                                                         value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+                                        </div>      
+                                    </h:panelGroup>
 
                                     <div class="col-1">
                                         <p:outputLabel value="&nbsp;"/>
@@ -239,14 +245,14 @@
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Transfer Rate" class="text-end" width="8em">
+                                    <p:column headerText="Transfer Rate" class="text-end" width="8em" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <p:inputText value="#{bi.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax event="blur" listener="#{transferRequestController.onLineGrossRateChange(bi)}" update="itemList requestTotals"/>
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Transfer Value" class="text-end" width="8em">
+                                    <p:column headerText="Transfer Value" class="text-end" width="8em" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -272,17 +278,17 @@
                                 <h:panelGrid columns="3" class="w-100">
                                     <h:outputLabel value="Request From" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.fromDepartment.name}">
+                                    <h:outputLabel class="w-100 text-end" value="#{sessionController.department.name}">
                                     </h:outputLabel>
 
                                     <h:outputLabel value="Request To" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.toDepartment.name}">
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.toDepartment.name}">
                                     </h:outputLabel>
 
-                                    <h:outputLabel value="Approximate Request Value" />
-                                    <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}">
+                                    <h:outputLabel value="Approximate Request Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" />
+                                    <h:outputLabel value=": &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}"/>
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
 
@@ -304,7 +310,7 @@
 
                 </p:panel>
             </p:panel>
-            <p:panel rendered="#{transferRequestController.printPreview}" >
+            <p:panel id="printPanel" rendered="#{transferRequestController.printPreview}" >
                 <div class="d-flex justify-content-between mb-2">
                     <p:commandButton
                         value="New Bill"
@@ -316,32 +322,119 @@
 
                     <div class="d-flex">
                         <p:commandButton
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
+                            class="ui-button-secondary mx-1"
+                            type="button"
+                            onclick="PF('transferRequestConfigDialog').show();" >
+                        </p:commandButton>
+                        <p:commandButton
                             value="Print"
                             icon="fas fa-print"
                             class="ui-button-info mx-2"
                             ajax="false" >
                             <p:printer target="gpBillPreview"></p:printer>
                         </p:commandButton>
-                        <p:commandButton
-                            value="#{transferRequestController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
-                            icon="fas fa-eye"
-                            class="ui-button-secondary mx-1"
-                            ajax="false"
-                            action="#{transferRequestController.toggleShowAllBillFormats}"
-                            rendered="#{webUserController.hasPrivilege('Developers')}"
-                            title="Toggle visibility of all bill formats for development" />
                     </div>
                 </div>
                 <h:panelGroup id="gpBillPreview">
-                    <!-- Main receipt format - always shown -->
-                    <h:panelGroup rendered="true">
+                    <h:panelGroup 
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Request Receipt is A4',true)}">
                         <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
                     </h:panelGroup>
-                    
-                    <!-- Additional formats for development - shown only when toggle is enabled -->
-                    <!-- Future format variations can be added here with: rendered="#{transferRequestController.showAllBillFormats}" -->
+                    <h:panelGroup 
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Request Receipt is Custom 1',true)}">
+                        <ph:pharmacy_transfer_request_receipt_custom_1 id="pharmacy_transfer_request_receipt_1" bill="#{transferRequestController.transferRequestBillPre}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup 
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Request Receipt is Custom 2',true)}">
+                        <ph:pharmacy_transfer_request_receipt_custom_2 id="pharmacy_transfer_request_receipt_2" bill="#{transferRequestController.transferRequestBillPre}" />
+                    </h:panelGroup>
+
+
                 </h:panelGroup>
             </p:panel>
+
+            <!-- Configuration Dialog -->
+            <p:dialog id="transferRequestConfigDialog"
+                      header="Transfer Request Receipt Printer Configuration"
+                      widgetVar="transferRequestConfigDialog"
+                      modal="true"
+                      width="700"
+                      height="500"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="transferRequestConfigForm" />
+
+                <h:form id="transferRequestConfigForm">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> Transfer Request Receipt Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferRequestA4"
+                                            value="#{pharmacyRetailConfigController.transferRequestA4}" />
+                                        <p:outputLabel for="transferRequestA4" value="A4 Receipt Format" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Standard A4 size paper format for transfer request receipts</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferRequestCustom1"
+                                            value="#{pharmacyRetailConfigController.transferRequestCustom1}" />
+                                        <p:outputLabel for="transferRequestCustom1" value="Custom Format 1" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom transfer request receipt template design 1</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferRequestCustom2"
+                                            value="#{pharmacyRetailConfigController.transferRequestCustom2}" />
+                                        <p:outputLabel for="transferRequestCustom2" value="Custom Format 2" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom transfer request receipt template design 2</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p:messages id="transferRequestConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Apply &amp; Close"
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                ajax="false"
+                                                action="#{pharmacyRetailConfigController.saveConfig}" />
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('transferRequestConfigDialog').hide(); return false;"
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </p:dialog>
 
         </h:form>
     </ui:define>

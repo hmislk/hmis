@@ -24,11 +24,38 @@ public class PharmacyTransferIssueBillDTO implements Serializable {
     private BigDecimal purchaseValue; // Sum of totalPurchaseValue from BillFinanceDetails
     private BigDecimal transferValue; // Sum of lineNetTotal from BillFinanceDetails 
     private BigDecimal saleValue;    // Sum of totalRetailSaleValue from BillFinanceDetails
-    
+
+    private String bhtNo;
+    private String cancelledDeptId;
+    private Double total;
+    private Double margin;
+    private Double discount;
+    private Double netValue;
+
     // Default constructor
     public PharmacyTransferIssueBillDTO() {
     }
-    
+
+    public PharmacyTransferIssueBillDTO(Long billId, String deptId, Date createdAt, String bhtNo, String cancelledDeptId,
+                                        Object purchaseValue, Double total, Double margin, Double discount, Double netValue) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.bhtNo = bhtNo;
+        this.cancelledDeptId = cancelledDeptId;
+        if (purchaseValue instanceof BigDecimal) {
+            this.purchaseValue = (BigDecimal) purchaseValue;
+        } else if (purchaseValue instanceof Double) {
+            this.purchaseValue = BigDecimal.valueOf((Double) purchaseValue);
+        } else {
+            this.purchaseValue = BigDecimal.ZERO;
+        }
+        this.total = total;
+        this.margin = margin;
+        this.discount = discount;
+        this.netValue = netValue;
+    }
+
     // Constructor for JPQL queries with COALESCE (handles Object types from COALESCE)
     // Parameters match the exact order from ReportsTransfer.fillTransferIssueBillsDtoDirectly():
     // b.id, b.deptId, b.createdAt, b.department.name, b.toDepartment.name, p.name, 
@@ -243,7 +270,55 @@ public class PharmacyTransferIssueBillDTO implements Serializable {
     public ToStaff getToStaff() {
         return new ToStaff(transporterName);
     }
-    
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public String getCancelledDeptId() {
+        return cancelledDeptId;
+    }
+
+    public void setCancelledDeptId(String cancelledDeptId) {
+        this.cancelledDeptId = cancelledDeptId;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public Double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(Double margin) {
+        this.margin = margin;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getNetValue() {
+        return netValue;
+    }
+
+    public void setNetValue(Double netValue) {
+        this.netValue = netValue;
+    }
+
     // Nested classes for XHTML compatibility
     public static class FromDepartment implements Serializable {
         private String name;

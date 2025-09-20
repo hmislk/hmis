@@ -1,554 +1,544 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <h:body>
-        <ui:composition template="/reports/index.xhtml">
-            <ui:define name="subcontent">
-                <h:form >
-                    <p:panel header="Slow/Fast/None Movement Report" >
+<h:body>
+    <ui:composition template="/reports/index.xhtml">
+        <ui:define name="subcontent">
+            <h:form>
+                <p:panel header="Slow/Fast/None Movement Report">
+                    <h:panelGrid columns="8" class="w-100">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="From Date" for="fromDate" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{pharmacyReportController.fromDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"
+                        />
 
-                        <h:panelGrid columns="8" class="w-100">
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="fromDate" 
-                                value="#{pharmacyReportController.fromDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" 
-                                />
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="To Date" for="toDate" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{pharmacyReportController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"
+                        />
 
-                            <p:spacer width="20"></p:spacer>
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="toDate" 
-                                value="#{pharmacyReportController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" 
-                                />
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Date Range" for="phmDateRange" class="m-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmDateRange" 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="Date Range" for="phmDateRange" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                id="phmDateRange"
                                 styleClass="w-100"
                                 value="#{pharmacyReportController.dateRange}">
-                                <f:selectItem itemLabel="Select" itemValue="" />
-                                <f:selectItem itemLabel="Within 3 Months" itemValue="within3months" />
-                                <f:selectItem itemLabel="Within 6 Months" itemValue="within6months" />
-                                <f:selectItem itemLabel="Within 12 Months" itemValue="within12months" />
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{pharmacyReportController.updateDateRange}" 
-                                    update="fromDate toDate" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="Select" itemValue=""/>
+                            <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
+                            <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
+                            <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
+                            <p:ajax
+                                    event="change"
+                                    listener="#{pharmacyReportController.updateDateRange}"
+                                    update="fromDate toDate"/>
+                        </p:selectOneMenu>
 
-
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2" />
-                                <p:outputLabel value="Institution" for="phmIns" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-university mr-2"/>
+                            <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
                                 value="#{pharmacyReportController.institution}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems 
-                                    value="#{institutionController.companies}" 
-                                    var="ins" 
-                                    itemLabel="#{ins.name}" 
-                                    itemValue="#{ins}" />
-                                <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems
+                                    value="#{institutionController.companies}"
+                                    var="ins"
+                                    itemLabel="#{ins.name}"
+                                    itemValue="#{ins}"/>
+                            <p:ajax process="phmIns" update="phmDept"/>
+                        </p:selectOneMenu>
 
+                        <p:spacer width="20"/>
 
-                            <p:spacer width="20"></p:spacer>                            
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
-                                <p:outputLabel value="Site" for="phmSite" class="m-3"></p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                            <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="phmSite"
                                 class="w-100"
                                 value="#{pharmacyReportController.site}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="phmSite" update="phmDept" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Sites"/>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                           itemValue="#{site}"/>
+                            <p:ajax process="phmSite" update="phmDept"/>
+                        </p:selectOneMenu>
 
+                        <p:spacer width="20"/>
 
-                            <p:spacer width="20"></p:spacer> 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-building mr-2"/>
+                            <p:outputLabel value="Department" for="phmDept" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup id="phmDept">
 
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2" />
-                                <p:outputLabel value="Department" for="phmDept" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <h:panelGroup id="phmDept">
-
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
                                     required="true"
                                     requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"/>
+                            </p:selectOneMenu>
 
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
                                     required="true"
                                     requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}"
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"/>
+                            </p:selectOneMenu>
 
-                                <!-- Component 3: With Institution Only --> 
-                                <p:selectOneMenu
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
                                     required="true"
                                     requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}"
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"/>
+                            </p:selectOneMenu>
 
-                                <!-- Component 4: With Both Institution and Site --> 
-                                <p:selectOneMenu
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
                                     required="true"
                                     requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
-
-                            </h:panelGroup>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-tags mr-2" />
-                                <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmCategory"
-                                value="#{pharmacyReportController.category}" 
-                                filter="true" 
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All Categories" ></f:selectItem>
-                                <f:selectItems 
-                                    value="#{pharmaceuticalItemCategoryController.items}" 
-                                    var="category" 
-                                    itemLabel="#{category.name}" 
-                                    itemValue="#{category}" />
-                                <p:ajax process="phmCategory" update="phmItem" />
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"/>
                             </p:selectOneMenu>
+                        </h:panelGroup>
 
-                            <p:spacer width="20"></p:spacer>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-tags mr-2"/>
+                            <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                id="phmCategory"
+                                value="#{pharmacyReportController.category}"
+                                filter="true"
+                                class="w-100 ">
+                            <f:selectItem itemLabel="All Categories"/>
+                            <f:selectItems
+                                    value="#{pharmaceuticalItemCategoryController.items}"
+                                    var="category"
+                                    itemLabel="#{category.name}"
+                                    itemValue="#{category}"/>
+                            <p:ajax process="phmCategory" update="phmItem"/>
+                        </p:selectOneMenu>
 
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-box mr-2" />
-                                <p:outputLabel value="Item" for="phmItem" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:autoComplete 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-box mr-2"/>
+                            <p:outputLabel value="Item" for="phmItem" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:autoComplete
                                 id="phmItem"
-                                value="#{pharmacyReportController.amp}" 
+                                value="#{pharmacyReportController.amp}"
                                 completeMethod="#{ampController.completeAmp}"
-                                var="item" 
+                                var="item"
                                 class="w-100"
                                 minQueryLength="3"
                                 maxResults="20"
                                 inputStyleClass="w-100"
-                                itemLabel="#{item.name}" 
-                                itemValue="#{item}" 
-                                ></p:autoComplete>
+                                itemLabel="#{item.name}"
+                                itemValue="#{item}"
+                        />
 
+                        <p:spacer width="20"/>
 
-                            <p:spacer width="20"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-file-alt ml-5" />
-                                <p:outputLabel value="Report Type" for="repType" class="mx-2">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-file-alt ml-5"/>
+                            <p:outputLabel value="Report Type" for="repType" class="mx-2">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="repType"
                                 value="#{pharmacyReportController.reportType}"
                                 class="w-100">
-                                <f:selectItem itemLabel="Fast Movement" itemValue="fmovement" />
-                                <f:selectItem itemLabel="Slow Movement" itemValue="smovement" />
-                                <f:selectItem itemLabel="Non Movement" itemValue="nmovement" />
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="Fast Movement" itemValue="fmovement"/>
+                            <f:selectItem itemLabel="Slow Movement" itemValue="smovement"/>
+                            <f:selectItem itemLabel="Non Movement" itemValue="nmovement"/>
+                            <f:selectItems/>
+                        </p:selectOneMenu>
 
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-sort ml-5" />
-                                <p:outputLabel value="Sort Type" for="sortType" class="mx-2" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-sort ml-5"/>
+                            <p:outputLabel value="Sort Type" for="sortType" class="mx-2">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="sortType"
                                 value="#{pharmacyReportController.sortType}"
                                 class="w-100">
-                                <f:selectItem itemLabel="By Value" itemValue="byvalue" />
-                                <f:selectItem itemLabel="By Quantity" itemValue="byquantity" />
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="By Cost Value" itemValue="byvalue"/>
+                            <f:selectItem itemLabel="By Quantity" itemValue="byquantity"/>
+                            <f:selectItems/>
+                        </p:selectOneMenu>
 
+                        <p:spacer width="20"/>
 
-                            <p:spacer width="20"></p:spacer>
+                        <!-- XHTML View -->
+                        <h:outputStylesheet>
+                            /* Add custom label text before the Select All checkbox */
+                            [id$="billTypes_panel"] .ui-selectcheckboxmenu-header:before {
+                                content: " Select All Bill Types";
+                                margin-right: .5rem;
+                                font-weight: bold; /* optional */
+                                color: #333; /* optional */
+                            }
+                        </h:outputStylesheet>
 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-receipt ml-5"/>
+                            <p:outputLabel value="Bill Type" for="billTypes" class="mx-2"/>
+                        </h:panelGroup>
 
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-receipt ml-5" />
-                                <p:outputLabel value="Bill Type" for="billTypes" class="mx-2" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectCheckboxMenu 
+                        <p:selectCheckboxMenu
                                 id="billTypes"
-                                class="w-100 mx-2" 
-                                value="#{pharmacyReportController.billTypes}" 
-                                label="Bill Types"  >
-                                <f:selectItems 
-                                    value="#{enumController.pharmacyBillTypes3}" 
-                                    var="pbt" 
-                                    itemLabel="#{pbt.label}" 
-                                    itemValue="#{pbt}" ></f:selectItems>
-                            </p:selectCheckboxMenu>
+                                class="w-100 mx-2"
+                                value="#{pharmacyReportController.billTypes}"
+                                label="Bill Types">
+                            <f:selectItems
+                                    value="#{enumController.pharmacyBillTypes4}"
+                                    var="pbt"
+                                    itemLabel="#{pbt.label}"
+                                    itemValue="#{pbt}"/>
+                        </p:selectCheckboxMenu>
 
+                    </h:panelGrid>
 
+                    <div class="d-flex align-items-center mt-3">
+                        <p:commandButton
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process"
+                                action="#{pharmacyReportController.processSlowFastNonMovementReport()}">
+                        </p:commandButton>
+                    </div>
 
-
-                        </h:panelGrid>
-
-                        <div class="d-flex align-items-center mt-3">
-                            <p:commandButton 
-                                class="ui-button-warning mx-1" 
-                                icon="fas fa-cogs" 
-                                ajax="false"  
-                                value="Process" 
-                                action="#{pharmacyReportController.processSlowFastNonMovementReport()}" >
-                            </p:commandButton>                          
-                        </div>
-
-
-                        <p:panel 
-                            id="fastmovement" 
+                    <p:panel
+                            id="fastmovement"
                             rendered="#{pharmacyReportController.reportType eq 'fmovement'}">
-                            <div class="mt-5">
-                                <p:commandButton 
-                                    class="ui-button- mx-1" 
-                                    icon="fas fa-print" 
-                                    ajax="false" 
+                        <div class="mt-5">
+                            <p:commandButton
+                                    class="ui-button- mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
                                     value="Print All">
-                                    <p:printer target="tbl1" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-success mx-1" 
-                                    icon="fas fa-file-excel" 
-                                    ajax="false" 
+                                <p:printer target="tbl1"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                    class="ui-button-success mx-1"
+                                    icon="fas fa-file-excel"
+                                    ajax="false"
                                     value="Download">
-                                    <p:dataExporter 
-                                        type="xlsx" 
-                                        fileName="Fast Movement Report" 
-                                        target="tbl1"  />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-danger mx-1" 
-                                    icon= "fas fa-file-pdf" 
-                                    ajax="false" 
+                                <p:dataExporter
+                                        type="xlsx"
+                                        fileName="Fast Movement Report"
+                                        target="tbl1"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                    class="ui-button-danger mx-1"
+                                    icon="fas fa-file-pdf"
+                                    ajax="false"
                                     value="PDF">
-                                    <p:dataExporter 
-                                        type="pdf" 
-                                        target="tbl1" 
-                                        fileName="Fast Movement Report" />
-                                </p:commandButton>
-                                <h5>Fast Moving</h5>                                                     
-                                <h5>Pharmacy Movement Report</h5>
-                                <p:dataTable id="tbl1" 
-                                             value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
-                                             var="f" 
-                                             rowIndexVar="n" 
-                                             paginator="true" 
-                                             paginatorPosition="bottom"
-                                             rows="10" 
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                <p:dataExporter
+                                        type="pdf"
+                                        target="tbl1"
+                                        fileName="Fast Movement Report"/>
+                            </p:commandButton>
+                            <h5>Fast Moving</h5>
+                            <h5>Pharmacy Movement Report</h5>
+                            <p:dataTable id="tbl1"
+                                         value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
+                                         var="f"
+                                         rowIndexVar="n"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                                    <p:column headerText="Sl No.">
-                                        <h:outputText value="#{n+1}" />
-                                    </p:column>
-                                    <p:column headerText="Item Code" >
-                                        <h:outputText value="#{f.item.code}" />
-                                    </p:column>
-                                    <p:column headerText="Item Name " >
-                                        <h:outputText value="#{f.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Drug Form" >
-                                        <h:outputText value="#{f.item.category.name}" />
-                                    </p:column>
-                                    <p:column headerText="Supplier(Last Purchase)">
-                                        <h:outputText value="#{f.lastPurchaseSupplier.name}" />
-                                    </p:column>
-                                    <p:column headerText="Quantity" >
-                                        <h:outputText value="#{f.qty}" >
-                                            <f:convertNumber pattern="#,###" />
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Cost Value" >
-                                        <h:outputText value="#{f.purchaseValue}" >
-                                            <f:convertNumber pattern="#,###.00" />
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Sale Value" >
-                                        <h:outputText value="#{f.retailsaleValue}" >
-                                            <f:convertNumber pattern="#,###.00" />
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Value of QIH" >
-                                        <h:outputText value="#{f.stockQty}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="QIH" >
-                                        <h:outputText value="#{f.stockOnHand}" >
-                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
+                                <p:column headerText="Sl No.">
+                                    <h:outputText value="#{n+1}"/>
+                                </p:column>
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="#{f.item.code}"/>
+                                </p:column>
+                                <p:column headerText="Item Name ">
+                                    <h:outputText value="#{f.item.name}"/>
+                                </p:column>
+                                <p:column headerText="Drug Form">
+                                    <h:outputText value="#{f.item.category.name}"/>
+                                </p:column>
+                                <p:column headerText="Supplier(Last Purchase)">
+                                    <h:outputText value="#{f.lastPurchaseSupplier.name}"/>
+                                </p:column>
+                                <p:column headerText="Quantity">
+                                    <h:outputText value="#{f.qty}">
+                                        <f:convertNumber pattern="#,###"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Cost Value">
+                                    <h:outputText value="#{f.purchaseValue}">
+                                        <f:convertNumber pattern="#,###.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Sale Value">
+                                    <h:outputText value="#{f.retailsaleValue}">
+                                        <f:convertNumber pattern="#,###.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Value of QIH">
+                                    <h:outputText value="#{f.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="QIH">
+                                    <h:outputText value="#{f.stockOnHand}">
+                                        <f:convertNumber pattern="#,###"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
 
-                                </p:dataTable>
-                            </div>
-                        </p:panel>
-
-                        <p:panel 
-                            id="slowmovement" 
-                            rendered="#{pharmacyReportController.reportType eq 'smovement'}">
-                            <div class="mt-5">
-                                <p:commandButton 
-                                    class="ui-button- mx-1" 
-                                    icon="fas fa-print" 
-                                    ajax="false" 
-                                    value="Print All">
-                                    <p:printer target="tbl2" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-success mx-1" 
-                                    icon="fas fa-file-excel" 
-                                    ajax="false" 
-                                    value="Download">
-                                    <p:dataExporter 
-                                        type="xlsx" 
-                                        fileName="Slow Movement Report" 
-                                        target="tbl2"  />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-danger mx-1" 
-                                    icon= "fas fa-file-pdf" 
-                                    ajax="false" 
-                                    value="PDF">
-                                    <p:dataExporter 
-                                        type="pdf" 
-                                        target="tbl2" 
-                                        fileName="Slow Movement Report" />
-                                </p:commandButton>
-                                <h5>Slow Moving</h5>                                                     
-                                <h5>Pharmacy Movement Report</h5>
-
-                                <p:dataTable id="tbl2" 
-                                             value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
-                                             var="s" 
-                                             rowIndexVar="n" 
-                                             paginator="true" 
-                                             paginatorPosition="bottom"
-                                             rows="10" 
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
-                                    <p:column headerText="Sl No.">
-                                        <h:outputText value="#{n+1}" />
-                                    </p:column>
-                                    <p:column headerText="Item Code">
-                                        <h:outputText value="#{s.item.code}" />
-                                    </p:column>
-                                    <p:column headerText="Item Name ">
-                                        <h:outputText value="#{s.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Drug Form">
-                                        <h:outputText value="#{s.item.category.name}" />
-                                    </p:column>
-                                    <p:column headerText="Supplier(Last Purchase)">
-                                        <h:outputText value="#{s.lastPurchaseSupplier.name}" />
-                                    </p:column>
-                                    <p:column headerText="Quantity">
-                                        <h:outputText value="#{s.qty}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Cost Value" >
-                                        <h:outputText value="#{s.purchaseValue}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Sale Value" >
-                                        <h:outputText value="#{s.retailsaleValue}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Value of QIH" >
-                                        <h:outputText value="#{s.stockQty}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="QIH" >
-                                        <h:outputText value="#{s.stockOnHand}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-
-                                </p:dataTable>
-
-                            </div>
-                        </p:panel>
-
-                        <p:panel 
-                            id="nonmovement" 
-                            rendered="#{pharmacyReportController.reportType eq 'nmovement'}">
-                            <div class="mt-5">
-                                <p:commandButton 
-                                    class="ui-button- mx-1" 
-                                    icon="fas fa-print" 
-                                    ajax="false" 
-                                    value="Print All">
-                                    <p:printer target="tbl3" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-success mx-1" 
-                                    icon="fas fa-file-excel" 
-                                    ajax="false" 
-                                    value="Download">
-                                    <p:dataExporter 
-                                        type="xlsx" 
-                                        fileName="Non Movement Report" 
-                                        target="tbl3"  />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-danger mx-1" 
-                                    icon= "fas fa-file-pdf" 
-                                    ajax="false" 
-                                    value="PDF">
-                                    <p:dataExporter 
-                                        type="pdf" 
-                                        target="tbl3" 
-                                        fileName="Non Movement Report" />
-                                </p:commandButton>
-                                <h5>Non Moving</h5>                                                     
-                                <h5>Pharmacy Movement Report</h5>
-
-                                <p:dataTable id="tbl3" 
-                                             value="#{pharmacyReportController.itemLastSuppliers}" 
-                                             var="no" 
-                                             rowIndexVar="n" 
-                                             paginator="true" 
-                                             paginatorPosition="bottom"
-                                             rows="10" 
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
-                                    <p:column headerText="Sl No.">
-                                        <h:outputText value="#{n+1}" />
-                                    </p:column>
-                                    <p:column headerText="Item Code">
-                                        <h:outputText value="#{no.item.code}" />
-                                    </p:column>
-                                    <p:column headerText="Item Name">
-                                        <h:outputText value="#{no.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Drug Form">
-                                        <h:outputText value="#{no.item.category.name}" />
-                                    </p:column>
-                                    <p:column headerText="Supplier(Last Purchase)">
-                                        <h:outputText value="#{no.lastSupplier.name}" />
-                                    </p:column>
-
-                                </p:dataTable>
-
-                            </div>
-                        </p:panel>
+                            </p:dataTable>
+                        </div>
                     </p:panel>
 
-                </h:form>
+                    <p:panel
+                            id="slowmovement"
+                            rendered="#{pharmacyReportController.reportType eq 'smovement'}">
+                        <div class="mt-5">
+                            <p:commandButton
+                                    class="ui-button- mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print All">
+                                <p:printer target="tbl2"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                    class="ui-button-success mx-1"
+                                    icon="fas fa-file-excel"
+                                    ajax="false"
+                                    value="Download">
+                                <p:dataExporter
+                                        type="xlsx"
+                                        fileName="Slow Movement Report"
+                                        target="tbl2"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                    class="ui-button-danger mx-1"
+                                    icon="fas fa-file-pdf"
+                                    ajax="false"
+                                    value="PDF">
+                                <p:dataExporter
+                                        type="pdf"
+                                        target="tbl2"
+                                        fileName="Slow Movement Report"/>
+                            </p:commandButton>
+                            <h5>Slow Moving</h5>
+                            <h5>Pharmacy Movement Report</h5>
 
-            </ui:define>
-        </ui:composition>
+                            <p:dataTable id="tbl2"
+                                         value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
+                                         var="s"
+                                         rowIndexVar="n"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-    </h:body>
+                                <p:column headerText="Sl No.">
+                                    <h:outputText value="#{n+1}"/>
+                                </p:column>
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="#{s.item.code}"/>
+                                </p:column>
+                                <p:column headerText="Item Name ">
+                                    <h:outputText value="#{s.item.name}"/>
+                                </p:column>
+                                <p:column headerText="Drug Form">
+                                    <h:outputText value="#{s.item.category.name}"/>
+                                </p:column>
+                                <p:column headerText="Supplier(Last Purchase)">
+                                    <h:outputText value="#{s.lastPurchaseSupplier.name}"/>
+                                </p:column>
+                                <p:column headerText="Quantity">
+                                    <h:outputText value="#{s.qty}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Cost Value">
+                                    <h:outputText value="#{s.purchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Sale Value">
+                                    <h:outputText value="#{s.retailsaleValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Value of QIH">
+                                    <h:outputText value="#{s.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="QIH">
+                                    <h:outputText value="#{s.stockOnHand}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+                    </p:panel>
+
+                    <p:panel
+                            id="nonmovement"
+                            rendered="#{pharmacyReportController.reportType eq 'nmovement'}">
+                        <div class="mt-5">
+                            <p:commandButton
+                                    class="ui-button- mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print All">
+                                <p:printer target="tbl3"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                    class="ui-button-success mx-1"
+                                    icon="fas fa-file-excel"
+                                    ajax="false"
+                                    value="Download">
+                                <p:dataExporter
+                                        type="xlsx"
+                                        fileName="Non Movement Report"
+                                        target="tbl3"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                    class="ui-button-danger mx-1"
+                                    icon="fas fa-file-pdf"
+                                    ajax="false"
+                                    value="PDF">
+                                <p:dataExporter
+                                        type="pdf"
+                                        target="tbl3"
+                                        fileName="Non Movement Report"/>
+                            </p:commandButton>
+                            <h5>Non Moving</h5>
+                            <h5>Pharmacy Movement Report</h5>
+
+                            <p:dataTable id="tbl3"
+                                         value="#{pharmacyReportController.itemLastSuppliers}"
+                                         var="no"
+                                         rowIndexVar="n"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="Sl No.">
+                                    <h:outputText value="#{n+1}"/>
+                                </p:column>
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="#{no.item.code}"/>
+                                </p:column>
+                                <p:column headerText="Item Name">
+                                    <h:outputText value="#{no.item.name}"/>
+                                </p:column>
+                                <p:column headerText="Drug Form">
+                                    <h:outputText value="#{no.item.category.name}"/>
+                                </p:column>
+                                <p:column headerText="Supplier(Last Purchase)">
+                                    <h:outputText value="#{no.lastSupplier.name}"/>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+                    </p:panel>
+                </p:panel>
+
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+
+</h:body>
 </html>

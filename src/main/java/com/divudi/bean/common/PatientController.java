@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+
 import com.divudi.bean.optician.OpticianRepairBillController;
 import com.divudi.bean.optician.OpticianSaleController;
 import org.apache.poi.ss.usermodel.*;
@@ -9,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.clinical.PracticeBookingController;
@@ -91,6 +93,7 @@ import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
@@ -763,7 +766,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/emr/patient_profile?faces-redirect=true";
     }
 
-//    public String toEmrPatientProfile() {
+    //    public String toEmrPatientProfile() {
 //        if (current == null) {
 //            JsfUtil.addErrorMessage("No patient selected");
 //            return "";
@@ -2138,7 +2141,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Membership Updated");
     }
 
-//    @Deprecated
+    //    @Deprecated
 //    public String toAddAFamily() {
 //        currentFamily = new Family();
 //        return "/membership/add_family";
@@ -2287,6 +2290,77 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
     }
+
+    public String searchFamilyByNIC() {
+        if (searchNic == null) {
+            JsfUtil.addErrorMessage("No NIC provided");
+            return null;
+        }
+        if (searchNic.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No NIC provided");
+            return null;
+        }
+
+        families = null;
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.nic like :nic "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("nic", "%" + searchNic.trim().toUpperCase() + "%");
+
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchNic = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchNic = "";
+            return null;
+        }
+    }
+
+    public String searchFamilyByAddress() {
+        if (searchText == null) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchText.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchText.trim().length() < 4) {
+            JsfUtil.addErrorMessage("Enter at least 4 characters");
+            return null;
+        }
+        families = null;
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.address like :address "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("address", "%" + searchText + "%");
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchText = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchText = "";
+            return null;
+        }
+    }
+
 
     public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (paramMembershipNumber == null) {
@@ -2480,7 +2554,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewFamilyMembership();
     }
 
-//    public String saveAndClearForNewFamily() {
+    //    public String saveAndClearForNewFamily() {
 //        saveFamily();
 //        currentFamily = new Family();
 //        return navigateToAddNewFamilyMembership();
@@ -2504,7 +2578,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewIndividualMembership();
     }
 
-//    public String toAddNewFamily() {
+    //    public String toAddNewFamily() {
 //        currentFamily = new Family();
 //        return toFamily();
 //    }

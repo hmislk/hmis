@@ -1,0 +1,41 @@
+                                        required="true"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        requiredMessage="Supplier is Required"
+                                        completeMethod="#{dealerController.completeActiveDealor}"
+                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                        <f:ajax
+                                            event="itemSelect" 
+                                            execute="@this" 
+                                            render=":#{p:resolveFirstComponentWithId('exDItem',view).clientId}" 
+                                            />
+                                    </p:autoComplete>
+
+                                    <p:outputLabel value="Payment Method"
+                                                   class="form-label"
+                                                   for="cmbPs"></p:outputLabel>
+                                    <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
+                                        <f:selectItem itemLabel="Select Payment method"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
+                                        </f:selectItems>
+                                        <p:ajax process="@this" update="po" event="change"/>
+                                        <p:ajax process="@this" update="duration" event="itemSelect" />
+                                    </p:selectOneMenu>
+
+
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
+                                        <div class="d-flex" >
+                                            <div class="ui-inputgroup mx-1 my-1">
+                                                <p:inputText  
+                                                    onfocus="this.select();"  
+                                                    value="#{purchaseOrderRequestController.currentBill.creditDuration}"
+                                                    style="width: 10em;">
+                                                </p:inputText>
+                                                <div class="ui-inputgroup-addon">Days</div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <p:spacer 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"
+                                        class="my-4"></p:spacer>
