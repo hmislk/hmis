@@ -11,6 +11,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -61,7 +62,7 @@
             </div>
             <h:panelGroup >
                 <div class="billline" >
-                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" style="font-size: 30px; padding: 0px;"/>
+                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenNumberFromBill(cc.attrs.bill.referenceBill)}" style="font-size: 30px; padding: 0px;"/>
                 </div>
             </h:panelGroup>
 
