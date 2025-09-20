@@ -976,8 +976,8 @@ public class SearchController implements Serializable {
                 + " and b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        if(getDealer()!=null){
-            jpql += " and b.institution = :del ";
+        if (getDealer() != null) {
+            jpql += " and b.fromInstitution = :del ";
             params.put("del", getDealer());
         }
         
