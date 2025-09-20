@@ -23,8 +23,9 @@
                                         class="ui-button-danger"
                                         icon="fa fa-cancel"
                                         value="To Cancel" 
-                                        action="pharmacy_cancel_bill_unit_issue" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                        action="pharmacy_cancel_bill_unit_issue?faces-redirect=true" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">   
+                                        <f:setPropertyActionListener value="false" target="#{pharmacyBillSearch.printPreview}"/>
                                     </p:commandButton>
                                     
                                     <p:commandButton 
@@ -52,7 +53,8 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:consumptionIssue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                            <ph:consumptionIssue bill="#{pharmacyBillSearch.bill}" duplicate="true" rendered="#{configOptionController.getBooleanValueByKey('Show Search Disposal Bill in Default Format',true)}" />
+                            <ph:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill}" duplicate="true" rendered="#{configOptionController.getBooleanValueByKey('Show Search Disposal Bill in Custom Format',false)}" />
                         </h:panelGroup>
 
                     </p:panel>

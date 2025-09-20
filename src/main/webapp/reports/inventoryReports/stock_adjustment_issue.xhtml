@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -165,7 +165,8 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process"
+                                action="#{pharmacyReportController.processStockAdjustmentIssue()}" >
                             </p:commandButton>
 
                             <p:commandButton 
@@ -202,7 +203,7 @@
 
 
                         <p:dataTable id="tbl" 
-                                     value="" 
+                                     value="#{pharmacyReportController.billItemsDtos}" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
@@ -213,36 +214,51 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
 
-                            <p:column headerText="Date" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Date">
+                                <h:outputText value="#{f.billCreatedAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Item Name" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Item Name">
+                                <h:outputText value="#{f.itemName}" />
+                            </p:column>                   
+                            <p:column headerText="Code">
+                                <h:outputText value="#{f.itemCode}" />
                             </p:column>
-                            <p:column headerText="Code" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Doc No">
+                                <h:outputText value="#{f.billDeptId}" />
                             </p:column>
-                            <p:column headerText="Doc No" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Batch Code">
+                                <h:outputText value="#{f.batchNo}" />
                             </p:column>
-                            <p:column headerText="QTY" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="QTY">
+                                <h:outputText value="#{f.qty}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Batch Code" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{f.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Rate" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="#{f.costRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>  
+                            <p:column headerText="Sale Rate">
+                                <h:outputText value="#{f.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Total" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Net Total" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
+                            <p:column headerText="Sale Value">
+                                <h:outputText value="#{f.retailRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column> 
 
                         </p:dataTable>
 

@@ -17,6 +17,12 @@
                             <div>
                                 <h:outputText styleClass="fas fa-pills"></h:outputText>
                                 <h:outputLabel value="Pharmacy Item Return" class="mx-3"></h:outputLabel>
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Back to Reprint" 
+                                    class="ui-button-secondary mx-2"
+                                    icon="fa fa-arrow-left"
+                                    action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />
                             </div>
                             <div>
                                 <h:outputLabel value="Return Total " class="mx-3"></h:outputLabel>

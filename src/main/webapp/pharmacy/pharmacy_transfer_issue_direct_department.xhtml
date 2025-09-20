@@ -138,17 +138,17 @@
 
                                 <p:column headerText="Item Name" style="min-width: 8em; max-width: 15em">
                                     <div style="min-width: 10em; display: flex; align-items: center;">
-                                    <h:outputText 
-                                        id="item" 
-                                        value="#{bItm.item.name}" />
-                                    <p:commandButton 
-                                        icon="pi pi-search"
-                                        id="btnViewSelectedItemDetails"
-                                        title="View Item Details"
-                                        action="#{transferIssueController.displayItemDetails(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
-                                        process="@this"
-                                        class="ui-button-icon-only mx-3"/>
+                                        <h:outputText 
+                                            id="item" 
+                                            value="#{bItm.item.name}" />
+                                        <p:commandButton 
+                                            icon="pi pi-search"
+                                            id="btnViewSelectedItemDetails"
+                                            title="View Item Details"
+                                            action="#{transferIssueController.displayItemDetails(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            process="@this"
+                                            class="ui-button-icon-only mx-3"/>
                                     </div>
                                 </p:column>
 
@@ -215,6 +215,8 @@
                                     icon="fas fa-check" 
                                     action="#{transferIssueController.settleDirectIssue}" 
                                     style="float: right;" 
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     ajax="false" 
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>
@@ -253,6 +255,18 @@
                                     itemLabel="#{w.person.name}" 
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{w.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputText value="#{w.code}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Staff Code">
+                                        <h:outputText value="#{w.staffCode}" ></h:outputText>
+                                    </p:column>
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Transfer Value" />
@@ -271,12 +285,14 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
 
-                                <h:outputLabel value="Comment" />
+                                <h:outputLabel value="Comment *" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:inputTextarea 
+                                <p:inputTextarea
                                     class="w-100"
-                                    value="#{transferIssueController.issuedBill.comments}" 
-                                    rows="3" />
+                                    value="#{transferIssueController.issuedBill.comments}"
+                                    rows="3"
+                                    required="true"
+                                    requiredMessage="Please enter a comment." />
 
                             </h:panelGrid>
                         </p:panel>
@@ -299,12 +315,15 @@
                         value="Requested List"/>
 
                     <div class="d-flex m-1">
-                        <p:outputLabel value="Paper Type" class="mt-3"></p:outputLabel>
-                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
-                            <f:selectItem itemLabel="Please Select Paper Type" />
-                            <f:selectItems value="#{enumController.paperTypes}" />
-                        </p:selectOneMenu>
-                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" />
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                        </h:panelGroup>
+                        <h:inputHidden value="#{sessionController.departmentPreference.pharmacyBillPaperType}" rendered="#{!webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"/>
                         <p:commandButton
                             value="Print"
                             icon="fas fa-print"

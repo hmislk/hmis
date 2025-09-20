@@ -111,6 +111,8 @@
                             <!--                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Batch No.</th>-->
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Return Qty</th>
                             <!--                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>-->
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
+                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
                             <!--                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Price</th>-->
                             <!--                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>-->
@@ -153,6 +155,16 @@
                                                                         <f:convertNumber pattern="#,##0"/>
                                                                     </h:outputText>
                                                                 </td>-->
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{-bip.pharmaceuticalBillItem.retailRate*bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -205,7 +217,7 @@
                                         </tr>-->
 
                     <tr style="font-size: 15px">
-                        <td colspan="4" style="text-align: left;">Total</td>
+                        <td colspan="6" style="text-align: left;">Total</td>
                         <td colspan="1" style="text-align: right;">
                             <h:outputText value="#{cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -232,7 +244,7 @@
                                         </tr>-->
 
                     <tr style="font-size: 15px">
-                        <td colspan="4" style="text-align: left; ">Discount</td>
+                        <td colspan="6" style="text-align: left; ">Discount</td>
                         <td colspan="1" style="text-align: right; ">
                             <h:outputText value="#{0-cc.attrs.bill.discount}">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -241,7 +253,7 @@
                     </tr>
 
                     <tr style="font-size: 15px">
-                        <td colspan="4" style="text-align: left; font-weight: bold!important;">Net Total</td>
+                        <td colspan="6" style="text-align: left; font-weight: bold!important;">Net Total</td>
                         <td colspan="1" style="text-align: right; font-weight: bold!important;">
                             <h:outputText value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />

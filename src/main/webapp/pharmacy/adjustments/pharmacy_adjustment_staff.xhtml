@@ -4,15 +4,16 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
 
             <ui:define name="subcontent">
-                <h:form>
-                    <p:panel>
+                <h:form id="staffAdjustmentForm">
+                    <p:panel rendered="#{!pharmacyAdjustmentController.printPreview}">
                         <f:facet name="header">
                             <h:outputText styleClass="fa-solid fa-person-shelter"></h:outputText>
                             <h:outputLabel value="Staff Stock Adjustment*" class="mx-4"></h:outputLabel>
@@ -28,56 +29,93 @@
 
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <h:outputLabel value="Select Item &amp; Staff" ></h:outputLabel>
+                                            <h:outputLabel value="Select Staff" ></h:outputLabel>
                                         </div>
                                         <div class="col-md-6">
                                             <p:autoComplete
                                                 forceSelection="true"
-                                                id="acStock"
-                                                value="#{pharmacyAdjustmentController.stock}"
-                                                completeMethod="#{pharmacyAdjustmentController.completeStaffStocks}"
-                                                var="i"
+                                                id="acStaff"
+                                                value="#{pharmacyAdjustmentController.selectedStaff}"
+                                                completeMethod="#{pharmacyAdjustmentController.completeStaff}"
+                                                var="s"
                                                 class="w-100"
                                                 inputStyleClass="form-control"
-                                                itemLabel="#{i.itemBatch.item.name}"
-                                                itemValue="#{i}"
-                                                scrollHeight="500">
-                                                <p:column headerText="Staff">
-                                                    <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
+                                                itemLabel="#{s.person.nameWithTitle}"
+                                                itemValue="#{s}"
+                                                scrollHeight="300">
+                                                <p:column headerText="Name">
+                                                    <h:outputLabel value="#{s.person.name}" ></h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Staff Code">
-                                                    <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Item">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}" style="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ':
-                                                                            commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" ></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Code"  style="padding: 3px;" >
-                                                    <h:outputText value="#{i.itemBatch.item.code}" ></h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Rate">
-                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Stocks">
-                                                    <h:outputLabel value="#{i.stock}" >
-                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Expiry">
-                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ':
-                                                                            commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
-                                                        <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                                    </h:outputLabel>
+                                                <p:column headerText="Code">
+                                                    <h:outputLabel value="#{s.code}" ></h:outputLabel>
                                                 </p:column>
                                                 <p:ajax
                                                     process="@this"
-                                                    update="det" >
+                                                    update="btnListStock,stockSelection" >
                                                 </p:ajax>
                                             </p:autoComplete>
                                         </div>
+                                        <div class="col-md-3">
+                                            <p:commandButton
+                                                id="btnListStock"
+                                                value="List Staff Stock"
+                                                action="#{pharmacyAdjustmentController.listStaffStock()}"
+                                                class="ui-button-success"
+                                                icon="fa-solid fa-list"
+                                                disabled="#{pharmacyAdjustmentController.selectedStaff == null}"
+                                                update="stockSelection,@form:det">
+                                            </p:commandButton>
+                                        </div>
                                     </div>
+
+                                    <h:panelGroup id="stockSelection">
+                                        <div class="row mt-2" >
+                                            <div class="col-md-3">
+                                                <h:outputLabel value="Select Item" rendered="#{pharmacyAdjustmentController.staffStocks != null and not empty pharmacyAdjustmentController.staffStocks}"></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:dataTable 
+                                                    value="#{pharmacyAdjustmentController.staffStocks}" 
+                                                    var="stock"
+                                                    rendered="#{pharmacyAdjustmentController.staffStocks != null and not empty pharmacyAdjustmentController.staffStocks}"
+                                                    selectionMode="single" 
+                                                    selection="#{pharmacyAdjustmentController.stock}"
+                                                    rowKey="#{stock.id}"
+                                                    scrollable="true"
+                                                    scrollHeight="300"
+                                                    class="w-100">
+                                                    <p:ajax event="rowSelect" process="@this" update="@form:det" />
+                                                    <p:column headerText="Item" sortBy="#{stock.itemBatch.item.name}">
+                                                        <h:outputText value="#{stock.itemBatch.item.name}" 
+                                                                      style="#{commonFunctionsProxy.currentDateTime > stock.itemBatch.dateOfExpire ?'color: red; ':
+                                                                               commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > stock.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Code" sortBy="#{stock.itemBatch.item.code}">
+                                                        <h:outputText value="#{stock.itemBatch.item.code}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Stock" sortBy="#{stock.stock}">
+                                                        <h:outputText value="#{stock.stock}">
+                                                            <f:convertNumber pattern="#,###"/>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Rate" sortBy="#{stock.itemBatch.retailsaleRate}">
+                                                        <h:outputText value="#{stock.itemBatch.retailsaleRate}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Expiry" sortBy="#{stock.itemBatch.dateOfExpire}">
+                                                        <h:outputText value="#{stock.itemBatch.dateOfExpire}" 
+                                                                      style="#{commonFunctionsProxy.currentDateTime > stock.itemBatch.dateOfExpire ?'color: red; ':
+                                                                               commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > stock.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
+                                                            <f:convertDateTime pattern="MMM yyyy"/>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+
 
                                     <div class="row mt-2">
                                         <div class="col-md-3"><h:outputLabel value="New Quantity" ></h:outputLabel></div>
@@ -112,7 +150,7 @@
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <div>
-                                         <div class="row">
+                                        <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Staff Name"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.staff.person.nameWithTitle}" ></h:outputLabel></div>
@@ -127,7 +165,7 @@
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.code}" ></h:outputLabel></div>
                                         </div>
-                                         <div class="row">
+                                        <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.stock}" >
@@ -162,6 +200,27 @@
                         </div>
                     </p:panel>
 
+                    <p:panel id="printSection" rendered="#{pharmacyAdjustmentController.printPreview}">
+                        <div class="d-flex gap-2 m-2">
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                action="#{pharmacyAdjustmentController.makeNull()}"
+                                value="New Adjustment"/>
+                            <p:commandButton
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                ajax="false"
+                                value="Print">
+                                <p:printer target="print"/>
+                            </p:commandButton>
+                        </div>
+
+                        <h:panelGroup id="print">
+                            <ph:adjustmentBill_staff_stock id="adjustmentBill" bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                        </h:panelGroup>
+                    </p:panel>
 
                 </h:form>
             </ui:define>

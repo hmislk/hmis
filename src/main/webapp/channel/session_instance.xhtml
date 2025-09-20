@@ -146,7 +146,7 @@
 
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
-                                                    <p:tooltip for="@parent" value="(R-#{bs.bill.referenceBill.onlineBooking.referenceNo})" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
+                                                    <p:tooltip for="@parent" value="(R-#{bs.bill.referenceBill.onlineBooking.referenceNo}) - #{bs.bill.referenceBill.onlineBooking.agency.name}" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
                                                     <f:facet name="header" >
                                                         <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking eq null}" class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
                                                         <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking ne null}" class="mr-5" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
@@ -205,7 +205,7 @@
                                                 <p:outputLabel value="-Online Payment" rendered="#{bs.bill.paymentMethod eq 'OnlineSettlement'}" style="color: #0062cc;" />
                                             </p:column>
 
-                                            <p:column headerText="Actions" width="5em">
+                                            <p:column style="text-align: center" headerText="Actions" width="5em">
                                                 <div class="d-flex">
                                                     <p:commandButton 
                                                         icon="fa-solid fa-book" 
@@ -240,7 +240,7 @@
                                                 </h:panelGroup>
                                             </p:column>
 
-                                            <p:column headerText="Manage" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Appoinment Status manage from session Instance', false)}">
+                                            <p:column style="text-align: center" headerText="Manage" width="8em" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Appoinment Status manage from session Instance', false)}">
                                                 <div class="d-flex">
                                                     <p:commandButton 
                                                         ajax="true" 
@@ -290,7 +290,7 @@
                                                 </div>
                                             </p:column>
 
-                                            <p:column>
+                                            <p:column width="6em">
                                                 <p:commandButton 
                                                     rendered="#{bs.absent and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
                                                     disabled="#{!(bs.bill.paidAmount eq 0 or (!(bs.bill.paymentMethod eq 'OnCall') or bs.bill.paidBill.paymentMethod ne 'OnCall'))}"

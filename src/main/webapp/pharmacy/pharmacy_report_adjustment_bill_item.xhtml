@@ -156,9 +156,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Type of Adjustment"/>
                                     </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? 'Stock Adjustment' : 
-                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? 'Retail Sale Adjustment' :
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? 'Purchase Rate Adjustment' : ''))}" >
+                                    <h:outputLabel value="#{i.bill.billTypeAtomic.label}" >
                                     </h:outputLabel>
                                 </p:column>
 
@@ -168,7 +166,8 @@
                                     </f:facet> 
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? i.pharmaceuticalBillItem.stockHistory.stockQty : 
                                                             (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? i.pharmaceuticalBillItem.retailRate : 
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.purchaseRate : ''))}" >
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.purchaseRate : 
+                                                            (i.pharmaceuticalBillItem.costRate != i.pharmaceuticalBillItem.stock.itemBatch.costRate ? i.pharmaceuticalBillItem.costRate : '')))}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
@@ -179,7 +178,8 @@
                                     </f:facet> 
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? i.pharmaceuticalBillItem.qty : 
                                                             (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate : 
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate : ''))}" >
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate : 
+                                                            (i.pharmaceuticalBillItem.costRate != i.pharmaceuticalBillItem.stock.itemBatch.costRate ? i.pharmaceuticalBillItem.stock.itemBatch.costRate : '')))}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
@@ -190,7 +190,8 @@
                                     </f:facet> 
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? (i.pharmaceuticalBillItem.qty - i.pharmaceuticalBillItem.stockHistory.stockQty) : 
                                                             (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? (i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate - i.pharmaceuticalBillItem.retailRate) :
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? (i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate - i.pharmaceuticalBillItem.purchaseRate) : ''))}" >
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? (i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate - i.pharmaceuticalBillItem.purchaseRate) : 
+                                                            (i.pharmaceuticalBillItem.costRate != i.pharmaceuticalBillItem.stock.itemBatch.costRate ? (i.pharmaceuticalBillItem.stock.itemBatch.costRate - i.pharmaceuticalBillItem.costRate) : '')))}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>

@@ -197,13 +197,18 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                             <p:column headerText="Type">
-                                <p:commandLink value="#{f.key}" 
-                                               immediate="true" 
-                                               title="View #{f.key} report" 
-                                               action="#{reportController.navigateToCostOfGoodSoldReports()}">
-                                    <f:setPropertyActionListener value="#{f.key}" 
-                                                                 target="#{reportController.reportTemplateFileIndexName}" />
+                                <p:commandLink 
+                                    rendered="#{f.key ne 'Variance' and f.key ne 'Calculated Closing Stock Value'}" 
+                                    value="#{f.key}" 
+                                    immediate="true" 
+                                    title="View #{f.key} report" 
+                                    action="#{reportController.navigateToCostOfGoodSoldReports()}">
+                                    <f:setPropertyActionListener value="#{f.key}" target="#{reportController.reportTemplateFileIndexName}" />
                                 </p:commandLink>
+
+                                <h:outputText 
+                                    rendered="#{f.key eq 'Variance' or f.key eq 'Calculated Closing Stock Value'}" 
+                                    value="#{f.key}"  />
                             </p:column>
 
                             <p:column headerText="Purchase Value" style="text-align: right; padding-right: 200px !important;">
