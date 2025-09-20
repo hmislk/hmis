@@ -894,6 +894,40 @@ public class WebUserController implements Serializable {
         return "/hr/hr_staff_admin?faces-redirect=true";
     }
 
+    public void addWebUserCodesFromUserNames() {
+        output = null;
+        String jpql = "select wu from WebUser wu "
+                + " where wu.retired=false "
+                + " and (wu.code is null or length(wu.code)=0) "
+                + " and wu.name is not null and length(wu.name)>0";
+        List<WebUser> users = getFacade().findByJpql(jpql);
+        int updated = 0;
+        if (users != null) {
+            for (WebUser wu : users) {
+                if (wu == null) {
+                    continue;
+                }
+                String uname = wu.getName();
+                if (uname == null) {
+                    continue;
+                }
+                String trimmed = uname.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                wu.setCode(trimmed);
+                try {
+                    getFacade().edit(wu);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated web user codes: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
     public void addStaffCodesFromUserCodes() {
         output = null;
         String jpql = "select wu from WebUser wu "
