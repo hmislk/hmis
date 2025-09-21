@@ -31,6 +31,7 @@ import com.divudi.core.data.dataStructure.PharmacySummery;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
+import com.divudi.core.data.dto.PharmacySaleByBillTypeDTO;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
@@ -813,6 +814,7 @@ public class PharmacyController implements Serializable {
         pharmacyItem = null;
         institutionStocks = null;
         institutionSales = null;
+        salesByBillType = null;
         grns = null;
         pendingGrns = null;
         institutionWholeSales = null;
@@ -3718,6 +3720,7 @@ public class PharmacyController implements Serializable {
         grns = null;
         pendingGrns = null;
         institutionSales = null;
+        salesByBillType = null;
         institutionStocks = null;
         institutionTransferIssue = null;
         directPurchase = null;
@@ -4582,6 +4585,38 @@ public class PharmacyController implements Serializable {
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
+    public void createDepartmentSaleDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
+                + "i.bill.billTypeAtomic, "
+                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to "
+                + "AND i.bill.department=:dep "
+                + "GROUP BY i.bill.billTypeAtomic";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", btas);
+        m.put("dep", sessionController.getDepartment());
+
+        salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
     public List<Object[]> calDepartmentSalesAllInstitutions(List<Institution> institutions) {
         Item selectedItem;
         if (pharmacyItem instanceof Ampp) {
@@ -4597,7 +4632,7 @@ public class PharmacyController implements Serializable {
                 + " where i.bill.referenceBill.billType=:refType "
                 + " and i.bill.referenceBill.cancelled=false "
                 + " and i.item=:itm "
-                + " and i.bill.billType=:btp "
+                + " and i.bill.billTypeAtomic=:btp "
                 + " and i.createdAt between :frm and :to ";
 
         Map m = new HashMap();
@@ -5077,6 +5112,7 @@ public class PharmacyController implements Serializable {
     private List<InstitutionSale> institutionSales;
     private List<InstitutionSale> institutionWholeSales;
     private List<InstitutionSale> institutionBhtIssue;
+    private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType;
 
     private List<InstitutionSale> institutionTransferIssue;
     private List<InstitutionSale> institutionIssue;
@@ -5265,10 +5301,9 @@ public class PharmacyController implements Serializable {
     }
 
     public void fillDetails() {
-        createInstitutionSale();
-        createInstitutionWholeSale();
+        createInstitutionStockDto();
+        createDepartmentSaleDto();
         createInstitutionBhtIssue();
-        createInstitutionStockDto(); // DTO-based approach for better performance
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
         createPendingGrnTable();
@@ -6379,6 +6414,27 @@ public class PharmacyController implements Serializable {
 
     public void setInstitutionSales(List<InstitutionSale> institutionSales) {
         this.institutionSales = institutionSales;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> getSalesByBillType() {
+        return salesByBillType;
+    }
+
+    public void setSalesByBillType(List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType) {
+        this.salesByBillType = salesByBillType;
+    }
+
+    public Double getTotalSalesByBillTypeQuantity() {
+        if (salesByBillType == null || salesByBillType.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : salesByBillType) {
+            if (dto.getQuantity() != null) {
+                total += dto.getQuantity();
+            }
+        }
+        return total;
     }
 
     public List<InstitutionSale> getInstitutionTransferIssue() {
