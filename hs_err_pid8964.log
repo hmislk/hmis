@@ -1,0 +1,200 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 264241152 bytes for Failed to commit area from 0x0000000704c00000 to 0x0000000714800000 of length 264241152.
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_windows.cpp:3388), pid=8964, tid=4560
+#
+# JRE version:  (11.0.24+8) (build )
+# Java VM: OpenJDK 64-Bit Server VM (11.0.24+8-adhoc..jdk11u, mixed mode, sharing, tiered, compressed oops, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: D:\Development\rh\target\surefire\surefirebooter14737652668243119060.jar D:\Development\rh\target\surefire\surefire15464035623642237513tmp D:\Development\rh\target\surefire\surefire_012926384791249027198tmp
+
+Host: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz, 8 cores, 15G,  Windows 11 , 64 bit Build 22621 (10.0.22621.5415)
+Time: Mon Sep 22 00:02:25 2025 Sri Lanka Standard Time elapsed time: 0.010655 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000002af8e475800):  JavaThread "Unknown thread" [_thread_in_vm, id=4560, stack(0x000000cab3a00000,0x000000cab3b00000)]
+
+Stack: [0x000000cab3a00000,0x000000cab3b00000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x64173a]
+V  [jvm.dll+0x7866d9]
+V  [jvm.dll+0x787dd9]
+V  [jvm.dll+0x7884c3]
+V  [jvm.dll+0x267c95]
+V  [jvm.dll+0x63e959]
+V  [jvm.dll+0x632e35]
+V  [jvm.dll+0x32351c]
+V  [jvm.dll+0x3233a2]
+V  [jvm.dll+0x327f76]
+V  [jvm.dll+0x36ff92]
+V  [jvm.dll+0x36f9f1]
+V  [jvm.dll+0x2fecd8]
+V  [jvm.dll+0x2ffdd5]
+V  [jvm.dll+0x75f977]
+V  [jvm.dll+0x76113f]
+V  [jvm.dll+0x37d399]
+V  [jvm.dll+0x741b3f]
+V  [jvm.dll+0x3edc07]
+V  [jvm.dll+0x3eff91]
+C  [jli.dll+0x52ef]
+C  [ucrtbase.dll+0x29333]
+C  [KERNEL32.DLL+0x1259d]
+C  [ntdll.dll+0x5af78]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x000002af8c2f5f50, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+
+Other Threads:
+  0x000002af8e48c800 GCTaskThread "GC Thread#0" [stack: 0x000000cab3b00000,0x000000cab3c00000] [id=16504]
+  0x000002af8e4ea800 ConcurrentGCThread "G1 Main Marker" [stack: 0x000000cab3c00000,0x000000cab3d00000] [id=8356]
+  0x000002af8e4ec000 ConcurrentGCThread "G1 Conc#0" [stack: 0x000000cab3d00000,0x000000cab3e00000] [id=17340]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ff9a6adf717]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x000002af8e472590] Heap_lock - owner thread: 0x000002af8e475800
+
+Heap address: 0x0000000704c00000, size: 4020 MB, Compressed Oops mode: Non-zero based: 0x0000000704c00000
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (1 events):
+Event: 0.006 Loaded shared library C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\zip.dll
+
+
+Dynamic libraries:
+0x00007ff749640000 - 0x00007ff74964e000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\java.exe
+0x00007ffa1c650000 - 0x00007ffa1c867000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ffa1b470000 - 0x00007ffa1b534000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ffa19a60000 - 0x00007ffa19e32000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ffa19f80000 - 0x00007ffa1a091000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ff9d55e0000 - 0x00007ff9d55fb000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\VCRUNTIME140.dll
+0x00007ff9ff540000 - 0x00007ff9ff557000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\jli.dll
+0x00007ffa1b6d0000 - 0x00007ffa1b881000 	C:\WINDOWS\System32\USER32.dll
+0x00007ffa198f0000 - 0x00007ffa19916000 	C:\WINDOWS\System32\win32u.dll
+0x00007ffa1b540000 - 0x00007ffa1b569000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ffa06e50000 - 0x00007ffa070eb000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.22621.5547_none_27104afb73855772\COMCTL32.dll
+0x00007ffa197c0000 - 0x00007ffa198e3000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ffa1b310000 - 0x00007ffa1b3b7000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ffa1a0a0000 - 0x00007ffa1a13a000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ffa1b430000 - 0x00007ffa1b461000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ff9d54c0000 - 0x00007ff9d54cc000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\vcruntime140_1.dll
+0x00007ff9a59f0000 - 0x00007ff9a5a7d000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\msvcp140.dll
+0x00007ff9a67d0000 - 0x00007ff9a7320000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\server\jvm.dll
+0x00007ffa1c050000 - 0x00007ffa1c101000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ffa1a9b0000 - 0x00007ffa1aa58000 	C:\WINDOWS\System32\sechost.dll
+0x00007ffa1a140000 - 0x00007ffa1a168000 	C:\WINDOWS\System32\bcrypt.dll
+0x00007ffa1bf10000 - 0x00007ffa1c024000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ffa1a5a0000 - 0x00007ffa1a5a8000 	C:\WINDOWS\System32\PSAPI.DLL
+0x00007ff9d5600000 - 0x00007ff9d5609000 	C:\WINDOWS\SYSTEM32\WSOCK32.dll
+0x00007ffa11650000 - 0x00007ffa1165a000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ffa1a350000 - 0x00007ffa1a3c1000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ffa103f0000 - 0x00007ffa10424000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ffa18730000 - 0x00007ffa18748000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007ff9d5440000 - 0x00007ff9d5450000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\verify.dll
+0x00007ffa17220000 - 0x00007ffa17453000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ffa1c160000 - 0x00007ffa1c4f3000 	C:\WINDOWS\System32\combase.dll
+0x00007ffa1b8a0000 - 0x00007ffa1b977000 	C:\WINDOWS\System32\OLEAUT32.dll
+0x00007ff9f8700000 - 0x00007ff9f8732000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ffa19e40000 - 0x00007ffa19ebb000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007ff9d5450000 - 0x00007ff9d5478000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\java.dll
+0x00007ff9d5430000 - 0x00007ff9d543a000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\jimage.dll
+0x00007ff9d50c0000 - 0x00007ff9d50d8000 	C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\zip.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.22621.5547_none_27104afb73855772;C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin\server
+
+VM Arguments:
+java_command: D:\Development\rh\target\surefire\surefirebooter14737652668243119060.jar D:\Development\rh\target\surefire\surefire15464035623642237513tmp D:\Development\rh\target\surefire\surefire_012926384791249027198tmp
+java_class_path (initial): D:\Development\rh\target\surefire\surefirebooter14737652668243119060.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 2                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 8                                         {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 1048576                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 264241152                                 {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 4215275520                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 1048576                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 5836300                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122910970                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122910970                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+     bool UseCompressedClassPointers               = true                                 {lp64_product} {ergonomic}
+     bool UseCompressedOops                        = true                                 {lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags
+ #1: stderr all=off uptime,level,tags
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot
+PATH=C:\Python313\Scripts\;C:\Python313\;C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;D:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;D:\Program Files\GitHub CLI\;C:\Users\ASUS\AppData\Local\Microsoft\WindowsApps;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Program Files\NetBeans-16\netbeans\java\maven\bin;C:\Program Files\NetBeans-16\netbeans\java\maven\bin;C:\Users\ASUS\AppData\Roaming\npm
+USERNAME=ASUS
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 140 Stepping 1, GenuineIntel
+TMP=C:\Users\ASUS\AppData\Local\Temp
+TEMP=C:\Users\ASUS\AppData\Local\Temp
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 11 , 64 bit Build 22621 (10.0.22621.5415)
+OS uptime: 3 days 4:33 hours
+Hyper-V role detected
+
+CPU:total 8 (initial active 8) (4 cores per cpu, 2 threads per core) family 6 model 140 stepping 1 microcode 0x9a, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, 3dnowpref, lzcnt, ht, tsc, tscinvbit, bmi1, bmi2, adx, evex, sha, fma
+
+Memory: 4k page, system-wide physical 16079M (645M free)
+TotalPageFile size 28762M (AvailPageFile size 179M)
+current process WorkingSet (physical memory assigned to process): 10M, peak: 10M
+current process commit charge ("private bytes"): 61M, peak: 313M
+
+vm_info: OpenJDK 64-Bit Server VM (11.0.24+8-adhoc..jdk11u) for windows-amd64 JRE (11.0.24+8-adhoc..jdk11u), built on Jul 18 2024 08:18:57 by "" with MS VC++ 16.10 / 16.11 (VS2019)
+
+END.

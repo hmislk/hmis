@@ -76,19 +76,19 @@
                                          >
                                 <f:facet name="header">
                                     <h:outputLabel value="Adjustment Report By Item for "/>&nbsp;
-                                    
+
                                     <h:outputLabel value="Department : "/>&nbsp;
-                                        <h:outputLabel value="#{pharmacyAdjustmentController.fromDepartment.name}"/> 
-                                        <br/>
-                                        <h:outputLabel value="From : "/>
-                                        <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.fromDate}">&nbsp;
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="To : "/>
-                                        <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                        </h:outputLabel>
-                                   
+                                    <h:outputLabel value="#{pharmacyAdjustmentController.fromDepartment.name}"/> 
+                                    <br/>
+                                    <h:outputLabel value="From : "/>
+                                    <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.fromDate}">&nbsp;
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To : "/>
+                                    <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                    </h:outputLabel>
+
                                 </f:facet>
 
                                 <p:column headerText="Bill No"
@@ -160,41 +160,37 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Before Adjustment" style="text-align: right;">
+
+
+
+                                <p:column class="text-end">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Before Adjustment"/>
-                                    </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? i.pharmaceuticalBillItem.stockHistory.stockQty : 
-                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? i.pharmaceuticalBillItem.retailRate : 
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.purchaseRate : 
-                                                            (i.pharmaceuticalBillItem.costRate != i.pharmaceuticalBillItem.stock.itemBatch.costRate ? i.pharmaceuticalBillItem.costRate : '')))}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <h:outputLabel value="Before"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="After Adjustment" style="text-align: right;">
+                                <p:column class="text-end">
                                     <f:facet name="header">
-                                        <h:outputLabel value="After Adjustment"/>
-                                    </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? i.pharmaceuticalBillItem.qty : 
-                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate : 
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate : 
-                                                            (i.pharmaceuticalBillItem.costRate != i.pharmaceuticalBillItem.stock.itemBatch.costRate ? i.pharmaceuticalBillItem.stock.itemBatch.costRate : '')))}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <h:outputLabel value="After"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.afterAdjustmentValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Adjustment Difference" style="text-align: right;">
+                                <p:column class="text-end">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Adjustment Difference"/>
-                                    </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? (i.pharmaceuticalBillItem.qty - i.pharmaceuticalBillItem.stockHistory.stockQty) : 
-                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? (i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate - i.pharmaceuticalBillItem.retailRate) :
-                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? (i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate - i.pharmaceuticalBillItem.purchaseRate) : 
-                                                            (i.pharmaceuticalBillItem.costRate != i.pharmaceuticalBillItem.stock.itemBatch.costRate ? (i.pharmaceuticalBillItem.stock.itemBatch.costRate - i.pharmaceuticalBillItem.costRate) : '')))}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <h:outputLabel value="Variance"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.afterAdjustmentValue - i.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
+
+
 
                             </p:dataTable>
                         </h:panelGroup>

@@ -490,6 +490,19 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven Surefire Plugin for Testing with Increased Memory -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <argLine>-Xmx2048m -Xms512m -XX:MaxPermSize=512m</argLine>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+
             <!-- Maven Dependency Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
