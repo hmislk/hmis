@@ -4925,7 +4925,7 @@ public class SearchController implements Serializable {
         m.put("billTypeAtomics", billTypeAtomics);
 
         jpql = "select bi from BillItem bi"
-                + " where (bi.bill is null or bi.bill.retired=false) "
+                + " where (bi.bill.retired is null or bi.bill.retired=false) "
                 + " and bi.bill.institution = :ins"
                 + " and bi.bill.billTypeAtomic in :billTypeAtomics"
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
@@ -19251,6 +19251,8 @@ public class SearchController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
+        } else {
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
