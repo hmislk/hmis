@@ -31,6 +31,7 @@ import com.divudi.core.data.dataStructure.PharmacySummery;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
+import com.divudi.core.data.dto.PharmacySaleByBillTypeDTO;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
@@ -813,6 +814,7 @@ public class PharmacyController implements Serializable {
         pharmacyItem = null;
         institutionStocks = null;
         institutionSales = null;
+        salesByBillType = null;
         grns = null;
         pendingGrns = null;
         institutionWholeSales = null;
@@ -3718,6 +3720,7 @@ public class PharmacyController implements Serializable {
         grns = null;
         pendingGrns = null;
         institutionSales = null;
+        salesByBillType = null;
         institutionStocks = null;
         institutionTransferIssue = null;
         directPurchase = null;
@@ -4582,6 +4585,38 @@ public class PharmacyController implements Serializable {
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
+    public void createDepartmentSaleDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
+                + "i.bill.billTypeAtomic, "
+                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to "
+                + "AND i.bill.department=:dep "
+                + "GROUP BY i.bill.billTypeAtomic";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", btas);
+        m.put("dep", sessionController.getDepartment());
+
+        salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
     public List<Object[]> calDepartmentSalesAllInstitutions(List<Institution> institutions) {
         Item selectedItem;
         if (pharmacyItem instanceof Ampp) {
@@ -4597,7 +4632,7 @@ public class PharmacyController implements Serializable {
                 + " where i.bill.referenceBill.billType=:refType "
                 + " and i.bill.referenceBill.cancelled=false "
                 + " and i.item=:itm "
-                + " and i.bill.billType=:btp "
+                + " and i.bill.billTypeAtomic=:btp "
                 + " and i.createdAt between :frm and :to ";
 
         Map m = new HashMap();
@@ -5077,6 +5112,7 @@ public class PharmacyController implements Serializable {
     private List<InstitutionSale> institutionSales;
     private List<InstitutionSale> institutionWholeSales;
     private List<InstitutionSale> institutionBhtIssue;
+    private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType;
 
     private List<InstitutionSale> institutionTransferIssue;
     private List<InstitutionSale> institutionIssue;
@@ -5265,137 +5301,18 @@ public class PharmacyController implements Serializable {
     }
 
     public void fillDetails() {
-        System.out.println("=== fillDetails() started ===");
-
-        System.out.println("Starting createInstitutionSale()...");
-        long startTime = System.currentTimeMillis();
-        createInstitutionSale();
-        System.out.println("createInstitutionSale() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createInstitutionWholeSale()...");
-        startTime = System.currentTimeMillis();
-        createInstitutionWholeSale();
-        System.out.println("createInstitutionWholeSale() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createInstitutionBhtIssue()...");
-        startTime = System.currentTimeMillis();
+        createInstitutionStockDto();
+        createDepartmentSaleDto();
         createInstitutionBhtIssue();
-        System.out.println("createInstitutionBhtIssue() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createInstitutionStockDto()...");
-        startTime = System.currentTimeMillis();
-        createInstitutionStockDto(); // DTO-based approach for better performance
-        System.out.println("createInstitutionStockDto() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-        //createInstitutionStock(); // Deprecated - use createInstitutionStockDto() instead
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createInstitutionTransferIssue()...");
-        startTime = System.currentTimeMillis();
         createInstitutionTransferIssue();
-        System.out.println("createInstitutionTransferIssue() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createInstitutionTransferReceive()...");
-        startTime = System.currentTimeMillis();
         createInstitutionTransferReceive();
-        System.out.println("createInstitutionTransferReceive() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createPendingGrnTable()...");
-        startTime = System.currentTimeMillis();
         createPendingGrnTable();
-        System.out.println("createPendingGrnTable() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createGrnTable()...");
-        startTime = System.currentTimeMillis();
         createGrnTable();
-        System.out.println("createGrnTable() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createGrnReturnTable()...");
-        startTime = System.currentTimeMillis();
         createGrnReturnTable();
-        System.out.println("createGrnReturnTable() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createPoTableDto()...");
-        startTime = System.currentTimeMillis();
         createPoTableDto();
-        System.out.println("createPoTableDto() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createPendingPoDto()...");
-        startTime = System.currentTimeMillis();
         createPendingPoDto();
-        System.out.println("createPendingPoDto() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-        //createPoTable(); // Deprecated - use createPoTableDto() instead
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createDirectPurchaseTableDto()...");
-        startTime = System.currentTimeMillis();
         createDirectPurchaseTableDto();
-        System.out.println("createDirectPurchaseTableDto() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-        //createDirectPurchaseTable();  // Deprecated - use createDirectPurchaseTableDto() instead
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-
-        System.out.println("Starting createInstitutionIssue()...");
-        startTime = System.currentTimeMillis();
         createInstitutionIssue();
-        System.out.println("createInstitutionIssue() completed in " + (System.currentTimeMillis() - startTime) + "ms");
-
-        System.out.println("=== fillDetails() completed ===");
     }
 
     @Deprecated // Use fillDetails
@@ -5500,62 +5417,70 @@ public class PharmacyController implements Serializable {
     }
 
     public void createGrnReturnTable() {
+        System.out.println("=== createGrnReturnTable() started ===");
 
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        System.out.println("Related items found: " + (relatedItems != null ? relatedItems.size() : "null"));
+
         if (relatedItems == null || relatedItems.isEmpty()) {
+            System.out.println("No related items found, setting empty list");
             grnReturnDtos = new ArrayList<>();
             return;
         }
-
-        // TODO: Once all old BillItems are updated with BillItemFinanceDetails,
-        //       this method should be changed back to use JPQL DTO projection for better performance.
-        String jpql = "SELECT b FROM BillItem b "
-                + "WHERE type(b.bill)=:class "
-                + "AND b.bill.creater IS NOT NULL "
-                + "AND b.retired=false "
-                + "AND b.item IN :relatedItems "
-                + "AND b.bill.billTypeAtomic IN :btas "
-                + "AND b.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY b.id DESC";
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
         btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        System.out.println("Bill type atomics: " + btas);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
+                + "bi.bill.deptId, "
+                + "bi.bill.department.name, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.toInstitution.name, "
+                + "bi.item.name, "
+                + "COALESCE(fd.quantity, 0), "
+                + "COALESCE(fd.freeQuantity, 0), "
+                + "pbi.purchaseRate, "
+                + "fd.retailSaleRate, "
+                + "COALESCE(fd.lineGrossRate, 0), "
+                + "COALESCE(fd.lineNetTotal, 0) "
+                + ") "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.billItemFinanceDetails fd "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "WHERE (bi.bill.retired IS NULL OR bi.bill.retired = FALSE) "
+                + "AND (bi.retired IS NULL OR bi.retired = FALSE) "
+                + "AND bi.item IN :relatedItems "
+                + "AND bi.bill.billTypeAtomic IN :btas "
+                + "AND bi.createdAt BETWEEN :frm AND :to "
+                + "ORDER BY bi.id DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
         params.put("frm", getFromDate());
         params.put("to", getToDate());
-        params.put("class", BilledBill.class);
         params.put("btas", btas);
 
-        List<BillItem> billItems = (List<BillItem>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        grnReturnDtos = new ArrayList<>();
+        System.out.println("Date range: " + getFromDate() + " to " + getToDate());
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
 
-        for (BillItem b : billItems) {
-            BillItemFinanceDetails fd = b.getBillItemFinanceDetails();
-            PharmaceuticalBillItem pbi = b.getPharmaceuticalBillItem();
+        try {
+            grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            System.out.println("Query executed successfully. Results found: " + (grnReturnDtos != null ? grnReturnDtos.size() : "null"));
 
-            PharmacyGrnReturnItemDTO dto = new PharmacyGrnReturnItemDTO();
-
-            dto.setGrnReturnNo(b.getBill() != null ? b.getBill().getDeptId() : null);
-            dto.setDepartmentName(b.getBill() != null && b.getBill().getDepartment() != null ? b.getBill().getDepartment().getName() : null);
-            dto.setCreatedAt(b.getBill() != null ? b.getBill().getCreatedAt() : null);
-            dto.setSupplierName(b.getBill() != null && b.getBill().getFromInstitution() != null ? b.getBill().getFromInstitution().getName() : null);
-            dto.setItemName(b.getItem() != null ? b.getItem().getName() : null);
-
-            // TODO: These values are missing for old bills without BillItemFinanceDetails
-            dto.setQuantityReturned(fd != null ? fd.getQuantity() : BigDecimal.ZERO);
-            dto.setFreeQuantityReturned(fd != null ? fd.getFreeQuantity() : BigDecimal.ZERO);
-            dto.setPurchaseRate(pbi != null ? pbi.getPurchaseRate() : null);
-            dto.setSaleRate(fd != null ? fd.getRetailSaleRate() : null);
-            dto.setReturnedRate(fd != null ? fd.getNetRate() : null);
-            dto.setReturnValue(fd != null ? fd.getNetTotal() : null);
-
-            grnReturnDtos.add(dto);
+            if (grnReturnDtos != null && !grnReturnDtos.isEmpty()) {
+                System.out.println("First result sample: " + grnReturnDtos.get(0).getGrnReturnNo() + " - " + grnReturnDtos.get(0).getItemName());
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR in createGrnReturnTable(): " + e.getMessage());
+            e.printStackTrace();
+            grnReturnDtos = new ArrayList<>();
         }
 
+        System.out.println("=== createGrnReturnTable() completed ===");
     }
 
     /**
@@ -5714,8 +5639,9 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Creates the list of pending Purchase Orders (POs) that have not been fulfilled or cancelled.
-     * These are orders that are still waiting for goods to be received via GRN.
+     * Creates the list of pending Purchase Orders (POs) that have not been
+     * fulfilled or cancelled. These are orders that are still waiting for goods
+     * to be received via GRN.
      */
     public void createPendingPoDto() {
         System.out.println("  createPendingPoDto() - Starting...");
@@ -5818,8 +5744,9 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Creates the list of pending Goods Receipt Notes (GRNs) that have been created but not yet approved.
-     * These are GRNs where checked = false or null (not yet approved by management).
+     * Creates the list of pending Goods Receipt Notes (GRNs) that have been
+     * created but not yet approved. These are GRNs where checked = false or
+     * null (not yet approved by management).
      */
     public void createPendingGrnTable() {
         System.out.println("  createPendingGrnTable() - Starting...");
@@ -6487,6 +6414,27 @@ public class PharmacyController implements Serializable {
 
     public void setInstitutionSales(List<InstitutionSale> institutionSales) {
         this.institutionSales = institutionSales;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> getSalesByBillType() {
+        return salesByBillType;
+    }
+
+    public void setSalesByBillType(List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType) {
+        this.salesByBillType = salesByBillType;
+    }
+
+    public Double getTotalSalesByBillTypeQuantity() {
+        if (salesByBillType == null || salesByBillType.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : salesByBillType) {
+            if (dto.getQuantity() != null) {
+                total += dto.getQuantity();
+            }
+        }
+        return total;
     }
 
     public List<InstitutionSale> getInstitutionTransferIssue() {

@@ -28,7 +28,7 @@ for (Stock stock : stocks) {
 **✅ CORRECT APPROACH:**
 ```java
 // DO THIS - Direct DTO query from database
-String sql = "SELECT new com.divudi.core.data.dto.StockDTO("
+String jpql = "SELECT new com.divudi.core.data.dto.StockDTO("
     + "s.id, "
     + "s.itemBatch.item.name, "
     + "s.itemBatch.item.code, "
@@ -39,7 +39,9 @@ String sql = "SELECT new com.divudi.core.data.dto.StockDTO("
     + "s.itemBatch.purcahseRate, "
     + "s.itemBatch.wholesaleRate) "
     + "FROM Stock s WHERE ...";
-List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(sql, params);
+
+// 🚨 CRITICAL: Use findLightsByJpql() with cast for DTO constructor queries
+List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 ```
 
 ### 3. Safe Entity Property Changes
@@ -122,12 +124,44 @@ Direct DTO queries provide:
 ### 8. Example: StockSearchService Reference
 See `StockSearchService.findStockDtos()` method for the correct pattern of direct DTO querying.
 
+### 9. CRITICAL: Correct Facade Method for DTO Constructor Queries
+
+**🚨 ALWAYS use `findLightsByJpql()` with explicit cast for DTO constructor queries:**
+
+```java
+// ✅ CORRECT - DTO constructor query
+String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
+    + "i.bill.billTypeAtomic.label, "
+    + "sum(i.pharmaceuticalBillItem.qty)) "
+    + "FROM BillItem i "
+    + "WHERE ... "
+    + "GROUP BY i.bill.billTypeAtomic.label";
+
+// MUST use findLightsByJpql() with cast
+salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+```
+
+**❌ WRONG facade methods for DTO constructor queries:**
+```java
+// DON'T USE THESE for DTO constructor queries:
+facade.findByJpql(jpql, params)           // Wrong return type
+facade.findAggregates(jpql, params)       // For Object[] results only
+facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Date parameters
+```
+
+**Why `findLightsByJpql()` is required:**
+- Optimized for lightweight objects (DTOs)
+- Handles constructor queries correctly
+- Supports temporal parameters for Date/Timestamp filtering
+- Returns properly typed collections
+
 ## Common Pitfalls to Avoid
 1. **Changing existing constructor signatures** → Compilation errors in dependent code
 2. **Converting entities to DTOs in loops** → Performance degradation
-3. **Removing entity properties used by business logic** → Runtime failures  
-4. **Not using `findLightsByJpql()`** → Missing DTO optimization
-5. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
+3. **Removing entity properties used by business logic** → Runtime failures
+4. **Using wrong facade method for DTO queries** → `findByJpql()` instead of `findLightsByJpql()`
+5. **Missing explicit cast** → Type safety issues with DTO constructor queries
+6. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
 
 ## Navigation-Level DTO/Entity Selection
 When implementing dual DTO/Entity approach:

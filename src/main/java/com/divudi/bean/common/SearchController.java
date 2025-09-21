@@ -8427,7 +8427,7 @@ public class SearchController implements Serializable {
 
         bill.setBillClassType(BillClassType.Bill);
         bill.setBillType(BillType.PharmacyAddtoStock);
-        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL);
 
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setDepartment(getSessionController().getDepartment());
