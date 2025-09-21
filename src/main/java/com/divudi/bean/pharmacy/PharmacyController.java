@@ -5445,7 +5445,7 @@ public class PharmacyController implements Serializable {
                 + "pbi.purchaseRate, "
                 + "fd.retailSaleRate, "
                 + "COALESCE(fd.lineGrossRate, 0), "
-                + "COALESCE(fd.lineNetTotal, 0), "
+                + "COALESCE(fd.lineNetTotal, 0) "
                 + ") "
                 + "FROM BillItem bi "
                 + "LEFT JOIN bi.billItemFinanceDetails fd "
