@@ -56,72 +56,65 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     Stock*
                                 </div>
-                                <p:dataTable  value="#{pharmacyController.institutionStocks}" var="ins" class="w-100" style="padding: 0; background-color: lightgray" id="stock">
-                                    <p:columnGroup type="header">
-                                        <p:row>
-                                            <p:column class="w-75">
-                                                <f:facet name="header">
-                                                    Site
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;" class="w-25">
-                                                <f:facet name="header">
-                                                    Department Name
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;" class="w-25">
-                                                <f:facet name="header">
-                                                    Qty
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                    <p:subTable  value="#{ins.depatmentStocks}" var="dep">
-                                        <f:facet name="header">
-                                            #{ins.institution.name}
-                                        </f:facet>
-                                        <p:column>
-                                            #{dep.department.site.name}
-                                        </p:column>
-                                        <p:column>
-                                            #{dep.department.name}
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <h:outputLabel value="#{dep.stock}">       
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputLabel> 
-                                        </p:column>
-                                        <p:columnGroup type="footer">
-                                            <p:row>
-                                                <p:column footerText="Total Stock"></p:column>
-                                                <p:column style="text-align: right;" footerText="#{ins.institutionTotal}">
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="#{ins.institutionTotal}">
-                                                            <f:convertNumber integerOnly="true" />
-                                                        </h:outputLabel>
-                                                    </f:facet>
-                                                </p:column>
-                                            </p:row>
-                                        </p:columnGroup>
-                                    </p:subTable>  
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column>
-                                                <f:facet name="footer">
-                                                    Total Institution Stock
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right;">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel id="grandTotalBlock" value="#{pharmacyController.grantStock}"> 
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered" id="stock">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th class="w-25">Institution / Department</th>
+                                                <th class="w-25">Site</th>
+                                                <th class="w-25 text-end">Stock Quantity</th>
+                                                <th class="w-25 text-end">Institution Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{pharmacyController.institutionStockDtos}" var="stockDto">
+                                                <!-- Institution Header Row (shown only for first department of each institution) -->
+                                                <ui:fragment rendered="#{pharmacyController.isFirstDepartmentOfInstitution(stockDto)}">
+                                                    <tr class="table-secondary">
+                                                        <td class="fw-bold">
+                                                            <h:outputText value="#{stockDto.institutionName}"/>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td class="text-end fw-bold">
+                                                            <h:outputText value="#{pharmacyController.getInstitutionTotal(stockDto.institutionId)}">
+                                                                <f:convertNumber integerOnly="true" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:fragment>
 
-                                </p:dataTable> 
+                                                <!-- Department Row -->
+                                                <tr>
+                                                    <td class="ps-4">
+                                                        <h:outputText value="#{stockDto.departmentName}"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{stockDto.siteName}"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{stockDto.stockQuantity}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot class="table-dark">
+                                            <tr>
+                                                <th colspan="3" class="fw-bold">
+                                                    <h:outputText value="Grand Total Stock"/>
+                                                </th>
+                                                <th class="text-end fw-bold">
+                                                    <h:outputText id="grandTotalBlock" value="#{pharmacyController.grantStock}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputText>
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div> 
                             </p:panel>
                         </h:panelGroup>
                         <h:panelGroup
@@ -560,17 +553,20 @@
                                     Pending GRN Details
                                 </div>
                                 <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
-                                    <p:column headerText="Order No">#{pendingGrn.bill.deptId}</p:column>
-                                    <p:column headerText="Order at">
+                                    <p:column headerText="GRN No">#{pendingGrn.bill.deptId}</p:column>
+                                    <p:column headerText="GRN Date">
                                         <h:outputLabel value="#{pendingGrn.bill.createdAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Supplier">#{pendingGrn.bill.toInstitution.name}</p:column>
-                                    <p:column headerText="Qty Ordered" class="text-end">
-                                        <h:outputText value="#{pendingGrn.qty}">
+                                    <p:column headerText="Supplier">#{pendingGrn.bill.fromInstitution.name}</p:column>
+                                    <p:column headerText="Qty Received" class="text-end">
+                                        <h:outputText value="#{pendingGrn.pharmaceuticalBillItem.qty}">
                                             <f:convertNumber integerOnly="true" />
                                         </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Status">
+                                        <h:outputText value="#{pendingGrn.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}" />
                                     </p:column>
                                 </p:dataTable>
 
@@ -1326,25 +1322,35 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15" >
 
-                            <p:column headerText="PO Number">
+                            <p:column headerText="GRN Number">
                                 #{pendingGrnRow.bill.deptId}
                             </p:column>
                             <p:column headerText="Department">
                                 #{pendingGrnRow.bill.department.name}
                             </p:column>
-                            <p:column headerText="Date">
+                            <p:column headerText="GRN Date">
                                 <h:outputLabel value="#{pendingGrnRow.bill.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Supplier">
-                                #{pendingGrnRow.bill.toInstitution.name}
+                                #{pendingGrnRow.bill.fromInstitution.name}
                             </p:column>
                             <p:column headerText="Item">
                                 #{pendingGrnRow.item.name}
                             </p:column>
-                            <p:column headerText="Qty" class="text-end"> 
-                                #{pendingGrnRow.qty} 
+                            <p:column headerText="Qty Received" class="text-end">
+                                <h:outputText value="#{pendingGrnRow.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Free Qty Received" class="text-end">
+                                <h:outputText value="#{pendingGrnRow.pharmaceuticalBillItem.freeQty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Status">
+                                #{pendingGrnRow.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}
                             </p:column> 
                         </p:dataTable>
 
@@ -1409,46 +1415,78 @@
 
                     <p:tab title="Purchase Orders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Tab', true)}">
 
-                        <p:dataTable
-                            styleClass="noBorder" 
-                            id="tblPurchaseOrders"
-                            value="#{pharmacyController.poDtos}" var="poDto" 
-                            rows="10" 
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,15" >
-                            <p:column headerText="Order Number">
-                                <p:outputLabel value="#{poDto.billDeptId}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Order at">
-                                <p:outputLabel value="#{poDto.billCreatedAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Supplier">
-                                <p:outputLabel value="#{poDto.supplierName}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Item">
-                                <p:outputLabel value="#{poDto.itemName}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Qty Ordered" class="text-end"> 
-                                <h:outputText value="#{poDto.qty}"> 
-                                </h:outputText> 
-                            </p:column> 
-                            <p:column headerText="Free Qty Ordered" class="text-end"> 
-                                <h:outputText value="#{poDto.freeQty}"> 
-                                </h:outputText> 
-                            </p:column> 
-                            <p:column headerText="Qty Received" class="text-end"> 
-                                <h:outputText value="#{poDto.completedQty}"> 
-                                </h:outputText> 
-                            </p:column> 
-                            <p:column headerText="Free Qty Received" class="text-end"> 
-                                <h:outputText value="#{poDto.completedFreeQty}"> 
-                                </h:outputText> 
-                            </p:column> 
-                        </p:dataTable>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="tblPurchaseOrders">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th rowspan="2">Order Number</th>
+                                        <th rowspan="2">Order Date</th>
+                                        <th rowspan="2">Supplier</th>
+                                        <th rowspan="2">Item</th>
+                                        <th colspan="3" class="text-center">Qty</th>
+                                        <th colspan="3" class="text-center">Free Qty</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-end">Ordered</th>
+                                        <th class="text-end">Received</th>
+                                        <th class="text-end">Remaining</th>
+                                        <th class="text-end">Ordered</th>
+                                        <th class="text-end">Received</th>
+                                        <th class="text-end">Remaining</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{pharmacyController.poDtos}" var="poDto">
+                                        <tr>
+                                            <td>
+                                                <h:outputText value="#{poDto.billDeptId}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{poDto.billCreatedAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{poDto.supplierName}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{poDto.itemName}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{poDto.qty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{poDto.completedQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{poDto.remainingQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{poDto.freeQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{poDto.completedFreeQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{poDto.remainingFreeQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
                     </p:tab>
 
                     <p:tab title="Pending POs" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending PO Tab', true)}">
@@ -1463,23 +1501,29 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15" >
                             <p:column headerText="PO No">
-                                #{pendingPo.billDeptId}
+                                <p:outputLabel value="#{pendingPo.billDeptId}"></p:outputLabel>
                             </p:column>
                             <p:column headerText="PO Date">
                                 <p:outputLabel value="#{pendingPo.billCreatedAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Supplier">
-                                #{pendingPo.supplierName}
+                            <p:column headerText="Requested By">
+                                <p:outputLabel value="#{pendingPo.creatorName}"/>                                                                
                             </p:column>
-                            <p:column headerText="PO Qty" class="text-end"> 
+
+                            <p:column headerText="Supplier">
+                                <p:outputLabel value="#{pendingPo.supplierName}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="PO Qty" class="text-end">
                                 <h:outputText value="#{pendingPo.qty}">
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputText>
-                            </p:column> 
-                            <p:column headerText="Requested By">
-                                #{pendingPo.creatorName}
+                            </p:column>
+                            <p:column headerText="Free Qty" class="text-end">
+                                <h:outputText value="#{pendingPo.freeQty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
                             </p:column>
                         </p:dataTable>
                     </p:tab>
