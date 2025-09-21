@@ -200,14 +200,68 @@ public class PharmacyController implements Serializable {
     private Vmpp vmpp;
     private Ampp ampp;
 
+    private Date fromDate;
+    private Date toDate;
+    private Department department;
+    private Department dept;
+    private Department fromDepartment;
+    private Department toDepartment;
+    private Institution site;
+    private Institution toInstitution;
+    private Institution fromInstitution;
+    private PaymentMethod paymentMethod;
+    private String reportType;
+    private double totalCreditPurchaseValue;
+    private double totalCashPurchaseValue;
+    private double totalCashCostValue;
+    private double totalCreditCostValue;
+    private double totalPurchase;
+    private List<String1Value1> data;
+    private double totalSaleValue;
+    private double totalCreditSaleValue;
+    private double totalCashSaleValue;
+    private double totalCostValue;
+    private Item item;
+    private List<BillItem> billItems;
+    private List<PharmacyRow> pharmacyRows;
+    private List<PharmacySummery> departmentSummaries;
+    private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
+    private List<DepartmentCategoryWiseItems> resultsList;
+    private Map<String, List<PharmacyRow>> departmentWiseRows;
+    private Map<String, Double[]> departmentTotalsMap;
+
+    private String transferType;
+    private Institution fromSite;
+    private Institution toSite;
+
+    private List<DepartmentWiseBill> departmentWiseBillList;
+    private List<Stock> stockList;
+    private double qty;
+
     private MeasurementUnit issueUnit;
-    // </editor-fold>
 
     private Map<String, Map<String, Double[]>> departmentTotals = new HashMap<>();
     private Map<String, Double[]> pharmacyTotals = new HashMap<>();
     private Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
+    public void fillDetails() {
+        createStocksDto();
+        createDepartmentSaleDto();
+        createInstitutionBhtIssue(); // TODO: Fix this
+        createDepartmentTransferIssueDto();
+        createDepartmentTransferReceiveDto();
+        createDepartmentDisposeIssueDto();
+        createPendingGrnTable();
+        createGrnTable();
+        createGrnReturnTable();
+        createPoTableDto();
+        createPendingPoDto();
+        createDirectPurchaseTableDto();
+
+    }
+
     private void fillVtms() {
         String j = "select i "
                 + " from Vtm i "
@@ -752,45 +806,6 @@ public class PharmacyController implements Serializable {
         amppFacade.batchEdit(amppsSelected);
         fillAmpps();
     }
-
-    // </editor-fold>
-    private Date fromDate;
-    private Date toDate;
-    private Department department;
-    private Department dept;
-    private Department fromDepartment;
-    private Department toDepartment;
-    private Institution site;
-    private Institution toInstitution;
-    private Institution fromInstitution;
-    private PaymentMethod paymentMethod;
-    private String reportType;
-    private double totalCreditPurchaseValue;
-    private double totalCashPurchaseValue;
-    private double totalCashCostValue;
-    private double totalCreditCostValue;
-    private double totalPurchase;
-    private List<String1Value1> data;
-    private double totalSaleValue;
-    private double totalCreditSaleValue;
-    private double totalCashSaleValue;
-    private double totalCostValue;
-    private Item item;
-    private List<BillItem> billItems;
-    private List<PharmacyRow> pharmacyRows;
-    private List<PharmacySummery> departmentSummaries;
-    private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
-    private List<DepartmentCategoryWiseItems> resultsList;
-    private Map<String, List<PharmacyRow>> departmentWiseRows;
-    private Map<String, Double[]> departmentTotalsMap;
-
-    private String transferType;
-    private Institution fromSite;
-    private Institution toSite;
-
-    private List<DepartmentWiseBill> departmentWiseBillList;
-    private List<Stock> stockList;
-    private double qty;
 
     public void clearItemHistory() {
 
@@ -4641,7 +4656,7 @@ public class PharmacyController implements Serializable {
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
                 + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
+                + "AND i.bill.createdAt between :frm and :to "
                 + "AND i.bill.department=:dep "
                 + "GROUP BY i.bill.toDepartment";
 
@@ -4669,7 +4684,7 @@ public class PharmacyController implements Serializable {
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
                 + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
+                + "AND i.bill.createdAt between :frm and :to "
                 + "AND i.bill.toDepartment=:dep "
                 + "GROUP BY i.bill.fromDepartment";
 
@@ -4698,7 +4713,7 @@ public class PharmacyController implements Serializable {
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
                 + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
+                + "AND i.bill.createdAt between :frm and :to "
                 + "AND i.bill.fromDepartment=:dep "
                 + "GROUP BY i.bill.toDepartment";
 
@@ -5356,25 +5371,6 @@ public class PharmacyController implements Serializable {
         this.grnReturnDtos = grnReturnDtos;
     }
 
-    public void fillDetails() {
-        createStocksDto();
-        createDepartmentSaleDto();
-        createInstitutionBhtIssue();
-        createDepartmentTransferIssueDto();
-        createDepartmentTransferReceiveDto();
-        createDepartmentDisposeIssueDto();
-        createInstitutionTransferIssue();
-        createInstitutionTransferReceive();
-        createInstitutionIssue();
-        createPendingGrnTable();
-        createGrnTable();
-        createGrnReturnTable();
-        createPoTableDto();
-        createPendingPoDto();
-        createDirectPurchaseTableDto();
-        
-    }
-
     @Deprecated // Use fillDetails
     public void createTable() {
         createInstitutionSale();
@@ -5518,7 +5514,6 @@ public class PharmacyController implements Serializable {
         params.put("frm", getFromDate());
         params.put("to", getToDate());
         params.put("btas", btas);
-
 
         try {
             grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -5812,7 +5807,6 @@ public class PharmacyController implements Serializable {
                 + "AND bi.bill.billTypeAtomic IN :btaList "
                 + "AND bi.bill.createdAt BETWEEN :frm AND :to "
                 + "ORDER BY bi.bill.createdAt DESC";
-
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -6270,6 +6264,10 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    // </editor-fold>
+    
+    
+    
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
@@ -6392,9 +6390,10 @@ public class PharmacyController implements Serializable {
 
     /**
      * Aggregates department stocks by institution
+     *
      * @return Map of Institution to total stock quantity
      */
-    public Map<com.divudi.core.entity.Institution, Double> getInstitutionStocks() {
+    public Map<com.divudi.core.entity.Institution, Double> getInstitutionStockAggregated() {
         Map<com.divudi.core.entity.Institution, Double> institutionStocks = new LinkedHashMap<>();
         if (departmentStockDtos != null) {
             for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
@@ -6408,15 +6407,16 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Aggregates department stocks by site
-     * @return Map of Site to total stock quantity
+     * Aggregates department stocks by site (Institution type)
+     *
+     * @return Map of Institution (site) to total stock quantity
      */
-    public Map<com.divudi.core.entity.Site, Double> getSiteStocks() {
-        Map<com.divudi.core.entity.Site, Double> siteStocks = new LinkedHashMap<>();
+    public Map<com.divudi.core.entity.Institution, Double> getSiteStocks() {
+        Map<com.divudi.core.entity.Institution, Double> siteStocks = new LinkedHashMap<>();
         if (departmentStockDtos != null) {
             for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
                 if (dto.getDepartment() != null && dto.getDepartment().getSite() != null && dto.getQty() != null) {
-                    com.divudi.core.entity.Site site = dto.getDepartment().getSite();
+                    com.divudi.core.entity.Institution site = dto.getDepartment().getSite();
                     siteStocks.merge(site, dto.getQty(), Double::sum);
                 }
             }
@@ -6455,8 +6455,8 @@ public class PharmacyController implements Serializable {
 
     /**
      * Helper method to get precomputed institution total for display Uses the
- institutionTotals map populated by createStocksDto() O(1)
- lookup instead of O(n) streaming operation
+     * institutionTotals map populated by createStocksDto() O(1) lookup instead
+     * of O(n) streaming operation
      */
     public Double getInstitutionTotal(Long institutionId) {
         if (institutionTotals == null || institutionId == null) {
