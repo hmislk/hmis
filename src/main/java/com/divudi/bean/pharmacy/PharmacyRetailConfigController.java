@@ -53,6 +53,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
     // Settle Payment Settings
     private boolean settlePaymentPosPaper;
+    private boolean settlePaymentPosPaperCustom1;
     private boolean settlePaymentCustom1;
     private boolean settlePaymentCustom2;
     private boolean settlePaymentCustom3;
@@ -81,6 +82,12 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean transferIssuePosPaper;
     private boolean transferIssuePosHeaderPaper;
     private boolean transferIssueTemplate;
+
+    // Direct Purchase Settings
+    private boolean directPurchaseA4Paper;
+    private boolean directPurchaseA4Details;
+    private boolean directPurchaseCustom1;
+    private boolean directPurchaseCustom2;
 
     public PharmacyRetailConfigController() {
     }
@@ -118,6 +125,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
         // Settle Payment Settings
         settlePaymentPosPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper", true);
+        settlePaymentPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1", true);
         settlePaymentCustom1 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 1", true);
         settlePaymentCustom2 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", true);
         settlePaymentCustom3 = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", true);
@@ -146,6 +154,12 @@ public class PharmacyRetailConfigController implements Serializable {
         transferIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue POS Paper", false);
         transferIssuePosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", false);
         transferIssueTemplate = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", false);
+
+        // Direct Purchase Settings
+        directPurchaseA4Paper = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4", true);
+        directPurchaseA4Details = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 Details", false);
+        directPurchaseCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 1", false);
+        directPurchaseCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 2", false);
     }
 
     /**
@@ -181,6 +195,7 @@ public class PharmacyRetailConfigController implements Serializable {
 
             // Settle Payment Settings
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper", settlePaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1", settlePaymentPosPaperCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 1", settlePaymentCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 2", settlePaymentCustom2);
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is Custom 3", settlePaymentCustom3);
@@ -209,6 +224,12 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue POS Paper", transferIssuePosPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", transferIssuePosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", transferIssueTemplate);
+
+            // Direct Purchase Settings
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -239,6 +260,27 @@ public class PharmacyRetailConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Transfer Issue configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Direct Purchase configuration changes specifically
+     */
+    public void saveDirectPurchaseConfig() {
+        try {
+            // Direct Purchase Settings
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
+
+            JsfUtil.addSuccessMessage("Direct Purchase configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Direct Purchase configuration: " + e.getMessage());
         }
     }
 
@@ -516,6 +558,14 @@ public class PharmacyRetailConfigController implements Serializable {
         this.transferRequestCustom2 = transferRequestCustom2;
     }
 
+    public boolean isSettlePaymentPosPaperCustom1() {
+        return settlePaymentPosPaperCustom1;
+    }
+
+    public void setSettlePaymentPosPaperCustom1(boolean settlePaymentPosPaperCustom1) {
+        this.settlePaymentPosPaperCustom1 = settlePaymentPosPaperCustom1;
+    }
+
     // Transfer Issue Getters and Setters
     public boolean isTransferIssueA4Paper() {
         return transferIssueA4Paper;
@@ -555,6 +605,39 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setTransferIssueTemplate(boolean transferIssueTemplate) {
         this.transferIssueTemplate = transferIssueTemplate;
+    }
+
+    // Direct Purchase Getters and Setters
+    public boolean isDirectPurchaseA4Paper() {
+        return directPurchaseA4Paper;
+    }
+
+    public void setDirectPurchaseA4Paper(boolean directPurchaseA4Paper) {
+        this.directPurchaseA4Paper = directPurchaseA4Paper;
+    }
+
+    public boolean isDirectPurchaseA4Details() {
+        return directPurchaseA4Details;
+    }
+
+    public void setDirectPurchaseA4Details(boolean directPurchaseA4Details) {
+        this.directPurchaseA4Details = directPurchaseA4Details;
+    }
+
+    public boolean isDirectPurchaseCustom1() {
+        return directPurchaseCustom1;
+    }
+
+    public void setDirectPurchaseCustom1(boolean directPurchaseCustom1) {
+        this.directPurchaseCustom1 = directPurchaseCustom1;
+    }
+
+    public boolean isDirectPurchaseCustom2() {
+        return directPurchaseCustom2;
+    }
+
+    public void setDirectPurchaseCustom2(boolean directPurchaseCustom2) {
+        this.directPurchaseCustom2 = directPurchaseCustom2;
     }
 
 }

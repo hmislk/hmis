@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!creditCompanyBillSearch.printPreview}" styleClass="alignTop" >
+                        <p:panel  header="Pharmacy Credit Bill Cancellation">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Pharmacy Credit Bill Cancellation" class="mt-2"/>
+                                    <div class="d-flex gap-4">
+                                        <p:inputText value="#{creditCompanyBillSearch.comment}" style="width: 500px;" placeholder="Enter a comment"/>
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="Cancel Bill"
+                                            icon="fa fa-cancel"
+                                            class="ui-button-danger"
+                                            style="width: 150px;"
+                                            action="#{creditCompanyBillSearch.cancelPharmacyCreditCompanyPaymentBill()}" >
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <div class="row">
+                                <div class="col-2">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                            <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{creditCompanyBillSearch.paymentMethod}" required="true"  >
+                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        </p:selectOneMenu>
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel header="Credit Company Detail">
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Company Name:" ></h:outputLabel>
+                                            <h:outputLabel value="#{creditCompanyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-4">
+                                    <p:panel header="Bill Detail">
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{creditCompanyBillSearch.bill.deptId}" ></h:outputLabel>                                  
+                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{creditCompanyBillSearch.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <p:panel header="Bill Item Detail" class="mt-3">
+                                <p:dataTable rowIndexVar="rowIndex" value="#{creditCompanyBillSearch.billItems}" var="b" >
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="No"/>
+                                        </f:facet>
+                                        <p:outputLabel value="#{rowIndex+1}"/>
+                                    </p:column>
+                                    <p:column >    
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Bill No"/>
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                                    </p:column>                                    
+                                    <p:column headerText="Credit Company">
+                                        <p:outputLabel value="#{b.referenceBill.toInstitution.name}"/>
+                                    </p:column>                                    
+                                    <p:column headerText="Net Total">
+                                        <p:outputLabel value="#{b.netValue}"> 
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+
+                        </p:panel>
+
+
+                    </h:panelGroup>
+
+
+                    <h:panelGroup rendered="#{creditCompanyBillSearch.printPreview}" >
+                        <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="false"/> 
+                    </h:panelGroup>
+
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

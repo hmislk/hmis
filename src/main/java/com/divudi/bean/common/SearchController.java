@@ -969,17 +969,24 @@ public class SearchController implements Serializable {
     }
 
     public void createGrnWithDealerTable() {
-        Map m = new HashMap();
-        String sql = "select b from Bill b where b.retired=false and "
-                + " b.billType = :billType and b.institution = :del "
-                + "and b.createdAt between :fromDate and :toDate ";
+        Map params = new HashMap();
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate ";
 
-        m.put("billType", BillType.PharmacyGrnBill);
-        m.put("del", getDealer());
-        m.put("toDate", getToDate());
-        m.put("fromDate", getFromDate());
+        if (getDealer() != null) {
+            jpql += " and b.fromInstitution = :del ";
+            params.put("del", getDealer());
+        }
+        
+        params.put("billType", BillType.PharmacyGrnBill);
+        
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
 
-        grnBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        grnBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void fillSavedTranserRequestBills() {

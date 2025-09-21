@@ -102,6 +102,26 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 - `Pharmacy Transfer Request Receipt is Custom 1`
 - `Pharmacy Transfer Request Receipt is Custom 2`
 
+### 5. Direct Purchase Configuration
+
+**Pages:**
+- `direct_purchase.xhtml` - Main direct purchase page
+
+**Configuration Options:**
+- A4 Paper Format (direct_purhcase component)
+- A4 Paper Format with Details (direct_purhcase_detailed component)
+- Custom Format 1 (direct_purhcase_with_costing_custom_1 component)
+- Custom Format 2 (direct_purhcase_with_costing_custom_2 component)
+
+**Configuration Keys (Department-specific via ConfigOptionController):**
+- `Direct Purchase Bill Print - A4` (default: true)
+- `Direct Purchase Bill Print - A4 Details` (default: false)
+- `Direct Purchase Bill Print - Custom 1` (default: false)
+- `Direct Purchase Bill Print - Custom 2` (default: false)
+
+**Settings Button Location:**
+Settings button is placed in the print preview section (`printPreview = true`) alongside the Print and New Bill buttons, allowing users to configure print formats while reviewing the output.
+
 ## Implementation Guide
 
 ### Adding Settings to a New Page
@@ -109,14 +129,41 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 #### 1. Frontend Implementation (XHTML)
 
 **Step 1: Add Settings Button**
+
+⚠️ **Important**: Settings buttons should be placed in the **printing/preview section** where `printPreview = true`, not in the main billing interface where `printPreview = false`. This ensures settings are accessible when users are reviewing print formats.
+
 ```xhtml
-<p:commandButton
-    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-    value="Settings"
-    icon="fas fa-cog"
-    class="ui-button-secondary mx-1"
-    type="button"
-    onclick="PF('yourModuleConfigDialog').show();" />
+<!-- Place in the print preview section header -->
+<h:panelGroup rendered="#{yourController.printPreview}">
+    <p:panel>
+        <f:facet name="header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <!-- Print preview title -->
+                </div>
+                <div>
+                    <p:commandButton
+                        value="Print"
+                        ajax="false"
+                        action="#"
+                        class="ui-button-info mx-2"
+                        icon="fas fa-print">
+                        <p:printer target="printTarget" />
+                    </p:commandButton>
+                    <p:commandButton
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        value="Settings"
+                        icon="fas fa-cog"
+                        class="ui-button-secondary mx-1"
+                        type="button"
+                        onclick="PF('yourModuleConfigDialog').show();" />
+                    <!-- Other action buttons -->
+                </div>
+            </div>
+        </f:facet>
+        <!-- Print preview content -->
+    </p:panel>
+</h:panelGroup>
 ```
 
 **Step 2: Add Configuration Dialog**
