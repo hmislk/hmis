@@ -5368,18 +5368,19 @@ public class PharmacyController implements Serializable {
     public void fillDetails() {
         createInstitutionStockDto();
         createDepartmentSaleDto();
+        createInstitutionBhtIssue();
         createDepartmentTransferIssueDto();
         createDepartmentTransferReceiveDto();
-        createInstitutionBhtIssue();
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
+        createInstitutionIssue();
         createPendingGrnTable();
         createGrnTable();
         createGrnReturnTable();
         createPoTableDto();
         createPendingPoDto();
         createDirectPurchaseTableDto();
-        createInstitutionIssue();
+        
     }
 
     @Deprecated // Use fillDetails
