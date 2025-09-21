@@ -4255,6 +4255,7 @@ public class PharmacyController implements Serializable {
 
     private List<InstitutionStock> institutionStocks;
     private List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> institutionStockDtos;
+    private List<com.divudi.core.data.dto.PharmacyDepartmentStockDTO> departmentStockDtos;
     private Map<Long, Double> institutionTotals = new HashMap<>();
     private Set<Long> displayedInstitutionIds = new HashSet<>();
 
@@ -4964,82 +4965,40 @@ public class PharmacyController implements Serializable {
      * stocks first, then aggregates by institution in Java More efficient than
      * entity-based approach for UI display
      */
-    public void createInstitutionStockDto() {
-        System.out.println("  createInstitutionStockDto() - Initializing variables...");
+    public void createStocksDto() {
         institutionStockDtos = new ArrayList<>();
+        departmentStockDtos = new ArrayList<>();
         institutionTotals = new HashMap<>();
         displayedInstitutionIds = new HashSet<>(); // Reset for fresh display
         grantStock = 0;
-
-        Item item;
+        Item stockItem;
         if (pharmacyItem instanceof Ampp) {
-            item = ((Ampp) pharmacyItem).getAmp();
+            stockItem = ((Ampp) pharmacyItem).getAmp();
         } else {
-            item = pharmacyItem;
+            stockItem = pharmacyItem;
         }
-        System.out.println("  createInstitutionStockDto() - Item resolved: " + (item != null ? item.getName() : "NULL"));
 
-        // JPQL with deterministic ORDER BY institutionId then departmentId for consistent ordering
-        String sql = "SELECT new com.divudi.core.data.dto.PharmacyInstitutionStockDTO("
-                + "i.department.institution.id, "
-                + "i.department.institution.name, "
-                + "i.department.id, "
-                + "i.department.name, "
-                + "COALESCE(i.department.site.id, 0L), "
-                + "COALESCE(i.department.site.name, 'No Site'), "
-                + "SUM(i.stock)) "
+        // Simplified approach: use constructor query directly
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyDepartmentStockDTO("
+                + "i.department, SUM(i.stock)) "
                 + "FROM Stock i "
                 + "WHERE i.itemBatch.item = :i "
-                + "AND i.department.institution.institutionType = :type "
-                + "AND i.department.institution.retired = false "
-                + "GROUP BY i.department.institution.id, i.department.institution.name, "
-                + "i.department.id, i.department.name, i.department.site.id, i.department.site.name "
+                + "GROUP BY i.department "
                 + "HAVING SUM(i.stock) > 0 "
-                + "ORDER BY i.department.institution.id, i.department.id";
-
-        System.out.println("  createInstitutionStockDto() - Executing JPQL query...");
-        System.out.println("  Query: " + sql);
-
+                + "ORDER BY i.department.institution.name, i.department.name";
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("i", item);
-        parameters.put("type", InstitutionType.Company);
-
+        parameters.put("i", stockItem);
         try {
-            long queryStartTime = System.currentTimeMillis();
-            List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> departmentStocks
-                    = (List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO>) getBillItemFacade().findLightsByJpql(sql, parameters);
-            long queryEndTime = System.currentTimeMillis();
-            System.out.println("  createInstitutionStockDto() - JPQL query completed in " + (queryEndTime - queryStartTime) + "ms");
-            System.out.println("  createInstitutionStockDto() - Found " + (departmentStocks != null ? departmentStocks.size() : 0) + " department stocks");
-
-            institutionStockDtos = departmentStocks;
-
-            System.out.println("  createInstitutionStockDto() - Computing totals...");
-            // Precompute institution totals and grand total in a single pass
-            for (com.divudi.core.data.dto.PharmacyInstitutionStockDTO dto : institutionStockDtos) {
-                if (dto.getStockQuantity() != null) {
-                    Long institutionId = dto.getInstitutionId();
-                    Double stockQuantity = dto.getStockQuantity();
-
-                    // Add to grand total
-                    grantStock += stockQuantity;
-
-                    // Add to institution total
-                    institutionTotals.merge(institutionId, stockQuantity, Double::sum);
+            departmentStockDtos = (List<com.divudi.core.data.dto.PharmacyDepartmentStockDTO>) getBillItemFacade().findLightsByJpql(sql, parameters);
+            for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
+                if (dto.getQty() != null) {
+                    grantStock += dto.getQty();
                 }
             }
-            System.out.println("  createInstitutionStockDto() - Totals computed. Grand total: " + grantStock + ", Institution totals: " + institutionTotals.size());
         } catch (Exception e) {
-            // Log error and fall back to empty list
-            System.out.println("  createInstitutionStockDto() - ERROR occurred: " + e.getMessage());
-            institutionStockDtos = new ArrayList<>();
-            institutionTotals = new HashMap<>();
-            displayedInstitutionIds = new HashSet<>();
+            departmentStockDtos = new ArrayList<>();
             grantStock = 0;
-            System.err.println("Error in createInstitutionStockDto: " + e.getMessage());
-            e.printStackTrace();
         }
-        System.out.println("  createInstitutionStockDto() - Method completed");
     }
 
     public void createInstitutionSale() {
@@ -5398,7 +5357,7 @@ public class PharmacyController implements Serializable {
     }
 
     public void fillDetails() {
-        createInstitutionStockDto();
+        createStocksDto();
         createDepartmentSaleDto();
         createInstitutionBhtIssue();
         createDepartmentTransferIssueDto();
@@ -5518,13 +5477,10 @@ public class PharmacyController implements Serializable {
     }
 
     public void createGrnReturnTable() {
-        System.out.println("=== createGrnReturnTable() started ===");
 
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
-        System.out.println("Related items found: " + (relatedItems != null ? relatedItems.size() : "null"));
 
         if (relatedItems == null || relatedItems.isEmpty()) {
-            System.out.println("No related items found, setting empty list");
             grnReturnDtos = new ArrayList<>();
             return;
         }
@@ -5533,7 +5489,6 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
         btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
-        System.out.println("Bill type atomics: " + btas);
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
                 + "bi.bill.deptId, "
@@ -5564,24 +5519,17 @@ public class PharmacyController implements Serializable {
         params.put("to", getToDate());
         params.put("btas", btas);
 
-        System.out.println("Date range: " + getFromDate() + " to " + getToDate());
-        System.out.println("JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
 
         try {
             grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-            System.out.println("Query executed successfully. Results found: " + (grnReturnDtos != null ? grnReturnDtos.size() : "null"));
 
             if (grnReturnDtos != null && !grnReturnDtos.isEmpty()) {
-                System.out.println("First result sample: " + grnReturnDtos.get(0).getGrnReturnNo() + " - " + grnReturnDtos.get(0).getItemName());
             }
         } catch (Exception e) {
-            System.out.println("ERROR in createGrnReturnTable(): " + e.getMessage());
             e.printStackTrace();
             grnReturnDtos = new ArrayList<>();
         }
 
-        System.out.println("=== createGrnReturnTable() completed ===");
     }
 
     /**
@@ -5745,35 +5693,27 @@ public class PharmacyController implements Serializable {
      * to be received via GRN.
      */
     public void createPendingPoDto() {
-        System.out.println("  createPendingPoDto() - Starting...");
-
-        System.out.println("  createPendingPoDto() - Finding related items...");
         long startTime = System.currentTimeMillis();
         List<Item> relatedItems = null;
         try {
             relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
         } catch (Exception e) {
-            System.out.println("  createPendingPoDto() - ERROR finding related items: " + e.getMessage());
             relatedItems = new ArrayList<>();
             relatedItems.add(pharmacyItem); // Fallback to just the current item
         }
         long relatedItemsTime = System.currentTimeMillis() - startTime;
-        System.out.println("  createPendingPoDto() - Found " + (relatedItems != null ? relatedItems.size() : 0) + " related items in " + relatedItemsTime + "ms");
 
         // If finding related items is taking too long (>1 second), use a simpler approach
         if (relatedItemsTime > 1000) {
-            System.out.println("  createPendingPoDto() - Related items lookup too slow (" + relatedItemsTime + "ms), using current item only");
             relatedItems = new ArrayList<>();
             relatedItems.add(pharmacyItem);
         }
 
         if (relatedItems == null || relatedItems.isEmpty()) {
-            System.out.println("  createPendingPoDto() - No related items found, setting empty list");
             pendingPoDtos = new ArrayList<>();
             return;
         }
 
-        System.out.println("  createPendingPoDto() - Building bill type atomics...");
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_ORDER);
 
@@ -5798,42 +5738,30 @@ public class PharmacyController implements Serializable {
                 + "AND b.bill.referenceBill  IS NULL  "
                 + "AND b.createdAt BETWEEN :frm AND :to ";
 
-        System.out.println("  createPendingPoDto() - Building query parameters...");
         HashMap<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
         params.put("bta", btas);
         params.put("frm", getFromDate());
         params.put("to", getToDate());
-        System.out.println("  createPendingPoDto() - Date range: " + getFromDate() + " to " + getToDate());
-
-        System.out.println("  createPendingPoDto() - Checking department transaction configuration...");
         startTime = System.currentTimeMillis();
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
-        System.out.println("  createPendingPoDto() - Configuration check completed in " + (System.currentTimeMillis() - startTime) + "ms. Department transactions only: " + pharmacyHistoryListOnlyDepartmentTransactions);
 
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            System.out.println("  createPendingPoDto() - Adding department filter: " + (getDepartment() != null ? getDepartment().getName() : "NULL"));
             params.put("department", getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         jpql += "ORDER BY b.id DESC";
 
-        System.out.println("  createPendingPoDto() - Executing JPQL query...");
-        System.out.println("  Query: " + jpql);
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
             pendingPoDtos = (List<com.divudi.core.data.dto.PharmacyItemPoDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 1000);
             long queryTime = System.currentTimeMillis() - startTime;
-            System.out.println("  createPendingPoDto() - JPQL query completed in " + queryTime + "ms");
-            System.out.println("  createPendingPoDto() - Found " + (pendingPoDtos != null ? pendingPoDtos.size() : 0) + " pending PO DTOs");
         } catch (Exception e) {
             long queryTime = System.currentTimeMillis() - startTime;
-            System.out.println("  createPendingPoDto() - JPQL query FAILED after " + queryTime + "ms: " + e.getMessage());
             pendingPoDtos = new ArrayList<>();
             e.printStackTrace();
         }
-        System.out.println("  createPendingPoDto() - Method completed");
     }
 
     public List<com.divudi.core.data.dto.PharmacyItemPoDTO> getPoDtos() {
@@ -5850,30 +5778,23 @@ public class PharmacyController implements Serializable {
      * null (not yet approved by management).
      */
     public void createPendingGrnTable() {
-        System.out.println("  createPendingGrnTable() - Starting...");
-
-        System.out.println("  createPendingGrnTable() - Finding related items...");
         long startTime = System.currentTimeMillis();
         List<Item> relatedItems = null;
         try {
             relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
         } catch (Exception e) {
-            System.out.println("  createPendingGrnTable() - ERROR finding related items: " + e.getMessage());
             relatedItems = new ArrayList<>();
             relatedItems.add(pharmacyItem); // Fallback to just the current item
         }
         long relatedItemsTime = System.currentTimeMillis() - startTime;
-        System.out.println("  createPendingGrnTable() - Found " + (relatedItems != null ? relatedItems.size() : 0) + " related items in " + relatedItemsTime + "ms");
 
         // If finding related items is taking too long (>1 second), use a simpler approach
         if (relatedItemsTime > 1000) {
-            System.out.println("  createPendingGrnTable() - Related items lookup too slow (" + relatedItemsTime + "ms), using current item only");
             relatedItems = new ArrayList<>();
             relatedItems.add(pharmacyItem);
         }
 
         if (relatedItems == null || relatedItems.isEmpty()) {
-            System.out.println("  createPendingGrnTable() - No related items found, setting empty list");
             pendingGrns = new ArrayList<>();
             return;
         }
@@ -5892,9 +5813,6 @@ public class PharmacyController implements Serializable {
                 + "AND bi.bill.createdAt BETWEEN :frm AND :to "
                 + "ORDER BY bi.bill.createdAt DESC";
 
-        System.out.println("  createPendingGrnTable() - Executing JPQL query...");
-        System.out.println("  Query: " + jpql);
-        System.out.println("  Date range: " + getFromDate() + " to " + getToDate());
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -5907,15 +5825,11 @@ public class PharmacyController implements Serializable {
             // Add reasonable limit to prevent hanging on large datasets
             pendingGrns = getBillItemFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 1000);
             long queryTime = System.currentTimeMillis() - startTime;
-            System.out.println("  createPendingGrnTable() - JPQL query completed in " + queryTime + "ms");
-            System.out.println("  createPendingGrnTable() - Found " + (pendingGrns != null ? pendingGrns.size() : 0) + " pending GRNs");
         } catch (Exception e) {
             long queryTime = System.currentTimeMillis() - startTime;
-            System.out.println("  createPendingGrnTable() - JPQL query FAILED after " + queryTime + "ms: " + e.getMessage());
             pendingGrns = new ArrayList<>();
             e.printStackTrace();
         }
-        System.out.println("  createPendingGrnTable() - Method completed");
     }
 
     private double getGrnQty(BillItem b) {
@@ -6468,6 +6382,48 @@ public class PharmacyController implements Serializable {
         this.institutionStockDtos = institutionStockDtos;
     }
 
+    public List<com.divudi.core.data.dto.PharmacyDepartmentStockDTO> getDepartmentStockDtos() {
+        return departmentStockDtos;
+    }
+
+    public void setDepartmentStockDtos(List<com.divudi.core.data.dto.PharmacyDepartmentStockDTO> departmentStockDtos) {
+        this.departmentStockDtos = departmentStockDtos;
+    }
+
+    /**
+     * Aggregates department stocks by institution
+     * @return Map of Institution to total stock quantity
+     */
+    public Map<com.divudi.core.entity.Institution, Double> getInstitutionStocks() {
+        Map<com.divudi.core.entity.Institution, Double> institutionStocks = new LinkedHashMap<>();
+        if (departmentStockDtos != null) {
+            for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
+                if (dto.getDepartment() != null && dto.getDepartment().getInstitution() != null && dto.getQty() != null) {
+                    com.divudi.core.entity.Institution institution = dto.getDepartment().getInstitution();
+                    institutionStocks.merge(institution, dto.getQty(), Double::sum);
+                }
+            }
+        }
+        return institutionStocks;
+    }
+
+    /**
+     * Aggregates department stocks by site
+     * @return Map of Site to total stock quantity
+     */
+    public Map<com.divudi.core.entity.Site, Double> getSiteStocks() {
+        Map<com.divudi.core.entity.Site, Double> siteStocks = new LinkedHashMap<>();
+        if (departmentStockDtos != null) {
+            for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
+                if (dto.getDepartment() != null && dto.getDepartment().getSite() != null && dto.getQty() != null) {
+                    com.divudi.core.entity.Site site = dto.getDepartment().getSite();
+                    siteStocks.merge(site, dto.getQty(), Double::sum);
+                }
+            }
+        }
+        return siteStocks;
+    }
+
     public Map<Long, Double> getInstitutionTotals() {
         return institutionTotals;
     }
@@ -6499,8 +6455,8 @@ public class PharmacyController implements Serializable {
 
     /**
      * Helper method to get precomputed institution total for display Uses the
-     * institutionTotals map populated by createInstitutionStockDto() O(1)
-     * lookup instead of O(n) streaming operation
+ institutionTotals map populated by createStocksDto() O(1)
+ lookup instead of O(n) streaming operation
      */
     public Double getInstitutionTotal(Long institutionId) {
         if (institutionTotals == null || institutionId == null) {

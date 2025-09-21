@@ -667,18 +667,20 @@
                         id="itemDetailsTabStocks"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Tab', true)}">
 
-                        <div class="table-responsive">
+                        <!-- Department Level Stocks -->
+                        <h:outputText value="Department Level Stocks" styleClass="h5 mb-3 d-block"/>
+                        <div class="table-responsive mb-4">
                             <table class="table table-striped table-bordered">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th class="w-25">Institution / Department</th>
-                                        <th class="w-25">Site</th>
+                                        <th class="w-25">Department Name</th>
+                                        <th class="w-25">Institution Name</th>
+                                        <th class="w-25">Site Name</th>
                                         <th class="w-25 text-end">Stock Quantity</th>
-                                        <th class="w-25 text-end">Institution Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <h:panelGroup rendered="#{empty pharmacyController.institutionStockDtos}">
+                                    <h:panelGroup rendered="#{empty pharmacyController.departmentStockDtos}">
                                         <tr>
                                             <td colspan="4" class="text-center" style="padding: 20px; color: #6c757d;">
                                                 <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
@@ -686,53 +688,104 @@
                                             </td>
                                         </tr>
                                     </h:panelGroup>
-                                    <ui:repeat value="#{pharmacyController.institutionStockDtos}" var="stockDto" rendered="#{not empty pharmacyController.institutionStockDtos}">
-                                        <!-- Institution Header Row (shown only for first department of each institution) -->
-                                        <ui:fragment rendered="#{pharmacyController.isFirstDepartmentOfInstitution(stockDto)}">
-                                            <tr class="table-secondary">
-                                                <td class="fw-bold">
-                                                    <h:outputText value="#{stockDto.institutionName}"/>
-                                                </td>
-                                                <td></td>
-                                                <td></td>
-                                                <td class="text-end fw-bold">
-                                                    <h:outputText value="#{pharmacyController.getInstitutionTotal(stockDto.institutionId)}">
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputText>
-                                                </td>
-                                            </tr>
-                                        </ui:fragment>
-
-                                        <!-- Department Row -->
+                                    <ui:repeat value="#{pharmacyController.departmentStockDtos}" var="deptStock" rendered="#{not empty pharmacyController.departmentStockDtos}">
                                         <tr>
-                                            <td class="ps-4">
-                                                <h:outputText value="#{stockDto.departmentName}"/>
+                                            <td>
+                                                <h:outputText value="#{deptStock.department.name}"/>
                                             </td>
                                             <td>
-                                                <h:outputText value="#{stockDto.siteName}"/>
+                                                <h:outputText value="#{deptStock.department.institution.name}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{deptStock.department.site.name}"/>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{stockDto.stockQuantity}">
+                                                <h:outputText value="#{deptStock.qty}">
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputText>
                                             </td>
-                                            <td></td>
                                         </tr>
                                     </ui:repeat>
                                 </tbody>
-                                <tfoot class="table-dark">
-                                    <tr>
-                                        <th colspan="3" class="fw-bold">
-                                            <h:outputText value="Grand Total Stock"/>
-                                        </th>
-                                        <th class="text-end fw-bold">
-                                            <h:outputText id="grandTotalTab" value="#{pharmacyController.grantStock}">
-                                                <f:convertNumber integerOnly="true" />
-                                            </h:outputText>
-                                        </th>
-                                    </tr>
-                                </tfoot>
                             </table>
+                        </div>
+
+                        <!-- Institution Level Stocks -->
+                        <h:outputText value="Institution Level Stocks" styleClass="h5 mb-3 d-block"/>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="w-50">Institution Name</th>
+                                        <th class="w-50 text-end">Total Stock Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <h:panelGroup rendered="#{empty pharmacyController.institutionStocks}">
+                                        <tr>
+                                            <td colspan="2" class="text-center" style="padding: 20px; color: #6c757d;">
+                                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                                No institution stock data available.
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{pharmacyController.institutionStocks.entrySet().toArray()}" var="instEntry" rendered="#{not empty pharmacyController.institutionStocks}">
+                                        <tr>
+                                            <td>
+                                                <h:outputText value="#{instEntry.key.name}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{instEntry.value}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Site Level Stocks -->
+                        <h:outputText value="Site Level Stocks" styleClass="h5 mb-3 d-block"/>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="w-50">Site Name</th>
+                                        <th class="w-50 text-end">Total Stock Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <h:panelGroup rendered="#{empty pharmacyController.siteStocks}">
+                                        <tr>
+                                            <td colspan="2" class="text-center" style="padding: 20px; color: #6c757d;">
+                                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                                No site stock data available.
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{pharmacyController.siteStocks.entrySet().toArray()}" var="siteEntry" rendered="#{not empty pharmacyController.siteStocks}">
+                                        <tr>
+                                            <td>
+                                                <h:outputText value="#{siteEntry.key.name}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{siteEntry.value}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Grand Total -->
+                        <div class="alert alert-info">
+                            <h:outputText value="Grand Total Stock: " styleClass="fw-bold"/>
+                            <h:outputText value="#{pharmacyController.grantStock}" styleClass="fw-bold">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputText>
                         </div>
 
                     </p:tab>
