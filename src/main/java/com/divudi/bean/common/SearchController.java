@@ -980,9 +980,9 @@ public class SearchController implements Serializable {
             jpql += " and b.fromInstitution = :del ";
             params.put("del", getDealer());
         }
-        
+
         params.put("billType", BillType.PharmacyGrnBill);
-        
+
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
 
@@ -6186,7 +6186,7 @@ public class SearchController implements Serializable {
             types.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             types.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             types.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
-            b.setListOfBill(getReturnBill(b, types));
+            b.setListOfBill(getReturnBill(b, types, true));
         }
 
     }
@@ -6231,7 +6231,7 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             List<BillTypeAtomic> types = new ArrayList<>();
             types.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            b.setListOfBill(getReturnBill(b, types));
+            b.setListOfBill(getReturnBill(b, types, true));
         }
 
     }
@@ -6341,6 +6341,10 @@ public class SearchController implements Serializable {
     }
 
     public List<Bill> getReturnBill(Bill b, List<BillTypeAtomic> billTypes) {
+        return getReturnBill(b, billTypes, null);
+    }
+
+    public List<Bill> getReturnBill(Bill b, List<BillTypeAtomic> billTypes, Boolean completedOnesOnly) {
         if (billTypes == null || billTypes.isEmpty()) {
             return new ArrayList<>();
         }
@@ -6355,6 +6359,12 @@ public class SearchController implements Serializable {
         HashMap<String, Object> params = new HashMap<>();
         params.put("ref", b);
         params.put("btps", billTypes);
+
+        if (completedOnesOnly != null) {
+            if (completedOnesOnly) {
+                jpql += " and b.completed=true ";
+            }
+        }
 
         return getBillFacade().findByJpql(jpql, params);
     }
@@ -15643,7 +15653,6 @@ public class SearchController implements Serializable {
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-
 
             ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds, nonCreditPaymentMethods);
             pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
