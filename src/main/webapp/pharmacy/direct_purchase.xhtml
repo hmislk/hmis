@@ -852,9 +852,10 @@
                   maximizable="true"
                   closeOnEscape="true">
 
-            <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseConfigForm" />
+
 
             <h:form id="directPurchaseConfigForm">
+                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseConfigForm" />
                 <div class="row">
                     <div class="col-12">
                         <div class="card config-section">
