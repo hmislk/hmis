@@ -67,7 +67,15 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{pharmacyController.institutionStockDtos}" var="stockDto">
+                                            <h:panelGroup rendered="#{empty pharmacyController.institutionStockDtos}">
+                                                <tr>
+                                                    <td colspan="4" class="text-center" style="padding: 20px; color: #6c757d;">
+                                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                                        No stock data available for the selected period.
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                            <ui:repeat value="#{pharmacyController.institutionStockDtos}" var="stockDto" rendered="#{not empty pharmacyController.institutionStockDtos}">
                                                 <!-- Institution Header Row (shown only for first department of each institution) -->
                                                 <ui:fragment rendered="#{pharmacyController.isFirstDepartmentOfInstitution(stockDto)}">
                                                     <tr class="table-secondary">
@@ -126,7 +134,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     Pharmacy Sale
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" id="phSale">
+                                <h:panelGroup rendered="#{empty pharmacyController.institutionSales}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No pharmacy sales data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" id="phSale" rendered="#{not empty pharmacyController.institutionSales}">
                                     <p:columnGroup type="header">
                                         <p:row>
                                             <p:column class="w-50">
@@ -219,7 +233,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     BHT Issue
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" id="bht">
+                                <h:panelGroup rendered="#{empty pharmacyController.institutionBhtIssue}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No BHT issue data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" id="bht" rendered="#{not empty pharmacyController.institutionBhtIssue}">
                                     <p:columnGroup type="header">
                                         <p:row>
                                             <p:column class="w-50">
@@ -313,7 +333,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     Pharmacy Whole Sale
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins" id="phWhSale">
+                                <h:panelGroup rendered="#{empty pharmacyController.institutionWholeSales}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No wholesale sales data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins" id="phWhSale" rendered="#{not empty pharmacyController.institutionWholeSales}">
                                     <p:columnGroup type="header">
                                         <p:row>
                                             <p:column >
@@ -407,7 +433,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     Transfer Issue
                                 </div>
-                                <p:dataTable styleClass="noBorder" id="trIssueBlock" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                                <h:panelGroup rendered="#{empty pharmacyController.institutionTransferIssue}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No transfer issue data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" id="trIssueBlock" value="#{pharmacyController.institutionTransferIssue}" var="ins" rendered="#{not empty pharmacyController.institutionTransferIssue}">
                                     <p:columnGroup type="header">
                                         <p:row>
                                             <p:column >
@@ -500,7 +532,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     GRN Details
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnDtos}" var="g">
+                                <h:panelGroup rendered="#{empty pharmacyController.grnDtos}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No GRN data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnDtos}" var="g" rendered="#{not empty pharmacyController.grnDtos}">
                                     <p:column headerText="GRN No">#{g.grnNo}</p:column>
                                     <p:column headerText="Dept">#{g.departmentName}</p:column>
                                     <p:column headerText="Date">
@@ -526,7 +564,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     GRN Return Details
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnReturnDtos}" var="g">
+                                <h:panelGroup rendered="#{empty pharmacyController.grnReturnDtos}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No GRN return data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnReturnDtos}" var="g" rendered="#{not empty pharmacyController.grnReturnDtos}">
                                     <p:column headerText="GRN Return No">#{g.grnReturnNo}</p:column>
                                     <p:column headerText="Dept">#{g.departmentName}</p:column>
                                     <p:column headerText="Date">
@@ -552,7 +596,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     Pending GRN Details
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
+                                <h:panelGroup rendered="#{empty pharmacyController.pendingGrns}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No pending GRN data available.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn" rendered="#{not empty pharmacyController.pendingGrns}">
                                     <p:column headerText="GRN No">#{pendingGrn.bill.deptId}</p:column>
                                     <p:column headerText="GRN Date">
                                         <h:outputLabel value="#{pendingGrn.bill.createdAt}">
@@ -581,7 +631,13 @@
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     Purchase Order Details
                                 </div>
-                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.pos}" var="po">
+                                <h:panelGroup rendered="#{empty pharmacyController.pos}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No purchase order data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable styleClass="noBorder" value="#{pharmacyController.pos}" var="po" rendered="#{not empty pharmacyController.pos}">
                                     <p:column headerText="Order No">#{po.bill.deptId}</p:column>
                                     <p:column headerText="Order at">
                                         <h:outputLabel value="#{po.bill.createdAt}">
@@ -622,7 +678,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <ui:repeat value="#{pharmacyController.institutionStockDtos}" var="stockDto">
+                                    <h:panelGroup rendered="#{empty pharmacyController.institutionStockDtos}">
+                                        <tr>
+                                            <td colspan="4" class="text-center" style="padding: 20px; color: #6c757d;">
+                                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                                No stock data available for the selected period.
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{pharmacyController.institutionStockDtos}" var="stockDto" rendered="#{not empty pharmacyController.institutionStockDtos}">
                                         <!-- Institution Header Row (shown only for first department of each institution) -->
                                         <ui:fragment rendered="#{pharmacyController.isFirstDepartmentOfInstitution(stockDto)}">
                                             <tr class="table-secondary">
@@ -677,7 +741,13 @@
                         title="Sale" 
                         id="itemDetailsTabSales"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
+                        <h:panelGroup rendered="#{empty pharmacyController.institutionSales}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No pharmacy sales data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" rendered="#{not empty pharmacyController.institutionSales}">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -773,7 +843,13 @@
 
                         </p:commandButton>
                         <br/>
-                        <p:dataTable id="tbl" styleClass="noBorder" value="#{pharmacyController.grns}" var="bi"
+                        <h:panelGroup rendered="#{empty pharmacyController.grns}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No sale bill item data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable id="tbl" styleClass="noBorder" value="#{pharmacyController.grns}" var="bi" rendered="#{not empty pharmacyController.grns}"
                                      paginator="true" 
                                      rows="10" 
                                      paginatorPosition="bottom"
@@ -810,7 +886,13 @@
                     <p:tab 
                         id="itemDetailsTabWholesale"
                         title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
+                        <h:panelGroup rendered="#{empty pharmacyController.institutionWholeSales}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No wholesale sales data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins" rendered="#{not empty pharmacyController.institutionWholeSales}">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -898,7 +980,13 @@
                         id="itemDetailsTabInpatient"
                         title="BHT Issue"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Tab', true)}">
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
+                        <h:panelGroup rendered="#{empty pharmacyController.institutionBhtIssue}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No BHT issue data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" rendered="#{not empty pharmacyController.institutionBhtIssue}">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -986,7 +1074,13 @@
                         id="itemDetailsTabTransferIssue"
                         title="Transfer Issue" 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Tab', true)}">
-                        <p:dataTable styleClass="noBorder" id="trIssueTab" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                        <h:panelGroup rendered="#{empty pharmacyController.institutionTransferIssue}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No transfer issue data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable styleClass="noBorder" id="trIssueTab" value="#{pharmacyController.institutionTransferIssue}" var="ins" rendered="#{not empty pharmacyController.institutionTransferIssue}">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -1074,8 +1168,14 @@
                         id="itemDetailsTabTransferReceive"
                         title="Transfer Receive"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Receive Tab', true)}">
-                        <p:dataTable styleClass="noBorder" id="trRceive" 
-                                     value="#{pharmacyController.institutionTransferReceive}" var="ins">
+                        <h:panelGroup rendered="#{empty pharmacyController.institutionTransferReceive}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No transfer receive data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable styleClass="noBorder" id="trRceive"
+                                     value="#{pharmacyController.institutionTransferReceive}" var="ins" rendered="#{not empty pharmacyController.institutionTransferReceive}">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -1163,8 +1263,14 @@
                         id="itemDetailsTabConsuption"
                         title="Department Issue" 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Issue Tab', true)}">
+                        <h:panelGroup rendered="#{empty pharmacyController.institutionIssue}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No department issue data available for the selected period.
+                            </div>
+                        </h:panelGroup>
                         <p:dataTable styleClass="noBorder" id="depIssue"
-                                     value="#{pharmacyController.institutionIssue}" var="ins">
+                                     value="#{pharmacyController.institutionIssue}" var="ins" rendered="#{not empty pharmacyController.institutionIssue}">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >
@@ -1253,8 +1359,14 @@
                         title="GRN" 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Tab', true)}">
 
+                        <h:panelGroup rendered="#{empty pharmacyController.grnDtos}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No GRN data available for the selected period.
+                            </div>
+                        </h:panelGroup>
                         <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grnDtos}"
-                                     var="dd2" scrollable="true"  paginator="true"
+                                     var="dd2" scrollable="true"  paginator="true" rendered="#{not empty pharmacyController.grnDtos}"
                                      rows="10"
                                      paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -1313,10 +1425,16 @@
                         id="itemDetailsTabPendingGrn"
                         title="Pending GRN" 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
-                        <p:dataTable 
-                            id="pendinggrn" 
+                        <h:panelGroup rendered="#{empty pharmacyController.pendingGrns}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No pending GRN data available.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable
+                            id="pendinggrn"
                             value="#{pharmacyController.pendingGrns}"
-                            var="pendingGrnRow" scrollable="true"  paginator="true"
+                            var="pendingGrnRow" scrollable="true"  paginator="true" rendered="#{not empty pharmacyController.pendingGrns}"
                             rows="10"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -1381,7 +1499,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <ui:repeat value="#{pharmacyController.grnReturnDtos}" var="dd2">
+                                    <h:panelGroup rendered="#{empty pharmacyController.grnReturnDtos}">
+                                        <tr>
+                                            <td colspan="9" class="text-center" style="padding: 20px; color: #6c757d;">
+                                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                                No GRN return data available for the selected period.
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{pharmacyController.grnReturnDtos}" var="dd2" rendered="#{not empty pharmacyController.grnReturnDtos}">
                                         <tr>
                                             <td>
                                                 <h:outputText value="#{dd2.grnReturnNo}"/>
@@ -1506,11 +1632,17 @@
                     </p:tab>
 
                     <p:tab title="Pending POs" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending PO Tab', true)}">
-                        <p:dataTable 
-                            styleClass="noBorder" 
-                            id="tablePendingPos" 
-                            value="#{pharmacyController.pendingPoDtos}" 
-                            var="pendingPo"
+                        <h:panelGroup rendered="#{empty pharmacyController.pendingPoDtos}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No pending purchase order data available.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable
+                            styleClass="noBorder"
+                            id="tablePendingPos"
+                            value="#{pharmacyController.pendingPoDtos}"
+                            var="pendingPo" rendered="#{not empty pharmacyController.pendingPoDtos}"
                             rows="10"
                             paginator="true"
                             paginatorPosition="bottom"
@@ -1549,10 +1681,16 @@
                         id="tabDirectPurchase"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Direct Purchase Tab', true)}">
 
-                        <p:dataTable 
-                            styleClass="noBorder" 
-                            id="tblDirectPurchase" 
-                            value="#{pharmacyController.directPurchaseDtos}" var="dd3"
+                        <h:panelGroup rendered="#{empty pharmacyController.directPurchaseDtos}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No direct purchase data available for the selected period.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable
+                            styleClass="noBorder"
+                            id="tblDirectPurchase"
+                            value="#{pharmacyController.directPurchaseDtos}" var="dd3" rendered="#{not empty pharmacyController.directPurchaseDtos}"
                             rows="10" 
                             paginator="true"
                             paginatorPosition="bottom"
@@ -1591,7 +1729,13 @@
                     </p:tab>
 
                     <p:tab title="Pack Sizes" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pack Sizes Tab', true)}">
-                        <p:dataTable value="#{pharmacyController.ampps}" var="p" >
+                        <h:panelGroup rendered="#{empty pharmacyController.ampps}">
+                            <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                No pack size data available.
+                            </div>
+                        </h:panelGroup>
+                        <p:dataTable value="#{pharmacyController.ampps}" var="p" rendered="#{not empty pharmacyController.ampps}">
                             <p:column>
                                 <h:outputLabel value="#{p.name}" ></h:outputLabel>
                             </p:column>
