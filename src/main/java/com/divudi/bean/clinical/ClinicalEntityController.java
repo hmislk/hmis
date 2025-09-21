@@ -57,7 +57,7 @@ public class ClinicalEntityController implements Serializable {
         return "/emr/admin/clinical_entities";
     }
 
-    public ClinicalEntity findItemByName(String name,Department dept) {
+    public ClinicalEntity findItemByName(String name, Department dept) {
         try {
             String jpql;
             Map m = new HashMap();
@@ -89,11 +89,12 @@ public class ClinicalEntityController implements Serializable {
         return c;
     }
 
-    public List<ClinicalEntity> getRaces() {
-        return listClinicalEntity(SymanticType.Race);
+    public List<ClinicalEntity> getEhnicity() {
+        // Kept for backward compatibility with older views
+        return listClinicalEntity(SymanticType.Religion);
     }
 
-    public List<ClinicalEntity> getEhnicity() {
+    public List<ClinicalEntity> getReligion() {
         return listClinicalEntity(SymanticType.Religion);
     }
 
@@ -109,7 +110,7 @@ public class ClinicalEntityController implements Serializable {
         return listClinicalEntity(SymanticType.Civil_status);
     }
 
-     public List<ClinicalEntity> getRelationships() {
+    public List<ClinicalEntity> getRelationships() {
         return listClinicalEntity(SymanticType.Relationships);
     }
 
