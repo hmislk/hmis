@@ -815,6 +815,7 @@ public class PharmacyController implements Serializable {
         institutionStocks = null;
         institutionSales = null;
         salesByBillType = null;
+        transferIssuesByDepartment = null;
         grns = null;
         pendingGrns = null;
         institutionWholeSales = null;
@@ -3721,6 +3722,7 @@ public class PharmacyController implements Serializable {
         pendingGrns = null;
         institutionSales = null;
         salesByBillType = null;
+        transferIssuesByDepartment = null;
         institutionStocks = null;
         institutionTransferIssue = null;
         directPurchase = null;
@@ -4617,6 +4619,37 @@ public class PharmacyController implements Serializable {
         salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
+    public void createDepartmentTransferIssueDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_ISSUE);
+        btas.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO("
+                + "i.bill.toDepartment, "
+                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to "
+                + "AND i.bill.department=:dep "
+                + "GROUP BY i.bill.toDepartment";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", btas);
+        m.put("dep", sessionController.getDepartment());
+
+        transferIssuesByDepartment = (List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
     public List<Object[]> calDepartmentSalesAllInstitutions(List<Institution> institutions) {
         Item selectedItem;
         if (pharmacyItem instanceof Ampp) {
@@ -5113,6 +5146,7 @@ public class PharmacyController implements Serializable {
     private List<InstitutionSale> institutionWholeSales;
     private List<InstitutionSale> institutionBhtIssue;
     private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType;
+    private List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> transferIssuesByDepartment;
 
     private List<InstitutionSale> institutionTransferIssue;
     private List<InstitutionSale> institutionIssue;
@@ -5303,6 +5337,7 @@ public class PharmacyController implements Serializable {
     public void fillDetails() {
         createInstitutionStockDto();
         createDepartmentSaleDto();
+        createDepartmentTransferIssueDto();
         createInstitutionBhtIssue();
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
@@ -6430,6 +6465,27 @@ public class PharmacyController implements Serializable {
         }
         double total = 0.0;
         for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : salesByBillType) {
+            if (dto.getQuantity() != null) {
+                total += dto.getQuantity();
+            }
+        }
+        return total;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> getTransferIssuesByDepartment() {
+        return transferIssuesByDepartment;
+    }
+
+    public void setTransferIssuesByDepartment(List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> transferIssuesByDepartment) {
+        this.transferIssuesByDepartment = transferIssuesByDepartment;
+    }
+
+    public Double getTotalTransferIssuesByDepartmentQuantity() {
+        if (transferIssuesByDepartment == null || transferIssuesByDepartment.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO dto : transferIssuesByDepartment) {
             if (dto.getQuantity() != null) {
                 total += dto.getQuantity();
             }
