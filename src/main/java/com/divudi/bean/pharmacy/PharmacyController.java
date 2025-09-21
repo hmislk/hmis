@@ -5401,11 +5401,12 @@ public class PharmacyController implements Serializable {
                 + "b.billItemFinanceDetails.retailSaleRate, "
                 + "b.billItemFinanceDetails.netTotal) "
                 + "FROM BillItem b "
-                + "WHERE type(b.bill)=:class "
+                + "WHERE (b.bill.retired is null or b.bill.retired=false) "
                 + "AND b.bill.creater is not null "
                 + "AND b.bill.cancelled=false "
-                + "AND b.retired=false "
+                + "AND (b.retired is null or b.retired=false) "
                 + "AND b.item IN :relatedAmpAndAmpps "
+                + "AND b.bill.department=:dept "
                 + "AND b.bill.billTypeAtomic IN :btas "
                 + "AND b.createdAt between :frm and :to "
                 + "order by b.id desc";
@@ -5419,9 +5420,9 @@ public class PharmacyController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedAmpAndAmpps", relatedAmpAndAmpps);
+        params.put("dept", sessionController.getDepartment());
         params.put("frm", getFromDate());
         params.put("to", getToDate());
-        params.put("class", BilledBill.class);
         params.put("btas", btas);
 
         grnDtos = (List<PharmacyGrnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -5667,7 +5668,7 @@ public class PharmacyController implements Serializable {
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :bta "
                 + "AND b.createdAt BETWEEN :frm AND :to ";
-
+        
         HashMap<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
         params.put("bta", btas);
