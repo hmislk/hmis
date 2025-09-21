@@ -5403,7 +5403,6 @@ public class PharmacyController implements Serializable {
                 + "FROM BillItem b "
                 + "WHERE (b.bill.retired is null or b.bill.retired=false) "
                 + "AND b.bill.creater is not null "
-                + "AND b.bill.cancelled=false "
                 + "AND (b.retired is null or b.retired=false) "
                 + "AND b.item IN :relatedAmpAndAmpps "
                 + "AND b.bill.department=:dept "
