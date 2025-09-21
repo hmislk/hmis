@@ -56,6 +56,58 @@
                                     </div>
                                 </div>
 
+                                <!-- Category-specific download section -->
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h:outputText value="Download by Category" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row align-items-end">
+                                            <div class="col-lg-4">
+                                                <h:outputLabel for="categoryFilter" value="Select Category:" styleClass="form-label font-weight-bold"/>
+                                                <p:autoComplete id="categoryFilter"
+                                                              value="#{pharmacyStockTakeController.selectedCategory}"
+                                                              completeMethod="#{pharmacyStockTakeController.completeCategory}"
+                                                              var="cat"
+                                                              itemLabel="#{cat.name}"
+                                                              itemValue="#{cat}"
+                                                              converter="#{categoryController.converter}"
+                                                              emptyMessage="No categories found"
+                                                              dropdown="true"
+                                                              cache="false"
+                                                              queryDelay="300"
+                                                              minQueryLength="1"
+                                                              styleClass="form-control"
+                                                              placeholder="Type to search categories...">
+                                                    <p:ajax event="itemSelect" update="categoryDownloadButtons"/>
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-lg-8">
+                                                <h:panelGroup id="categoryDownloadButtons">
+                                                    <div class="btn-group" role="group" aria-label="Category Download Actions">
+                                                        <p:commandButton value="Download Category Guided Sheet"
+                                                                       ajax="false"
+                                                                       styleClass="ui-button-success mx-1"
+                                                                       icon="fa fa-download"
+                                                                       disabled="#{pharmacyStockTakeController.selectedCategory == null}"
+                                                                       onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                            <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryGuidedSheet}" />
+                                                        </p:commandButton>
+                                                        <p:commandButton value="Download Category Blind Sheet"
+                                                                       ajax="false"
+                                                                       styleClass="ui-button-warning mx-1"
+                                                                       icon="fa fa-download"
+                                                                       disabled="#{pharmacyStockTakeController.selectedCategory == null}"
+                                                                       onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                            <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryBlindSheet}" />
+                                                        </p:commandButton>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <h:panelGroup id="reportView">
                                     <div class="row mb-4">
                                         <div class="col-lg-6">

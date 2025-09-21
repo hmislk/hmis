@@ -84,6 +84,8 @@ public class PharmacyStockTakeController implements Serializable {
     private StockTakeApprovalService stockTakeApprovalService;
     @EJB
     private ApprovalProgressTracker approvalProgressTracker;
+    @EJB
+    private com.divudi.core.facade.CategoryFacade categoryFacade;
 
     private Bill snapshotBill;
     private Bill physicalCountBill;
@@ -97,6 +99,7 @@ public class PharmacyStockTakeController implements Serializable {
     private List<com.divudi.core.light.common.PharmacySnapshotBillLight> snapshotBillRows;
     private List<VarianceRow> varianceRows; // aggregated variance report rows
     private String approvalJobId; // background approval job id
+    private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
@@ -1134,6 +1137,265 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public com.divudi.core.entity.Category getSelectedCategory() {
+        return selectedCategory;
+    }
+
+    public void setSelectedCategory(com.divudi.core.entity.Category selectedCategory) {
+        this.selectedCategory = selectedCategory;
+    }
+
+    public List<com.divudi.core.entity.Category> completeCategory(String query) {
+        HashMap<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select c from Category c where c.retired=false");
+
+        if (query != null && !query.trim().isEmpty()) {
+            jpql.append(" and upper(c.name) like :q");
+            params.put("q", "%" + query.trim().toUpperCase() + "%");
+        }
+
+        jpql.append(" order by c.name");
+        return categoryFacade.findByJpql(jpql.toString(), params, 20);
+    }
+
+    public StreamedContent downloadCategoryGuidedSheet() {
+        if (selectedCategory == null) {
+            JsfUtil.addErrorMessage("Please select a category first");
+            return null;
+        }
+        return generateCategorySheet(true, "pharmacy_stock_guided_" + selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") + ".xlsx");
+    }
+
+    public StreamedContent downloadCategoryBlindSheet() {
+        if (selectedCategory == null) {
+            JsfUtil.addErrorMessage("Please select a category first");
+            return null;
+        }
+        return generateCategorySheet(false, "pharmacy_stock_blind_" + selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") + ".xlsx");
+    }
+
+    public StreamedContent getDownloadCategoryGuidedSheet() {
+        return downloadCategoryGuidedSheet();
+    }
+
+    public StreamedContent getDownloadCategoryBlindSheet() {
+        return downloadCategoryBlindSheet();
+    }
+
+    private StreamedContent generateCategorySheet(boolean includeSystemQty, String fileName) {
+        if (snapshotBill == null || selectedCategory == null) {
+            return null;
+        }
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet("Stock");
+
+            // Helpers and formats
+            CreationHelper creationHelper = wb.getCreationHelper();
+            DataFormat dataFormat = wb.createDataFormat();
+
+            // Styles
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setLocked(true);
+
+            CellStyle textLocked = wb.createCellStyle();
+            textLocked.setLocked(true);
+
+            CellStyle dateLocked = wb.createCellStyle();
+            dateLocked.setLocked(true);
+            dateLocked.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd"));
+
+            CellStyle numberLocked = wb.createCellStyle();
+            numberLocked.setLocked(true);
+            numberLocked.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            CellStyle integerLocked = wb.createCellStyle();
+            integerLocked.setLocked(true);
+            integerLocked.setDataFormat(dataFormat.getFormat("#,##0"));
+
+            CellStyle inputUnlocked = wb.createCellStyle();
+            inputUnlocked.setLocked(false);
+            inputUnlocked.setDataFormat(dataFormat.getFormat("#,##0.######"));
+            inputUnlocked.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+            inputUnlocked.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Header
+            Row header = sheet.createRow(0);
+            int col = 0;
+            // Always include BillItem ID first for reliable mapping
+            Cell hId = header.createCell(col++);
+            hId.setCellValue("BillItem ID");
+            hId.setCellStyle(headerStyle);
+            Cell hCode = header.createCell(col++);
+            hCode.setCellValue("Code");
+            hCode.setCellStyle(headerStyle);
+            Cell hName = header.createCell(col++);
+            hName.setCellValue("Name");
+            hName.setCellStyle(headerStyle);
+            Cell hCat = header.createCell(col++);
+            hCat.setCellValue("Category");
+            hCat.setCellStyle(headerStyle);
+            Cell hBatch = header.createCell(col++);
+            hBatch.setCellValue("Batch");
+            hBatch.setCellStyle(headerStyle);
+            Cell hExp = header.createCell(col++);
+            hExp.setCellValue("Expiry Date");
+            hExp.setCellStyle(headerStyle);
+            Cell hPR = header.createCell(col++);
+            hPR.setCellValue("Purchase Rate");
+            hPR.setCellStyle(headerStyle);
+            Cell hRR = header.createCell(col++);
+            hRR.setCellValue("Retail Rate");
+            hRR.setCellStyle(headerStyle);
+            Cell hCR = header.createCell(col++);
+            hCR.setCellValue("Cost Rate");
+            hCR.setCellStyle(headerStyle);
+            Integer systemQtyColIndex = null;
+            if (includeSystemQty) {
+                Cell hSys = header.createCell(col++);
+                hSys.setCellValue("System Qty");
+                hSys.setCellStyle(headerStyle);
+                systemQtyColIndex = col - 1;
+            }
+            int realQtyColIndex = col; // this will be unlocked for input
+            Cell hReal = header.createCell(col++);
+            hReal.setCellValue("Real Stock Qty");
+            hReal.setCellStyle(headerStyle);
+            Cell hLV = header.createCell(col++);
+            hLV.setCellValue("Line Value");
+            hLV.setCellStyle(headerStyle);
+
+            // Get items filtered by category
+            List<BillItem> items = null;
+            if (snapshotBill.getId() != null) {
+                HashMap<String, Object> p = new HashMap<>();
+                p.put("b", snapshotBill);
+                p.put("cat", selectedCategory);
+                items = billItemFacade.findByJpql("select bi from BillItem bi where bi.bill=:b and bi.item.category=:cat order by bi.id", p);
+            } else {
+                items = java.util.Collections.emptyList();
+            }
+
+            // Rows
+            int rowNum = 1;
+            for (BillItem bi : items) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                ItemBatch ib = pbi != null ? pbi.getItemBatch() : null;
+                Row row = sheet.createRow(rowNum++);
+                int c = 0;
+
+                // BillItem ID
+                Cell cId = row.createCell(c++);
+                if (bi.getId() != null) {
+                    cId.setCellValue(bi.getId());
+                    cId.setCellStyle(integerLocked);
+                } else {
+                    cId.setCellValue("");
+                    cId.setCellStyle(textLocked);
+                }
+
+                // Code
+                Cell cCode = row.createCell(c++);
+                cCode.setCellValue(bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "");
+                cCode.setCellStyle(textLocked);
+
+                // Name
+                Cell cName = row.createCell(c++);
+                cName.setCellValue(bi.getDescreption() != null ? bi.getDescreption() : "");
+                cName.setCellStyle(textLocked);
+
+                // Category
+                Cell cCat = row.createCell(c++);
+                cCat.setCellValue(bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null ? bi.getItem().getCategory().getName() : "");
+                cCat.setCellStyle(textLocked);
+
+                // Batch
+                Cell cBatch = row.createCell(c++);
+                if (ib != null && ib.getBatchNo() != null) {
+                    cBatch.setCellValue(ib.getBatchNo());
+                } else {
+                    cBatch.setCellValue("");
+                }
+                cBatch.setCellStyle(textLocked);
+
+                // Expiry
+                Cell cExp = row.createCell(c++);
+                if (ib != null && ib.getDateOfExpire() != null) {
+                    cExp.setCellValue(ib.getDateOfExpire());
+                    cExp.setCellStyle(dateLocked);
+                } else {
+                    cExp.setCellValue("");
+                    cExp.setCellStyle(textLocked);
+                }
+
+                // Rates
+                double pr = (ib != null) ? ib.getPurcahseRate() : 0.0;
+                double rr = (ib != null) ? ib.getRetailsaleRate() : 0.0;
+                double cr = (ib != null) ? ib.getCostRate() : 0.0;
+
+                Cell cPR = row.createCell(c++);
+                cPR.setCellValue(pr);
+                cPR.setCellStyle(numberLocked);
+                Cell cRR = row.createCell(c++);
+                cRR.setCellValue(rr);
+                cRR.setCellStyle(numberLocked);
+                Cell cCR = row.createCell(c++);
+                cCR.setCellValue(cr);
+                cCR.setCellStyle(numberLocked);
+
+                // System Qty (optional)
+                if (systemQtyColIndex != null) {
+                    Cell cSys = row.createCell(c++);
+                    if (bi.getQty() != null) {
+                        cSys.setCellValue(bi.getQty());
+                        cSys.setCellStyle(numberLocked);
+                    } else {
+                        cSys.setCellValue(0.0);
+                        cSys.setCellStyle(numberLocked);
+                    }
+                }
+
+                // Real Qty (this is the editable column)
+                Cell cReal = row.createCell(c++);
+                if (includeSystemQty && bi.getQty() != null) {
+                    cReal.setCellValue(bi.getQty()); // pre-fill with system qty for guided sheet
+                } else {
+                    cReal.setCellValue(0.0);
+                }
+                cReal.setCellStyle(inputUnlocked);
+
+                // Line Value
+                Cell cLV = row.createCell(c++);
+                double netValue = bi.getNetValue();
+                cLV.setCellValue(netValue);
+                cLV.setCellStyle(numberLocked);
+            }
+
+            // Auto-size columns
+            for (int i = 0; i < col; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Convert to bytes
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            wb.write(baos);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> bais)
+                    .build();
+
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error generating category sheet", e);
+            JsfUtil.addErrorMessage("Error generating sheet: " + e.getMessage());
+            return null;
+        }
     }
 
     // Removed legacy getters/setters for snapshotBills
