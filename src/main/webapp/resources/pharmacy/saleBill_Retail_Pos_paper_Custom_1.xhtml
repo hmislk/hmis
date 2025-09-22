@@ -60,15 +60,6 @@
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
-            <h:panelGroup >
-                <div class="billline" >
-                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenNumberFromBill(cc.attrs.bill.referenceBill)}" style="font-size: 30px; padding: 0px;"/>
-                </div>
-            </h:panelGroup>
-
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />
-            </div>
 
             <div class="billDetails" >
                 <table style="width: 90%; margin-left: 5%" >
@@ -333,15 +324,6 @@
                                     </div>
                                 </ui:repeat>
                             </td> 
-                        </tr>
-                        <tr >
-                            <td style="text-align: left;">
-                                <h:outputLabel   value="Prepared by" />
-                            </td>
-                            <td style="text-align: right; ">
-                                <h:outputLabel   value="#{cc.attrs.bill.referenceBill.creater.name}">
-                                </h:outputLabel>
-                            </td>
                         </tr>
                         <tr >
                             <td style="text-align: left;">
