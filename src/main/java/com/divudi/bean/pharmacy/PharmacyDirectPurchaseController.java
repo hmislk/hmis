@@ -38,12 +38,10 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
-import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.core.util.BigDecimalUtil;
-import com.divudi.bean.pharmacy.PharmacyController;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -134,14 +132,42 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
+        // ChatGPT contributed
+        boolean allowAddingDirectPurchaseItemsWhenNormalQuantityIsZeroAndFreeQuantityIsPresent
+                = configOptionApplicationController.getBooleanValueByKey(
+                        "Allow Adding Direct Purchase Items When Normal Quantity Is Zero And Free Quantity Is Present",
+                        false
+                );
+        
         if (f == null || pbi == null) {
             JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
             return;
         }
 
-        if (BigDecimalUtil.isNullOrZero(f.getQuantity()) || BigDecimalUtil.isNegative(f.getQuantity())) {
-            JsfUtil.addErrorMessage("Please enter quantity");
+        // Quantity validation according to configuration
+        // Common: disallow negative quantities
+        if (BigDecimalUtil.isNegative(f.getQuantity())) {
+            JsfUtil.addErrorMessage("Quantity cannot be negative");
             return;
+        }
+        if (BigDecimalUtil.isNegative(f.getFreeQuantity())) {
+            JsfUtil.addErrorMessage("Free quantity cannot be negative");
+            return;
+        }
+        if (allowAddingDirectPurchaseItemsWhenNormalQuantityIsZeroAndFreeQuantityIsPresent) {
+            // Option true: require either quantity or free quantity to be present
+            boolean hasQty = BigDecimalUtil.isPositive(f.getQuantity());
+            boolean hasFree = BigDecimalUtil.isPositive(f.getFreeQuantity());
+            if (!(hasQty || hasFree)) {
+                JsfUtil.addErrorMessage("Please enter quantity or free quantity");
+                return;
+            }
+        } else {
+            // Option false: require quantity > 0; ignore free quantity
+            if (!BigDecimalUtil.isPositive(f.getQuantity())) {
+                JsfUtil.addErrorMessage("Please enter quantity");
+                return;
+            }
         }
 
         if (BigDecimalUtil.isNullOrZero(f.getLineGrossRate()) || BigDecimalUtil.isNegative(f.getLineGrossRate())) {
@@ -171,6 +197,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Setup basic quantity and rate fields for AMP/AMPP handling
         BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+
+        // Ensure free quantity is properly initialized when left blank
+        if (f.getFreeQuantity() == null) {
+            f.setFreeQuantity(BigDecimal.ZERO);
+        }
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
 
         if (item instanceof Ampp) {
@@ -213,18 +244,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         // Set PharmaceuticalBillItem basic values - calculations will be done by calculateItemTotals()
-        pbi.setQty(f.getQuantityByUnits().doubleValue());
-        pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
+        pbi.setQty(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
+        pbi.setFreeQty(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
 
         if (item instanceof Ampp) {
-            pbi.setQtyPacks(f.getQuantity().doubleValue());
-            pbi.setFreeQtyPacks(f.getFreeQuantity().doubleValue());
-            pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());
+            pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+            // Use null-safe free quantity to avoid NPEs
+            pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantity()).doubleValue());
+            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
             pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
         } else {
-            pbi.setQtyPacks(f.getQuantityByUnits().doubleValue());
-            pbi.setFreeQtyPacks(f.getFreeQuantityByUnits().doubleValue());
-            pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());
+            pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
+            pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
+            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
             pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
         }
 
@@ -235,18 +267,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
                 unitsPerPack = BigDecimal.ONE; // Avoid division by zero
             }
-            BigDecimal unitPurchaseRate = f.getGrossRate().divide(unitsPerPack, 4, RoundingMode.HALF_UP);
+            BigDecimal unitPurchaseRate = BigDecimalUtil.valueOrZero(f.getGrossRate()).divide(unitsPerPack, 4, RoundingMode.HALF_UP);
             pbi.setPurchaseRate(unitPurchaseRate.doubleValue());
         } else {
             // For AMP: grossRate is already unit price
-            pbi.setPurchaseRate(f.getGrossRate().doubleValue());
+            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getGrossRate()).doubleValue());
         }
         pbi.setRetailRate(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
         pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
         // Set BillItem basic rate fields - calculations will be done by calculateItemTotals()
-        getCurrentBillItem().setRate(f.getLineGrossRate().doubleValue());
-        getCurrentBillItem().setQty(f.getQuantity().doubleValue());
+        getCurrentBillItem().setRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()).doubleValue());
+        getCurrentBillItem().setQty(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
 
         // Calculate item totals using internal logic
         calculateItemTotals(getCurrentBillItem());
@@ -282,6 +314,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
+
+        // Ensure free quantity is properly initialized when left blank
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f.getFreeQuantity() == null) {
+            f.setFreeQuantity(BigDecimal.ZERO);
+        }
+
         // Recalculate item totals when free quantity changes
         calculateItemTotals(bi);
     }
@@ -875,7 +914,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 continue;
             }
 
-
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
             i.setCreatedAt(Calendar.getInstance().getTime());
@@ -1093,6 +1131,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         f.setLineCost(itemNet);
 
         // Ensure unit-based calculations are updated for UI display
+        // Ensure free quantity is properly initialized when left blank
+        if (f.getFreeQuantity() == null) {
+            f.setFreeQuantity(BigDecimal.ZERO);
+        }
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
         BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
 
@@ -1182,8 +1224,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, grossRatePerUnit);
         BigDecimal pbiRetailValue = BigDecimalUtil.multiply(qtyByUnits, retailRatePerUnit);
 
-        pbi.setPurchaseValue(pbiPurchaseValue.doubleValue());
-        pbi.setRetailValue(pbiRetailValue.doubleValue());
+        pbi.setPurchaseValue(BigDecimalUtil.valueOrZero(pbiPurchaseValue).doubleValue());
+        pbi.setRetailValue(BigDecimalUtil.valueOrZero(pbiRetailValue).doubleValue());
 
     }
 
@@ -1353,9 +1395,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // For purchase bills, legacy controller logic keeps totals negative.
         // Compute final net as line net + tax - discount + bill expenses considered for costing, then set negative on Bill.
         BigDecimal finalNet = netTotalLines.add(billTax).subtract(billDiscount).add(billExpenseConsidered);
-        getBill().setTotal(-netTotalLines.doubleValue());
-        getBill().setNetTotal(-finalNet.doubleValue());
-        getBill().setSaleValue(totalRetail.doubleValue());
+        getBill().setTotal(-BigDecimalUtil.valueOrZero(netTotalLines).doubleValue());
+        getBill().setNetTotal(-BigDecimalUtil.valueOrZero(finalNet).doubleValue());
+        getBill().setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
 
         // Ensure and populate BillFinanceDetails
         BillFinanceDetails bfd = getBill().getBillFinanceDetails();
@@ -1527,6 +1569,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (totalCost.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
+        }
+
+        // Ensure free quantity is properly initialized when left blank
+        if (freeQty == null) {
+            freeQty = BigDecimal.ZERO;
         }
 
         // Total Potential Income from qty + free qty multiplied by retail rate

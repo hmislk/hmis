@@ -31,7 +31,7 @@
                  font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
-            <div class="institutionContact" >
+<!--            <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
@@ -48,10 +48,10 @@
                     <h:outputLabel value="#{cc.attrs.bill.institution.email}/"/> 
                     <h:outputLabel value="&nbsp;#{cc.attrs.bill.institution.web}" ></h:outputLabel>                                              
                 </div>
-            </div>
+            </div>-->
 
             <div class="headingBill">
-                <h:outputLabel value="Sale Bill"   />   
+                <h:outputLabel value="Sale for Cashier Bill"   />   
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -60,7 +60,7 @@
             </div>
             <h:panelGroup rendered="#{not empty pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill)}">
                 <div class="billline" >
-                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px; padding: 0px;"/>
+                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
                 </div>
             </h:panelGroup>
 
@@ -117,7 +117,7 @@
                         </tr>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Staff Name" class="billDetails"></h:outputLabel>
@@ -127,9 +127,9 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  class="billDetails"></h:outputLabel>
                             </td> 
                         </tr>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="To Unit" class="billDetails"></h:outputLabel>
@@ -139,9 +139,9 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  class="billDetails"></h:outputLabel>
                             </td> 
                         </tr>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Company" class="billDetails"></h:outputLabel>
@@ -151,7 +151,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  class="billDetails"></h:outputLabel>
                             </td> 
                         </tr>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
                 </table>
 
             </div>
@@ -162,7 +162,7 @@
 
             <div style="padding-left: 5%;">
 
-                <table width="90%" >
+                <table width="95%" >
                     <tr>
                         <td style="width: 35%; ">
                             <h:outputLabel value="ITEM" style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
@@ -176,9 +176,9 @@
                                 <h:outputLabel value="RATE"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
                             </td>
 
-                            <td  style="width:22%;text-align: right;">
+<!--                            <td  style="width:22%;text-align: right;">
                                 <h:outputLabel value="VALUE"  style="font-size: 13px; font-weight: bold;" ></h:outputLabel>
-                            </td>
+                            </td>-->
                         </h:panelGroup>
                     </tr>
                     <tr>
@@ -212,11 +212,11 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                                <td  styleClass="itemsBlockRight" style="text-align: right; width: 42%" >
+<!--                                <td  styleClass="itemsBlockRight" style="text-align: right; width: 42%" >
                                     <h:outputLabel    value="#{bip.grossValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </td>
+                                </td>-->
                             </h:panelGroup>
                         </tr>
                     </ui:repeat>
@@ -230,9 +230,9 @@
                 <h:outputLabel value="-----------------------------------------------------"   />                         
             </div>
 
-            <div style="width: 90%; padding-left: 5%;" >
+            <div style="width: 95%; padding-left: 5%;" >
                 <table width="100%" >
-                    <tr>
+<!--                    <tr>
                         <td class="totalsItemBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Total" />
                         </td>
@@ -241,8 +241,8 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
-                    </tr>
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total On Pharmacy Sale Bill For Cashier')}">
+                    </tr>-->
+<!--                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total On Pharmacy Sale Bill For Cashier')}">
 
                         <tr>
                             <td  class="totalsItemBlock" style="text-align: left;">
@@ -303,7 +303,7 @@
                                 </td>
                             </tr>
                         </h:panelGroup>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
 
                     <tr>
                         <td  class="totalsItemBlock" style="text-align: left;">
@@ -311,7 +311,7 @@
                         </td>
                         <td  class="totalsItemBlock" style="text-align: right; ">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0.00" />
+                                <f:convertNumber pattern="#,##0" />
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -326,8 +326,7 @@
                         </td>
                     </tr>
 
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
@@ -347,25 +346,11 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </h:panelGroup>
-
+                    </h:panelGroup>-->
 
                 </table>
 
             </div>
-
-
-            <div class="footer">
-                Return accepted within 3 days only
-                <br/>
-                THANK YOU !
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
-                    <br/>
-                </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
-            </div>
-
-
 
         </div>
     </cc:implementation>

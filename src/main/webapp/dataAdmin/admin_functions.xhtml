@@ -34,7 +34,80 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-12 col-md-4 col-lg-3 p-1">
+                            <p:commandButton
+                                value="Clear JPA Shared Cache"
+                                icon="pi pi-refresh"
+                                class="w-100 ui-button-warning"
+                                ajax="false"
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                action="#{dataAdministrationController.clearAllJpaCaches}" />
+                        </div>
+                    </div>
+
                     <p:accordionPanel >
+                    <p:tab 
+                        id="tabStaff"
+                        title="Staff" >
+                        <table class="table table-sm table-bordered w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 15%;">Name</th>
+                                    <th style="width: 30%;">Description</th>
+                                    <th style="width: 10%;">Action</th>
+                                    <th style="width: 45%;">Output</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Add WebUser Codes (from Username)</strong></td>
+                                    <td>
+                                        Assign username as code for all WebUsers where the code is empty. Skips users with existing non-empty codes.
+                                    </td>
+                                    <td>
+                                        <p:commandButton 
+                                            action="#{webUserController.addWebUserCodesFromUserNames()}"
+                                            ajax="false"
+                                            value="Add WebUser Codes"  />
+                                    </td>
+                                    <td>
+                                        #{webUserController.output}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Add Staff Codes</strong></td>
+                                    <td>
+                                        Copy user codes to related staff where staff.code is empty. Affects only staff linked to users with a non-empty user code.
+                                    </td>
+                                    <td>
+                                        <p:commandButton 
+                                            action="#{webUserController.addStaffCodesFromUserCodes()}"
+                                            ajax="false"
+                                            value="Add Staff Codes"  />
+                                    </td>
+                                    <td>
+                                        #{webUserController.output}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Copy Staff Code → Staff StaffCode</strong></td>
+                                    <td>
+                                        Copy each Staff's existing code into Staff StaffCode where Staff StaffCode is empty.
+                                    </td>
+                                    <td>
+                                        <p:commandButton 
+                                            action="#{webUserController.addStaffStaffCodesFromCodes()}"
+                                            ajax="false"
+                                            value="Copy to StaffCode"  />
+                                    </td>
+                                    <td>
+                                        #{webUserController.output}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </p:tab>
                     <p:tab title="Admin">
                         <div class="d-grid gap-2">
                             <p:commandButton
@@ -44,7 +117,9 @@
                                 class="w-100 m-1" />
                         </div>
                     </p:tab>
-                    <p:tab title="Pharmacy" >
+                    <p:tab 
+                        id="tabPharmacy"
+                        title="Pharmacy" >
                         <table class="table table-sm table-bordered w-100">
                             <thead class="table-light">
                                 <tr>

@@ -20,6 +20,7 @@
                                 <h:outputText class="mx-4" value="Pharmacy Direct Purchase" />
                             </div>
                             <div>
+
                                 <p:commandButton
                                     id="btnSettle"
                                     value="Settle"
@@ -762,8 +763,6 @@
                             </p:panel>
                         </div>
                     </div>
-
-
                     <div class="row" >
                         <div class="col-12" >
                             <h:panelGroup id="purchaseHistory">
@@ -771,12 +770,6 @@
                             </h:panelGroup>
                         </div>
                     </div>
-
-
-
-
-
-
                 </p:panel>
             </h:panelGroup>
             <h:panelGroup rendered="#{pharmacyDirectPurchaseController.printPreview}">
@@ -797,14 +790,12 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton
-                                    value="#{pharmacyDirectPurchaseController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
-                                    icon="fas fa-eye"
-                                    id="btnTogglePrintAll"
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
                                     class="ui-button-secondary mx-1"
-                                    ajax="false"
-                                    action="#{pharmacyDirectPurchaseController.toggleShowAllBillFormats}"
-                                    rendered="#{webUserController.hasPrivilege('Developers')}"
-                                    title="Toggle visibility of all bill formats for development" />
+                                    type="button"
+                                    onclick="PF('directPurchaseConfigDialog').show();" />
                                 <p:commandButton
                                     ajax="false"
                                     class="ui-button-success"
@@ -817,36 +808,121 @@
                     </f:facet>
 
                     <h:panelGroup id="gpBillPreview" >
-                        <!-- Main receipt format - always shown -->
-                        <h:panelGroup rendered="true">
-                            <pharmacy:direct_purhcase_with_costing
-                                bill="#{pharmacyDirectPurchaseController.bill}"
-                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                            </pharmacy:direct_purhcase_with_costing>
-                        </h:panelGroup>
-
-                        <!-- Additional formats for development - shown only when toggle is enabled -->
-                        <h:panelGroup rendered="#{pharmacyDirectPurchaseController.showAllBillFormats}">
-                            <pharmacy:direct_purhcase
-                                bill="#{pharmacyDirectPurchaseController.bill}"
-                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                            </pharmacy:direct_purhcase>
-                        </h:panelGroup>
+                        <pharmacy:direct_purhcase
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Bill Print - A4', true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:direct_purhcase>
+                        <pharmacy:direct_purhcase_with_costing
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 Details',true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:direct_purhcase_with_costing>
+                        <pharmacy:direct_purhcase_with_costing_custom_1
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom 1',true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:direct_purhcase_with_costing_custom_1>
+                        <pharmacy:direct_purhcase_with_costing_custom_2
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom 2',true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:direct_purhcase_with_costing_custom_2>
                     </h:panelGroup>
-
-                    <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
-
                 </p:panel>
-
-
             </h:panelGroup>
 
 
 
-
-
         </h:form>
+
+
+        <!-- Direct Purchase Configuration Dialog -->
+        <h:form id="directPurchaseConfigForm">
+            <p:dialog id="directPurchaseConfigDialog"
+                      header="Direct Purchase Printer Configuration"
+                      widgetVar="directPurchaseConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="500"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+
+
+
+                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseConfigForm" />
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> Direct Purchase Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="directPurchaseA4Paper"
+                                        value="#{pharmacyRetailConfigController.directPurchaseA4Paper}" />
+                                    <p:outputLabel for="directPurchaseA4Paper" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 paper format for direct purchase bills</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="directPurchaseA4Details"
+                                        value="#{pharmacyRetailConfigController.directPurchaseA4Details}" />
+                                    <p:outputLabel for="directPurchaseA4Details" value="A4 Paper Format with Details" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 format with detailed information display</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="directPurchaseCustom1"
+                                        value="#{pharmacyRetailConfigController.directPurchaseCustom1}" />
+                                    <p:outputLabel for="directPurchaseCustom1" value="Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom paper format 1 with costing details</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="directPurchaseCustom2"
+                                        value="#{pharmacyRetailConfigController.directPurchaseCustom2}" />
+                                    <p:outputLabel for="directPurchaseCustom2" value="Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom paper format 2 with costing details</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="directPurchaseConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyRetailConfigController.saveDirectPurchaseConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('directPurchaseConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p:dialog>
+        </h:form>s
     </ui:define>
 </ui:composition>

@@ -967,35 +967,59 @@
                                                                         rendered="#{pharmacySaleController.paymentMethod eq 'Credit'}" >
                                                                         <div class="my-1" id="credit">
                                                                             <div class="row">
-                                                                                <div class="col-12 d-flex ">
-                                                                                    <p:autoComplete
-                                                                                        id="creditCompany"
-                                                                                        class="w-100 -mx-2"
-                                                                                        inputStyleClass="form-control"
-                                                                                        forceSelection="true"
-                                                                                        value="#{pharmacySaleController.toInstitution}"
-                                                                                        completeMethod="#{institutionController.completeCreditCompany}"
-                                                                                        var="ix"
-                                                                                        minQueryLength="2"
-                                                                                        placeholder="Company (Type at least 4 letters to search)"
-                                                                                        itemLabel="#{ix.name}"
-                                                                                        itemValue="#{ix}"
-                                                                                        size="10"  >
+                                                                                <div class="col-12">
+                                                                                    <div class="d-flex gap-2">
+                                                                                        <p:autoComplete
+                                                                                            id="creditCompany"
+                                                                                            class="w-100 -mx-2"
+                                                                                            inputStyleClass="form-control"
+                                                                                            forceSelection="true"
+                                                                                            value="#{pharmacySaleController.paymentMethodData.credit.institution}"
+                                                                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                                                                            var="ix"
+                                                                                            minQueryLength="2"
+                                                                                            placeholder="Company (Type at least 4 letters to search)"
+                                                                                            itemLabel="#{ix.name}"
+                                                                                            itemValue="#{ix}"
+                                                                                            size="10"  >
 
-                                                                                        <f:ajax
-                                                                                            event="itemSelect"
-                                                                                            listener="#{pharmacySaleController.calTotal()}"
-                                                                                            execute="@this"
-                                                                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
-                                                                                    </p:autoComplete>
-                                                                                    <p:commandLink
-                                                                                        id="btnAddNewCreditCom"
-                                                                                        value="(+)"
-                                                                                        class="mx-3 mt-1"
-                                                                                        title="Add New Credit Company"
-                                                                                        ajax="false"
-                                                                                        action="#{navigationController.navigateToCreditCompany()}"
-                                                                                        actionListener="#{creditCompanyController.prepareAdd()}" />
+                                                                                            <f:ajax
+                                                                                                event="itemSelect"
+                                                                                                listener="#{pharmacySaleController.calTotal()}"
+                                                                                                execute="@this"
+                                                                                                render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
+                                                                                        </p:autoComplete>
+
+                                                                                        <p:inputText
+                                                                                            id="polNo"
+                                                                                            style="width: 100px;"
+                                                                                            value="#{pharmacySaleController.paymentMethodData.credit.referralNo}"
+                                                                                            placeholder="Policy NO" >
+                                                                                        </p:inputText>
+
+                                                                                        <p:inputText
+                                                                                            id="refNo"
+                                                                                            style="width: 100px;"
+                                                                                            value="#{pharmacySaleController.paymentMethodData.credit.referenceNo}"
+                                                                                            placeholder="Reference NO" >
+                                                                                        </p:inputText>
+
+                                                                                        <p:inputText
+                                                                                            id="memo"
+                                                                                            style="width: 300px;"
+                                                                                            value="#{pharmacySaleController.paymentMethodData.credit.comment}"
+                                                                                            placeholder="Memo" >
+                                                                                        </p:inputText>
+
+                                                                                        <p:commandLink
+                                                                                            id="btnAddNewCreditCom"
+                                                                                            value="(+)"
+                                                                                            class="mx-3 mt-1"
+                                                                                            title="Add New Credit Company"
+                                                                                            ajax="false"
+                                                                                            action="#{navigationController.navigateToCreditCompany()}"
+                                                                                            actionListener="#{creditCompanyController.prepareAdd()}" />
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                         </div>

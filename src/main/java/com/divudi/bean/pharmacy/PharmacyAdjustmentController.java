@@ -151,7 +151,7 @@ public class PharmacyAdjustmentController implements Serializable {
     private StockDTO selectedCostRateStockDto;
 
     private boolean printPreview;
-    
+
     // Staff selection properties
     private com.divudi.core.entity.Staff selectedStaff;
     private List<Stock> staffStocks;
@@ -160,13 +160,13 @@ public class PharmacyAdjustmentController implements Serializable {
         return fromDepartment;
     }
 
-    public String navigateToViewReportOnItemviceAdjustments(){
-        if(fromDepartment==null){
+    public String navigateToViewReportOnItemviceAdjustments() {
+        if (fromDepartment == null) {
             fromDepartment = sessionController.getDepartment();
         }
         return "/pharmacy/pharmacy_report_adjustment_bill_item?faces-redirect=true";
     }
-    
+
     public void fillDepartmentAdjustmentByBillItem() {
         billItems = fetchBillItemsForAllAdjustmentTypes();
     }
@@ -242,15 +242,16 @@ public class PharmacyAdjustmentController implements Serializable {
     public List<BillItem> fetchBillItemsForAllAdjustmentTypes() {
         List<BillItem> billItems;
         List<BillType> adjustmentBillTypes = Arrays.asList(
-            BillType.PharmacyAdjustment,
-            BillType.PharmacyAdjustmentDepartmentStock,
-            BillType.PharmacyAdjustmentDepartmentSingleStock,
-            BillType.PharmacyAdjustmentStaffStock,
-            BillType.PharmacyAdjustmentSaleRate,
-            BillType.PharmacyAdjustmentWholeSaleRate,
-            BillType.PharmacyAdjustmentPurchaseRate,
-            BillType.PharmacyAdjustmentCostRate,
-            BillType.PharmacyAdjustmentExpiryDate
+                BillType.PharmacyAdjustment,
+                BillType.PharmacyStockAdjustmentBill,
+                BillType.PharmacyAdjustmentDepartmentStock,
+                BillType.PharmacyAdjustmentDepartmentSingleStock,
+                BillType.PharmacyAdjustmentStaffStock,
+                BillType.PharmacyAdjustmentSaleRate,
+                BillType.PharmacyAdjustmentWholeSaleRate,
+                BillType.PharmacyAdjustmentPurchaseRate,
+                BillType.PharmacyAdjustmentCostRate,
+                BillType.PharmacyAdjustmentExpiryDate
         );
 
         Map m = new HashMap();
@@ -480,7 +481,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         return items;
     }
-    
+
     public List<com.divudi.core.entity.Staff> completeStaff(String qry) {
         List<com.divudi.core.entity.Staff> staffs;
         String sql;
@@ -491,14 +492,14 @@ public class PharmacyAdjustmentController implements Serializable {
         staffs = staffFacade.findByJpql(sql, m, 20);
         return staffs;
     }
-    
+
     public void listStaffStock() {
         if (selectedStaff == null) {
             JsfUtil.addErrorMessage("Please select a staff member first");
             staffStocks = null;
             return;
         }
-        
+
         List<Stock> items;
         String sql;
         Map<String, Object> m = new HashMap<>();
@@ -509,7 +510,7 @@ public class PharmacyAdjustmentController implements Serializable {
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire, i.stock desc";
         items = getStockFacade().findByJpql(sql, m);
         staffStocks = items;
-        
+
         if (staffStocks == null || staffStocks.isEmpty()) {
             JsfUtil.addErrorMessage("No stock found for the selected staff member");
         } else {
@@ -928,7 +929,7 @@ public class PharmacyAdjustmentController implements Serializable {
         // REPURPOSED FIELD: freeQty is temporarily used to store the purchase rate change amount
         // This allows tracking of the adjustment value for audit and display purposes
         ph.setFreeQty(purchaseRateChange); // Store rate change in freeQty field (repurposed)
-        
+
         // Set before and after adjustment values for proper tracking in reports
         ph.setBeforeAdjustmentValue(oldPurchaseRate);
         ph.setAfterAdjustmentValue(newPurchaseRate);
@@ -1233,7 +1234,7 @@ public class PharmacyAdjustmentController implements Serializable {
         // REPURPOSED FIELD: freeQty is temporarily used to store the retail rate change amount
         // This allows tracking of the adjustment value for audit and display purposes
         ph.setFreeQty(retailRateChange); // Store rate change in freeQty field (repurposed)
-        
+
         // Set before and after adjustment values for proper tracking in reports
         ph.setBeforeAdjustmentValue(oldRetailRate);
         ph.setAfterAdjustmentValue(newRetailRate);
