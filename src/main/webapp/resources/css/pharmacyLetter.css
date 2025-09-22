@@ -1,0 +1,155 @@
+/* 
+    Document   : printing
+    Created on : Sep 22, 2025
+    Author     : Pasindu - pwathsara@gmail.com
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root {
+    display: block;
+}
+
+/* Letter size print setup */
+@media print {
+    @page {
+        size: letter portrait;
+    }
+
+    .no-border-table {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .no-border-table .ui-datatable-tablewrapper table {
+        border-collapse: collapse !important;
+        border: none !important;
+    }
+
+    .no-border-table .ui-state-default {
+        border: none !important;
+        background: none !important;
+    }
+
+    .no-border-table td,
+    .no-border-table th {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .no-border-table .ui-datatable-data tr {
+        border: none !important;
+    }
+
+    .no-border-table .ui-datatable-footer,
+    .no-border-table .ui-datatable-header {
+        border: none !important;
+    }
+
+    .shadow, .shadow-sm, .shadow-lg {
+        box-shadow: none !important;
+    }
+}
+
+/* Screen preview for Letter proportions */
+@media screen {
+    .no-border-table {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .no-border-table .ui-datatable-tablewrapper table {
+        border-collapse: collapse !important;
+        border: none !important;
+    }
+
+    .no-border-table .ui-state-default {
+        border: none !important;
+        background: none !important;
+    }
+
+    .no-border-table td,
+    .no-border-table th {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .no-border-table .ui-datatable-data tr {
+        border: none !important;
+    }
+
+    .no-border-table .ui-datatable-footer,
+    .no-border-table .ui-datatable-header {
+        border: none !important;
+    }
+    
+}
+
+/* Text formatting */
+.institutionName {
+    text-align: center !important;
+    font-weight: bold !important;
+    font-size: 120% !important;
+}
+
+.institutionContact {
+    text-align: center !important;
+}
+
+.headingBill {
+    text-align: center !important;
+    font-weight: bold !important;
+    font-size: 120% !important;
+}
+
+.poDetail {
+    font-size: 15px !important;
+    font-family: sans-serif;
+    min-width: 100% !important;
+}
+
+.normalFont div *,
+.normalFont div,
+.normalFont table *,
+.normalFont td {
+    font-family: Verdana !important;
+    font-size: 11px !important;
+    font-weight: normal !important;
+}
+
+.ui-datatable.borderless .ui-datatable-data tr,
+.ui-datatable.borderless .ui-datatable-data-empty tr,
+.ui-datatable.borderless .ui-datatable-data td,
+.ui-datatable.borderless .ui-datatable-data-empty td {
+    border-style: none !important;
+    padding: 1px;
+    border: 1px;
+    overflow: hidden;
+}
+
+.transfer-footer {
+    font-size: 16pt;
+}
+.transfer-footer .ui-outputlabel {
+    font-size: 16pt;
+}
+
+/* Compact table row spacing */
+.compact-table td,
+.compact-table th {
+    padding: 1px 2px !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    vertical-align: middle !important;
+}
+
+.compact-table .ui-datatable-data tr {
+    line-height: 1.1 !important;
+}
+
+.compact-table .ui-datatable-data > tr > td {
+    padding: 1px 2px !important;
+    line-height: 1.1 !important;
+}
