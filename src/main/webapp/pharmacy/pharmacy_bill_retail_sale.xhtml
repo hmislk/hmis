@@ -1356,6 +1356,10 @@
                                     <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                 </div>
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Retail Sale Bill Paper is POS Paper Custom 1',true)}">
+                                <phi:saleBill_Retail_Pos_paper_Custom_1 bill="#{pharmacySaleController.printBill}"/>
+                            </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper(prabodha)',true)}">
                                 <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
