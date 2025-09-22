@@ -135,49 +135,49 @@
 
                                             <p:autoComplete
                                                 accesskey="i"
-                                                rendered="#{not configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Inpatients',true)}"
                                                 id="acStockWithoutTotalStock"
                                                 inputStyleClass="w-100"
                                                 minQueryLength="3"
                                                 maxResults="10"
                                                 class="w-100"
                                                 forceSelection="true"
-                                                value="#{pharmacySaleBhtController.stock}"
-                                                completeMethod="#{pharmacySaleController.completeAvailableStockOptimized}"
+                                                value="#{pharmacySaleBhtController.stockDto}"
+                                                completeMethod="#{pharmacySaleBhtController.completeAvailableStockOptimizedDto}"
+                                                converter="#{pharmacySaleBhtController.stockDtoConverter}"
                                                 var="i"
-                                                itemLabel="#{i.itemBatch.item.name}"
+                                                itemLabel="#{i.itemName}"
                                                 itemValue="#{i}">
-                                                <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                        &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
+                                                        &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
-                                                    headerText="Code" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+                                                    headerText="Code" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Generic" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
+                                                <p:column headerText="Generic" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
                                                 </p:column>
                                                 <p:column
-                                                    headerText="Rate" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
+                                                    headerText="Rate" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column 
-                                                    headerText="Stocks" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.stock}" >
+                                                <p:column
+                                                    headerText="Stocks" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.stockQty}" >
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column 
-                                                    headerText="Expiry" 
-                                                    style="padding: 8px;" 
-                                                    class="w-100" 
-                                                    styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
+                                                <p:column
+                                                    headerText="Expiry"
+                                                    style="padding: 8px;"
+                                                    class="w-100"
+                                                    styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
@@ -197,61 +197,6 @@
 
 
                                             </p:autoComplete>
-                                            <p:autoComplete
-                                                accesskey="i"
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Inpatients',true)}"
-                                                id="acStockWithTotalStock"
-                                                inputStyleClass="w-100"
-                                                minQueryLength="3"
-                                                maxResults="20"
-                                                class="w-100"
-                                                forceSelection="true"
-                                                value="#{pharmacySaleBhtController.stock}"
-                                                completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
-                                                scrollHeight="400"
-                                                var="i"
-                                                itemLabel="#{i.itemBatch.item.name}"
-                                                itemValue="#{i}">
-                                                <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                        &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                    </h:outputText>
-                                                    <h:outputLabel value=" (" ></h:outputLabel>
-                                                    <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
-                                                    <h:outputLabel value=") - " ></h:outputLabel>
-                                                    <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Rate" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.stock}" >
-                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.transItemStockQty}" >
-                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:ajax
-                                                    event="itemSelect"
-                                                    process="acStockWithTotalStock"
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate focusQty txtValue" ></p:ajax>
-                                                <p:ajax
-                                                    event="blur"
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate txtValue"
-                                                    process="acStockWithTotalStock"
-                                                    /> </p:autoComplete>
                                         </h:panelGroup>
 
 
