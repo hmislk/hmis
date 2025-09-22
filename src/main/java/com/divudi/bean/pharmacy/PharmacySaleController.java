@@ -1705,9 +1705,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        String billId = "";
+        String insId = "";
+        String deptId = "";
+        boolean billNumberGenerationStrategyForPharmacyRetailSaleForCashierIsByBillYearTypeAtomicAndLoggedDepartment
+                = configOptionController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Retail Sale For Cashier Is By Year, Bill Type Atomic And Logged Department", false);
+
+        if (billNumberGenerationStrategyForPharmacyRetailSaleForCashierIsByBillYearTypeAtomicAndLoggedDepartment) {
+            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+            insId=billId;
+            deptId=billId;
+        } else {
+            insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+            deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        }
         getPreBill().setInsId(insId);
-        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
