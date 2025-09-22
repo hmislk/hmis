@@ -4063,6 +4063,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyStaffStockAdjustmentReprint();
             case PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT:
                 return navigateToPharmacyExpiryDateAdjustmentReprint();
+            case PHARMACY_STOCK_ADJUSTMENT_BILL:
+                return navigateToPharmacyStockAdjustmentBillReprint();
 
             // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
@@ -4306,6 +4308,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyStaffStockAdjustmentReprint();
             case PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT:
                 return navigateToPharmacyExpiryDateAdjustmentReprint();
+            case PHARMACY_STOCK_ADJUSTMENT_BILL:
+                return navigateToPharmacyStockAdjustmentBillReprint();
 
             // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
@@ -6496,6 +6500,10 @@ public class BillSearch implements Serializable {
 
     public String navigateToPharmacyExpiryDateAdjustmentReprint() {
         return "/pharmacy/adjustments/reprint/pharmacy_expiry_date_adjustment_reprint?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyStockAdjustmentBillReprint() {
+        return "/pharmacy/adjustments/reprint/pharmacy_stock_adjustment_reprint?faces-redirect=true";
     }
 
 }

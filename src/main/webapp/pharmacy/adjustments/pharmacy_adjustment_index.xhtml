@@ -20,6 +20,7 @@
                                     <p:tab title="Adjustments">
                                         <p:panelGrid columns="1">
                                             <p:commandButton 
+                                                id="btnNavigateToStockAdjustment"
                                                 value="Quantity Adjustment" 
                                                 icon="fas fa-boxes" 
                                                 action="/pharmacy/adjustments/pharmacy_adjustment_department?faces-redirect=true" 
@@ -28,12 +29,24 @@
                                                 actionListener="#{pharmacyAdjustmentController.makeNull()}" 
                                                 styleClass="w-100"/>
                                             <p:commandButton value="Single Item Quantity Adjustment" icon="fas fa-box" action="/pharmacy/adjustments/pharmacy_adjustment_department_by_item?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY') and webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
-                                            <p:commandButton value="Staff Stock Adjustment" icon="fas fa-user-check" action="/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
-                                            <p:commandButton value="Purchase Rate Adjustment" icon="fas fa-dollar-sign" action="/pharmacy/adjustments/pharmacy_adjustment_purchase_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentPurchaseRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
-                                            <p:commandButton value="Cost Rate Adjustment" icon="fas fa-calculator" action="/pharmacy/adjustments/pharmacy_adjustment_cost_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentCostRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
-                                            <p:commandButton value="Sale Rate Adjustment" icon="fas fa-tags" action="/pharmacy/adjustments/pharmacy_adjustment_retail_sale_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
-                                            <p:commandButton value="Wholesale Rate Adjustment" icon="fas fa-money-bill-wave" action="/pharmacy/adjustments/pharmacy_adjustment_whole_sale_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentWholeSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
-                                            <p:commandButton value="Expiry Date Adjustment" icon="fas fa-calendar-times" action="/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentExpiryDate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <p:commandButton 
+                                                id="btnNavigateToStaffStockAdjustment"
+                                                value="Staff Stock Adjustment" icon="fas fa-user-check" action="/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <p:commandButton 
+                                                id="btnNavigateToPurchaseRateAdjustment"
+                                                value="Purchase Rate Adjustment" icon="fas fa-dollar-sign" action="/pharmacy/adjustments/pharmacy_adjustment_purchase_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentPurchaseRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <p:commandButton 
+                                                id="btnNavigateToCostRateAdjustment"
+                                                value="Cost Rate Adjustment" icon="fas fa-calculator" action="/pharmacy/adjustments/pharmacy_adjustment_cost_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentCostRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <p:commandButton 
+                                                id="btnNavigateToRetailRateAdjustment"
+                                                value="Sale Rate Adjustment" icon="fas fa-tags" action="/pharmacy/adjustments/pharmacy_adjustment_retail_sale_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <p:commandButton 
+                                                id="btnNavigateToWholesaleAdjustment"
+                                                value="Wholesale Rate Adjustment" icon="fas fa-money-bill-wave" action="/pharmacy/adjustments/pharmacy_adjustment_whole_sale_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentWholeSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <p:commandButton 
+                                                id="btnNavigateToExpiaryAdjustment"
+                                                value="Expiry Date Adjustment" icon="fas fa-calendar-times" action="/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentExpiryDate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
                                         </p:panelGrid>
                                     </p:tab>
                                     <p:tab title="Stock Take">

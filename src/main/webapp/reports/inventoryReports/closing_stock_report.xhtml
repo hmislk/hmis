@@ -11,6 +11,10 @@
         <ui:define name="subcontent">
             <h:form>
                 <p:panel header="#{reportController.reportTemplateFileIndexName}">
+                    <h:panelGroup>
+                        <h:outputText value="This report shows stocks at the end of the selected date. If you want to view the current stock, please use this report instead: "/>
+                        <h:link outcome="/pharmacy/pharmacy_report_department_stock_by_batch_dto" value="Stock Report by Batch" title="Open Stock Report by Batch" />
+                    </h:panelGroup>
                     <h:panelGrid columns="8" class="w-100">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa mr-2"/>

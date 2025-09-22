@@ -227,19 +227,11 @@ public class DealerController implements Serializable {
     }
 
     public void deletedDealorList() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
-
         String sql = "SELECT i FROM Institution i where i.retired=true and i.institutionType =:tp"
                 + " order by i.name";
         m.put("tp", InstitutionType.Dealer);
         dealor = getEjbFacade().findByJpql(sql, m);
-
-
-
     }
 
     private InstitutionFacade getFacade() {
@@ -275,12 +267,20 @@ public class DealerController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.isEmpty()) {
+            if (value == null) {
+                return null;
+            }
+            String v = value.trim();
+            if (v.isEmpty() || v.equalsIgnoreCase("null")) {
                 return null;
             }
             DealerController controller = (DealerController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "dealerController");
-            return controller.getEjbFacade().find(getKey(value));
+            try {
+                return controller.getEjbFacade().find(getKey(v));
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         java.lang.Long getKey(String value) {

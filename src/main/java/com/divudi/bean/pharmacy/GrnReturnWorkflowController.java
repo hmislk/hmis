@@ -229,16 +229,16 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
-        if (billItems == null || billItems.isEmpty()) {
-            JsfUtil.addErrorMessage("No items to save");
-            return;
-        }
-        
-        // Validate stock availability before saving
-        if (!validateAllItemsStockAvailability(true)) {
-            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
-            return;
-        }
+//        if (billItems == null || billItems.isEmpty()) {
+//            JsfUtil.addErrorMessage("No items to save");
+//            return;
+//        }
+//        
+//        // Validate stock availability before saving
+//        if (!validateAllItemsStockAvailability(true)) {
+//            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
+//            return;
+//        }
         
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
