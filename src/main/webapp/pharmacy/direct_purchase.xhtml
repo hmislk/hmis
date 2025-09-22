@@ -842,19 +842,20 @@
 
 
         <!-- Direct Purchase Configuration Dialog -->
-        <p:dialog id="directPurchaseConfigDialog"
-                  header="Direct Purchase Printer Configuration"
-                  widgetVar="directPurchaseConfigDialog"
-                  modal="true"
-                  width="600"
-                  height="500"
-                  resizable="true"
-                  maximizable="true"
-                  closeOnEscape="true">
+        <h:form id="directPurchaseConfigForm">
+            <p:dialog id="directPurchaseConfigDialog"
+                      header="Direct Purchase Printer Configuration"
+                      widgetVar="directPurchaseConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="500"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
 
 
 
-            <h:form id="directPurchaseConfigForm">
+
                 <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseConfigForm" />
                 <div class="row">
                     <div class="col-12">
@@ -921,7 +922,7 @@
                         </div>
                     </div>
                 </div>
-            </h:form>
-        </p:dialog>
+            </p:dialog>
+        </h:form>s
     </ui:define>
 </ui:composition>
