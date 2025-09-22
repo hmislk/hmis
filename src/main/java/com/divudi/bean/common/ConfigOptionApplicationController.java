@@ -713,6 +713,8 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private void loadSecurityConfigurationDefaults() {
         getBooleanValueByKey("prevent_password_reuse", false);
+        // Admin-triggered JPA L2 cache clear is disabled by default
+        getBooleanValueByKey("Allow manual JPA cache clear", false);
     }
 
     private void loadPharmacyAnalyticsConfigurationDefaults() {

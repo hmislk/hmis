@@ -4905,18 +4905,17 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyAdjustmentBillItemTable() {
-        Date startTime = new Date();
-        String sql;
+        String jpql;
         Map<String, Object> m = new HashMap<>();
 
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
         m.put("ins", getSessionController().getInstitution());
-        m.put("class", PreBill.class);
 
         // Set bill type atomics for pharmacy adjustments
         List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
                 BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
@@ -4925,30 +4924,30 @@ public class SearchController implements Serializable {
         );
         m.put("billTypeAtomics", billTypeAtomics);
 
-        sql = "select bi from BillItem bi"
-                + " where type(bi.bill) = :class "
+        jpql = "select bi from BillItem bi"
+                + " where (bi.bill.retired is null or bi.bill.retired=false) "
                 + " and bi.bill.institution = :ins"
                 + " and bi.bill.billTypeAtomic in :billTypeAtomics"
-                + " and bi.createdAt between :fromDate and :toDate ";
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
-            sql += " and (bi.bill.deptId) like :billNo ";
+            jpql += " and (bi.bill.deptId) like :billNo ";
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
-            sql += " and (bi.item.name) like :itm ";
+            jpql += " and (bi.item.name) like :itm ";
             m.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().isEmpty()) {
-            sql += " and (bi.item.code) like :cde ";
+            jpql += " and (bi.item.code) like :cde ";
             m.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        sql += " order by bi.id desc";
+        jpql += " order by bi.id desc";
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -19252,6 +19251,8 @@ public class SearchController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
+        } else {
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }

@@ -216,6 +216,8 @@ public class DataAdministrationController implements Serializable {
     InstitutionController institutionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.service.CacheAdminService cacheAdminService;
 
     @EJB
     ItemFacade itemFacade;
@@ -2627,6 +2629,17 @@ public class DataAdministrationController implements Serializable {
 
     public String navigateToAdminDataAdministration() {
         return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public void clearAllJpaCaches() {
+        try {
+            if (cacheAdminService != null) {
+                cacheAdminService.clearAll();
+            }
+            JsfUtil.addSuccessMessage("Cleared JPA shared caches.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to clear caches: " + e.getMessage());
+        }
     }
 
     public String getErrors() {

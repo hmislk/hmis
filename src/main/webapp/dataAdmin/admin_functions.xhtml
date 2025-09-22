@@ -34,6 +34,18 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-12 col-md-4 col-lg-3 p-1">
+                            <p:commandButton
+                                value="Clear JPA Shared Cache"
+                                icon="pi pi-refresh"
+                                class="w-100 ui-button-warning"
+                                ajax="false"
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                action="#{dataAdministrationController.clearAllJpaCaches}" />
+                        </div>
+                    </div>
+
                     <p:accordionPanel >
                     <p:tab 
                         id="tabStaff"
