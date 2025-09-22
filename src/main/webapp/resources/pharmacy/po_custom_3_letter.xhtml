@@ -43,57 +43,6 @@
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.Cancelled eq true}" style="font-size: 18px;"/>
             </div>
 
-            <!--            <div class="row">
-                             Left Column 
-                            <div class="col-6">
-                                <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
-                                    <h:outputLabel value="Supplier Name" />
-                                    <h:outputLabel value=":" />
-                                    <h:panelGroup>
-                                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" />
-                                        <h:outputLabel value=" (" rendered="#{cc.attrs.bill.toInstitution.code ne null}" />
-                                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.code}" rendered="#{cc.attrs.bill.toInstitution.code ne null}" />
-                                        <h:outputLabel value=")" rendered="#{cc.attrs.bill.toInstitution.code ne null}" />
-                                    </h:panelGroup>
-            
-                                    <h:outputLabel value="P.O. No" />
-                                    <h:outputLabel value=":" />
-                                    <h:outputLabel value="#{cc.attrs.bill.deptId}" />
-            
-                                    <h:outputLabel value="Payment Method" />
-                                    <h:outputLabel value=":" />
-                                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />
-            
-                                    <h:outputLabel value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
-                                    <h:outputLabel value=":" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
-                                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
-                                </h:panelGrid>
-                            </div>
-            
-                             Right Column 
-                            <div class="col-6">
-                                <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
-                                    
-                                    <h:outputLabel value="" />
-                                    <h:outputLabel value="" />
-                                    <h:outputLabel value="" />
-                                    
-                                    <h:outputLabel value="Order Department" />
-                                    <h:outputLabel value=":" />
-                                    <h:outputLabel value="#{cc.attrs.bill.department.name}" />
-            
-                                    <h:outputLabel value="P.O. Date/Time" />
-                                    <h:outputLabel value=":" />
-                                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/YYYY HH:mm"/>
-                                    </h:outputLabel>
-            
-                                    <h:outputLabel value="Consignment" />
-                                    <h:outputLabel value=":" />
-                                    <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
-                                </h:panelGrid>
-                            </div>
-                        </div>-->
 
             <div>
                 <table class="table table-borderless">
@@ -129,7 +78,7 @@
                         <td>:</td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
-                                <f:convertDateTime pattern="dd/MMM/YYYY HH:mm" />
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -138,7 +87,7 @@
                         <td>Payment Method</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
-                        
+
                         <td>
                             <h:outputLabel value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
                         </td>
@@ -170,7 +119,7 @@
                     </thead>
                     <tbody>
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
-                            <h:panelGroup rendered="#{not bip.retired}" >
+                            <ui:fragment rendered="#{not bip.retired}">
                                 <tr>
                                     <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
                                     <td style="text-align: left; min-width: 400px; border: 1px solid black;">
@@ -203,7 +152,7 @@
                                         </h:outputText>
                                     </td>
                                 </tr>
-                            </h:panelGroup>
+                            </ui:fragment>
                         </ui:repeat>
                     </tbody>
                     <tfoot>
@@ -230,7 +179,7 @@
                 <div class="col-5" style="text-align: right;">
                     <h:outputLabel style="text-align: right" value="Prepared At : &nbsp;"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
-                        <f:convertDateTime pattern="dd/MMM/YYYY HH:mm"/>
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                     </h:outputLabel>
                 </div>
             </div>
@@ -244,31 +193,21 @@
                 <div class="col-5" style="text-align: right;">
                     <h:outputLabel style="text-align: right" value="Approved At : &nbsp;"/>
                     <h:outputLabel value="#{cc.attrs.bill.approveAt}">
-                        <f:convertDateTime pattern="dd/MMM/YYYY HH:mm"/>
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                     </h:outputLabel>
                 </div>
             </div>
 
             <div>
-                <p>
-                    <h4 style="color: #000000;">
-                        Important Note :
-                    </h4>
-
+                <div>
+                    <h:outputText value="Important Note :" style="display:block;color:#000;font-weight:600;font-size:1.25rem;"/>
                     <ol type="1">
                         <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
                         <li>If unable to supply above goods within above period, 10% penalty will be claimed on the invoice value.</li>
                     </ol>
-
-                    <h5 style="color: #000000;">
-                        Goods receiving time - Monday to Friday 9.00 A.M to 3.30 P.M
-                    </h5>
-
-                    <h6>
-                        Comment :
-                    </h6>
-
-                </p>
+                    <h:outputText value="Goods receiving time - Monday to Friday 9.00 A.M. to 3.30 P.M." style="display:block;color:#000;font-size: 20px; font-weight: 500;"/>
+                    <h:outputText value="Comment :" style="display:block;font-weight:600;"/>
+                </div>
             </div>
 
             <div class="row">
@@ -280,7 +219,7 @@
                 <div class="col-5" style="text-align: right;" >
                     <h:outputLabel style="text-align: right" value="Printed At : &nbsp;"/>
                     <h:outputLabel value="#{sessionController.currentDate}" >
-                        <f:convertDateTime pattern="dd/MMM/YYYY HH:mm"/>
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                     </h:outputLabel>
                 </div>
             </div>
