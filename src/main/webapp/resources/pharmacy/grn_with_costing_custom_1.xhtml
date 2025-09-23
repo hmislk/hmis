@@ -9,6 +9,8 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="duplicate" />
+        
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -26,11 +28,11 @@
                 <div class="d-flex justify-content-center gap-2">
                     <h:outputLabel value="Tel : "/>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{cc.attrs.bill.department.telephone2 ne null}"/>
+                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{not empty cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
-                    <h:outputLabel value="Fax :"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
+                    <h:outputLabel value="Fax :" rendered="#{not empty cc.attrs.bill.department.fax}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
                     <h:outputLabel value="Email : "/>
@@ -40,32 +42,42 @@
 
             <div class="headingBill">
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
+                <h:outputLabel value="**Reprint**"  rendered="#{cc.attrs.duplicate eq true}" />
+                
             </div>
 
             <div style="font-size: 15px;" class="row justify-content-center" >
                 <div class="row">
-                    <h:outputLabel value="P.O.No " class="col-2"/>
+                    <h:outputLabel value="P.O. No " class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" class="col-4"/>
-                       <h:outputLabel value="P.O.Date" class="col-2"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" class="col-4">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MM/yyyy HH:mm" />
-                    </h:outputLabel>
-                 
+                    <h:outputLabel value="P.O. Date" class="col-2"/>
+                    <h:outputText value="#{cc.attrs.bill.referenceBill.createdAt}" class="col-4">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" ></f:convertDateTime>
+                    </h:outputText>
+
                 </div>
 
                 <div class="row">
-                       <h:outputLabel value="G.R.N.No " class="col-2"/>
+                    <h:outputLabel value="G.R.N. No " class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.deptId}" class="col-4"/>
-                    <h:outputLabel value="G.R.N.Date" class="col-2"/>
+                    <h:outputLabel value="G.R.N. Date" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-4">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MM/yyyy HH:mm" />
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" ></f:convertDateTime>
                     </h:outputLabel>
                 </div>
                 <div class="row">
                     <h:outputLabel value="Supplier" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="col-4"/>
-                    <h:outputLabel value="Invoice No" class="col-2"/>
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="col-4"/>
+                    <h:outputLabel value="Inv. No/Date" class="col-2"/>
+                    <div class="col-1">
+                        <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
+                    </div>
+                    <div class="col-2">
+                        <h:outputLabel value="#{cc.attrs.bill.invoiceDate}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </div>
+
                 </div>
 
                 <div class="row">
@@ -73,16 +85,14 @@
                     <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" class="col-4"/>
                     <h:outputLabel value="Location" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.department.name}" class="col-4"/>
-                    
+
                 </div>
 
                 <div class="row">
-                    <h:outputLabel value="Payment Method" class="col-2"/>
+                    <h:outputLabel value="Payment Mode" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="col-4"/>   
-                </div>
-                <div class="row">
-                    <h:outputLabel value="Crd. Duration" class="col-3" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-3" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="Crd. Duration" class="col-2" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-4" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
                 </div>
 
             </div>
@@ -344,27 +354,48 @@
                 </h:panelGroup>
             </div>
 
-            <div class="preparedBy mt-3">
-                <h:outputLabel 
-                    value="Prepared By :&nbsp;#{cc.attrs.bill.creater.name}"
-                    style="text-align: right!important;"/>&nbsp;
-                <h:outputLabel value="Prepared At :" style="text-align: right!important;">
-                </h:outputLabel>
-                <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: right!important;">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"></f:convertDateTime>
-                </h:outputLabel>
+            <div style="display: flex; flex-direction: column; width: 100%; font-size: 15px; margin-top: 7px;">
 
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <div>
+                        <h:outputLabel value="Prepared By &nbsp;&nbsp; : &nbsp;" />
+                        <h:outputLabel value="#{cc.attrs.bill.creater.name}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="Prepared At : &nbsp;" />
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                        </h:outputLabel>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <div>
+                        <h:outputLabel value="Printed By &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : &nbsp;" />
+                        <h:outputLabel value="#{sessionController.loggedUser.name}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="Printed At : &nbsp;" />
+                        <h:outputLabel value="#{sessionController.currentDate}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                        </h:outputLabel>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <div>
+                        <h:outputLabel value="Authorized By : &nbsp;" />
+                        <h:outputLabel value="#{cc.attrs.bill.approveUser.name}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="Authorized At : &nbsp;" />
+                        <h:outputLabel value="#{cc.attrs.bill.approveAt}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                        </h:outputLabel>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-5">
-                <h:outputLabel value="Printed By &nbsp;&nbsp;:&nbsp;#{sessionController.loggedUser.name}" style="text-align: right!important;"/>&nbsp;&nbsp;
-                <h:outputLabel value="Printed At : &nbsp;" style="text-align: right!important;"/>
-                <h:outputLabel value="#{sessionController.currentDate}" style="text-align: right!important;">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
-                </h:outputLabel>&nbsp;<br/>
-                <h:outputLabel value="Authorized By :#{cc.attrs.bill.approveUser.name}"/>
-                
-            </div>
             <div class="row my-5">
                 <div class="col-6 text-center">
                     <h:outputLabel value="......................................................................"/><br></br>

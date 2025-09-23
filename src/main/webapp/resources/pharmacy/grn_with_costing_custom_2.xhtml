@@ -9,6 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="duplicate" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -40,6 +41,7 @@
 
             <div class="headingBill">
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
+                <h:outputLabel value="**Reprint**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 
             <div style="font-size: 15px;" class="row justify-content-center" >
