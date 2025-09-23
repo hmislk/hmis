@@ -33,7 +33,11 @@
                         </p:autoComplete>
 
                         <h:outputLabel value="Request To Department"></h:outputLabel>
-                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}" />
+                        <p:autoComplete value="#{searchController.searchKeyword.toDepartment}"
+                                        completeMethod="#{departmentController.completeDept}" var="dept"
+                                        itemValue="#{dept}" itemLabel="#{dept.name}"
+                                        forceSelection="true" rendered="true">
+                        </p:autoComplete>
                         <h:outputLabel value="Staff "/>
                         <p:inputText autocomplete="off" value="#{searchController.searchKeyword.staffName}"/>
                     </h:panelGrid>

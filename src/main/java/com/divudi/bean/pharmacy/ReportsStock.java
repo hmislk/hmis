@@ -9,7 +9,6 @@ import com.divudi.bean.common.ControllerWithReportFilters;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
-import com.divudi.core.data.dto.StockReportByItemDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -19,7 +18,6 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.hr.ReportKeyWord;
-import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
@@ -85,7 +83,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private List<ReportViewType> reportViewTypes;
     private Category category;
     List<Stock> stocks;
-    List<StockDTO> stockDtos;
     double stockSaleValue;
     double stockPurchaseValue;
     double stockCostValue;
@@ -163,10 +160,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
     }
-    public String navigateToPharmacyReportDepartmentStockByItemDTO() {
-        pharmacyStockRows = new ArrayList<>();
-        return "/pharmacy/pharmacy_report_department_stock_by_item_DTO?faces-redirect=true";
-    }
 
     public String navigateToPharmacyReportDepartmentStockByItemOrderByVmp() {
         pharmacyStockRows = new ArrayList<>();
@@ -186,11 +179,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     public String navigateToStockReportByBatchForExport() {
         stocks = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_batch_for_export?faces-redirect=true";
-    }
-
-    public String navigateToStockReportByBatchDto() {
-        stockDtos = new ArrayList<>();
-        return "/pharmacy/pharmacy_report_department_stock_by_batch_dto?faces-redirect=true";
     }
 
     public String navigateToPharmacyStockOverviewReport() {
@@ -244,67 +232,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                     })
                     .sum();
             Date afterCal = new Date();
-        }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
-    }
-
-    public void fillDepartmentStockDtos() {
-        List<DepartmentType> availableDepartmentTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
-        reportTimerController.trackReportExecution(() -> {
-            Map<String, Object> m = new HashMap<>();
-            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
-            jpql.append("s.id, ");
-            jpql.append("s.itemBatch.item.category.name, ");
-            jpql.append("s.itemBatch.item.name, ");
-            jpql.append("s.itemBatch.item.departmentType, ");
-            jpql.append("s.itemBatch.item.code, ");
-            jpql.append("amp.vmp.name, ");
-            jpql.append("s.itemBatch.dateOfExpire, ");
-            jpql.append("s.itemBatch.batchNo, ");
-            jpql.append("s.stock, ");
-            jpql.append("s.itemBatch.purcahseRate, ");
-            jpql.append("s.itemBatch.costRate, ");
-            jpql.append("s.itemBatch.retailsaleRate) ");
-            jpql.append("from Stock s join TREAT(s.itemBatch.item as Amp) amp where s.stock > 0");
-            jpql.append(" and s.itemBatch.item.departmentType in :dts");
-            m.put("dts", availableDepartmentTypes);
-
-            if (department != null) {
-                jpql.append(" and s.department=:d");
-                m.put("d", department);
-            } else if (site != null) {
-                jpql.append(" and s.department.site=:site");
-                m.put("site", site);
-            } else if (institution != null) {
-                jpql.append(" and s.department.institution=:ins");
-                m.put("ins", institution);
-            }
-
-            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
-            stockDtos.sort(Comparator.comparing(StockDTO::getItemName, String.CASE_INSENSITIVE_ORDER));
-
-            stockPurchaseValue = stockDtos.stream()
-                    .mapToDouble(s -> {
-                        Double pr = s.getPurchaseRate();
-                        Double qty = s.getStockQty();
-                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
-                    })
-                    .sum();
-
-            stockSaleValue = stockDtos.stream()
-                    .mapToDouble(s -> {
-                        Double rr = s.getRetailRate();
-                        Double qty = s.getStockQty();
-                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
-                    })
-                    .sum();
-
-            stockCostValue = stockDtos.stream()
-                    .mapToDouble(s -> {
-                        Double cr = s.getCostRate();
-                        Double qty = s.getStockQty();
-                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
-                    })
-                    .sum();
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
@@ -655,7 +582,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             }
             Map m = new HashMap();
             String sql;
-            sql = "select new com.divudi.core.data.dto.StockReportByItemDTO"
+            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
                     + "(s.itemBatch.item.code, "
                     + "s.itemBatch.item.name, "
                     + "sum(s.stock), "
@@ -666,26 +593,16 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                     + "order by s.itemBatch.item.name";
             m.put("d", department);
             m.put("z", 0.0);
-            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(sql, m);
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
-            for (StockReportByItemDTO r : lsts) {
+            for (PharmacyStockRow r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
 
             }
-            stockReportByItemDTOS = lsts;
+            pharmacyStockRows = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
-    }
-
-    private List<StockReportByItemDTO> stockReportByItemDTOS;
-
-    public List<StockReportByItemDTO> getStockReportByItemDTOS() {
-        return stockReportByItemDTOS;
-    }
-
-    public void setStockReportByItemDTOS(List<StockReportByItemDTO> stockReportByItemDTOS) {
-        this.stockReportByItemDTOS = stockReportByItemDTOS;
     }
 
     public void fillDepartmentZeroItemStocks() {
@@ -1537,14 +1454,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         this.stocks = stocks;
     }
 
-    public List<StockDTO> getStockDtos() {
-        return stockDtos;
-    }
-
-    public void setStockDtos(List<StockDTO> stockDtos) {
-        this.stockDtos = stockDtos;
-    }
-
     public StockFacade getStockFacade() {
         return stockFacade;
     }
@@ -1865,13 +1774,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void prepareForPrint() {
         paginator = false;
-        if (stocks != null && !stocks.isEmpty()) {
-            rows = stocks.size();
-        } else if (stockDtos != null && !stockDtos.isEmpty()) {
-            rows = stockDtos.size();
-        } else {
-            rows = 0;
-        }
+        rows = getStocks().size();
     }
 
     public void prepareForView() {

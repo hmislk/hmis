@@ -280,10 +280,10 @@ public class BillItemFinanceDetails implements Serializable {
 //        cloned.freeValueAtRetailRate = this.freeValueAtRetailRate;
 //        cloned.freeValueAtPurchaseRate = this.freeValueAtPurchaseRate;
 //        cloned.freeValueAtWholesaleRate = this.freeValueAtWholesaleRate;
-        cloned.valueAtRetailRate = this.valueAtRetailRate;
+//        cloned.valueAtRetailRate = this.valueAtRetailRate;
 //        cloned.valueAtWholesaleRate = this.valueAtWholesaleRate;
-        cloned.valueAtPurchaseRate = this.valueAtPurchaseRate;
-        cloned.valueAtCostRate = this.valueAtCostRate;
+//        cloned.valueAtPurchaseRate = this.valueAtPurchaseRate;
+//        cloned.valueAtCostRate = this.valueAtCostRate;
         // ------------------ RETURN QUANTITIES ------------------
         cloned.returnQuantity = this.returnQuantity;
         cloned.returnFreeQuantity = this.returnFreeQuantity;

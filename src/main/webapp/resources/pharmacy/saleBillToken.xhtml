@@ -106,6 +106,21 @@
                         </tr>
                     </h:panelGroup>
 
+
+
+                    <!--                    <tr>
+                                            <td style="width: 30% ;text-align: right;" >
+                                                <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
+                                            </td>
+                                            <td>:</td>
+                                            <td style="width: 30%;" >
+                                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
+                                                </h:outputLabel>
+                                            </td>
+                    
+                                            <td style="width: 30%" ></td>
+                                        </tr>-->
+
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 30% ;text-align: right;" >
@@ -134,6 +149,10 @@
 
             <div class="footer">
                 THANK YOU !
+<!--                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
+                    <br/>
+                </h:panelGroup>
+                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>-->
             </div>
 
         </div>

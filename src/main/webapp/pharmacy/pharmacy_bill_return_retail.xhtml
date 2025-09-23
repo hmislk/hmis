@@ -13,15 +13,7 @@
             <h:panelGroup rendered="#{!saleReturnController.printPreview}"  >
                 <p:panel class="w-100">
                     <f:facet name="header" >
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
-                            <p:commandButton 
-                                ajax="false"
-                                value="Back to Reprint" 
-                                class="ui-button-secondary"
-                                icon="fa fa-arrow-left"
-                                action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />
-                        </div>
+                        <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
                     </f:facet>
 
                     <div class="row" >
@@ -221,15 +213,12 @@
 
                 </f:facet>
                 <div>
-                    <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
-                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                            <f:selectItem itemLabel="Please Select Paper Type" />
-                            <f:selectItems value="#{enumController.paperTypes}" />
-                        </p:selectOneMenu>
-                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
-                    </h:panelGroup>
-                    <h:inputHidden value="#{sessionController.departmentPreference.pharmacyBillPaperType}" rendered="#{!webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"/>
+                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                        <f:selectItem itemLabel="Please Select Paper Type" />
+                        <f:selectItems value="#{enumController.paperTypes}" />
+                    </p:selectOneMenu>
+                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                 </div>
 
                 <h:panelGroup   id="gpBillPreview"  > 

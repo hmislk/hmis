@@ -43,8 +43,8 @@
 
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
-                                <h:outputLabel rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" value="Token Number"/>
-                                <p:inputText autocomplete="off" class="w-100" rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" value="#{searchController.searchKeyword.tokenNumber}" />
+                                <h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" value="Token Number"/>
+                                <p:inputText autocomplete="off" class="w-100" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" value="#{searchController.searchKeyword.tokenNumber}" />
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
                                 <h:outputLabel value="Total"/>
@@ -64,7 +64,7 @@
                                     class="ui-button-success w-100 mt-3"
                                     icon="fas fa-search"
                                     ajax="false"
-                                    rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Normal Bills"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}"/>
 
@@ -73,7 +73,7 @@
                                     class="ui-button-success w-100 mt-3"
                                     icon="fas fa-search"
                                     ajax="false"
-                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Token Bills"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}">
                                 </p:commandButton>
@@ -81,7 +81,7 @@
                                 <p:commandButton
                                     ajax="false"
                                     class=" ui-button-warning w-100 my-1"
-                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     icon="fas fa-search"
                                     value="Search Paid Only Tokens"
                                     action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(true)}"/>
@@ -89,7 +89,7 @@
                                 <p:commandButton
                                     ajax="false"
                                     class=" ui-button-warning w-100 my-1"
-                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     icon="fas fa-search"
                                     value="Search Not Paid Tokens"
                                     action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(false)}"/>
@@ -97,7 +97,7 @@
                                 <p:commandButton
                                     ajax="false"
                                     class=" ui-button-warning w-100 my-1"
-                                    rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     icon="fas fa-search"
                                     value="Search Not Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierNotPaid()}"/>
@@ -105,7 +105,7 @@
                                     ajax="false"
                                     class=" ui-button-warning w-100"
                                     icon="fas fa-search"
-                                    rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
@@ -114,7 +114,7 @@
                                     ajax="false"            
                                     class="ui-button-secondary w-100 my-4"
                                     icon="fa-solid fa-desktop"
-                                    rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value=" View In Display"
                                     action="/token/pharmacy_tokens_called_sale_for_cashier?faces-redirect=true"
                                     actionListener="#{tokenController.fillSaleForCashierCalledBillsTokens()}"
@@ -190,7 +190,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column width="8em" headerText="Token Number" rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                    <p:column width="8em" headerText="Token Number" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                         <p:tag class="px-3" style="font-size: 15px" value="#{pharmacyPreSettleController.findTokenFromBill(bill).tokenNumber}" severity="success"></p:tag>                                        
 
                                     </p:column>
@@ -203,7 +203,7 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Accept" width="10%" rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                    <p:column headerText="Accept" width="10%" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                         <p:commandButton
                                             ajax="false"
                                             value="Accept Payment"
@@ -212,7 +212,7 @@
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
+                                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
 
                                         <div class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
@@ -327,13 +327,11 @@
                                             </p:column>
                                             <p:column width="15%">
                                                 <p:commandButton
-                                                    id="btnViewPaymentBill"
                                                     ajax="false"
                                                     value="View Payment Bill"
-                                                    action="#{billSearch.navigateToViewPharmacySettledPreBill()}"
-                                                    disabled="#{bill.referenceBill eq null}"
-                                                    rendered="#{webUserController.hasPrivilege('PharmacySaleReprint')}">
-                                                    <f:setPropertyActionListener target="#{billSearch.bill}" value="#{rb}" />
+                                                    action="pharmacy_reprint_bill_sale_cashier?faces-redirect=true"
+                                                    disabled="#{bill.referenceBill eq null}">
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>
                                         </p:dataTable>

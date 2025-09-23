@@ -45,7 +45,7 @@
                                 value="Fill" 
                                 icon="fa-solid fa-fill"
                                 class="ui-button-warning"
-                                action="#{reportsTransfer.fillDisposalIssueBillItemDtos}" />
+                                action="#{reportsTransfer.fillItemCounts}" />
                             <p:commandButton 
                                 value="Excel"
                                 ajax="false"
@@ -64,7 +64,7 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder normalFont">
-                            <p:dataTable id="tbl"  value="#{reportsTransfer.disposalIssueBillItemDtos}"
+                            <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"
                                          stickyHeader="true"
                                          var="i">
                                 <f:facet name="header">
@@ -89,19 +89,19 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Item" />
                                     </f:facet>
-                                    <p:outputLabel value="#{i.itemName}" />
+                                    <p:outputLabel value="#{i.itemBatch.item.name}" />
                                 </p:column>
                                 <p:column headerText="Batch No">
                                     <f:facet name="header">
                                         <p:outputLabel value="Batch No" />
                                     </f:facet>
-                                    <p:outputLabel value="#{i.batchNo}" />
+                                    <p:outputLabel value="#{i.itemBatch.batchNo}" />
                                 </p:column>
                                 <p:column headerText="Purchase Rate" style="text-align: right;">
                                     <f:facet name="header">
                                         <p:outputLabel value="Purchase Rate" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.purchaseRate}">
+                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}">
                                         <f:convertNumber  pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -109,7 +109,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Retail Rate" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.retailRate}">
+                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
                                         <f:convertNumber  pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -117,13 +117,13 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Count" />
                                     </f:facet>
-                                    <p:outputLabel value="#{i.qty}" />
+                                    <p:outputLabel value="#{i.count}" />
                                 </p:column>   
                                 <p:column headerText="Gross Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <p:outputLabel value="Gross Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.billTotal}">
+                                    <h:outputLabel value="#{i.gross}">
                                         <f:convertNumber  pattern="#0.00"/>
                                     </h:outputLabel>  
                                     <f:facet name="footer">
@@ -136,7 +136,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Margin Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.marginValue}">
+                                    <h:outputLabel value="#{i.margin}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel> 
                                     <f:facet name="footer">
@@ -149,7 +149,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.billNetTotal}">
+                                    <h:outputLabel value="#{i.net}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">

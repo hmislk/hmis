@@ -123,8 +123,7 @@
                         </h:outputLabel>
                     </p:column>
                     
-                    <p:column style="text-align: right;"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
                         </f:facet>
@@ -137,21 +136,19 @@
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.qty}"/>
+                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
                     </p:column>                    
 
-                    <p:column style="text-align: right;"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Gross Price"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossTotal}">
+                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:columnGroup type="footer"
-                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                    <p:columnGroup type="footer">
                         <p:row>
                             <p:column colspan="6">
                                 <f:facet name="footer">

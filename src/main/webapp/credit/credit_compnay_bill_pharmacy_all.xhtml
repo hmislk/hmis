@@ -22,7 +22,7 @@
                                     value="Settle" 
                                     action="#{cashRecieveBillController.settleBillPharmacy()}"
                                     ajax="false"  
-                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
                                     class="ui-button-success"
                                     icon="fa fa-check">
                                 </p:commandButton>
@@ -45,8 +45,8 @@
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
                                     <h:outputText value="Payment" class="mx-4"></h:outputText>
                                 </f:facet>
-
-                                <div class="row my-2 d-flex align-items-center">
+                                
+                                  <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Select Credit Company" />      
                                     </div>
@@ -70,7 +70,7 @@
                                         </p:autoComplete> 
                                     </div>
                                 </div>
-
+                                
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -84,7 +84,7 @@
                                 </div>
 
                                 <div class="row my-2">
-
+                                    
                                     <div class="col-md-12">
                                         <div>
                                             <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
@@ -102,14 +102,14 @@
                                     </div>
                                 </div>
 
-                                <!--                                <div class="row my-2 d-flex align-items-center">
-                                                                    <div class="col-md-2">
-                                                                        <p:outputLabel value="Comment" />      
-                                                                    </div>
-                                                                    <div class="col-md-10">
-                                                                        <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
-                                                                    </div>
-                                                                </div>-->
+<!--                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-2">
+                                        <p:outputLabel value="Comment" />      
+                                    </div>
+                                    <div class="col-md-10">
+                                        <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
+                                    </div>
+                                </div>-->
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
@@ -216,21 +216,7 @@
                         icon="fa fa-plus"
                         class="ui-button-warning">
                     </p:commandButton>
-                    <p:commandButton value="Print"
-                                     icon="pi pi-print"
-                                     styleClass="ui-button-info"
-                                     ajax="false">
-                        <p:printer target="gpBillPreview"/>
-                    </p:commandButton>
-
-                    <h:panelGroup id="gpBillPreview" >
-
-
-                        <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
-
-
-                    </h:panelGroup>
-
+                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
 
             </h:form>

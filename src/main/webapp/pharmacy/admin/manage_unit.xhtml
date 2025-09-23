@@ -54,11 +54,7 @@
                             </div>
                             <div class="col-md-7">
                                 <p:panel header="Unit Details">
-                                    <p:panelGrid 
-                                        columns="2" 
-                                        id="gpDetail" 
-                                        class="w-100"
-                                        layout="tabular">
+                                    <h:panelGrid columns="2" id="gpDetail" class="w-100">
                                         <p:outputLabel value="Name:" />
                                         <p:inputText value="#{measurementUnitController.current.name}" />
 
@@ -93,7 +89,7 @@
 
                                         <p:outputLabel value="Frequency in Hours:" />
                                         <p:inputNumber value="#{measurementUnitController.current.frequencyInHours}" />
-                                    </p:panelGrid>
+                                    </h:panelGrid>
 
                                     <p:commandButton value="Save" action="#{measurementUnitController.saveSelected()}" class=" m-1 ui-button-warning w-25"
                                                      icon="fas fa-save"

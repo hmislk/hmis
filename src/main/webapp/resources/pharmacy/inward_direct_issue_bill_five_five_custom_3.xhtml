@@ -38,7 +38,7 @@
 
                 <!-- Patient and Bill Information Table -->
                 <table class="info-table">
-
+                    
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px;">Name </td>
@@ -47,28 +47,28 @@
                             </td>
                         </tr>
                     </h:panelGroup>
-
+                    
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px;">Age/Sex </td>
                             <td style="padding: 2px;" colspan="5" class="d-flex gap-2">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
-
+                    
                     <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
-                        <tr>
-                            <td  style="padding: 2px;">BHT</td>
-                            <td  style="padding: 2px;">
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                            </td>
-                            <td style="padding: 2px;" class="spacer"></td>
-                            <td style="padding: 2px;">Room No</td>
-                            <td style="padding: 2px;">
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" ></h:outputLabel>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td  style="padding: 2px;">BHT</td>
+                        <td  style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" ></h:outputLabel>
+                        </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Room No</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" ></h:outputLabel>
+                        </td>
+                    </tr>
                     </h:panelGroup>
 
                     <tr>
@@ -86,7 +86,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-
+                    
                     <tr>
                         <td style="padding: 2px;">Bill No</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
@@ -121,16 +121,12 @@
                                     </h:outputLabel>
                                 </td>
                                 <td  style="text-align: right">
-                                    <h:outputLabel 
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
-                                        value="#{item.netRate}">
+                                    <h:outputLabel value="#{item.netRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right">
-                                    <h:outputLabel 
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
-                                        value="#{item.netValue}">
+                                    <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -147,9 +143,7 @@
                     <tr>
                         <td >Total:</td>
                         <td style="text-align: right;">
-                            <h:outputLabel 
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
-                                value="#{cc.attrs.bill.netTotal}">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

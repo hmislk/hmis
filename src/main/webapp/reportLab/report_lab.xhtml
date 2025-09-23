@@ -13,110 +13,63 @@
             <ui:define name="content">
                 <p:panel header="Lab Report">
                     <div class="row">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <h:form>
                                 <p:accordionPanel activeIndex="#{commonReport.manageLabReportIndex}">
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title=" Lab Investigation With Credit" >
-                                        <div class="d-grid gap-2">
-                                            
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                styleClass="ui-button-success"
-                                                value="Investigation Month End Detail" 
-                                                action="report_lab_investigation_month_end_detail?faces-redirect=true">
-                                            </p:commandButton>
-                                            
+                                        <div class="d-grid gap-2">  
+
+                                            <p:commandButton class="w-100" ajax="false" value="Investigation Month End Detail" action="report_lab_investigation_month_end_detail"/>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title=" Lab Investigation Without Credit" >
                                         <div class="d-grid gap-2">  
 
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Month End Details Without Credit" 
-                                                action="report_lab_investigation_month_end_detail_without_credit?faces-redirect=true">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Month End Summary Without Credit" 
-                                                action="report_lab_investigation_month_end_summery_without_credit?faces-redirect=true">
-                                            </p:commandButton>
-                                            
+                                            <p:commandButton class="w-100" ajax="false" value="Month End Details Without Credit" action="report_lab_investigation_month_end_detail_without_credit.xhtml"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Month End Summary Without Credit" action="report_lab_investigation_month_end_summery_without_credit.xhtml"/>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title=" Investigation Counts" >
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Fees For Outside Institutions" 
-                                                action="#{commonReport.displayOutsideBillFees()}">
-                                            </p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             value="Fees For Outside Institutions" 
+                                                             action="#{commonReport.displayOutsideBillFees()}"/>
 
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Investigation Counts by Institution And Collecting Centre" 
-                                                action="#{investigationMonthSummeryOwnController.ixCountByInstitutionAndCollectingCentre()}">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Machine Count" 
-                                                action="count_by_machine?faces-redirect=true">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Machine Count By Bill Type" 
-                                                action="count_by_machine_and_bill_type?faces-redirect=true">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Machine and Investigation Count By Bill Type" 
-                                                action="count_by_machine_and_item?faces-redirect=true">
-                                            </p:commandButton>
-                                            
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             value="Investigation Counts by Institution And Collecting Centre" 
+                                                             action="#{investigationMonthSummeryOwnController.ixCountByInstitutionAndCollectingCentre()}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Machine Count" action="count_by_machine"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Machine Count By Bill Type" action="count_by_machine_and_bill_type"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Machine and Investigation Count By Bill Type" action="count_by_machine_and_item"/>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title=" Lab Investigation Bill List" >
                                         <div class="d-grid gap-2">
-                                            
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Investigation Bill List" 
-                                                action="report_lab_investigation_bill_list?faces-redirect=true">
-                                            </p:commandButton>
-                                            
+
+                                            <p:commandButton class="w-100" ajax="false" value="Investigation Bill List" action="report_lab_investigation_bill_list.xhtml"/>
                                         </div>
                                     </p:tab>
                                 </p:accordionPanel>
                             </h:form>
                         </div>
 
-                        <div class="col-md-10">
+                        <div class="col-md-9">
                             <ui:insert name="subcontent" >
 
                             </ui:insert>
                         </div>
-                        
                     </div>
+
+                    
                 </p:panel>
             </ui:define>
+
+
         </ui:composition>
 
     </h:body>

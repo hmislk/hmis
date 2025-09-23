@@ -37,8 +37,12 @@
                             </p:autoComplete>
 
                             <h:outputLabel  value="To Department"  ></h:outputLabel>
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}" 
-                                         class="w-100 mx-4" />
+                            <p:autoComplete  value="#{searchController.searchKeyword.toDepartment}"  
+                                             completeMethod="#{departmentController.completeDept}" var="dept"
+                                             class="w-100 mx-4" inputStyleClass="w-100"
+                                             itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                             forceSelection="true" rendered="true">
+                            </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning" icon="fa-solid fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssueStoreReport()}"/>
@@ -58,7 +62,7 @@
                                     <h:outputLabel value="Transfer Issue Not Received &emsp; From :"/>
                                     <h:outputLabel value="#{searchController.searchKeyword.frmDepartment.name}"/> 
                                     <h:outputLabel value=" &emsp; To :"/>
-                                    <h:outputLabel value="#{searchController.searchKeyword.department}"/> 
+                                    <h:outputLabel value="#{searchController.searchKeyword.toDepartment.name}"/> 
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                     <h:outputLabel  value="#{searchController.fromDate}" >
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>

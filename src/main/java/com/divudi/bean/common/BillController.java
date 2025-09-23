@@ -2,8 +2,6 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
-import com.divudi.bean.lab.LabTestHistoryController;
-import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
@@ -168,10 +166,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     private BillSearch billSearch;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    PatientInvestigationController patientInvestigationController;
-    @Inject
-    LabTestHistoryController labTestHistoryController;
 
     /**
      * Class Vairables
@@ -618,10 +612,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (correctReferenceOfPoBill != null) {
                 grnReturnBill.setReferenceBill(correctReferenceOfPoBill);
                 billFacade.edit(grnReturnBill);
-
+                
                 grnBill.setReferenceBill(correctReferenceOfPoBill);
                 billFacade.edit(grnBill);
-
+                
                 output += "Fixed: GRN Return #" + grnReturnBill.getDeptId() + " reference updated to PO #" + correctReferenceOfPoBill.getDeptId() + ".\n";
                 output += "Fixed: GRN #" + grnBill.getDeptId() + " reference updated to PO #" + correctReferenceOfPoBill.getDeptId() + ".\n";
                 fixedCount++;
@@ -1898,9 +1892,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         batchBillCancellationStarted = false;
         return "/opd/batch_bill_cancel?faces-redirect=true";
     }
-
+    
     private List<Bill> cancelSingleBills = new ArrayList<>();
-
     public String cancelOpdBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -1997,13 +1990,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
-
+        
         cancelSingleBills = new ArrayList();
-
+        
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-
+        
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBatchBill, pd);
@@ -2032,7 +2025,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         drawerController.updateDrawerForOuts(cancelPayments);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
-
+        
         opdBillController.setBills(cancelSingleBills);
         opdBillController.setBatchBill(cancellationBatchBill);
         getSessionController().setLoggedUser(wb);
@@ -2127,13 +2120,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         printPreview = true;
         batchBillCancellationStarted = false;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
-    }
-
-    public Bill getBillById(Long id) {
-        if (id == null) {
-            return null;
-        }
-        return billFacade.find(id);
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
@@ -2297,17 +2283,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancelSingleBills.add(individualCancelltionBill);
 
         List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, individualCancelltionBill);
-
-        try {
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
-                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error = " + e);
-        }
-
         try {
             individualCancelltionBill.setBillItems(list);
         } catch (Exception e) {
@@ -5090,21 +5065,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
-    }
-
-    public String navigateToBillById(Long billId) {
-        if (billId == null) {
-            JsfUtil.addErrorMessage("Bill ID is required");
-            return null;
-        }
-        
-        Bill foundBill = billFacade.find(billId);
-        if (foundBill == null) {
-            JsfUtil.addErrorMessage("Bill not found");
-            return null;
-        }
-        
-        return billSearch.navigateToViewBillByAtomicBillTypeByBillId(billId);
     }
 
 }

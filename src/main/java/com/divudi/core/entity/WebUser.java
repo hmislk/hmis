@@ -30,6 +30,7 @@ import javax.persistence.Temporal;
  * Consultant (Health Informatics)
  */
 @Entity
+
 public class WebUser implements Serializable {
 
     static final long serialVersionUID = 1L;

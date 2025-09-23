@@ -2688,7 +2688,6 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setRemovingClinicalFindingValue(ClinicalFindingValue removingClinicalFindingValue) {
         this.removingClinicalFindingValue = removingClinicalFindingValue;
-        this.removingCfv = removingClinicalFindingValue;
     }
 
     public Patient getPatient() {

@@ -86,7 +86,6 @@
                                 <f:selectItem itemLabel="Consumption" itemValue="consumptionDoc"/>
                                 <f:selectItem itemLabel="Purchase" itemValue="purchaseDoc"/>
                                 <f:selectItem itemLabel="GRN" itemValue="grnDoc"/>
-                                <f:selectItem itemLabel="Return Without Receipt" itemValue="returnWithoutReceiptDoc"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -273,6 +272,9 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
 
+                            <p:column headerText="S.No." width="5em">
+                                <h:outputText value="#{n+1}" />
+                            </p:column>
                             <p:column headerText="Department" width="5em">
                                 <h:outputText value="#{f.department.name}" />
                             </p:column>
@@ -357,10 +359,10 @@
                                              f.pbItem.billItem.bill.billType.label}" />
                             </p:column>
                             <p:column headerText="Stock In Quantity (Purchase + Free)" width="13em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
                             </p:column>
                             <p:column headerText="Stock Out Quantity" width="5em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
                                 <h:outputText value="#{f.totalItemStock}" />

@@ -10,7 +10,7 @@
     <ui:define name="subcontent">
         <h:form id="vmpForm">
             <p:growl id="messages"  life="3000"/>
-            <p:focus id="selectFocus" for="acVmp" />
+            <p:focus id="selectFocus" for="lstSelect" />
 
             <p:panel header="Virtual Medicinal Product (VMP) Management" styleClass="w-100 mb-3">
 
@@ -21,24 +21,24 @@
                         <div class="mb-3">
                             <h5 class="mb-2">Actions</h5>
                             <div  id="actionButtons">
-                            <p:commandButton
-                                    id="btnAdd"
-                                    value="Add New"
+                                <p:commandButton 
+                                    id="btnAdd" 
+                                    value="Add New" 
                                     action="#{vmpController.prepareAdd()}"
                                     styleClass="ui-button-success m-1"
-                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     icon="fas fa-plus"
                                     process="@this"
                                     disabled="#{vmpController.editable}"
                                     title="Add a new VMP record">
                                 </p:commandButton>
 
-                                <p:commandButton
-                                    id="btnEdit"
+                                <p:commandButton 
+                                    id="btnEdit" 
                                     value="Edit Selected"
                                     action="#{vmpController.edit()}"
                                     icon="fas fa-edit"
-                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel lstSelect" 
                                     process="@this"
                                     styleClass="ui-button-warning m-1"
                                     disabled="#{vmpController.editable or vmpController.current.id eq null}"
@@ -66,24 +66,24 @@
                         <!-- Selection List -->
                         <div>
                             <h5 class="mb-2">Select VMP</h5>
-                            <p:autoComplete
-                                id="acVmp"
-                                class="w-100"
-                                inputStyleClass="w-100"
+                            <p:selectOneListbox 
+                                id="lstSelect"
                                 value="#{vmpController.current}"
-                                completeMethod="#{vmpController.completeVmp}"
-                                var="vmp"
-                                itemLabel="#{vmp.name}"
-                                itemValue="#{vmp}"
-                                maxResults="10"
-                                minQueryLength="3"
-                                forceSelection="true"
+                                filter="true"
+                                filterMatchMode="contains"
+                                styleClass="w-100" 
+                                style="height: 400px;"
                                 disabled="#{vmpController.editable}">
-                                <p:ajax update="detailPanel btnAdd btnEdit btnDelete" process="acVmp"/>
-                                <p:column headerText="Name" style="padding: 3px;">
-                                    <h:outputText value="#{vmp.name}"/>
-                                </p:column>
-                            </p:autoComplete>
+                                <f:selectItems 
+                                    value="#{vmpController.selectedItems}" 
+                                    itemLabel="#{v.name}" 
+                                    var="v" 
+                                    itemValue="#{v}"/>
+                                <p:ajax 
+                                    update="detailPanel btnAdd btnEdit btnDelete" 
+                                    process="lstSelect">
+                                </p:ajax>
+                            </p:selectOneListbox>
                         </div>
                     </div>
 

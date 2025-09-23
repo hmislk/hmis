@@ -55,9 +55,6 @@
 
 
                     <div class="row">
-                        <p:messages id="messages" showDetail="true" closable="true">
-                            <p:autoUpdate/>
-                        </p:messages>
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
@@ -263,7 +260,7 @@
                                                                     completeMethod="#{billController.completeAppointmentBill}" 
                                                                     var="apt2" itemLabel="#{apt2.patient.person.nameWithTitle}" 
                                                                     itemValue="#{apt2}" >
-                                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2 :#{p:resolveFirstComponentWithId('ptd',view).clientId} @all" listener="#{admissionController.listnerForAppoimentSelect(admissionController.appointmentBill)}" />
+                                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2" />
                                                         <p:column>
                                                             #{apt2.deptId}
                                                         </p:column>

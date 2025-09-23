@@ -17,7 +17,6 @@ nb-configuration.xml
 
 # Claude Code local settings
 .claude/settings.local.json
-
 # Wiki sync temporary directories
 wiki/
 wiki-temp/

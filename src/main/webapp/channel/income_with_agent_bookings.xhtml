@@ -13,7 +13,7 @@
             <ui:define name="subContent">
                 <h:form>
                     <p:panel header="Income By Institution with Agent Bookings" >
-                        <h:panelGrid columns="20" class="my-2" styleClass="w-100">
+                        <h:panelGrid columns="19" class="my-2" >
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="From " />
@@ -25,7 +25,7 @@
                                 showButtonBar="true"
                                 timeInput="true"
                                 value="#{channelReportController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
                             <p:spacer width="50"/>
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
@@ -38,21 +38,21 @@
                                 showButtonBar="true"
                                 timeInput="true"
                                 value="#{channelReportController.toDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
                             <p:spacer width="50"/>
                             <h:outputText class="mx-2" value="&#xf0e8;"
                                           styleClass="fa mr-2"/>
-                            <h:outputLabel class="mx-2"  value="Institution"  />
+                            <h:outputLabel class="mx-2"  value="Institution"  ></h:outputLabel>
                             <h:outputLabel value=":" />
-                            <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.institution}" filter="true" >
-                                <f:selectItem itemLabel="Select Institution" />
-                                <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax event="change" process="@this"/>
+                            <p:selectOneMenu class="w-100" value="#{channelReportController.institution}" filter="true" >
+                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="50"/>
-                            <i class="fa-solid fa-circle-check"/>
-                            <h:outputLabel class="mx-2"  value="Status"  />
+                            <i class="fa-solid fa-circle-check"></i>
+                            <h:outputLabel class="mx-2"  value="Report Status"  ></h:outputLabel>
                             <h:outputLabel value=":" />
                             <p:selectOneMenu
                                 id="cmbDept"
@@ -64,12 +64,10 @@
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
 
                             </p:selectOneMenu>
-                            
-                            <p:spacer width="50"/>
 
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchAgentSessionIncome}" ajax="false" />
+                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchAgentSessionIncome}" ajax="false" ></p:commandButton>
 
                             <p:commandButton
                                 id="btnPdf"
@@ -87,7 +85,7 @@
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"
-                                action="income_with_agent_bookings_print?faces-redirect=true">
+                                action="channel_income_bill_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton
@@ -114,8 +112,9 @@
                                          expandedRow="true"
                                          paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
-                                         rowKey="#{row.bill.id}">
+                                         rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
+                                         rowKey="#{row.bill.id}"
+                                         >
                                 <p:ajax event="page" oncomplete="updateTotals()" />
                                 <f:facet name="header">
 
@@ -131,11 +130,15 @@
                                 </f:facet>
 
                                 <p:column  headerText="Serial No" style=" text-align: center;">
-                                    <h:outputText value="#{n+1}"/>
+                                    <h:outputText value="#{n+1}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Bill ID" style=" text-align: center;">
-                                    <h:outputText value="#{row.bill.id}"/>
+                                    <h:outputText value="#{row.bill.id}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Created At" style=" text-align: center;">
@@ -160,37 +163,51 @@
                                         action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
                                     </p:commandLink>
 
-                                    <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" />
-                                    <p:tag rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  severity="warning" />
-                                    <p:tag rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" />
-                                    <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
+                                    <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
+                                    <p:tag rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  severity="warning" ></p:tag>
+                                    <p:tag rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
+                                    <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                                 </p:column>
 
                                 <p:column headerText="Bill Type" style=" text-align: center;">
-                                    <h:outputText value="#{row.bill.billType}"/>
+                                    <h:outputText value="#{row.bill.billType}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
-                                    <h:outputText value="#{row.bill.patient.person.name}"/>
+                                    <h:outputText value="#{row.bill.patient.person.name}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column width="8em" headerText="Agent" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.creditCompany.name}">
-                                    <h:outputText value="#{row.bill.creditCompany.name}"/>
+                                    <h:outputText value="#{row.bill.creditCompany.name}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Ref No" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.agentRefNo}">
-                                    <h:outputText value="#{row.bill.agentRefNo}" rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'BilledBill'}"/>
+                                    <h:outputText value="#{row.bill.agentRefNo}" rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'BilledBill'}">
+
+                                    </h:outputText>
 
                                     <h:outputText value="#{row.bill.billedBill.agentRefNo}" rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'CancelBill'
-                                                           or bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}"/>
+                                                           or bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Cashier" style=" text-align: center;">
-                                    <h:outputText value="#{row.bill.creater.name}"/>
+                                    <h:outputText value="#{row.bill.creater.name}">
+
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Hospital Fee" style=" text-align: center;">
-                                    <h:outputText styleClass="hosFee" value="#{row.bill.hospitalFee}" style="color: #{row.bill.hospitalFee lt 0 ? 'red' : 'black'}"/>
+                                    <h:outputText styleClass="hosFee" value="#{row.bill.hospitalFee}" style="color: #{row.bill.hospitalFee lt 0 ? 'red' : 'black'}">
+
+                                    </h:outputText>
 
                                     <f:facet name="footer">
                                         <h:outputText styleClass="hosFeeTotal" value="#{channelReportController.dataBundle.long2}">
@@ -200,7 +217,9 @@
                                 </p:column>
 
                                 <p:column headerText="Doctor fee" style=" text-align: center;">
-                                    <h:outputText styleClass ="staffFee" value="#{row.bill.staffFee}" style="color: #{row.bill.staffFee lt 0 ? 'red' : 'black'}"/>
+                                    <h:outputText styleClass ="staffFee" value="#{row.bill.staffFee}" style="color: #{row.bill.staffFee lt 0 ? 'red' : 'black'}">
+
+                                    </h:outputText>
 
                                     <f:facet name="footer">
                                         <h:outputText styleClass="staffFeeTotal" value="#{channelReportController.dataBundle.long3}">
@@ -210,7 +229,9 @@
                                 </p:column>
 
                                 <p:column headerText="Gross Total" style=" text-align: center;">
-                                    <h:outputText styleClass="grossFee" value="#{row.bill.total}" style="color: #{row.bill.total lt 0 ? 'red' : 'black'}"/>
+                                    <h:outputText styleClass="grossFee" value="#{row.bill.total}" style="color: #{row.bill.total lt 0 ? 'red' : 'black'}">
+
+                                    </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText styleClass="grossTotal" value="#{channelReportController.dataBundle.long1}">
                                             <f:convertNumber pattern="#,##0.00"/>

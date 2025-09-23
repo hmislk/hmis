@@ -36,7 +36,6 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
-import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,9 +91,6 @@ public class InwardReportControllerBht implements Serializable {
     private List<BillItem> pharmacyIssueBillItemsToPatientEncounter;
     private double pharmacyIssueBillItemsToPatientEncounterNetTotal;
 
-    private List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter;
-    private double pharmacyIssueDtosToPatientEncounterNetTotal;
-
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
 
@@ -125,6 +121,7 @@ public class InwardReportControllerBht implements Serializable {
     private List<Bill> issueBills;
 
     public String navigateToInpatientPharmacyItemList() {
+        System.out.println("navigateToInpatientPharmacyItemList");
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
             return null;
@@ -197,110 +194,6 @@ public class InwardReportControllerBht implements Serializable {
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
-    public String navigateToInpatientPharmacyItemListDto() {
-        if (patientEncounter == null) {
-            JsfUtil.addErrorMessage("No encounter");
-            return null;
-        }
-        pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
-        pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
-        try {
-
-            // New mode: Include regular issues and returns, but omit cancellations
-            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
-            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-
-            List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
-
-            // Use all results
-            pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
-
-
-            // Calculate sum - positive for issues, negative for returns
-            for (InpatientPharmacyIssueDTO dto : allDtos) {
-                BillTypeAtomic billType = dto.getBillTypeAtomic();
-                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-
-                if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
-                    pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
-                } else {
-                    pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
-                }
-            }
-
-        } catch (Exception e) {
-            pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
-            pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
-        }
-
-        return "/inward/reports/inpatient_pharmacy_item_list_dto?faces-redirect=true";
-    }
-
-    private List<InpatientPharmacyIssueDTO> fetchPharmacyIssueDtos(List<BillTypeAtomic> billTypes) {
-        String jpql = "SELECT new com.divudi.core.data.dto.InpatientPharmacyIssueDTO("
-                + "bi.id, "
-                + "bi.item.name, "
-                + "bi.qty, "
-                + "bi.netValue, "
-                + "bi.bill.createdAt, "
-                + "bi.bill.billTypeAtomic, "
-                + "COALESCE(bi.bill.department.name, 'N/A'), "
-                + "refBi.id) "
-                + "FROM BillItem bi LEFT JOIN bi.referanceBillItem refBi "
-                + "WHERE bi.bill.patientEncounter = :patientEncounter "
-                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
-                + "AND bi.retired = FALSE "
-                + "AND bi.bill.retired = FALSE "
-                + "AND bi.bill.cancelled = FALSE ";
-
-        // Removed department filter to show all pharmacy items for the patient encounter
-        // regardless of which department issued them
-        jpql += "ORDER BY bi.bill.createdAt, bi.id";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("billTypeAtomics", billTypes);
-        params.put("patientEncounter", patientEncounter);
-        // Removed department parameter since we're not filtering by department anymore
-
-        // Debug query to check what's filtering out records
-        String debugJpql = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter";
-        Map<String, Object> debugParams = new HashMap<>();
-        debugParams.put("patientEncounter", patientEncounter);
-        Long debugCount = billItemFacade.countByJpql(debugJpql, debugParams);
-
-        String debugJpql2 = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        Map<String, Object> debugParams2 = new HashMap<>();
-        debugParams2.put("patientEncounter", patientEncounter);
-        debugParams2.put("billTypeAtomics", billTypes);
-        Long debugCount2 = billItemFacade.countByJpql(debugJpql2, debugParams2);
-
-        // Test individual fields to find the problematic one
-        String testJpql1 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult1 = billItemFacade.findAggregates(testJpql1, debugParams2);
-
-        String testJpql2 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult2 = billItemFacade.findAggregates(testJpql2, debugParams2);
-
-        String testJpql3 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult3 = billItemFacade.findAggregates(testJpql3, debugParams2);
-
-        String testJpql4 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A') FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult4 = billItemFacade.findAggregates(testJpql4, debugParams2);
-
-        String testJpql5 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A'), bi.referanceBillItem.id FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult5 = billItemFacade.findAggregates(testJpql5, debugParams2);
-
-        List<InpatientPharmacyIssueDTO> result = (List<InpatientPharmacyIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
-
-
-        return result != null ? result : new ArrayList<>();
-    }
-
     public String madeNull() {
         patientEncounter = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
@@ -314,6 +207,7 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     public String navigateToInpatientLabItemList() {
+        System.out.println("navigateToInpatientLabItemList");
 
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
@@ -1291,7 +1185,7 @@ public class InwardReportControllerBht implements Serializable {
         hm.put("btp", BillType.PharmacyBhtPre);
         return getBillFacade().findByJpql(sql, hm);
     }
-
+    
     public List<Bill> getReturnAndCancelBHTIssueBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billTypeAtomic IN :btp "
@@ -1784,21 +1678,5 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
-    }
-
-    public List<InpatientPharmacyIssueDTO> getPharmacyIssueDtosToPatientEncounter() {
-        return pharmacyIssueDtosToPatientEncounter;
-    }
-
-    public void setPharmacyIssueDtosToPatientEncounter(List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter) {
-        this.pharmacyIssueDtosToPatientEncounter = pharmacyIssueDtosToPatientEncounter;
-    }
-
-    public double getPharmacyIssueDtosToPatientEncounterNetTotal() {
-        return pharmacyIssueDtosToPatientEncounterNetTotal;
-    }
-
-    public void setPharmacyIssueDtosToPatientEncounterNetTotal(double pharmacyIssueDtosToPatientEncounterNetTotal) {
-        this.pharmacyIssueDtosToPatientEncounterNetTotal = pharmacyIssueDtosToPatientEncounterNetTotal;
     }
 }

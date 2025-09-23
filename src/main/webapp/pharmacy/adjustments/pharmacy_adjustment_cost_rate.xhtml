@@ -8,204 +8,82 @@
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
-        <style>
-            .modern-panel .ui-panel-content {
-                padding: 1.5rem;
-                background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-            }
-            .modern-card .ui-panel-content {
-                padding: 0 !important;
-                border-radius: 0.5rem;
-            }
-            .modern-card .ui-panel-titlebar {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border-radius: 0.5rem 0.5rem 0 0;
-                border: none;
-                padding: 0.75rem 1rem;
-            }
-            .modern-table .ui-datatable-header {
-                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-                color: #333;
-                font-weight: 600;
-                padding: 0.75rem;
-                border-radius: 0.375rem 0.375rem 0 0;
-            }
-            .modern-table .ui-datatable thead th {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                font-weight: 600;
-                border: none;
-                padding: 0.75rem 0.5rem;
-            }
-            .cost-rate-input {
-                background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
-                border: 2px solid #3b82f6;
-                font-weight: 600;
-                text-align: center;
-            }
-            .cost-rate-input:focus {
-                border-color: #1d4ed8;
-                box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-            }
-            .rate-display {
-                font-weight: 600;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            }
-        </style>
-
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-
-                    <p:panel header="" rendered="#{!pharmacyAdjustmentController.printPreview}" styleClass="modern-panel">
+                    <p:panel header="" rendered="#{!pharmacyAdjustmentController.printPreview}">
                         <f:facet name="header">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-calculator text-info fs-5"></i>
-                                <h4 class="mb-0 text-info fw-bold">Department Stock Adjustment - Cost Rate</h4>
-                            </div>
+                            <h:outputLabel value="Department Stock Adjustment : Cost Rate" />
                         </f:facet>
-                        <div class="row g-4">
-                            <div class="col-lg-5">
-                                <p:panel class="h-100 shadow-sm border-0" styleClass="modern-card">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel class="w-100">
                                     <f:facet name="header">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-search text-success"></i>
-                                            <span class="fw-semibold text-dark">Item Selection</span>
-                                        </div>
+                                        <h:outputText styleClass="fa-solid fa-syringe" />
+                                        <h:outputLabel value="Select Item" class="mx-4" />
                                     </f:facet>
-                                    <div class="p-3">
-                                        <label class="form-label fw-semibold text-secondary mb-2">
-                                            <i class="fas fa-pills me-2"></i>Select Item
-                                        </label>
-                                        <p:autoComplete id="acAmp" class="w-100" inputStyleClass="w-100"
-                                                       completeMethod="#{ampController.completeAmp}" var="amp"
-                                                       itemLabel="#{amp.name}" itemValue="#{amp}"
-                                                       value="#{pharmacyAdjustmentController.amp}"
-                                                       maxResults="10" minQueryLength="3">
-                                            <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks" />
-                                            <p:column headerText="Item" style="padding: 3px;">
-                                                <h:outputText value="#{amp.name}" />
-                                            </p:column>
-                                            <p:column headerText="Code" style="padding: 3px;">
-                                                <h:outputText value="#{amp.code}" />
-                                            </p:column>
-                                        </p:autoComplete>
-                                    </div>
+                                    <h:outputLabel value="Item" />
+                                    <p:autoComplete id="acAmp" class="w-100" inputStyleClass="w-100"
+                                                    completeMethod="#{ampController.completeAmp}" var="amp"
+                                                    itemLabel="#{amp.name}" itemValue="#{amp}"
+                                                    maxResults="10" minQueryLength="3"
+                                                    value="#{pharmacyAdjustmentController.amp}">
+                                        <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks" />
+                                        <p:column headerText="Item" style="padding: 3px;">
+                                            <h:outputText value="#{amp.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code" style="padding: 3px;">
+                                            <h:outputText value="#{amp.code}" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                    <p:dataTable id="tblStocks" value="#{pharmacyAdjustmentController.costRateStockDtos}" var="i" rows="10"
+                                                 paginator="true" paginatorAlwaysVisible="false" emptyMessage="No Stocks">
+                                        <f:facet name="header">Batches</f:facet>
+                                        <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}">
+                                            <h:outputText value="#{i.dateOfExpire}">
+                                                <f:convertDateTime pattern="MMM yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Batch No." sortBy="#{i.batchNo}">
+                                            <h:outputText value="#{i.batchNo}" />
+                                        </p:column>
+                                        <p:column headerText="Stock" sortBy="#{i.stockQty}" styleClass="text-end">
+                                            <h:outputText value="#{i.stockQty}">
+                                                <f:convertNumber pattern="#,###" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Current Cost Rate" sortBy="#{i.purchaseRate}" styleClass="text-end">
+                                            <h:outputText value="#{i.purchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="New Cost Rate" styleClass="text-end">
+                                            <p:inputText value="#{i.newCostRate}" styleClass="w-100"/>
+                                        </p:column>
+                                    </p:dataTable>
                                 </p:panel>
                             </div>
-                            <div class="col-lg-7">
-                                <p:panel styleClass="modern-card">
+                            <div class="col-md-6">
+                                <p:panel>
                                     <f:facet name="header">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-sliders-h text-danger"></i>
-                                            <span class="fw-semibold text-dark">Bulk Cost Rate Adjustment</span>
-                                        </div>
+                                        <h:outputLabel value="Adjust" />
                                     </f:facet>
-                                    <div class="p-3">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold text-secondary mb-2">
-                                                <i class="fas fa-comment me-2"></i>Adjustment Comment
-                                            </label>
-                                            <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" styleClass="form-control" rows="3" placeholder="Enter reason for cost rate adjustment..."/>
-                                        </div>
-                                        <div class="d-grid">
-                                            <p:commandButton
-                                                id="btnAdjust"
-                                                value="Adjust All Cost Rates"
-                                                ajax="false"
-                                                styleClass="ui-button-danger ui-button-lg"
-                                                icon="fas fa-calculator"
-                                                action="#{pharmacyAdjustmentController.adjustCostRates()}" />
-                                            <p:defaultCommand target="btnAdjust"/>
-                                        </div>
-                                    </div>
+                                    <h:outputLabel value="Comment" />
+                                    <!-- 
+                                    COMMENT FIELD BEHAVIOR:
+                                    - This comment field applies to the entire cost rate adjustment session
+                                    - The comment is shared across all items being adjusted in this batch
+                                    - The comment value persists when new items are selected to maintain continuity
+                                    - This allows users to provide a single explanation for the batch adjustment
+                                    -->
+                                    <p:inputTextarea id="commentInput" value="#{pharmacyAdjustmentController.comment}" class="w-100" />
+                                    <p:commandButton id="btnAdjust" value="Adjust the Cost Rates" ajax="false"
+                                                     class="mt-2 ui-button-danger" icon="fa-solid fa-sliders"
+                                                     action="#{pharmacyAdjustmentController.adjustCostRates()}" />
+                                    <p:defaultCommand target="btnAdjust" />
                                 </p:panel>
                             </div>
                         </div>
-
-                        <p:dataTable
-                            id="tblStocks"
-                            value="#{pharmacyAdjustmentController.costRateStockDtos}"
-                            var="i"
-                            rows="10"
-                            paginator="true"
-                            paginatorAlwaysVisible="false"
-                            emptyMessage="💰 No stock batches found. Select an item to load cost rate stocks."
-                            styleClass="modern-table mt-4">
-
-                            <f:facet name="header">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="fas fa-layer-group"></i>
-                                    <span>Stock Batches - Cost Rate Adjustment</span>
-                                </div>
-                            </f:facet>
-
-                            <p:column
-                                headerText="Expiry"
-                                sortBy="#{i.dateOfExpire}"
-                                styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.dateOfExpire}">
-                                    <f:convertDateTime pattern="MMM yyyy" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column
-                                headerText="Batch No."
-                                sortBy="#{i.batchNo}"
-                                styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.batchNo}" />
-                            </p:column>
-                            <p:column
-                                sortBy="#{i.stockQty}"
-                                headerText="Stock"
-                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.stockQty}" >
-                                    <f:convertNumber pattern="#,###" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column
-                                headerText="Purchase Rate"
-                                sortBy="#{i.purchaseRate}"
-                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.purchaseRate}" styleClass="rate-display">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column
-                                headerText="Current Cost Rate"
-                                sortBy="#{i.costRate}"
-                                styleClass="text-end fw-bold #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.costRate}" styleClass="rate-display">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="New Cost Rate" styleClass="text-end">
-                                <p:inputText value="#{i.newCostRate}" styleClass="cost-rate-input w-100" placeholder="Enter new cost rate..."/>
-                            </p:column>
-
-                            <p:column
-                                headerText="Retail Rate"
-                                sortBy="#{i.retailRate}"
-                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.retailRate}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column
-                                headerText="Wholesale Rate"
-                                sortBy="#{i.wholesaleRate}"
-                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputText value="#{i.wholesaleRate}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                        </p:dataTable>
-
                     </p:panel>
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
                         <div class="d-flex gap-2 m-2">

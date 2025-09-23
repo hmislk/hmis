@@ -992,7 +992,7 @@ public class ReorderController implements Serializable {
                 }
             }
         }
-        purchaseOrderRequestController.calculateBillTotals();
+        purchaseOrderRequestController.calTotal();
     }
 
     public double calculateRoq(Reorder reorder) {

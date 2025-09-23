@@ -1,8 +1,6 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
@@ -15,12 +13,6 @@ import com.divudi.core.util.CommonFunctions;
 @Named
 @RequestScoped
 public class ErrorHandler implements Serializable {
-    
-    private final LocalDateTime errorTime;
-    
-    public ErrorHandler() {
-        this.errorTime = LocalDateTime.now();
-    }
 
     public String getStatusCode() {
         Object code = FacesContext.getCurrentInstance().getExternalContext()
@@ -83,16 +75,6 @@ public class ErrorHandler implements Serializable {
             sb.append("Caused by: ");
             appendStackTrace(cause, sb);
         }
-    }
-    
-    public String getErrorTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return errorTime.format(formatter);
-    }
-    
-    public String getErrorTimeWithTimezone() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return errorTime.format(formatter) + " (Server Time)";
     }
 
 }

@@ -161,23 +161,23 @@
                                 <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                <p:column selectionBox="true" width="1em"></p:column>
+                                <p:column selectionBox="true" ></p:column>
 
-                                <p:column headerText="No" width="2em">
+                                <p:column headerText="No">
                                     <h:outputLabel value="#{i+1}">
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Bill ID" style="text-align: center">
+                                <p:column headerText="Bill ID">
                                     <h:outputLabel value="#{bf.bill.deptId}">
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Appoinment No" style="text-align: center">
-                                    <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}" style="font-weight: bold">
+                                <p:column headerText="Appoinment No">
+                                    <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Patient" width="10em">
+                                <p:column headerText="Patient">
                                     <h:panelGroup rendered="#{bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
                                         <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>   

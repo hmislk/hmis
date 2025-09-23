@@ -2,32 +2,23 @@ package com.divudi.core.data.lab;
 
 /**
  *
- * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan
- * <hkddrajapaksha@gmail.com>
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan <hkddrajapaksha@gmail.com>
  *
  */
+
 /**
- * Enum representing different stages of laboratory test history. ChatGPT
- * contributed.
+ * Enum representing different stages of laboratory test history. ChatGPT contributed.
  */
+
 public enum TestHistoryType {
     ORDERED,
-    CANCELED,
-    REFUNDED,
-    SAMPLE_SEPARATE,
-    SEPARATE_AND_BARCODE_GENERATED,
     BARCODE_GENERATED,
-    BARCODE_REGENERATED,
     BARCODE_PRINTED,
-    BARCODE_PRINTED_INDIVIDUAL,
+    BARCODE_PRINTED_INDIVIDUAL ,
     SAMPLE_COLLECTED,
-    SAMPLE_RECOLLECT_REQUEST,
-    SAMPLE_RECOLLECTED,
     SAMPLE_ACCEPTED,
     SAMPLE_SENT,
     SAMPLE_SENT_OUT_LAB,
-    SAMPLE_SENT_INTERNAL_LAB,
-    SAMPLE_RETRIEVING,
     SAMPLE_REJECTED,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
@@ -50,38 +41,20 @@ public enum TestHistoryType {
         switch (this) {
             case ORDERED:
                 return "Ordered";
-            case CANCELED:
-                return "Cancelled";
-            case REFUNDED:
-                return "Refunded";
             case BARCODE_GENERATED:
                 return "Barcode Generated";
-            case SEPARATE_AND_BARCODE_GENERATED:
-                return "Separate and Barcode Generated";
-            case SAMPLE_SEPARATE:
-                return "Sample Separate";
-            case BARCODE_REGENERATED:
-                return "Barcode Regenerated";
             case BARCODE_PRINTED:
                 return "Barcode Printed";
             case BARCODE_PRINTED_INDIVIDUAL:
                 return "Barcode Printed (Individual)";
             case SAMPLE_COLLECTED:
                 return "Sample Collected";
-            case SAMPLE_RECOLLECT_REQUEST:
-                return "Sample Recollect Request";
-            case SAMPLE_RECOLLECTED:
-                return "Sample Recollected";
             case SAMPLE_ACCEPTED:
                 return "Sample Accepted";
             case SAMPLE_SENT:
                 return "Sample Sent";
-            case SAMPLE_RETRIEVING:
-                return "Receiving the sent sample";
             case SAMPLE_SENT_OUT_LAB:
                 return "Sample Sent to External Lab";
-            case SAMPLE_SENT_INTERNAL_LAB:
-                return "Sample Sent to Internal Lab";
             case SAMPLE_REJECTED:
                 return "Sample Rejected";
             case SAMPLE_RECEIVED:
@@ -120,5 +93,5 @@ public enum TestHistoryType {
                 return this.toString();
         }
     }
-
+    
 }

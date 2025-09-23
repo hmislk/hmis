@@ -20,14 +20,6 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="Investigation List" action="investigation_counts?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Bill List" action="/reportLab/bill_list?faces-redirect=true"/> 
-                                            
-                                            <p:commandButton 
-                                                ajax="false"
-                                                class="w-100 ui-button-success mt-1"
-                                                value="Bill Item List"
-                                                action="/reportLab/bill_item_list?faces-redirect=true">
-                                            </p:commandButton>
-                                            
                                             <p:commandButton ajax="false" value="Client List" action="/reportLab/client_list?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" class="w-100 ui-button-success mt-1" value="Sample List (DTO)" action="/lab/dto_patient_sample_list?faces-redirect=true"/> 
@@ -130,11 +122,7 @@
                                                 value="Test Wise Count Report - DTO"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true)}"
                                                 action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
-                                            <p:commandButton
-                                                class="w-100  ui-button-success"
-                                                ajax="false"
-                                                value="Test Wise Reagent Cost Report"
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics()}" />
+
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="Laboratary Income Report" 
@@ -149,7 +137,6 @@
 
                                             <p:commandButton 
                                                 ajax="false" 
-                                                class="w-100 ui-button-success mt-1"
                                                 value="Laboratory Summary" 
                                                 action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
                                             </p:commandButton>

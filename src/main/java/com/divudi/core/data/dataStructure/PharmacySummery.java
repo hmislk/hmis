@@ -22,7 +22,6 @@ public class PharmacySummery {
     private Long count;
     private String departmentName;
     private double netTotal;
-    private double totalCost;
     private String department;
     private double goodInTransistAmount;
 
@@ -35,14 +34,6 @@ public class PharmacySummery {
         this.netTotal = netTotal;
         this.goodInTransistAmount = goodInTransistAmount;
     }
-
-    public PharmacySummery(String departmentName, double netTotal, double goodInTransistAmount, double totalCost) {
-        this.departmentName = departmentName;
-        this.netTotal = netTotal;
-        this.goodInTransistAmount = goodInTransistAmount;
-        this.totalCost = totalCost;
-    }
-
     public PharmacySummery(String departmentName, String department, double netTotal) {
         this.departmentName = departmentName;
         this.department = department;
@@ -124,11 +115,4 @@ public class PharmacySummery {
         this.goodInTransistAmount = goodInTransistAmount;
     }
 
-    public double getTotalCost() {
-        return totalCost;
-    }
-
-    public void setTotalCost(double totalCost) {
-        this.totalCost = totalCost;
-    }
 }

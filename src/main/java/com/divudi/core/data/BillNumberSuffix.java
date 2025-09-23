@@ -49,7 +49,6 @@ public enum BillNumberSuffix {
     PHISSUEREQ,//Pharmacy Issue Request
     PHISSCAN,//Pharmacy Issue Cancel
     PHISSRET,//Pharmacy Issue Return
-    PHACCPAYCAN,//Pharmacy Credit Company Payment Cancel
     STISSUE,//Store Issue
     STTISSUECAN,//Store Issue can
     PHRET,

@@ -126,15 +126,4 @@ public class BigDecimalUtil {
     public static boolean isNegative(BigDecimal value) {
         return value != null && value.compareTo(BigDecimal.ZERO) < 0;
     }
-    
-    /**
-     * Checks if a BigDecimal value is zero or negative (less than or equal to zero).
-     * Returns true for null values (treated as zero).
-     * 
-     * @param value the BigDecimal value to check
-     * @return true if value is null or less than or equal to zero, false otherwise
-     */
-    public static boolean isZeroOrNegative(BigDecimal value) {
-        return value == null || value.compareTo(BigDecimal.ZERO) <= 0;
-    }
 }

@@ -71,8 +71,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     @Inject
     NotificationController notificationController;
-    @Inject
-    private StoreController1 storeController1;
 
     private double totalBillItemsCount;
 
@@ -86,11 +84,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
         for (BillItem b : selectedBillItems) {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
-            getBillItems().remove(b);
-            b.setRetired(true);
-            billItemFacade.edit(b);
+            BillItem tmp = getBillItems().remove(b.getSearialNo());
+            tmp.setRetired(true);
+            billItemFacade.edit(tmp);
             //billFacade.edit(currentBill);
-            //System.err.println("Removed Item " + b.getItem().getName());
+            //System.err.println("Removed Item " + tmp.getItem().getName());
             calTotal();
         }
 
@@ -130,36 +128,28 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        if (bi == null) {
-            return;
+        //System.err.println("5 " + bi.getItem().getName());
+        //System.err.println("6 " + bi.getSearialNo());
+        ////// // System.out.println("bi = " + bi);
+        if (bi != null) {
+            getBillItems().remove(bi.getSearialNo());
+            if (bi.getId() != null) {
+                bi.setRetired(true);
+                bi.setCreater(getSessionController().getLoggedUser());
+                bi.setCreatedAt(new Date());
+                billItemFacade.edit(bi);
+            }
+            calTotal();
+            billFacade.edit(currentBill);
         }
 
-        getBillItems().remove(bi);
-
-        Date now = new Date();
-
-        bi.setRetired(true);
-        bi.setRetirer(getSessionController().getLoggedUser());
-        bi.setRetiredAt(now);
-
-        PharmaceuticalBillItem tmpPbi = bi.getPharmaceuticalBillItem();
-        if (tmpPbi != null) {
-            tmpPbi.setRetired(true);
-            tmpPbi.setRetirer(getSessionController().getLoggedUser());
-            tmpPbi.setRetiredAt(now);
-        }
-
-        if (bi.getId() != null) {
-            billItemFacade.edit(bi);
-        }
-        if (tmpPbi != null && tmpPbi.getId() != null) {
-            pharmaceuticalBillItemFacade.edit(tmpPbi);
-        }
-
-        calTotal();
     }
 
+    @Inject
+    private StoreController1 storeController1;
+
     public void onFocus(BillItem bi) {
+
         getStoreController1().setPharmacyItem(bi.getItem());
     }
 

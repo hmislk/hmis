@@ -8,17 +8,14 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="showBackground" type="java.lang.Boolean" default="false"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
             <div id="divReport"  class="labReport" >
-                <ez:common_report 
-                    showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}"
-                    commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
-                    patientReport="#{patientReportController.currentPatientReport}"/>
+                <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                  patientReport="#{patientReportController.currentPatientReport}"/>
                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                     <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                         <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Html' and prv.investigationItem.retired ne true}"  escape="false" />

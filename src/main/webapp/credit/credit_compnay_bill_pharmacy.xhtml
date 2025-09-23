@@ -22,13 +22,13 @@
                                     value="Settle" 
                                     action="#{cashRecieveBillController.settleBillPharmacy}"
                                     ajax="false"  
-                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
                                     class="ui-button-success"
                                     icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
                                 <p:commandButton 
-                                    value="New Bill"
+                                    value="New Bill" 
                                     ajax="false" 
                                     action="#{cashRecieveBillController.prepareNewBill()}"  
                                     icon="fa fa-plus"
@@ -61,8 +61,8 @@
 
 
                                 </f:facet>
-
-                                <div class="row my-2 d-flex align-items-center">
+                                
+                                  <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Select Credit Bill" />      
                                     </div>
@@ -130,7 +130,7 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
-
+                                
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -162,16 +162,16 @@
                                     </div>
                                 </div>
 
-                                <!--                                <div class="row my-2 d-flex align-items-center">
-                                                                    <div class="col-md-4">
-                                                                        <p:outputLabel value="Comment" />      
-                                                                    </div>
-                                                                    <div class="col-md-8">
-                                                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                                                    </div>
-                                                                </div>-->
+<!--                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Comment" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
+                                    </div>
+                                </div>-->
 
-
+                              
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
@@ -251,39 +251,15 @@
                 </p:panel>
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <div class="d-flex justify-content-end">
-                        <p:commandButton 
-                            value="New Bill" 
-                            ajax="false" 
-                            action="#{cashRecieveBillController.prepareNewBill()}"  
-                            icon="fa fa-plus"
-                            class="ui-button-warning mx-3 my-3">
-                        </p:commandButton>
-                           <p:commandButton
-                               value="To Cancel Bill"
-                               disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
-                               icon="pi pi-times"
-                               ajax="false"
-                               action="credit_company_bill_pharmacy_cancel" 
-                               styleClass="ui-button-danger mx-3 my-3">
-                               <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                        <p:commandButton value="Print"
-                                         icon="fa fa-print"
-                                         styleClass="ui-button-info"
-                                         ajax="false"
-                                         class="ui-button-info mx-3 my-3"
-                                         >
-                            <p:printer target="gpBillPreview"/>
-                        </p:commandButton>
-                    </div>
-                    <h:panelGroup id="gpBillPreview" >
-                        <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>   
-                    </h:panelGroup>
-
-
+                    <p:commandButton 
+                        value="New Bill" 
+                        ajax="false" 
+                        action="#{cashRecieveBillController.prepareNewBill()}"  
+                        icon="fa fa-plus"
+                        class="ui-button-warning">
+                    </p:commandButton>
+                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
-
 
             </h:form>
         </h:panelGroup>

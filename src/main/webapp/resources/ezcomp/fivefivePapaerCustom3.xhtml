@@ -26,8 +26,7 @@
 
             <!-- Header Section -->
             <div class="hospital-name">
-                <h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Set Logging department name in channel FivefiveCustom3 Bill',true)}" value="#{cc.attrs.bill.department.name}"/>
-                 <h:outputLabel rendered="#{!configOptionApplicationController.getBooleanValueByKey('Set Logging department name in channel FivefiveCustom3 Bill', true)}" value="Channeling"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>

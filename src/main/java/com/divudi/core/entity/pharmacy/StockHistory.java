@@ -45,7 +45,6 @@ public class StockHistory implements Serializable, RetirableEntity {
     double retailRate;
     double wholesaleRate;
     double purchaseRate;
-    double costRate;
     @ManyToOne
     ItemBatch itemBatch;
     @ManyToOne
@@ -145,14 +144,6 @@ public class StockHistory implements Serializable, RetirableEntity {
 
     public void setPurchaseRate(double purchaseRate) {
         this.purchaseRate = purchaseRate;
-    }
-
-    public double getCostRate() {
-        return costRate;
-    }
-
-    public void setCostRate(double costRate) {
-        this.costRate = costRate;
     }
 
     public ItemBatch getItemBatch() {

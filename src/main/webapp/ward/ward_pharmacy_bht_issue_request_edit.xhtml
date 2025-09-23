@@ -266,7 +266,7 @@
                                             <p:column headerText="Code">
                                                 #{ri.itemBatch.item.code}
                                             </p:column>
-                                            <p:column headerText="Rate"  style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('IP Request - Show Rate and Value', false) and webUserController.hasPrivilege('IPRequestViewRates')}">
+                                            <p:column headerText="Rate"  style="text-align: right;">
                                                 <p:outputLabel value="#{ri.itemBatch.retailsaleRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </p:outputLabel>

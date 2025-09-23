@@ -2,7 +2,6 @@ package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.*;
-import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
@@ -179,8 +178,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillSearch billSearch;
     @Inject
     private BillBeanController billBean;
-    @Inject
-    LabTestHistoryController labTestHistoryController;
 
     /**
      * Properties
@@ -991,14 +988,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
-        }
-
-        try {
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
-            }
-        } catch (Exception error) {
-            System.out.println("Error = " + error);
         }
 
     }

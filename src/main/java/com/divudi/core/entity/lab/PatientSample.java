@@ -195,8 +195,6 @@ public class PatientSample implements Serializable, RetirableEntity {
     private WebUser sampleRejectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRejectedAt;
-    
-    private Boolean requestReCollected = false;
 
     //Retairing properties
     private boolean retired;
@@ -205,14 +203,7 @@ public class PatientSample implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
-    @ManyToOne
-    private PatientSample referenceSample;
 
-    private boolean separated = false;
-    @ManyToOne
-    private PatientSample separatedfrom;
-    
     public Long getId() {
         return id;
     }
@@ -875,38 +866,6 @@ public class PatientSample implements Serializable, RetirableEntity {
     public void setSampleSentToInstitution(Institution sampleSentToInstitution) {
         this.sampleSentToInstitution = sampleSentToInstitution;
 
-    }
-
-    public Boolean getRequestReCollected() {
-        return requestReCollected;
-    }
-
-    public void setRequestReCollected(Boolean requestReCollected) {
-        this.requestReCollected = requestReCollected;
-    }
-
-    public PatientSample getReferenceSample() {
-        return referenceSample;
-    }
-
-    public void setReferenceSample(PatientSample referenceSample) {
-        this.referenceSample = referenceSample;
-    }
-
-    public boolean isSeparated() {
-        return separated;
-    }
-
-    public void setSeparated(boolean separated) {
-        this.separated = separated;
-    }
-
-    public PatientSample getSeparatedfrom() {
-        return separatedfrom;
-    }
-
-    public void setSeparatedfrom(PatientSample separatedfrom) {
-        this.separatedfrom = separatedfrom;
     }
 
 }

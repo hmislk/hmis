@@ -1767,18 +1767,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             // Convert the map values to a list to be used in the JSF page
             reportList = new ArrayList<>(categoryReports.values());
-
-            calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
-    }
-
-    private void calculateTotalTestCount() {
-        totalCount = 0L;
-        if (reportList != null) {
-            for (CategoryCount categoryCount : reportList) {
-                totalCount += categoryCount.getTotal();
-            }
-        }
     }
 
     public void filterOpdServiceCountBySelectedService(Long selectedItemId) {
@@ -3068,10 +3057,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
-            case "Stock Adjustment Receive":
-                return "/reports/inventoryReports/stock_adjustment_receive?faces-redirect=true";
-            case "Stock Adjustment Issue":
-                return "/reports/inventoryReports/stock_adjustment_issue?faces-redirect=true";
             case "Transfer Issue":
                 return "/reports/inventoryReports/transfer_issue?faces-redirect=true";
             case "Transfer Receive":
@@ -3080,11 +3065,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/opd_credit?faces-redirect=true";
             case "BHT Issue":
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
-            case "Sale ":
+            case "Sale Credit Card":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
             case "Closing Stock":
             case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
+            case "Sale Cash":
+                return "/reports/inventoryReports/opd_sale_cash?faces-redirect=true";
             case "Variance":
             case "Calculated Closing Stock Value":
                 JsfUtil.addErrorMessage("No Given Report Template");

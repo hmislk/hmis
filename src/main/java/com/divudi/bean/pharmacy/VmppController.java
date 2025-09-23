@@ -42,6 +42,7 @@ public class VmppController implements Serializable {
     @EJB
     private VmppFacade ejbFacade;
     private Vmpp current;
+    private List<Vmpp> items = null;
     private boolean editable;
 
     @Deprecated
@@ -101,7 +102,7 @@ public class VmppController implements Serializable {
     }
 
     private void recreateModel() {
-        // No longer caching Vmpp items
+        items = null;
     }
 
     public void saveSelected() {
@@ -113,6 +114,7 @@ public class VmppController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
+        getItems();
         editable = false;
     }
 
@@ -125,6 +127,7 @@ public class VmppController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
+        getItems();
     }
 
     public VmppFacade getEjbFacade() {
@@ -166,6 +169,7 @@ public class VmppController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getItems();
         current = null;
         getCurrent();
         editable = false;
@@ -173,6 +177,28 @@ public class VmppController implements Serializable {
 
     private VmppFacade getFacade() {
         return ejbFacade;
+    }
+
+    public List<Vmpp> getItems() {
+        if (items == null) {
+            items = fillItems();
+        }
+        return items;
+    }
+
+    public List<Vmpp> fillItems() {
+        String jpql = "SELECT v FROM Vmpp v WHERE v.retired = :ret AND v.name IS NOT NULL AND v.name <> '' ORDER BY v.name";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        List<Vmpp> vmpps = getFacade().findByJpql(jpql, parameters);
+
+        // If vmpps is null, initialize it to prevent NullPointerException
+        if (vmpps == null) {
+            vmpps = new ArrayList<>();
+        }
+
+        return vmpps;
     }
 
     public boolean isEditable() {
