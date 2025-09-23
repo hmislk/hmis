@@ -1393,6 +1393,8 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setReferenceBill(getRequestedBill());
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());
+        }else{
+            getBillFacade().edit(getIssuedBill());
         }
     }
 

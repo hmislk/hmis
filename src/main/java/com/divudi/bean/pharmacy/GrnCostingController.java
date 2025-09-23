@@ -2595,8 +2595,12 @@ public class GrnCostingController implements Serializable {
 
         getCurrentGrnBillPre().setDepartment(getSessionController().getDepartment());
         getCurrentGrnBillPre().setInstitution(getSessionController().getInstitution());
-        getCurrentGrnBillPre().setCreater(getSessionController().getLoggedUser());
-        getCurrentGrnBillPre().setCreatedAt(Calendar.getInstance().getTime());
+        if (getCurrentGrnBillPre().getCreater() == null) {
+            getCurrentGrnBillPre().setCreater(getSessionController().getLoggedUser());
+        }
+        if (getCurrentGrnBillPre().getCreatedAt()==null) {
+            getCurrentGrnBillPre().setCreatedAt(Calendar.getInstance().getTime());
+        }
 
         // Initialize bill items collection if null (getBillItems() handles this automatically)
         getBillItems(); // This will initialize if null
