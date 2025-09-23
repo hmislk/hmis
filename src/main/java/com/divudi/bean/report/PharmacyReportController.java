@@ -2178,11 +2178,16 @@ public class PharmacyReportController implements Serializable {
             billItemsDtos = (List<BillItemDTO>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             netTotal = billItemsDtos.stream()
-                    .map(BillItemDTO::getBillNetTotal)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .mapToDouble(Double::doubleValue)
-                    .sum();
+                .filter(Objects::nonNull)
+                .mapToDouble(dto -> {
+                    Double retailRate = dto.getRetailRate();
+                    Double qty = dto.getQty();
+                    if (retailRate != null && qty != null) {
+                        return retailRate * qty;
+                    }
+                    return 0.0;
+                })
+                .sum();
 
         } catch (Exception e) {
             e.printStackTrace();
