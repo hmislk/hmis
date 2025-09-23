@@ -101,7 +101,7 @@
                                     <p:column>
                                         <f:facet name="header">Value</f:facet>
                                         <p:outputLabel value="#{bip.netValue}"><f:convertNumber pattern="#,##0.00"/></p:outputLabel>
-                                            
+
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -163,9 +163,13 @@
                                 </div>
 
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1',false)}"> 
+                                <phi:saleBill_Retail_Pos_paper_Custom_1 bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true"/>
+                            </h:panelGroup>
 
                         </h:panelGroup>
-                        
+    
                         <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
                             <phi:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_Header_Cancel>
                         </h:panelGroup>
