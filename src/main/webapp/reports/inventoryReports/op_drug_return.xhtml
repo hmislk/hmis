@@ -238,7 +238,7 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Ref Doc No">
+                            <p:column headerText="Ref Doc No" rendered="#{row.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS'}">
                                 <p:commandLink 
                                     value="#{row.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
@@ -246,6 +246,16 @@
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{row.bill.referenceBill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column headerText="Ref Doc No" rendered="#{row.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS'}">
+                                <p:commandLink 
+                                    value="#{row.bill.referenceBill.referenceBill.referenceBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{row.bill.referenceBill.referenceBill.referenceBill}"  target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
 
