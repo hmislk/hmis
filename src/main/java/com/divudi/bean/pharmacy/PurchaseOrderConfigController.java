@@ -28,6 +28,7 @@ public class PurchaseOrderConfigController implements Serializable {
     // Paper Type Settings for Purchase Order Request
     private boolean custom1Paper;
     private boolean custom2Paper;
+    private boolean letterPaper;
 
     public PurchaseOrderConfigController() {
     }
@@ -39,6 +40,7 @@ public class PurchaseOrderConfigController implements Serializable {
         // Purchase Order Request Paper Settings
         custom1Paper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Request Print - A4 Paper Custom 1", true);
         custom2Paper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Request Print - A4 Paper Custom 2", false);
+        letterPaper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Request Print - Letter Paper Format", true);
     }
 
     /**
@@ -49,6 +51,7 @@ public class PurchaseOrderConfigController implements Serializable {
             // Purchase Order Request Paper Settings
             configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Request Print - A4 Paper Custom 1", custom1Paper);
             configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Request Print - A4 Paper Custom 2", custom2Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Request Print - Letter Paper Format", letterPaper);
 
             JsfUtil.addSuccessMessage("Purchase Order configuration saved successfully");
 
@@ -76,4 +79,14 @@ public class PurchaseOrderConfigController implements Serializable {
     public void setCustom2Paper(boolean custom2Paper) {
         this.custom2Paper = custom2Paper;
     }
+
+    public boolean isLetterPaper() {
+        return letterPaper;
+    }
+
+    public void setLetterPaper(boolean letterPaper) {
+        this.letterPaper = letterPaper;
+    }
+    
+    
 }
