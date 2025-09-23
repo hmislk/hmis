@@ -28,11 +28,11 @@
                 <div class="d-flex justify-content-center gap-2">
                     <h:outputLabel value="Tel : "/>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{cc.attrs.bill.department.telephone2 ne ''}"/>
+                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{not empty cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
-                    <h:outputLabel value="Fax :" rendered="#{cc.attrs.bill.department.fax ne ''}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{cc.attrs.bill.department.fax ne ''}"/>
+                    <h:outputLabel value="Fax :" rendered="#{not empty cc.attrs.bill.department.fax}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
                     <h:outputLabel value="Email : "/>
