@@ -225,7 +225,7 @@
 
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tbl" oncomplete="restorePaginatorAfterPrint()"/>
+                                <p:printer target="tbl" />
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
@@ -328,7 +328,7 @@
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.billedBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                           
+
                             <p:column headerText="Ref Doc Date" width="5em">
                                 <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
                                               value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" >
@@ -336,7 +336,7 @@
                                 </h:outputText>
                                 <h:outputText 
                                     rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
-                                              value="#{f.pbItem.billItem.bill.billedBill.createdAt}" >
+                                    value="#{f.pbItem.billItem.bill.billedBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
 
@@ -363,7 +363,21 @@
                                 <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
-                                <h:outputText value="#{f.totalItemStock}" />
+                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                    <h:outputText value="#{f.stockQty}" />
+                                    <p:badge value="Dept" ></p:badge>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                        <h:outputText value="#{f.institutionItemStock}" />
+                                        <p:badge value="Ins" ></p:badge>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                        <h:outputText value="#{f.totalItemStock}" />
+                                        <p:badge value="Tot" ></p:badge>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
                             </p:column>
                             <p:column headerText="Rate" width="5em">
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
