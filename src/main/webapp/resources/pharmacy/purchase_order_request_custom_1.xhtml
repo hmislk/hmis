@@ -142,6 +142,11 @@
                 </h:outputLabel>
             </div>
             <div>
+                <h:outputLabel value="Printed By"/>
+                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                #{sessionController.loggedUser.name}
+            </div>
+            <div>
                 <h:outputLabel value="Printed At"/>
                 <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                 <h:outputLabel value="#{sessionController.currentDate}">
