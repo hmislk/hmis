@@ -650,10 +650,15 @@
                             rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4',true)}"  >
                             <pha:grn_with_costing bill="#{grnCostingController.grnBill}"/>
                         </h:panelGroup>
-                        <h:panelGroup 
-                            class="d-flex justify-content-center" 
+                        <h:panelGroup
+                            class="d-flex justify-content-center"
                             rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1',true)}"  >
                             <pha:grn_with_costing_custom_1 bill="#{grnCostingController.grnBill}"/>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            class="d-flex justify-content-center"
+                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 2',true)}"  >
+                            <pha:grn_with_costing_custom_2 bill="#{grnCostingController.grnBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>
                 </p:panel>
@@ -699,6 +704,14 @@
                                             value="#{pharmacyRetailConfigController.grnReceiptCustom1}" />
                                         <p:outputLabel for="grnCustom1Paper" value="Custom Format 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom GRN receipt template design 1</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="grnCustom2Paper"
+                                            value="#{pharmacyRetailConfigController.grnReceiptCustom2}" />
+                                        <p:outputLabel for="grnCustom2Paper" value="Custom Format 2" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom GRN receipt template design 2</small>
                                     </div>
                                 </div>
                             </div>

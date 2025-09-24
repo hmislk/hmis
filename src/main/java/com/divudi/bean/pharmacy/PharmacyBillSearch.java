@@ -504,7 +504,13 @@ public class PharmacyBillSearch implements Serializable {
         
         this.bill = bill;
         
-        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
+        if(bill.getBillType() == BillType.PurchaseReturn){
+            return "/pharmacy/pharmacy_reprint_purchase_return?faces-redirect=true";
+        }else{
+            return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
+        }
+ 
+        
     }
 
     public String cancelInwardPharmacyRequestBillFromInward() {
@@ -735,7 +741,6 @@ public class PharmacyBillSearch implements Serializable {
         for (BillItem bItem : getBill().getBillItems()) {
             try {
                 if (bItem == null) {
-                    System.err.println("BillItem is null, skipping.");
                     continue;
                 }
 
@@ -768,15 +773,12 @@ public class PharmacyBillSearch implements Serializable {
                     if (ph.getStock() != null) {
                         getPharmacyBean().addToStock(ph.getStock(), qty, ph, department);
                     } else {
-                        System.err.println("Stock is null for PharmaceuticalBillItem: " + ph);
                     }
                 } else {
-                    System.err.println("PharmaceuticalBillItem is null for BillItem: " + bItem);
                 }
 
                 billItems.add(newBillItem);
             } catch (Exception e) {
-                System.err.println("Error processing BillItem: " + bItem);
                 e.printStackTrace();
                 throw e; // Re-throw to trigger transaction rollback
             }

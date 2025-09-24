@@ -347,7 +347,7 @@
                                         required="true"
                                         requiredMessage="Please select a payment method">
                                         <f:selectItem itemLabel="Select payment method"/>
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForGrn}"/>
                                         <p:ajax process="cmbPaymentMethod" update="paymentDetails" />
                                     </p:selectOneMenu>
                                     <p:message for="cmbPaymentMethod" />

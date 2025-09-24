@@ -37,13 +37,13 @@
 
                             <!-- Conditional action listeners based on token system configuration -->
                             <p:commandButton
-                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                 style="display: none;"
                                 actionListener="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}" >
                             </p:commandButton>
 
                             <p:commandButton
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                 style="display: none;"
                                 actionListener="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem}" >
                             </p:commandButton>
@@ -60,6 +60,12 @@
                         <h:panelGroup   id="gpBillWithItem" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
                             <div style="page-break-inside: avoid;">
                                 <ph:saleBill bill="#{pharmacyPreSettleController.bill}"></ph:saleBill>
+                            </div>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup   id="gpBillWithItemCustom" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1',true)}">
+                            <div style="page-break-inside: avoid;">
+                                <ph:saleBill_Pos_paper_Custom_1 bill="#{pharmacyPreSettleController.bill}"></ph:saleBill_Pos_paper_Custom_1>
                             </div>
                         </h:panelGroup>
 
@@ -116,6 +122,14 @@
                                                 value="#{pharmacyRetailConfigController.settlePaymentPosPaper}" />
                                             <p:outputLabel for="settlePosPaper" value="POS Paper with Items" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard thermal printer paper format with item details</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settlePosPaperCustom1"
+                                                value="#{pharmacyRetailConfigController.settlePaymentPosPaperCustom1}" />
+                                            <p:outputLabel for="settlePosPaperCustom1" value="POS Paper Custom 1 with Items" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom thermal printer paper format with item details</small>
                                         </div>
 
                                         <div class="mb-3">

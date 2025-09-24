@@ -64,6 +64,7 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
+    @Deprecated
     private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
@@ -97,6 +98,8 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+    @Inject
+    private com.divudi.bean.common.SearchController searchController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
@@ -162,6 +165,11 @@ public class TransferReceiveController implements Serializable {
         fromDate = null;
         toDate = null;
         selectedBillItem = null;
+
+        // Refresh the issued list data to show updated fullyIssued status
+        if (searchController != null) {
+            searchController.createIssueTable();
+        }
     }
 
     public TransferReceiveController() {
@@ -1333,14 +1341,17 @@ public class TransferReceiveController implements Serializable {
         this.selectedBillItem = selectedBillItem;
     }
 
+    @Deprecated
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
 
+    @Deprecated
     public void setShowAllBillFormats(boolean showAllBillFormats) {
         this.showAllBillFormats = showAllBillFormats;
     }
 
+    @Deprecated
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";

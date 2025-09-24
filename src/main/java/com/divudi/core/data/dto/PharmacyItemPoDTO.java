@@ -30,9 +30,13 @@ public class PharmacyItemPoDTO implements Serializable {
     private Double completedFreeQty;
     private Double completedQty;
 
+    private Double remainingFreeQty;
+    private Double remainingQty;
+
     public PharmacyItemPoDTO() {
     }
 
+    // Original constructor for backward compatibility
     public PharmacyItemPoDTO(Long billId,
             String billDeptId,
             Date billCreatedAt,
@@ -53,6 +57,33 @@ public class PharmacyItemPoDTO implements Serializable {
         this.freeQty = freeQty;
         this.completedQty = completedQty;
         this.completedFreeQty = completedFreeQty;
+    }
+
+    // Extended constructor with remaining quantities
+    public PharmacyItemPoDTO(Long billId,
+            String billDeptId,
+            Date billCreatedAt,
+            String supplierName,
+            String creatorName,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double completedQty,
+            Double completedFreeQty,
+            Double remainingQty,
+            Double remainingFreeQty) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.supplierName = supplierName;
+        this.creatorName = creatorName;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.completedQty = completedQty;
+        this.completedFreeQty = completedFreeQty;
+        this.remainingQty = remainingQty;
+        this.remainingFreeQty = remainingFreeQty;
     }
 
     public Long getBillId() {
@@ -134,6 +165,22 @@ public class PharmacyItemPoDTO implements Serializable {
     public void setCompletedQty(Double completedQty) {
         this.completedQty = completedQty;
     }
-    
-    
+
+    public Double getRemainingFreeQty() {
+        return remainingFreeQty;
+    }
+
+    public void setRemainingFreeQty(Double remainingFreeQty) {
+        this.remainingFreeQty = remainingFreeQty;
+    }
+
+    public Double getRemainingQty() {
+        return remainingQty;
+    }
+
+    public void setRemainingQty(Double remainingQty) {
+        this.remainingQty = remainingQty;
+    }
+
+
 }

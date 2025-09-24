@@ -232,16 +232,16 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return;
         }
 
-        if (billItems == null || billItems.isEmpty()) {
-            JsfUtil.addErrorMessage("No items to save");
-            return;
-        }
-
-        // Validate stock availability before saving
-        if (!validateAllItemsStockAvailability(true)) {
-            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
-            return;
-        }
+//        if (billItems == null || billItems.isEmpty()) {
+//            JsfUtil.addErrorMessage("No items to save");
+//            return;
+//        }
+//
+//        // Validate stock availability before saving
+//        if (!validateAllItemsStockAvailability(true)) {
+//            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
+//            return;
+//        }
 
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
@@ -1423,6 +1423,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setDepartment(sessionController.getDepartment());
+        
+        //Copy Payment Method from Direct Purchase
+        currentBill.setPaymentMethod(originalDirectPurchase.getPaymentMethod());
 
         // Generate items from Direct Purchase (similar to legacy prepareReturnBill)
         // generateItemsFromDirectPurchase(); commented out as this method is NOT working correctly

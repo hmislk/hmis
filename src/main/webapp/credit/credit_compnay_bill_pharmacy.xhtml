@@ -259,10 +259,21 @@
                             icon="fa fa-plus"
                             class="ui-button-warning mx-3 my-3">
                         </p:commandButton>
+                           <p:commandButton
+                               value="To Cancel Bill"
+                               disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
+                               icon="pi pi-times"
+                               ajax="false"
+                               action="credit_company_bill_pharmacy_cancel" 
+                               styleClass="ui-button-danger mx-3 my-3">
+                               <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
+                        </p:commandButton>
                         <p:commandButton value="Print"
-                                         icon="pi pi-print"
+                                         icon="fa fa-print"
                                          styleClass="ui-button-info"
-                                         ajax="false">
+                                         ajax="false"
+                                         class="ui-button-info mx-3 my-3"
+                                         >
                             <p:printer target="gpBillPreview"/>
                         </p:commandButton>
                     </div>

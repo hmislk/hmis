@@ -636,12 +636,28 @@ public class TransferIssueController implements Serializable {
 
         getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
 
-        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
-        if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
-            getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        String billId = "";
+        String insId = "";
+        String deptId = "";
+        boolean billNumberGenerationStrategyForPharmacyTransferIssueIsByBillYearTypeAtomicAndLoggedDepartment
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Transfer Issue Is By Year, Bill Type Atomic And Logged Department", false);
+
+        if (billNumberGenerationStrategyForPharmacyTransferIssueIsByBillYearTypeAtomicAndLoggedDepartment) {
+            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            insId=billId;
+            deptId=billId;
         } else {
-            getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+            insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
+                deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            } else {
+                deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            }
         }
+        getIssuedBill().setInsId(insId);
+        getIssuedBill().setDeptId(deptId);
 
         getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
         getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
@@ -784,13 +800,28 @@ public class TransferIssueController implements Serializable {
 
         getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSave);
 
-        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        String billId = "";
+        String insId = "";
+        String deptId = "";
+        boolean billNumberGenerationStrategyForPharmacyTransferIssueIsByBillYearTypeAtomicAndLoggedDepartment
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Transfer Issue Is By Year, Bill Type Atomic And Logged Department", false);
 
-        if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
-            getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        if (billNumberGenerationStrategyForPharmacyTransferIssueIsByBillYearTypeAtomicAndLoggedDepartment) {
+            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_ISSUE);
+            insId=billId;
+            deptId=billId;
         } else {
-            getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+            insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
+                deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            } else {
+                deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            }
         }
+        getIssuedBill().setInsId(insId);
+        getIssuedBill().setDeptId(deptId);
 
         getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getSessionController().getDepartment());
@@ -1362,6 +1393,8 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setReferenceBill(getRequestedBill());
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());
+        }else{
+            getBillFacade().edit(getIssuedBill());
         }
     }
 

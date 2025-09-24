@@ -83,6 +83,10 @@ public class StockHistory implements Serializable, RetirableEntity {
     private Double institutionItemStockValueAtPurchaseRate;
     private Double totalItemStockValueAtPurchaseRate;
 
+    private Double itemStockValueAtCostRate;
+    private Double institutionItemStockValueAtCostRate;
+    private Double totalItemStockValueAtCostRate;
+
 
     //Created Properties
     @ManyToOne
@@ -418,6 +422,30 @@ public class StockHistory implements Serializable, RetirableEntity {
 
     public void setTotalItemStockValueAtPurchaseRate(Double totalItemStockValueAtPurchaseRate) {
         this.totalItemStockValueAtPurchaseRate = totalItemStockValueAtPurchaseRate;
+    }
+
+    public Double getItemStockValueAtCostRate() {
+        return itemStockValueAtCostRate;
+    }
+
+    public void setItemStockValueAtCostRate(Double itemStockValueAtCostRate) {
+        this.itemStockValueAtCostRate = itemStockValueAtCostRate;
+    }
+
+    public Double getInstitutionItemStockValueAtCostRate() {
+        return institutionItemStockValueAtCostRate;
+    }
+
+    public void setInstitutionItemStockValueAtCostRate(Double institutionItemStockValueAtCostRate) {
+        this.institutionItemStockValueAtCostRate = institutionItemStockValueAtCostRate;
+    }
+
+    public Double getTotalItemStockValueAtCostRate() {
+        return totalItemStockValueAtCostRate;
+    }
+
+    public void setTotalItemStockValueAtCostRate(Double totalItemStockValueAtCostRate) {
+        this.totalItemStockValueAtCostRate = totalItemStockValueAtCostRate;
     }
 
 }

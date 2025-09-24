@@ -460,25 +460,37 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
+        String billId = "";
         String deptId = "";
         String insId = "";
 
-        boolean billNumberGeberationStrategyForFromDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
-        boolean billNumberGeberationStrategyForToDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
-        boolean billNumberGeberationStrategyForFromAndToDepts = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+        boolean billNumberGenerationStrategyForPharmacyDisposalIssueIsByBillYearTypeAtomicAndLoggedDepartment
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Disposal Issue Is By Year, Bill Type Atomic And Logged Department", false);
 
-        if (billNumberGeberationStrategyForFromDept) {
-            deptId = generateBillNumberForFromDepartment();
-            insId = deptId;
-        } else if (billNumberGeberationStrategyForToDept) {
-            deptId = generateBillNumberForToDepartment();
-            insId = deptId;
-        } else if (billNumberGeberationStrategyForFromAndToDepts) {
-            deptId = generateBillNumberForFromAndToDepartmentsCorrected();
-            insId = deptId;
+        if (billNumberGenerationStrategyForPharmacyDisposalIssueIsByBillYearTypeAtomicAndLoggedDepartment) {
+            billId = billNumberBean.departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            insId=billId;
+            deptId=billId;
         } else {
-            deptId = generateInstitutionBillNumber();
-            insId = generateInstitutionBillNumberForInstitution();
+            boolean billNumberGeberationStrategyForFromDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
+            boolean billNumberGeberationStrategyForToDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
+            boolean billNumberGeberationStrategyForFromAndToDepts = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+
+            if (billNumberGeberationStrategyForFromDept) {
+                deptId = generateBillNumberForFromDepartment();
+                insId = deptId;
+            } else if (billNumberGeberationStrategyForToDept) {
+                deptId = generateBillNumberForToDepartment();
+                insId = deptId;
+            } else if (billNumberGeberationStrategyForFromAndToDepts) {
+                deptId = generateBillNumberForFromAndToDepartmentsCorrected();
+                insId = deptId;
+            } else {
+                deptId = generateInstitutionBillNumber();
+                insId = generateInstitutionBillNumberForInstitution();
+            }
         }
 
         getPreBill().setDeptId(deptId);

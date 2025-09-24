@@ -229,16 +229,16 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         
-        if (billItems == null || billItems.isEmpty()) {
-            JsfUtil.addErrorMessage("No items to save");
-            return;
-        }
-        
-        // Validate stock availability before saving
-        if (!validateAllItemsStockAvailability(true)) {
-            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
-            return;
-        }
+//        if (billItems == null || billItems.isEmpty()) {
+//            JsfUtil.addErrorMessage("No items to save");
+//            return;
+//        }
+//        
+//        // Validate stock availability before saving
+//        if (!validateAllItemsStockAvailability(true)) {
+//            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
+//            return;
+//        }
         
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
@@ -1419,6 +1419,9 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setDepartment(sessionController.getDepartment());
+        
+        //Copy Payment Method Details from GRN to GRN Return
+        currentBill.setPaymentMethod(originalGrn.getPaymentMethod());
 
         // Generate items from GRN (similar to legacy prepareReturnBill)
         // generateItemsFromGrn(); commendted out as this method is NOT working correctl

@@ -159,6 +159,7 @@ public class WebUserController implements Serializable {
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
+    private String output;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -893,6 +894,113 @@ public class WebUserController implements Serializable {
         return "/hr/hr_staff_admin?faces-redirect=true";
     }
 
+    public void addWebUserCodesFromUserNames() {
+        output = null;
+        String jpql = "select wu from WebUser wu "
+                + " where wu.retired=false "
+                + " and (wu.code is null or length(wu.code)=0) "
+                + " and wu.name is not null and length(wu.name)>0";
+        List<WebUser> users = getFacade().findByJpql(jpql);
+        int updated = 0;
+        if (users != null) {
+            for (WebUser wu : users) {
+                if (wu == null) {
+                    continue;
+                }
+                String uname = wu.getName();
+                if (uname == null) {
+                    continue;
+                }
+                String trimmed = uname.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                wu.setCode(trimmed);
+                try {
+                    getFacade().edit(wu);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated web user codes: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
+    public void addStaffCodesFromUserCodes() {
+        output = null;
+        String jpql = "select wu from WebUser wu "
+                + " where wu.retired=false "
+                + " and wu.staff is not null "
+                + " and (wu.staff.code is null or length(wu.staff.code)=0) "
+                + " and wu.code is not null and length(wu.code)>0";
+        List<WebUser> users = getFacade().findByJpql(jpql);
+        int updated = 0;
+        if (users != null) {
+            for (WebUser wu : users) {
+                if (wu == null) {
+                    continue;
+                }
+                Staff s = wu.getStaff();
+                if (s == null) {
+                    continue;
+                }
+                String ucode = wu.getCode();
+                if (ucode == null) {
+                    continue;
+                }
+                String trimmed = ucode.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                s.setCode(trimmed);
+                try {
+                    getStaffFacade().edit(s);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated staff codes: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
+    public void addStaffStaffCodesFromCodes() {
+        output = null;
+        String jpql = "select s from Staff s "
+                + " where s.retired=false "
+                + " and (s.staffCode is null or length(s.staffCode)=0) "
+                + " and s.code is not null and length(s.code)>0";
+        List<Staff> staffList = getStaffFacade().findByJpql(jpql);
+        int updated = 0;
+        if (staffList != null) {
+            for (Staff s : staffList) {
+                if (s == null) {
+                    continue;
+                }
+                String c = s.getCode();
+                if (c == null) {
+                    continue;
+                }
+                String trimmed = c.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                s.setStaffCode(trimmed);
+                try {
+                    getStaffFacade().edit(s);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated staff.staffCode: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
     public String navigateToEditPasswordByAdmin() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -1042,6 +1150,14 @@ public class WebUserController implements Serializable {
         }
         current = selected;
         return sessionController.navigateToManageWebUserPreferences(current);
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 
     public void addWebUserDashboard() {
