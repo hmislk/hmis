@@ -1330,9 +1330,28 @@ public class PharmacyBean {
         sh.setStockQty(fetchedStock.getStock());
 
         // Use AMP for stock calculations since stocks are stored for AMPs only
-        double itemStock = getStockQty(amp, phItem.getBillItem().getBill().getDepartment());
-        double institutionStock = getStockQty(amp, phItem.getBillItem().getBill().getFromDepartment().getInstitution());
+        // Defensive null checks for Bill and related references
+        Bill bill = phItem.getBillItem().getBill();
+        Department billDepartment = null;
+        Institution billInstitution = null;
+        if (bill != null) {
+            billDepartment = bill.getDepartment();
+            Department fromDepartment = bill.getFromDepartment();
+            if (fromDepartment != null) {
+                billInstitution = fromDepartment.getInstitution();
+            }
+        }
+
+        double itemStock = 0.0;
+        double institutionStock = 0.0;
         double totalStock = getStockQty(amp);
+
+        if (billDepartment != null) {
+            itemStock = getStockQty(amp, billDepartment);
+        }
+        if (billInstitution != null) {
+            institutionStock = getStockQty(amp, billInstitution);
+        }
 
         sh.setItemStock(itemStock);
         sh.setItem(originalItem); // Keep original item reference for history
