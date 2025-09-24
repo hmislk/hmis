@@ -1189,10 +1189,29 @@ public class PharmacyBean {
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
         }
-        
-        sh.setItemStock(getStockQty(amp, d));
-        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
-        sh.setTotalItemStock(getStockQty(amp));
+
+        double itemStock = getStockQty(amp, d);
+        double institutionStock = getStockQty(amp, d.getInstitution());
+        double totalStock = getStockQty(amp);
+
+        sh.setItemStock(itemStock);
+        sh.setInstitutionItemStock(institutionStock);
+        sh.setTotalItemStock(totalStock);
+
+        // Calculate stock values at different rates
+        if (fetchedStock.getItemBatch() != null) {
+            double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
+
+            sh.setItemStockValueAtPurchaseRate(itemStock * purchaseRate);
+            sh.setInstitutionItemStockValueAtPurchaseRate(institutionStock * purchaseRate);
+            sh.setTotalItemStockValueAtPurchaseRate(totalStock * purchaseRate);
+
+            sh.setItemStockValueAtCostRate(itemStock * costRate);
+            sh.setInstitutionItemStockValueAtCostRate(institutionStock * costRate);
+            sh.setTotalItemStockValueAtCostRate(totalStock * costRate);
+        }
 
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
@@ -1241,9 +1260,29 @@ public class PharmacyBean {
         // Ensure AMP is used for item tracking
         sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
-        sh.setItemStock(getStockQty(amp, d));
-        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
-        sh.setTotalItemStock(getStockQty(amp));
+
+        double itemStock = getStockQty(amp, d);
+        double institutionStock = getStockQty(amp, d.getInstitution());
+        double totalStock = getStockQty(amp);
+
+        sh.setItemStock(itemStock);
+        sh.setInstitutionItemStock(institutionStock);
+        sh.setTotalItemStock(totalStock);
+
+        // Calculate stock values at different rates
+        if (fetchedStock.getItemBatch() != null) {
+            double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
+
+            sh.setItemStockValueAtPurchaseRate(itemStock * purchaseRate);
+            sh.setInstitutionItemStockValueAtPurchaseRate(institutionStock * purchaseRate);
+            sh.setTotalItemStockValueAtPurchaseRate(totalStock * purchaseRate);
+
+            sh.setItemStockValueAtCostRate(itemStock * costRate);
+            sh.setInstitutionItemStockValueAtCostRate(institutionStock * costRate);
+            sh.setTotalItemStockValueAtCostRate(totalStock * costRate);
+        }
 
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
@@ -1289,13 +1328,53 @@ public class PharmacyBean {
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
 
         sh.setStockQty(fetchedStock.getStock());
+
         // Use AMP for stock calculations since stocks are stored for AMPs only
-        sh.setItemStock(getStockQty(amp, phItem.getBillItem().getBill().getDepartment()));
-        sh.setItem(originalItem); // Keep original item reference for history
+        // Defensive null checks for Bill and related references
+        Bill bill = phItem.getBillItem().getBill();
+        Department billDepartment = null;
+        Institution billInstitution = null;
+        if (bill != null) {
+            billDepartment = bill.getDepartment();
+            Department fromDepartment = bill.getFromDepartment();
+            if (fromDepartment != null) {
+                billInstitution = fromDepartment.getInstitution();
+            }
+        }
+
+        double itemStock = 0.0;
+        double institutionStock = 0.0;
+        double totalStock = getStockQty(amp);
+
+        if (billDepartment != null) {
+            itemStock = getStockQty(amp, billDepartment);
+        }
+        if (billInstitution != null) {
+            institutionStock = getStockQty(amp, billInstitution);
+        }
+
+        sh.setItemStock(itemStock);
+        // Store AMP for consistency with department-based history methods
+        sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setCreatedAt(new Date());
-        sh.setInstitutionItemStock(getStockQty(amp, phItem.getBillItem().getBill().getFromDepartment().getInstitution()));
-        sh.setTotalItemStock(getStockQty(amp));
+        sh.setInstitutionItemStock(institutionStock);
+        sh.setTotalItemStock(totalStock);
+
+        // Calculate stock values at different rates
+        if (fetchedStock.getItemBatch() != null) {
+            double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
+
+            sh.setItemStockValueAtPurchaseRate(itemStock * purchaseRate);
+            sh.setInstitutionItemStockValueAtPurchaseRate(institutionStock * purchaseRate);
+            sh.setTotalItemStockValueAtPurchaseRate(totalStock * purchaseRate);
+
+            sh.setItemStockValueAtCostRate(itemStock * costRate);
+            sh.setInstitutionItemStockValueAtCostRate(institutionStock * costRate);
+            sh.setTotalItemStockValueAtCostRate(totalStock * costRate);
+        }
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
         } else {

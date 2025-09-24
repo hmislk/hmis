@@ -149,8 +149,6 @@ public class TransferRequestController implements Serializable {
             String billDate = (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
             String billStatus = b.getStatus() == null ? "" : b.getStatus().toString();
 
-
-
             filledHeader = s.replace("{{from_dept}}", fromDepartment)
                     .replace("{{from_ins}}", fromInstitution)
                     .replace("{{to_dept}}", toDepartment)
@@ -559,6 +557,18 @@ public class TransferRequestController implements Serializable {
         bill.copy(transferRequestBillPre);
         bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         bill.setBillType(BillType.PharmacyTransferRequest);
+        if (bill.getInstitution() == null) {
+            bill.setInstitution(sessionController.getInstitution());
+        }
+        if (bill.getDepartment() == null) {
+            bill.setDepartment(sessionController.getDepartment());
+        }
+        if (bill.getCreater() == null) {
+            bill.setCreater(sessionController.getLoggedUser());
+        }
+        if (bill.getCreatedAt() == null) {
+            bill.setCreatedAt(new Date());
+        }
         billItems = new ArrayList<>();
         for (BillItem requestItemInPreBill : getTransferRequestBillPre().getBillItems()) {
             BillItem newBillItemInApprovedRequest = new BillItem();
