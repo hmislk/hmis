@@ -360,9 +360,9 @@
 
                         <p:dataTable id="tbl"
                                      value="#{pharmacyReportController.pharmacyRows}" var="bi">
-                            <p:column headerText="Staff">
+                            <p:column headerText="Bill">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff"/>
+                                    <h:outputLabel value="Bill"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.billItem.bill.deptId}"/>
                                 <p:commandButton 
