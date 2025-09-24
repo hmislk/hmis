@@ -85,6 +85,18 @@ public class PatientDepositService {
                 handleOutPayment(p, pd);
                 break;
 
+            case PHARMACY_RETAIL_SALE:
+                handleOutPayment(p, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                handleInPayment(p, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_REFUND:
+                handleInPayment(p, pd);
+                break;
+
             case OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BILL_CANCELLATION:
@@ -126,6 +138,18 @@ public class PatientDepositService {
             case OPD_BATCH_BILL_WITH_PAYMENT:
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
                 handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                handleOPDBillCancel(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_REFUND:
+                handleOPDBillCancel(b, pd);
                 break;
 
             case OPD_BATCH_BILL_CANCELLATION:

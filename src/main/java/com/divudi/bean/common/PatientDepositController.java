@@ -443,6 +443,18 @@ public class PatientDepositController implements Serializable, ControllerWithPat
                 handleOPDBill(b, pd);
                 break;
 
+            case PHARMACY_RETAIL_SALE:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                handleOPDBillCancel(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_REFUND:
+                handleOPDBillCancel(b, pd);
+                break;
+
             case OPD_BATCH_BILL_CANCELLATION:
                 handleOPDBillCancel(b, pd);
                 break;
