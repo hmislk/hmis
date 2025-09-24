@@ -298,22 +298,16 @@
 
                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-clock ml-5"/>
-                                <p:outputLabel value="Show only Pending" class="mx-2" for="pendingDocsToggle">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:toggleSwitch id="pendingDocsToggle"
-                                            class="custom-toggle"
-                                            value="#{pharmacyReportController.showData}">
-                            </p:toggleSwitch>
+                            <!-- REMOVED: Show Only Pending checkbox - replaced with improved Document Status dropdown -->
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-exchange-alt ml-5"/>
                                 <p:outputLabel value="Issuing/Returning Doc.Status" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100" value="#{pharmacyReportController.reportType}">
-                                <!--<f:selectItem itemLabel="All" ></f:selectItem>-->
+                                <f:selectItem itemLabel="Any" itemValue="any"/>
                                 <f:selectItem itemLabel="Pending" itemValue="pending"/>
                                 <f:selectItem itemLabel="Accepted" itemValue="accepted"/>
                                 <f:selectItem itemLabel="Cancelled by Issuing" itemValue="issueCancel"/>
@@ -448,7 +442,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="To Department"/>
                                 </f:facet>
-                                <h:outputLabel value="#{bi.billItem.bill.fromDepartment.name}">
+                                <h:outputLabel value="#{bi.billItem.bill.toDepartment.name}">
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Issued Date"
