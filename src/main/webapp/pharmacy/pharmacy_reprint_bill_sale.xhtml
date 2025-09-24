@@ -137,6 +137,10 @@
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
                                 <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header>
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1',false)}"> 
+                                <ph:saleBill_Retail_Pos_paper_Custom_1 bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Retail_Pos_paper_Custom_1>
+                            </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
                                 <ph:sale_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
