@@ -1354,7 +1354,8 @@ public class PharmacyBean {
         }
 
         sh.setItemStock(itemStock);
-        sh.setItem(originalItem); // Keep original item reference for history
+        // Store AMP for consistency with department-based history methods
+        sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setCreatedAt(new Date());
         sh.setInstitutionItemStock(institutionStock);
