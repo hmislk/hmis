@@ -84,7 +84,7 @@ root {
     .no-border-table .ui-datatable-header {
         border: none !important;
     }
-    
+
 }
 
 /* Text formatting */
@@ -153,3 +153,21 @@ root {
     padding: 1px 2px !important;
     line-height: 1.1 !important;
 }
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table th {
+    border: 1px solid black;
+    padding-left: 5px;
+}
+
+.items-table td {
+    border: 1px solid black;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+
