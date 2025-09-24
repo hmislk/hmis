@@ -2920,6 +2920,9 @@ public class PharmacyReportController implements Serializable {
 
             sql.append(" order by bi.bill.id ");
 
+            System.out.println("sql = " + sql);
+            System.out.println("parameters = " + parameters);
+            
             billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             if (billItems.isEmpty()) {

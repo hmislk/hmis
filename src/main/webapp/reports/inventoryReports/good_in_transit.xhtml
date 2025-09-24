@@ -443,6 +443,14 @@
                                 <h:outputLabel value="#{bi.billItem.bill.fromDepartment.name}">
                                 </h:outputLabel>
                             </p:column>
+                             <p:column 
+                                      sortBy="#{bi.billItem.bill.toDepartment.name}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="To Department"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bi.billItem.bill.fromDepartment.name}">
+                                </h:outputLabel>
+                            </p:column>
                             <p:column headerText="Issued Date"
                                       sortBy="#{bi.billItem.bill.createdAt}">
                                 <f:facet name="header">
@@ -478,6 +486,13 @@
                                 </f:facet>
                                 <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                             <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Comments"/>
+                                </f:facet>
+                                 <h:outputLabel value="#{bi.billItem.bill.comments}">
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
