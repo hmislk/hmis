@@ -1209,16 +1209,20 @@ public class ChannelService {
 
     public List<Payment> fetchCardPaymentsFromChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus) {
         String jpql = "Select p from Payment p where "
-                + " p.bill.billType = :bt and p.bill.billTypeAtomic in :bta "
+                + " p.bill.billType in :bt and p.bill.billTypeAtomic in :bta "
                 + " and p.paymentMethod = :type"
                 + " and p.bill.retired = false "
                 + " and p.bill.createdAt between :fromDate and :toDate ";
 
         Map params = new HashMap();
-        params.put("bt", BillType.ChannelCash);
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        params.put("bt", bts);
 
         List<BillTypeAtomic> bta = new ArrayList<>();
         bta.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        bta.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
 
         if (reportStatus != null && reportStatus.equalsIgnoreCase("Details")) {
             bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
