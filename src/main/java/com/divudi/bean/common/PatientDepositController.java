@@ -447,6 +447,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
                 handleOPDBill(b, pd);
                 break;
 
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                handleOPDBill(b, pd);
+                break;
+
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 handleOPDBillCancel(b, pd);
                 break;

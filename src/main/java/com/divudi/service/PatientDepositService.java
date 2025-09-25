@@ -99,6 +99,10 @@ public class PatientDepositService {
                 handleOutPayment(p, pd);
                 break;
 
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                handleOutPayment(p, pd);
+                break;
+
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 handleInPayment(p, pd);
                 break;
@@ -151,6 +155,10 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
                 handleOPDBill(b, pd);
                 break;
 
