@@ -6,9 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Scanner;
+import java.util.Properties;
 
 /**
  *
@@ -18,12 +16,16 @@ import java.util.Scanner;
 @ApplicationScoped
 public class VersionController {
 
-    private String systemVersion; // Public vareiable to store the system version read from the file
-    private String latestVersion;
+    private String systemVersion; // Stores the system version read from VERSION.txt
+
+    // Build / Git metadata populated from git.properties (generated at build time)
+    private String gitCommitIdAbbrev;
+    private String gitBranch;
+    private String gitBuildTime;
 
     public VersionController() {
-        readFirstLine(); // Load first line content upon bean instantiation
-        fetchLatestVersion(); // Fetch latest version upon bean instantiation
+        readFirstLine();
+        loadGitInfo();
     }
 
     public String navigateToAboutSoftware() {
@@ -32,63 +34,63 @@ public class VersionController {
 
     public void readFirstLine() {
         try {
-            // Use getClassLoader() to load the VERSION.txt file from src/main/resources
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("VERSION.txt");
             if (inputStream != null) {
-                try ( BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                     String firstLine = reader.readLine();
                     if (firstLine != null && !firstLine.isEmpty()) {
                         systemVersion = firstLine.trim();
                     } else {
-                        systemVersion = null; // Set to a default or indicate unavailable
+                        systemVersion = null;
                     }
-                } // InputStream and BufferedReader are auto-closed here
+                }
             } else {
-                // Handle case where VERSION.txt does not exist or could not be found
-                systemVersion = null; // Indicate that the version is unavailable
+                systemVersion = null;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Handle any exceptions, e.g., file not found, read errors
-            systemVersion = null; // Default version or indicate unavailable
+            systemVersion = null;
         }
     }
 
-    /**
-     * Retrieves the latest software version from a remote GitHub repository and updates the {@code latestVersion} field.
-     *
-     * If the remote version file is unavailable or an error occurs during retrieval, {@code latestVersion} is set to {@code null}.
-     */
-    public void fetchLatestVersion() {
-        try {
-            // Create a URL object pointing to the VERSION.txt file in the GitHub repository
-            URL url = new URL("https://raw.githubusercontent.com/hmislk/hmis/staging/src/main/resources/VERSION.txt");
-
-            // Open a connection to the URL
-            try ( Scanner scanner = new Scanner(url.openStream(), StandardCharsets.UTF_8.name())) {
-                // Read the first line which contains the latest version
-                if (scanner.hasNextLine()) {
-                    latestVersion = scanner.nextLine().trim();
-                } else {
-                    latestVersion = null; // Set to a default or indicate unavailable
-                }
+    private void loadGitInfo() {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("git.properties")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                gitCommitIdAbbrev = props.getProperty("git.commit.id.abbrev", null);
+                gitBranch = props.getProperty("git.branch", null);
+                // Prefer a formatted build time if configured by the build plugin
+                String bt = props.getProperty("git.build.time", null);
+                gitBuildTime = (bt == null || bt.isEmpty()) ? null : bt;
+            } else {
+                gitCommitIdAbbrev = null;
+                gitBranch = null;
+                gitBuildTime = null;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            // Handle any exceptions, e.g., URL not found, read errors
-            latestVersion = null; // Default version or indicate unavailable
+            gitCommitIdAbbrev = null;
+            gitBranch = null;
+            gitBuildTime = null;
         }
     }
 
-    // Getter for systemVersion (to make it accessible from XHTML)
     public String getSystemVersion() {
-        readFirstLine(); // Load first line content upon bean instantiation
+        // Reload in case resource changed across redeploys
+        readFirstLine();
         return systemVersion;
     }
 
-    public String getLatestVersion() {
-        fetchLatestVersion(); // Fetch latest version upon bean instantiation
-        return latestVersion;
+    public String getGitCommitIdAbbrev() {
+        return gitCommitIdAbbrev;
     }
 
+    public String getGitBranch() {
+        return gitBranch;
+    }
+
+    public String getGitBuildTime() {
+        return gitBuildTime;
+    }
 }
