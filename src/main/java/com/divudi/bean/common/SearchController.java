@@ -8264,8 +8264,6 @@ public class SearchController implements Serializable {
     }
 
     public void createPreBillsForReturn() {
-        Date startTime = new Date();
-
         createPreBillsForReturn(BillType.PharmacyPre, BillType.PharmacySale);
 
     }
