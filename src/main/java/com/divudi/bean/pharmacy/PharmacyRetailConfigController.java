@@ -82,6 +82,7 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean transferIssuePosPaper;
     private boolean transferIssuePosHeaderPaper;
     private boolean transferIssueTemplate;
+    private boolean transferIssueCustom1;
 
     // Direct Purchase Settings
     private boolean directPurchaseA4Paper;
@@ -154,7 +155,8 @@ public class PharmacyRetailConfigController implements Serializable {
         transferIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue POS Paper", false);
         transferIssuePosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", false);
         transferIssueTemplate = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", false);
-
+        transferIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Issue Bill is Letter Paper Custom 1", false);
+        
         // Direct Purchase Settings
         directPurchaseA4Paper = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4", true);
         directPurchaseA4Details = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 Details", false);
@@ -224,6 +226,7 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue POS Paper", transferIssuePosPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", transferIssuePosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", transferIssueTemplate);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Letter Paper Custom 1", transferIssueCustom1);
 
             // Direct Purchase Settings
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
@@ -252,6 +255,7 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue POS Paper", transferIssuePosPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is PosHeaderPaper", transferIssuePosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Template", transferIssueTemplate);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Issue Bill is Letter Paper Custom 1", transferIssueCustom1);
 
             JsfUtil.addSuccessMessage("Transfer Issue configuration saved successfully");
 
@@ -639,5 +643,15 @@ public class PharmacyRetailConfigController implements Serializable {
     public void setDirectPurchaseCustom2(boolean directPurchaseCustom2) {
         this.directPurchaseCustom2 = directPurchaseCustom2;
     }
+
+    public boolean isTransferIssueCustom1() {
+        return transferIssueCustom1;
+    }
+
+    public void setTransferIssueCustom1(boolean transferIssueCustom1) {
+        this.transferIssueCustom1 = transferIssueCustom1;
+    }
+    
+    
 
 }

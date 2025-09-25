@@ -9,6 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -52,7 +53,8 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Transfer Issue Note"   />       
+                <h:outputLabel value="Transfer Issue Note"   />  
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
             </div>
 
