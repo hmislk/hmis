@@ -3341,11 +3341,13 @@ public class PharmacyReportController implements Serializable {
         }
 
         jpql.append("and sh.createdAt < :et ");
-        if ("Closing Stock".equals(type)) {
-            params.put("et", CommonFunctions.getEndOfDay(toDate));
+        if ("Opening Stock".equals(type)) {
+            //For cost of good sold report opening stock value report
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
         } else {
-            params.put("et", CommonFunctions.getStartOfDay(toDate));
+            params.put("et", CommonFunctions.getEndOfDay(toDate));
         }
+
         // Group by itemBatch (and department if you want per-department breakdown)
         jpql.append("group by sh.department, sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
@@ -3639,10 +3641,11 @@ public class PharmacyReportController implements Serializable {
 
         jpql.append("and sh.createdAt < :et ");
 
-        if ("Closing Stock".equals(type)) {
-            params.put("et", CommonFunctions.getEndOfDay(toDate));
+        if ("Opening Stock".equals(type)) {
+            //For cost of good sold report opening stock value report
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
         } else {
-            params.put("et", CommonFunctions.getStartOfDay(toDate));
+            params.put("et", CommonFunctions.getEndOfDay(toDate));
         }
 
         //        jpql.append("group by sh.department, sh.itemBatch.item ");

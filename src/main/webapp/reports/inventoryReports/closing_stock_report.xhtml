@@ -18,16 +18,31 @@
                         <h:panelGrid columns="8" class="w-100">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Date" for="toDate" class="m-3">
+                                <p:outputLabel value="Date"  class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:calendar
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                id="toDate"
-                                value="#{pharmacyReportController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:panelGroup rendered="#{reportController.reportTemplateFileIndexName eq 'Opening Stock'}">
+
+                                <p:calendar
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    id="fromDate"
+                                    value="#{pharmacyReportController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{reportController.reportTemplateFileIndexName ne 'Opening Stock'}">
+
+                                <p:calendar
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    id="toDate"
+                                    value="#{pharmacyReportController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:panelGroup>
+
 
                             <p:spacer width="20"/>
 
