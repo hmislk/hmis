@@ -11,6 +11,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
+        <cc:attribute name="cancel" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
     </cc:interface>
 
@@ -55,7 +56,7 @@
             <div class="headingBill">
                 <h:outputLabel value="Sale Bill"   />   
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true or cc.attrs.cancel eq true}" />
             </div>
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
@@ -327,7 +328,7 @@
                         </tr>
                         <tr >
                             <td style="text-align: left;">
-                                <h:outputLabel   value="Cashier" />
+                                <h:outputLabel   value="Prepared By" />
                             </td>
                             <td style="text-align: right; ">
                                 <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
