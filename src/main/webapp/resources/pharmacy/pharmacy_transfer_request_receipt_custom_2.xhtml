@@ -10,6 +10,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="reprint"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -28,18 +29,20 @@
                 </div>
             </div>
 
-        <div class="receipt-title">
-            <h:outputLabel value="Pharmacy Transfer Request" />
-        </div>
+            <div class="receipt-title">
+                <h:outputLabel value="Pharmacy Transfer Request" />
+                <br/>
+                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+            </div>
 
-        <div class="receipt-separator"><hr /></div>
+            <div class="receipt-separator"><hr /></div>
 
-        <div class="receipt-bill-details">
-            <h:outputText
+            <div class="receipt-bill-details">
+                <h:outputText
                     value="#{transferRequestController.fillHeaderDataOfTransferRequest(configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt Header'), cc.attrs.bill)}"
                     escape="false"
                     rendered="#{not empty transferRequestController.fillHeaderDataOfTransferRequest(configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt Header'), cc.attrs.bill)}"/>
-        </div>
+            </div>
         </div>
 
         <div class="receipt-separator"><hr /></div>
@@ -89,39 +92,39 @@
         <div class="receipt-items-section">
             <table class="receipt-items-table">
                 <thead>
-                <tr class="receipt-items-header">
-                    <th>No</th>
-                    <th class="item-name">Item Name</th>
-                    <th>Item Code</th>
-                    <th>Pack Size</th>
-                    <th>Qty</th>
-                </tr>
+                    <tr class="receipt-items-header">
+                        <th>No</th>
+                        <th class="item-name">Item Name</th>
+                        <th>Item Code</th>
+                        <th>Pack Size</th>
+                        <th>Qty</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
-                    <tr>
-                        <td>
-                            <h:outputText value="#{status.index + 1}" />
-                        </td>
-                        <td>
-                            <h:outputText value="#{bip.item.name}" />
-                        </td>
-                        <td>
-                            <h:outputText value="#{bip.item.code}" />
-                        </td>
-                        <td>
-                            <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class.simpleName eq 'Ampp'}">
-                                <f:convertNumber pattern="0.#" />
-                            </h:outputText>
-                            <h:outputText value="1" rendered="#{bip.item.class.simpleName eq 'Amp'}" />
-                        </td>
-                        <td>
-                            <h:outputText value="#{bip.qty}">
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputText>
-                        </td>
-                    </tr>
-                </ui:repeat>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
+                        <tr>
+                            <td>
+                                <h:outputText value="#{status.index + 1}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{bip.item.name}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{bip.item.code}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class.simpleName eq 'Ampp'}">
+                                    <f:convertNumber pattern="0.#" />
+                                </h:outputText>
+                                <h:outputText value="1" rendered="#{bip.item.class.simpleName eq 'Amp'}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{bip.qty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </ui:repeat>
 
                 </tbody>
             </table>
