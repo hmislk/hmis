@@ -112,12 +112,11 @@ public abstract class AbstractFacade<T> {
     public T findFirstByJpql(String jpql) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(1);
-        try {
-            T result = qry.getSingleResult();
-            return result;
-        } catch (Exception e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     public List<T> findByJpql(String jpql, Map<String, Object> parameters, Map<String, TemporalType> temporalTypes) {
@@ -246,11 +245,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        try {
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
@@ -274,11 +273,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        try {
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
 
     }
 
@@ -1200,13 +1199,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        T t;
-        try {
-            t = qry.getSingleResult();
-        } catch (Exception e) {
-            t = null;
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
+            return null;
         }
-        return t;
+        return results.get(0);
     }
 
     public <U> List<T> testMethod(U[] a, Collection<U> all) {
