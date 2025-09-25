@@ -194,7 +194,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
                 // Initialize patient deposit data for UI component
                 pm.getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
-                PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+                PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
                 if (pd != null && pd.getId() != null) {
                     pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                     pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
@@ -891,7 +891,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
             double creditLimitAbsolute = 0.0;
-            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
 
             if (pd == null) {
                 JsfUtil.addErrorMessage("No Patient Deposit");
@@ -994,7 +994,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
                     double creditLimitAbsolute = 0.0;
-                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
 
                     if (pd == null) {
                         JsfUtil.addErrorMessage("No Patient Deposit");
@@ -1868,7 +1868,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
             getPaymentMethodData().getPatient_deposit().setTotalValue(getPreBill().getNetTotal());
-            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
             if (pd != null && pd.getId() != null) {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
@@ -1878,7 +1878,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         } else if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
-            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
                 boolean hasPatientDeposit = false;
