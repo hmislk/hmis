@@ -28,7 +28,7 @@
                 <h:outputLabel value="Transfer Issue Note" />
                 <br />
                 <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
-                <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.cancelled eq true}" />
+                <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.cancelled eq true or cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div>
