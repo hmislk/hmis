@@ -31,6 +31,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -43,6 +45,8 @@ import javax.persistence.TemporalType;
  */
 @Stateless
 public class PaymentService {
+
+    private static final Logger LOGGER = Logger.getLogger(PaymentService.class.getName());
 
     @EJB
     PatientFacade patientFacade;
@@ -158,7 +162,11 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-            populatePaymentDetails(payment, pm, paymentMethodData);
+            if (!populatePaymentDetails(payment, pm, paymentMethodData)) {
+                LOGGER.log(Level.WARNING, "Skipping payment creation for bill {0} due to missing payment data for method {1}.",
+                        new Object[]{bill != null ? bill.getId() : null, pm});
+                return payments;
+            }
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
@@ -176,13 +184,18 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-        populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData());
+        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+            LOGGER.log(Level.WARNING,
+                    "Skipping payment component due to missing payment data. Bill={0}, PaymentMethod={1}.",
+                    new Object[]{bill != null ? bill.getId() : null, cd.getPaymentMethod()});
+            return null;
+        }
         return payment;
     }
 
-    private void populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
         if (paymentMethodData == null) {
-            return;
+            return false;
         }
 
         switch (paymentMethod) {
@@ -281,6 +294,7 @@ public class PaymentService {
             default:
                 break;
         }
+        return true;
     }
 
     public void updateBalances(List<Payment> payments) {
