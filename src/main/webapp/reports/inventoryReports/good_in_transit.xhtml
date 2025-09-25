@@ -360,18 +360,11 @@
 
                         <p:dataTable id="tbl"
                                      value="#{pharmacyReportController.pharmacyRows}" var="bi">
-                            <p:column headerText="Staff">
+                            <p:column headerText="Dep ID">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff"/>
+                                    <h:outputLabel value="Dep ID"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.billItem.bill.deptId}"/>
-                                <p:commandButton 
-                                    title="View"
-                                    ajax="false"
-                                    class="mx-1"
-                                    icon="pi pi-eye"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bi.billItem.bill.id)}" >
-                                </p:commandButton>
                             </p:column>
                             <p:column headerText="Staff">
                                 <f:facet name="header">
@@ -486,6 +479,18 @@
                                 </f:facet>
                                  <h:outputLabel value="#{bi.billItem.bill.comments}">
                                 </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Action">
+                                <f:facet name="header">
+                                <h:outputLabel value="Action"/>
+                                </f:facet>
+                                <p:commandButton 
+                                    title="View"
+                                    ajax="false"
+                                    class="mx-1"
+                                    icon="pi pi-eye"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bi.billItem.bill.id)}" >
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
 
