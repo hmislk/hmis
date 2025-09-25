@@ -2601,18 +2601,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     case Agent:
                     case Credit:
                     case PatientDeposit:
-                        if (getPatient().getRunningBalance() != null) {
-                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        } else {
-                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        }
-                        getPatientFacade().edit(getPatient());
                         p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        paymentFacade.create(p);
-                        PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-                        patientDepositService.updateBalance(p, pd);
-                        ps.add(p);
-                        continue;
+                        break;
                     case Slip:
                     case OnCall:
                     case OnlineSettlement:
@@ -2892,15 +2882,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             JsfUtil.addSuccessMessage("User Credit Updated");
-        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            if (getPatient().getRunningBalance() != null) {
-                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
-            } else {
-                getPatient().setRunningBalance(0.0 - netTotal);
-            }
-            getPatientFacade().edit(getPatient());
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getSaleBill(), pd);
         }
 
         paymentService.updateBalances(payments);

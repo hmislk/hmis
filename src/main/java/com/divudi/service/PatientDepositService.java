@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.entity.Bill;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -31,16 +33,24 @@ public class PatientDepositService {
     private PatientFacade patientFacade;
     @EJB
     PatientDepositHistoryFacade patientDepositHistoryFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
-                + " and pd.department.id=:dep "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-        m.put("dep", d.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", d.getId());
+        }
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);

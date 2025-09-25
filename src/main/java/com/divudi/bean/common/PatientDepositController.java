@@ -556,12 +556,19 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     @Deprecated // Use the methods in  PatientDepositService
     public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-//        m.put("dep", d.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", d.getId());
+        }
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
@@ -572,8 +579,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             pd = new PatientDeposit();
             pd.setBalance(0.0);
             pd.setPatient(p);
-            pd.setDepartment(sessionController.getDepartment());
-            pd.setInstitution(sessionController.getInstitution());
+            pd.setDepartment(d);
+            pd.setInstitution(d.getInstitution());
             pd.setCreater(sessionController.getLoggedUser());
             pd.setCreatedAt(new Date());
             patientDepositFacade.create(pd);
@@ -586,12 +593,19 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return new PatientDeposit();
         }
         Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-//        m.put("dep", d.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", d.getId());
+        }
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
