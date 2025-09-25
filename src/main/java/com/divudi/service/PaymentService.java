@@ -31,6 +31,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -43,6 +45,8 @@ import javax.persistence.TemporalType;
  */
 @Stateless
 public class PaymentService {
+
+    private static final Logger LOGGER = Logger.getLogger(PaymentService.class.getName());
 
     @EJB
     PatientFacade patientFacade;
@@ -158,7 +162,11 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-            populatePaymentDetails(payment, pm, paymentMethodData);
+            if (!populatePaymentDetails(payment, pm, paymentMethodData)) {
+                LOGGER.log(Level.WARNING, "Skipping payment creation for bill {0} due to missing payment data for method {1}.",
+                        new Object[]{bill != null ? bill.getId() : null, pm});
+                return payments;
+            }
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
@@ -176,46 +184,67 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-        populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData());
+        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+            LOGGER.log(Level.WARNING,
+                    "Skipping payment component due to missing payment data. Bill={0}, PaymentMethod={1}.",
+                    new Object[]{bill != null ? bill.getId() : null, cd.getPaymentMethod()});
+            return null;
+        }
         return payment;
     }
 
-    private void populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        if (paymentMethodData == null) {
+            return false;
+        }
+
         switch (paymentMethod) {
             case Card:
-                payment.setBank(paymentMethodData.getCreditCard().getInstitution());
-                payment.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                payment.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
-                payment.setComments(paymentMethodData.getCreditCard().getComment());
+                if (paymentMethodData.getCreditCard() != null) {
+                    payment.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    payment.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    payment.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    payment.setComments(paymentMethodData.getCreditCard().getComment());
+                }
                 break;
             case Cheque:
-                payment.setBank(paymentMethodData.getCheque().getInstitution());
-                payment.setChequeDate(paymentMethodData.getCheque().getDate());
-                payment.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                payment.setPaidValue(paymentMethodData.getCheque().getTotalValue());
-                payment.setComments(paymentMethodData.getCheque().getComment());
+                if (paymentMethodData.getCheque() != null) {
+                    payment.setBank(paymentMethodData.getCheque().getInstitution());
+                    payment.setChequeDate(paymentMethodData.getCheque().getDate());
+                    payment.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    payment.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    payment.setComments(paymentMethodData.getCheque().getComment());
+                }
                 break;
             case Cash:
 //                payment.getBill().getNetTotal();
-                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                payment.setComments(payment.getBill().getComments());
+                if (paymentMethodData.getCash() != null) {
+                    payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                }
+                if (payment.getBill() != null) {
+                    payment.setComments(payment.getBill().getComments());
+                }
                 break;
             case ewallet:
-                payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
-                payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
-                payment.setComments(paymentMethodData.getEwallet().getComment());
-                payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
-                payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                if (paymentMethodData.getEwallet() != null) {
+                    payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    payment.setComments(paymentMethodData.getEwallet().getComment());
+                    payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                }
                 break;
             case Agent:
                 break;
             case Credit:
-                payment.setPaidValue(paymentMethodData.getCredit().getTotalValue());
-                payment.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
-                payment.setComments(paymentMethodData.getCredit().getComment());
-                payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
-                payment.setCreditCompany(paymentMethodData.getCredit().getInstitution());
-                if (payment.getBill().getCreditCompany() == null) {
+                if (paymentMethodData.getCredit() != null) {
+                    payment.setPaidValue(paymentMethodData.getCredit().getTotalValue());
+                    payment.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                    payment.setComments(paymentMethodData.getCredit().getComment());
+                    payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    payment.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                }
+                if (payment.getBill() != null && payment.getBill().getCreditCompany() == null && payment.getCreditCompany() != null) {
                     payment.getBill().setCreditCompany(payment.getCreditCompany());
                     if (payment.getBill().getId() == null) {
                         billFacade.create(payment.getBill());
@@ -225,36 +254,47 @@ public class PaymentService {
                 }
                 break;
             case PatientDeposit:
-                payment.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
+                if (paymentMethodData.getPatient_deposit() != null) {
+                    payment.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
+                }
                 break;
             case Slip:
-                payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
-                payment.setComments(paymentMethodData.getSlip().getComment());
-                payment.setBank(paymentMethodData.getSlip().getInstitution());
-                payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
-                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
-                payment.setPaymentDate(paymentMethodData.getSlip().getDate());
-                payment.setChequeDate(paymentMethodData.getSlip().getDate());
-                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                if (paymentMethodData.getSlip() != null) {
+                    payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    payment.setComments(paymentMethodData.getSlip().getComment());
+                    payment.setBank(paymentMethodData.getSlip().getInstitution());
+                    payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                    payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    payment.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    payment.setChequeDate(paymentMethodData.getSlip().getDate());
+                    payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                }
                 break;
             case OnCall:
             case Staff:
-                payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
-                payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                if (paymentMethodData.getStaffCredit() != null) {
+                    payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                    payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                }
                 break;
             case OnlineSettlement:
-                payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
-                payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                if (paymentMethodData.getOnlineSettlement() != null) {
+                    payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                }
                 break;
             case IOU:
-                payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
-                payment.setChequeDate(paymentMethodData.getIou().getDate());
-                payment.setToStaff(paymentMethodData.getIou().getToStaff());
-                payment.setComments(paymentMethodData.getIou().getComment());
+                if (paymentMethodData.getIou() != null) {
+                    payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                    payment.setChequeDate(paymentMethodData.getIou().getDate());
+                    payment.setToStaff(paymentMethodData.getIou().getToStaff());
+                    payment.setComments(paymentMethodData.getIou().getComment());
+                }
                 break;
             default:
                 break;
         }
+        return true;
     }
 
     public void updateBalances(List<Payment> payments) {
