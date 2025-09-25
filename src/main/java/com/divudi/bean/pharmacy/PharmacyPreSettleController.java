@@ -191,15 +191,26 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                if (getPreBill().getPatient() == null || getPreBill().getPatient().getId() == null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                    return; // Patient not selected yet, ignore
+                }
                 // Initialize patient deposit data for UI component
                 pm.getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
                 PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
                 if (pd != null && pd.getId() != null) {
                     pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                     pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                    // Set total value to remain amount only if there's sufficient balance, otherwise set to available balance
+                    double availableBalance = pd.getBalance();
+                    if (availableBalance >= remainAmount) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                    }
                 } else {
                     pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -1067,6 +1078,31 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
             System.out.println("StaffCredit ToStaff: " + (getPaymentMethodData().getStaffCredit().getToStaff() != null ? getPaymentMethodData().getStaffCredit().getToStaff().getPerson().getName() : "NULL"));
         }
+
+        // Initialize PatientDeposit for PatientDeposit payment method
+        if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            if (getPreBill().getPatient() == null || getPreBill().getPatient().getId() == null) {
+                return balance; // Patient not selected yet, ignore
+            }
+            // Initialize patient deposit data for UI component
+            getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                // Set total value to bill amount only if there's sufficient balance, otherwise set to available balance
+                double availableBalance = pd.getBalance();
+                if (availableBalance >= getPreBill().getNetTotal()) {
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(getPreBill().getNetTotal());
+                } else {
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                }
+            } else {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+            }
+        }
+
         System.out.println("=== END CHECKANDUPDATE DEBUG ===");
 
         if (getPreBill().getPaymentMethod() != null) {
@@ -1097,6 +1133,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 case Staff_Welfare:
                     cashPaid = 0;
                     balance = 0; // Staff welfare covers the full amount
+                    break;
+                case PatientDeposit:
+                    cashPaid = 0;
+                    balance = getPreBill().getNetTotal() - getPaymentMethodData().getPatient_deposit().getTotalValue();
                     break;
             }
         }

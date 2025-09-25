@@ -57,10 +57,13 @@ public class PatientDepositService {
 
         save(p);
 
+        // Refresh patient to ensure it's in current UnitOfWork
+        Patient managedPatient = patientFacade.find(p.getId());
+
         if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);
-            pd.setPatient(p);
+            pd.setPatient(managedPatient);
             pd.setDepartment(d);
             pd.setInstitution(d.getInstitution());
             pd.setCreatedAt(new Date());
