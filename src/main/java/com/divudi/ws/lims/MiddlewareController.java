@@ -131,6 +131,14 @@ public class MiddlewareController {
         }
     }
 
+    public static String extractLastDigits(String input) {
+        if (input == null || !input.contains("/")) {
+            return "";
+        }
+        String lastPart = input.substring(input.lastIndexOf('/') + 1);
+        return lastPart.replaceAll("\\D+", ""); // keep only digits
+    }
+
     // Contributed by ChatGPT
     private static String extractFirstAndLastFromBillNumber(String input) {
         if (input == null || !input.contains("/")) {

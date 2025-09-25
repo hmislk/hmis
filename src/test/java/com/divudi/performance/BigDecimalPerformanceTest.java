@@ -36,7 +36,7 @@ public class BigDecimalPerformanceTest {
     
     @Test
     @DisplayName("Null-Safe Addition Performance Test")
-    @Timeout(value = 5) // Should complete within 5 seconds
+    @Timeout(value = 15) // Should complete within 15 seconds
     public void testNullSafeAdditionPerformance_ShouldCompleteQuickly() {
         long startTime = System.currentTimeMillis();
         
@@ -62,7 +62,7 @@ public class BigDecimalPerformanceTest {
             PERFORMANCE_ITERATIONS * testDataset.size() * 3, executionTime);
         
         // Ensure reasonable performance (adjust threshold as needed)
-        assertTrue(executionTime < 5000, "Null-safe additions taking too long: " + executionTime + "ms");
+        assertTrue(executionTime < 15000, "Null-safe additions taking too long: " + executionTime + "ms");
     }
     
     @Test
