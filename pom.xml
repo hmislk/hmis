@@ -13,7 +13,6 @@
         <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
-        <log4j2.version>2.23.1</log4j2.version>
     </properties>
 
     <!-- Dependency Management for Version Consistency -->
@@ -107,12 +106,6 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.6.0</version>
-        </dependency>
-        <!-- Bridge JCL to SLF4J so all logs go to Log4j2 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.36</version>
         </dependency>
 
         <!-- Joda Time -->
@@ -229,25 +222,6 @@
                     <artifactId>itext</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <!-- Log4j - Updated for Security (Log4Shell CVE-2021-44228 protection) -->
-        <!-- Using stable 2.x version instead of alpha 3.x for production security -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <!-- Log4j SLF4J binding for compatibility -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
         </dependency>
 
         <!-- Eclipse Persistence -->
