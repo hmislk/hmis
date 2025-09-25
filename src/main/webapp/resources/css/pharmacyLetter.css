@@ -84,7 +84,7 @@ root {
     .no-border-table .ui-datatable-header {
         border: none !important;
     }
-    
+
 }
 
 /* Text formatting */
@@ -153,3 +153,50 @@ root {
     padding: 1px 2px !important;
     line-height: 1.1 !important;
 }
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table th {
+    border: 1px solid black;
+    padding-left: 5px;
+}
+
+.items-table td {
+    border: 1px solid black;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.simple-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12pt;
+}
+
+.simple-table th,
+.simple-table td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+}
+
+/* Headers bold + centered */
+.simple-table th {
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Alignments */
+.simple-table .left-col {
+    text-align: left;
+}
+
+.simple-table .right-col {
+    text-align: right;
+}
+
+
+
+
