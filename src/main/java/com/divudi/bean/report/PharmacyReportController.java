@@ -2178,11 +2178,16 @@ public class PharmacyReportController implements Serializable {
             billItemsDtos = (List<BillItemDTO>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             netTotal = billItemsDtos.stream()
-                    .map(BillItemDTO::getBillNetTotal)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .mapToDouble(Double::doubleValue)
-                    .sum();
+                .filter(Objects::nonNull)
+                .mapToDouble(dto -> {
+                    Double retailRate = dto.getRetailRate();
+                    Double qty = dto.getQty();
+                    if (retailRate != null && qty != null) {
+                        return retailRate * qty;
+                    }
+                    return 0.0;
+                })
+                .sum();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -3241,12 +3246,20 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
                 
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+                
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                
                 billTypes.add(BillType.PharmacyIssue);
-
                 billTypes.add(BillType.PharmacyTransferIssue);
-
                 billTypes.add(BillType.PharmacyTransferReceive);
-
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
             }
 

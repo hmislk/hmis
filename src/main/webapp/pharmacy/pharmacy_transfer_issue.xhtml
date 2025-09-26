@@ -197,7 +197,7 @@
                                     <p:column headerText="Code">
                                         <h:outputText value="#{w.code}" ></h:outputText>
                                     </p:column>
-                                     <p:column headerText="Staff Code">
+                                    <p:column headerText="Staff Code">
                                         <h:outputText value="#{w.staffCode}" ></h:outputText>
                                     </p:column>
                                 </p:autoComplete>
@@ -409,6 +409,12 @@
                     </h:panelGroup>
 
                     <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Letter Paper Custom 1', false)}"
+                        styleClass="noBorder">
+                        <ph:transferIssue_custom_1_letter bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup
                         rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue POS Paper', false)}">
                         <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
@@ -450,45 +456,53 @@
                                 </div>
                                 <div class="card-body">
                                     <h:panelGroup id="transferIssueCheckboxes">
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferIssueA4Paper"
-                                            value="#{pharmacyRetailConfigController.transferIssueA4Paper}" />
-                                        <p:outputLabel for="transferIssueA4Paper" value="A4 Paper Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Standard A4 size paper format (transferIssue component)</small>
-                                    </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueA4Paper"
+                                                value="#{pharmacyRetailConfigController.transferIssueA4Paper}" />
+                                            <p:outputLabel for="transferIssueA4Paper" value="A4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 size paper format (transferIssue component)</small>
+                                        </div>
 
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferIssueA4PaperDetailed"
-                                            value="#{pharmacyRetailConfigController.transferIssueA4PaperDetailed}" />
-                                        <p:outputLabel for="transferIssueA4PaperDetailed" value="A4 Paper Format (Detailed)" class="ms-2" />
-                                        <small class="form-text text-muted d-block">A4 format with detailed item information (transferIssue_detailed component)</small>
-                                    </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueA4PaperDetailed"
+                                                value="#{pharmacyRetailConfigController.transferIssueA4PaperDetailed}" />
+                                            <p:outputLabel for="transferIssueA4PaperDetailed" value="A4 Paper Format (Detailed)" class="ms-2" />
+                                            <small class="form-text text-muted d-block">A4 format with detailed item information (transferIssue_detailed component)</small>
+                                        </div>
 
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferIssuePosPaper"
-                                            value="#{pharmacyRetailConfigController.transferIssuePosPaper}" />
-                                        <p:outputLabel for="transferIssuePosPaper" value="POS Paper Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
-                                    </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueCustom1"
+                                                value="#{pharmacyRetailConfigController.transferIssueCustom1}" />
+                                            <p:outputLabel for="transferIssueCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
+                                        </div>    
 
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferIssuePosHeaderPaper"
-                                            value="#{pharmacyRetailConfigController.transferIssuePosHeaderPaper}" />
-                                        <p:outputLabel for="transferIssuePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
-                                        <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
-                                    </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssuePosPaper"
+                                                value="#{pharmacyRetailConfigController.transferIssuePosPaper}" />
+                                            <p:outputLabel for="transferIssuePosPaper" value="POS Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
+                                        </div>
 
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferIssueTemplate"
-                                            value="#{pharmacyRetailConfigController.transferIssueTemplate}" />
-                                        <p:outputLabel for="transferIssueTemplate" value="Template Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
-                                    </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssuePosHeaderPaper"
+                                                value="#{pharmacyRetailConfigController.transferIssuePosHeaderPaper}" />
+                                            <p:outputLabel for="transferIssuePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                            <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueTemplate"
+                                                value="#{pharmacyRetailConfigController.transferIssueTemplate}" />
+                                            <p:outputLabel for="transferIssueTemplate" value="Template Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                        </div>
                                     </h:panelGroup>
                                 </div>
                             </div>
