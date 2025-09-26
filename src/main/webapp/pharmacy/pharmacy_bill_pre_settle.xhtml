@@ -153,7 +153,9 @@
                                                     layout="block"
                                                     id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
+                                                    <pa:multiple_payment_methods 
+                                                        controller="#{pharmacyPreSettleController}" 
+                                                        paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}" class="w-100"/>
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
