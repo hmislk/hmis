@@ -1291,6 +1291,9 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsUnderMultipleForPharmacyBilling() {
+        if (paymentMethodsUnderMultipleForPharmacyBilling == null) {
+            fillPaymentMethodsUnderMultipleForPharmacyBilling();
+        }
         return paymentMethodsUnderMultipleForPharmacyBilling;
     }
 
