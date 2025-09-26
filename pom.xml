@@ -22,7 +22,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.15.4</version>
+                <version>2.14.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -61,28 +61,28 @@
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
         <!-- Jackson JAXB Annotations Module for JAXB annotation support -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <!-- Version managed by Jackson BOM (2.15.4) -->
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
 
         <!-- Commons -->
@@ -203,11 +203,11 @@
             <type>jar</type>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
+        <!-- MySQL Connector/J - Stable version for Payara + JDK 11 -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>8.4.0</version>
+            <version>8.0.33</version>
         </dependency>
 
 
@@ -433,7 +433,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <release>8</release> <!-- Compile with Java 8 compatibility -->
+                    <release>11</release> <!-- Compile with Java 8 compatibility -->
                     <debug>false</debug>
                 </configuration>
             </plugin>
