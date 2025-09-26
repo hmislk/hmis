@@ -60,7 +60,6 @@ public class VersionController {
                 props.load(is);
                 gitCommitIdAbbrev = props.getProperty("git.commit.id.abbrev", null);
                 gitBranch = props.getProperty("git.branch", null);
-                // Prefer a formatted build time if configured by the build plugin
                 String bt = props.getProperty("git.build.time", null);
                 gitBuildTime = (bt == null || bt.isEmpty()) ? null : bt;
             } else {
@@ -77,7 +76,6 @@ public class VersionController {
     }
 
     public String getSystemVersion() {
-        // Reload in case resource changed across redeploys
         readFirstLine();
         return systemVersion;
     }
