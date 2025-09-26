@@ -19,6 +19,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientDepositFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.StaffFacade;
@@ -46,6 +47,8 @@ public class PaymentService {
 
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    PatientDepositFacade patientDepositFacade;
     @EJB
     BillFacade billFacade;
     @EJB
@@ -796,6 +799,88 @@ public class PaymentService {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Specialized payment method validation for pre-settle scenarios that queries PatientDeposit
+     * directly to avoid JPA UnitOfWork issues.
+     */
+    public boolean checkPaymentMethodErrorForPreSettle(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Double cashPaid, Long patientId, Staff toStaff, com.divudi.core.entity.Department department) {
+        System.out.println("=== PRESETTLE PAYMENT VALIDATION ===");
+        System.out.println("Payment Method: " + paymentMethod);
+
+        // Handle all non-PatientDeposit validations using existing logic
+        if (paymentMethod != PaymentMethod.PatientDeposit) {
+            System.out.println("Non-PatientDeposit method, using standard validation");
+            System.out.println("=== END PRESETTLE PAYMENT VALIDATION ===");
+            // For non-PatientDeposit methods, we need to reload the patient to avoid UnitOfWork issues
+            Patient managedPatient = (patientId != null) ? patientFacade.find(patientId) : null;
+            return checkPaymentMethodError(paymentMethod, paymentMethodData, netTotal, cashPaid, managedPatient, toStaff);
+        }
+
+        // Specialized PatientDeposit validation for pre-settle
+        System.out.println("PatientDeposit method - using specialized pre-settle validation");
+
+        if (patientId == null) {
+            System.out.println("Patient ID is null");
+            JsfUtil.addErrorMessage("Patient information is required for Patient Deposit payments");
+            System.out.println("=== END PRESETTLE PAYMENT VALIDATION ===");
+            return true;
+        }
+
+        // Use patient ID directly to avoid JPA UnitOfWork issues
+        System.out.println("Patient ID: " + patientId);
+        System.out.println("Department: " + (department != null ? department.getName() : "NULL"));
+
+        double creditLimitAbsolute = 0.0;
+
+        // Query PatientDeposit directly using JPQL to avoid UnitOfWork issues
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false);
+
+        String jpql = "select pd from PatientDeposit pd"
+                + " where pd.patient.id=:pt "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
+                + " and pd.retired=:ret";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("pt", patientId);
+        if (departmentSpecificDeposits && department != null) {
+            parameters.put("dep", department.getId());
+        }
+        parameters.put("ret", false);
+
+        com.divudi.core.entity.PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, parameters);
+
+        System.out.println("PatientDeposit found: " + (pd != null));
+        System.out.println("Department specific deposits: " + departmentSpecificDeposits);
+
+        if (pd == null) {
+            System.out.println("No PatientDeposit found");
+            JsfUtil.addErrorMessage("No Patient Deposit");
+            System.out.println("=== END PRESETTLE PAYMENT VALIDATION ===");
+            return true;
+        }
+
+        double runningBalance = pd.getBalance();
+        double availableForPurchase = runningBalance + creditLimitAbsolute;
+        double effectiveTotal = netTotal != null ? netTotal : 0.0;
+
+        System.out.println("Running Balance: " + runningBalance);
+        System.out.println("Available for Purchase: " + availableForPurchase);
+        System.out.println("Effective Total: " + effectiveTotal);
+        System.out.println("Validation check: " + effectiveTotal + " > " + availableForPurchase + " = " + (effectiveTotal > availableForPurchase));
+
+        if (effectiveTotal > availableForPurchase) {
+            System.out.println("Insufficient balance - validation failed");
+            JsfUtil.addErrorMessage("No Sufficient Patient Deposit. Available: " + availableForPurchase + ", Required: " + effectiveTotal);
+            System.out.println("=== END PRESETTLE PAYMENT VALIDATION ===");
+            return true;
+        }
+
+        System.out.println("PatientDeposit validation passed");
+        System.out.println("=== END PRESETTLE PAYMENT VALIDATION ===");
         return false;
     }
 

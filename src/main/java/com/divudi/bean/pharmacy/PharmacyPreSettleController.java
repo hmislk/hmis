@@ -492,6 +492,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     private boolean errorCheckForSaleBill() {
 
+        // Extract patient ID very early to avoid detached entity issues later
+        Long patientIdForValidation = null;
+        try {
+            if (getPreBill().getPatient() != null) {
+                patientIdForValidation = getPreBill().getPatient().getId();
+                System.out.println("=== EXTRACTED PATIENT ID EARLY: " + patientIdForValidation + " ===");
+            }
+        } catch (Exception e) {
+            System.out.println("=== ERROR EXTRACTING PATIENT ID: " + e.getMessage() + " ===");
+        }
+
         if (getPreBill().getPaymentMethod() == null) {
             return true;
         }
@@ -517,7 +528,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
         //pharmacyPreSettleController.cashPaid
-        if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid, getPreBill().getPatient(), getPreBill().getToStaff())) {
+        if (paymentService.checkPaymentMethodErrorForPreSettle(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid, patientIdForValidation, getPreBill().getToStaff(), sessionController.getDepartment())) {
             return true;
         }
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
@@ -896,11 +907,25 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public boolean errorCheckOnPaymentMethod() {
+        System.out.println("=== ERROR CHECK ON PAYMENT METHOD DEBUG ===");
+        System.out.println("Payment Method: " + getPreBill().getPaymentMethod());
+        System.out.println("Calling PaymentSchemeController.checkPaymentMethodError");
+
         if (getPaymentSchemeController().checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData())) {
+            System.out.println("PaymentSchemeController returned error - exiting early");
+            System.out.println("=== END ERROR CHECK DEBUG ===");
             return true;
         }
+        System.out.println("PaymentSchemeController passed - continuing to specific payment method checks");
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            System.out.println("=== PRESETTLE PATIENT DEPOSIT CHECK ===");
+            // Ensure patient deposit data is initialized
+            if (getPreBill().getPatient() == null || getPreBill().getPatient().getId() == null) {
+                JsfUtil.addErrorMessage("Please select a patient first");
+                return true;
+            }
+
             double creditLimitAbsolute = 0.0;
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
 
@@ -912,8 +937,30 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             double runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            if (getPreBill().getNetTotal() > availableForPurchase) {
-                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+            System.out.println("=== PATIENT DEPOSIT VALIDATION DEBUG ===");
+            System.out.println("Patient ID: " + getPreBill().getPatient().getId());
+            System.out.println("Department ID: " + sessionController.getDepartment().getId());
+            System.out.println("Patient Deposit ID: " + (pd != null ? pd.getId() : "NULL"));
+            System.out.println("Running Balance: " + runningBalance);
+            System.out.println("Available for Purchase: " + availableForPurchase);
+            System.out.println("Bill Net Total: " + getPreBill().getNetTotal());
+            System.out.println("Current Total Value: " + getPaymentMethodData().getPatient_deposit().getTotalValue());
+
+            // Always initialize/refresh patient deposit UI data for validation
+            getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
+            getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+            getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+            // For single payment method, the user should pay the full bill amount from patient deposit
+            double requiredAmount = getPreBill().getNetTotal();
+            getPaymentMethodData().getPatient_deposit().setTotalValue(requiredAmount);
+
+            System.out.println("Required Amount: " + requiredAmount);
+            System.out.println("Validation: " + requiredAmount + " > " + availableForPurchase + " = " + (requiredAmount > availableForPurchase));
+            System.out.println("=== END DEBUG ===");
+
+            if (requiredAmount > availableForPurchase) {
+                JsfUtil.addErrorMessage("No Sufficient Patient Deposit. Available: " + availableForPurchase + ", Required: " + requiredAmount);
                 return true;
             }
         }
@@ -1081,26 +1128,47 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         // Initialize PatientDeposit for PatientDeposit payment method
         if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            System.out.println("=== PATIENTDEPOSIT INIT DEBUG ===");
+            System.out.println("PreBill Patient: " + (getPreBill().getPatient() != null ? getPreBill().getPatient().getId() : "NULL"));
             if (getPreBill().getPatient() == null || getPreBill().getPatient().getId() == null) {
+                System.out.println("Patient not selected, returning balance");
+                System.out.println("=== END PATIENTDEPOSIT INIT DEBUG ===");
                 return balance; // Patient not selected yet, ignore
             }
-            // Initialize patient deposit data for UI component
-            getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
-            if (pd != null && pd.getId() != null) {
-                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
-                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                // Set total value to bill amount only if there's sufficient balance, otherwise set to available balance
-                double availableBalance = pd.getBalance();
-                if (availableBalance >= getPreBill().getNetTotal()) {
-                    getPaymentMethodData().getPatient_deposit().setTotalValue(getPreBill().getNetTotal());
+            try {
+                System.out.println("About to initialize patient deposit UI data");
+                // Initialize patient deposit data for UI component
+                getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
+                System.out.println("Set patient in payment method data");
+
+                PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+                System.out.println("Retrieved patient deposit: " + (pd != null ? pd.getId() : "NULL"));
+
+                if (pd != null && pd.getId() != null) {
+                    System.out.println("Patient deposit exists, setting up UI data");
+                    getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                    getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                    // Set total value to bill amount only if there's sufficient balance, otherwise set to available balance
+                    double availableBalance = pd.getBalance();
+                    System.out.println("Available balance: " + availableBalance + ", Bill total: " + getPreBill().getNetTotal());
+                    if (availableBalance >= getPreBill().getNetTotal()) {
+                        getPaymentMethodData().getPatient_deposit().setTotalValue(getPreBill().getNetTotal());
+                        System.out.println("Set total value to bill amount: " + getPreBill().getNetTotal());
+                    } else {
+                        getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                        System.out.println("Set total value to available balance: " + availableBalance);
+                    }
                 } else {
-                    getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                    System.out.println("No patient deposit found, setting hasAnAccount to false");
+                    getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
                 }
-            } else {
-                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
-                getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                System.out.println("Patient deposit initialization completed successfully");
+            } catch (Exception e) {
+                System.out.println("Exception during patient deposit initialization: " + e.getMessage());
+                e.printStackTrace();
             }
+            System.out.println("=== END PATIENTDEPOSIT INIT DEBUG ===");
         }
 
         System.out.println("=== END CHECKANDUPDATE DEBUG ===");
