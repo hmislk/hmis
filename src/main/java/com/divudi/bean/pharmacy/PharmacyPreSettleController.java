@@ -1101,6 +1101,18 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         System.out.println("=== CHECKANDUPDATE DEBUG ===");
         System.out.println("Payment Method: " + (getPreBill().getPaymentMethod() != null ? getPreBill().getPaymentMethod() : "NULL"));
 
+        // Ensure Patient reference is managed in current UnitOfWork to avoid EclipseLink-6004
+        try {
+            if (getPreBill() != null && getPreBill().getPatient() != null && getPreBill().getPatient().getId() != null) {
+                Patient managedPatient = patientFacade.find(getPreBill().getPatient().getId());
+                if (managedPatient != null) {
+                    getPreBill().setPatient(managedPatient);
+                }
+            }
+        } catch (Exception e) {
+            // Safe fallback: keep existing patient reference
+        }
+
         // Initialize PaymentMethodData if needed
         if (getPaymentMethodData() == null) {
             setPaymentMethodData(new PaymentMethodData());
@@ -1141,7 +1153,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
                 System.out.println("Set patient in payment method data");
 
-                PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+                // Always use a managed Patient when querying facades/controllers
+                Patient managedPatient = getPreBill().getPatient();
+                PatientDeposit pd = patientDepositController.getDepositOfThePatient(managedPatient, sessionController.getDepartment());
                 System.out.println("Retrieved patient deposit: " + (pd != null ? pd.getId() : "NULL"));
 
                 if (pd != null && pd.getId() != null) {
