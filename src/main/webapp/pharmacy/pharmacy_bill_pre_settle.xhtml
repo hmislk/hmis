@@ -143,12 +143,19 @@
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
+                                                <h:panelGroup id="patientDeposit" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'PatientDeposit'}">
+                                                    <pa:patient_deposit paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
                                                 <h:panelGroup
                                                     class="row my-2 w-100"
-                                                    layout="block" 
-                                                    id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    layout="block"
+                                                    id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
+                                                    <pa:multiple_payment_methods 
+                                                        controller="#{pharmacyPreSettleController}" 
+                                                        paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}" class="w-100"/>
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
