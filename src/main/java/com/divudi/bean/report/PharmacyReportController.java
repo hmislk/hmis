@@ -2178,11 +2178,16 @@ public class PharmacyReportController implements Serializable {
             billItemsDtos = (List<BillItemDTO>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             netTotal = billItemsDtos.stream()
-                    .map(BillItemDTO::getBillNetTotal)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .mapToDouble(Double::doubleValue)
-                    .sum();
+                .filter(Objects::nonNull)
+                .mapToDouble(dto -> {
+                    Double retailRate = dto.getRetailRate();
+                    Double qty = dto.getQty();
+                    if (retailRate != null && qty != null) {
+                        return retailRate * qty;
+                    }
+                    return 0.0;
+                })
+                .sum();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2904,22 +2909,23 @@ public class PharmacyReportController implements Serializable {
             addFilter(sql, parameters, "bi.item", "item", item);
             addFilter(sql, parameters, "bi.item.category", "cat", category);
             addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
-            if (showData) {
-                reportType = "pending";
-                sql.append(" and bi.bill.forwardReferenceBill Is null ");
-            }
-            if (reportType.equals("pending")) {
-                addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
-            }
-            if (reportType.equals("accepted")) {
-                addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
-            }
-            if (reportType.equals("issueCancel")) {
-                addFilter(sql, "and bi.bill.cancelled = true");
+
+            if (reportType != null) {
+                if (reportType.equals("pending")) {
+                    addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
+                } else if (reportType.equals("accepted")) {
+                    addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
+                } else if (reportType.equals("issueCancel")) {
+                    addFilter(sql, "and bi.bill.cancelled = true");
+                }
+                // "any" or null - no additional status filtering
             }
 
             sql.append(" order by bi.bill.id ");
 
+            System.out.println("sql = " + sql);
+            System.out.println("parameters = " + parameters);
+            
             billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             if (billItems.isEmpty()) {
@@ -3237,12 +3243,23 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+                
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                
                 billTypes.add(BillType.PharmacyIssue);
-
                 billTypes.add(BillType.PharmacyTransferIssue);
-
                 billTypes.add(BillType.PharmacyTransferReceive);
-
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
             }
 

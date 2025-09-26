@@ -7,6 +7,7 @@ This directory contains comprehensive documentation for the Pharmacy module of t
 ### Core Functionality
 - [Pharmacy Issue (Disposal)](../Pharmacy-Issue.md) - Main dispensing functionality
 - [Pharmacy Issue Configuration](../Pharmacy-Issue-Configuration.md) - Administrator configuration guide
+- [Bill Number Configuration Guide](Bill-Number-Configuration-Guide.md) - Complete guide for configuring yearly bill number generation
 
 ### Related Features
 - Multiple Store Management
@@ -22,6 +23,9 @@ This directory contains comprehensive documentation for the Pharmacy module of t
 - Token Management
 - Administration
 - Analytics
+
+### Configuration & Administration
+- [Bill Number Configuration Guide](Bill-Number-Configuration-Guide.md) - Configure yearly bill number generation for pharmacy modules
 
 ## Documentation Standards
 

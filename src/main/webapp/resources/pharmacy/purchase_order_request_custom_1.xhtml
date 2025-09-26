@@ -23,6 +23,8 @@
         <div class="institutionContact" >
             <div class="d-flex gap-2 justify-content-center">
                 <h:outputLabel value="#{cc.attrs.bill.creater.institution.address}" rendered="#{!empty cc.attrs.bill.creater.institution.address}"/>
+            </div>
+            <div class="d-flex gap-2 justify-content-center">
                 <h:outputLabel value="Telephone : " rendered="#{!empty cc.attrs.bill.creater.institution.phone or !empty cc.attrs.bill.creater.department.telephone1}" />
                 <h:outputLabel value="#{cc.attrs.bill.creater.institution.phone}" rendered="#{!empty cc.attrs.bill.creater.institution.phone}"/>
                 <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{cc.attrs.bill.creater.department.telephone1}"/>
@@ -125,7 +127,7 @@
             <div>
                 <h:outputLabel value="Order Initiated By"/>
                 <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
             </div>
             <div>
                 <h:outputLabel value="Order Finalized By"/>
@@ -138,6 +140,11 @@
                 <h:outputLabel value="#{cc.attrs.bill.checkeAt}">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                 </h:outputLabel>
+            </div>
+            <div>
+                <h:outputLabel value="Printed By"/>
+                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                #{sessionController.loggedUser.name}
             </div>
             <div>
                 <h:outputLabel value="Printed At"/>

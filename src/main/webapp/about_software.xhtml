@@ -42,6 +42,12 @@
                                 <h:outputLabel class="mx-2 h6" value="Latest version" />
                                 <h:outputLabel class="mx-2 h6" value=": " />
                                 <h:outputLabel class="mx-2 h6" value="#{versionController.latestVersion}" />
+                                <h:outputLabel class="mx-2 h6" value="Last update" />
+                                <h:outputLabel class="mx-2 h6" value=": " />
+                                <h:outputLabel class="mx-2 h6" value="#{configOptionApplicationController.getShortTextValueByKey('About Page - Last Update','')}" />
+                                <h:outputLabel class="mx-2 h6" value="Last commit" />
+                                <h:outputLabel class="mx-2 h6" value=": " />
+                                <h:outputLabel class="mx-2 h6" value="#{configOptionApplicationController.getShortTextValueByKey('About Page - Last Commit','')}" />
                             </h:panelGrid>
                         </div>
                     </div>

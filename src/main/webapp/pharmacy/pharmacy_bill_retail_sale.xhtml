@@ -1126,16 +1126,16 @@
                                                                     </h:panelGroup>
 
                                                                     <h:panelGroup id="ewallet" rendered="#{pharmacySaleController.paymentMethod eq 'ewallet'}" >
-                                                                        <pa:ewallet paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                                        <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                                                     </h:panelGroup>
 
 
                                                                     <h:panelGroup id="cheque" rendered="#{pharmacySaleController.paymentMethod eq 'Cheque'}" >
-                                                                        <pa:cheque paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                                                     </h:panelGroup>
 
                                                                     <h:panelGroup id="slip" rendered="#{pharmacySaleController.paymentMethod eq 'Slip'}">
-                                                                        <pa:slip paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                                                     </h:panelGroup>
 
 
@@ -1355,6 +1355,10 @@
                                 <div style="page-break-inside: avoid;">
                                     <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                 </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1',false)}">
+                                <phi:saleBill_Retail_Pos_paper_Custom_1 bill="#{pharmacySaleController.printBill}"/>
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper(prabodha)',true)}">

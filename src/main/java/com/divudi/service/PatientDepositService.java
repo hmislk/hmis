@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.entity.Bill;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -31,16 +33,24 @@ public class PatientDepositService {
     private PatientFacade patientFacade;
     @EJB
     PatientDepositHistoryFacade patientDepositHistoryFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
-                + " and pd.department.id=:dep "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-        m.put("dep", d.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", d.getId());
+        }
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
@@ -85,6 +95,18 @@ public class PatientDepositService {
                 handleOutPayment(p, pd);
                 break;
 
+            case PHARMACY_RETAIL_SALE:
+                handleOutPayment(p, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                handleInPayment(p, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_REFUND:
+                handleInPayment(p, pd);
+                break;
+
             case OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BILL_CANCELLATION:
@@ -126,6 +148,18 @@ public class PatientDepositService {
             case OPD_BATCH_BILL_WITH_PAYMENT:
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
                 handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                handleOPDBillCancel(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_REFUND:
+                handleOPDBillCancel(b, pd);
                 break;
 
             case OPD_BATCH_BILL_CANCELLATION:

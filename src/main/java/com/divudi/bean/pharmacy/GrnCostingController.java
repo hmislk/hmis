@@ -2595,8 +2595,12 @@ public class GrnCostingController implements Serializable {
 
         getCurrentGrnBillPre().setDepartment(getSessionController().getDepartment());
         getCurrentGrnBillPre().setInstitution(getSessionController().getInstitution());
-        getCurrentGrnBillPre().setCreater(getSessionController().getLoggedUser());
-        getCurrentGrnBillPre().setCreatedAt(Calendar.getInstance().getTime());
+        if (getCurrentGrnBillPre().getCreater() == null) {
+            getCurrentGrnBillPre().setCreater(getSessionController().getLoggedUser());
+        }
+        if (getCurrentGrnBillPre().getCreatedAt()==null) {
+            getCurrentGrnBillPre().setCreatedAt(Calendar.getInstance().getTime());
+        }
 
         // Initialize bill items collection if null (getBillItems() handles this automatically)
         getBillItems(); // This will initialize if null
@@ -2935,6 +2939,7 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setCheckeAt(new Date());
         getCurrentGrnBillPre().setCheckedBy(sessionController.getLoggedUser());
         getCurrentGrnBillPre().setApproveUser(sessionController.getLoggedUser());
+        getCurrentGrnBillPre().setApproveAt(new Date());
         // Change bill type from PRE to final GRN
         getCurrentGrnBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
 
