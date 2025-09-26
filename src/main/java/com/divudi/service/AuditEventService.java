@@ -24,6 +24,8 @@ public class AuditEventService {
                 auditEventFacade.edit(auditEvent);
             }
         } catch (Exception e) {
+            // Log error to console if logging fails to avoid breaking application
+            System.err.println("Failed to save AuditEvent: " + e.getMessage());
         }
     }
 }
