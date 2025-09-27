@@ -188,6 +188,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for Cancelled GRN", "C-GRN");
         getShortTextValueByKey("Bill Number Suffix for GRN Return", "GRNR");
         getShortTextValueByKey("Bill Number Suffix for GRN", "GRN");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_CANCELLED", "C-DP");
 
     }
 
