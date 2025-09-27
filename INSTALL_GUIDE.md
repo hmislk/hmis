@@ -28,7 +28,7 @@ For other operating systems, download Maven from the [official website](https://
 
 ## Building project
 
-**You need to have installed JDK 8+ and Maven on your server to complete this step.**
+**You need to have installed JDK 11+ and Maven on your server to complete this step.**
 
 Now, to build the project, run:
 ```
@@ -50,13 +50,17 @@ You can download it [here](https://nexus.payara.fish/#browse/browse:payara-commu
 
 Download .zip file and extract it where you want your server files to be, for example into `D:\Payara`
 
-Edit file `D:Payara\payara5\glassfish\config\asenv.bat` and add following line:
+Edit the Payara configuration file to set the JDK path:
 
-`set AS_JAVA=<JDK location>`
+**For Windows (`D:\Payara\payara5\glassfish\config\asenv.bat`):**
+```
+set AS_JAVA=D:\JAVA\jdk-11.0.25
+```
 
-In my case: 
-
-`set AS_JAVA=D:\JAVA\jdk-11.0.25`
+**For Linux (`/path/to/payara/glassfish/config/asenv.conf`):**
+```
+AS_JAVA="/usr/lib/jvm/java-11-openjdk-amd64"
+```
 
 Make sure the port 8080 is not being used on your server.
 
