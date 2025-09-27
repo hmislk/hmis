@@ -316,6 +316,226 @@ Expected: [legacy format] (dept), POR/MPH/25/000001 (ins)
 
 This pattern can be applied to any bill type in the HMIS system while maintaining complete backward compatibility.
 
+## Complete Implementation Workflow
+
+### When Given a Page Name: Finding the Implementation Points
+
+When you're asked to add bill number generation to a specific page (e.g., `/pharmacy/pharmacy_cancel_purchase.xhtml`), follow this systematic discovery process:
+
+#### Step 1: Identify the Button and Action Method
+
+1. **Find the XHTML page**: Look for the page file in `src/main/webapp/`
+2. **Locate the relevant button**: Look for buttons with actions like "Cancel", "Save", "Submit", etc.
+3. **Extract the backend method**: From the button's `action` attribute, identify the controller and method
+
+**Example from `/pharmacy/pharmacy_cancel_purchase.xhtml`:**
+```xml
+<h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPurchaseCancel()}" >
+</h:commandButton>
+```
+
+**Key Information Extracted:**
+- **Controller**: `pharmacyBillSearch` → `PharmacyBillSearch.java`
+- **Method**: `pharmacyPurchaseCancel()`
+- **Button**: "Cancel" button
+
+#### Step 2: Locate the Backend Method
+
+1. **Find the controller class**: Search for the controller class (e.g., `PharmacyBillSearch.java`)
+2. **Find the specific method**: Look for the method identified in Step 1
+3. **Analyze the method flow**: Look for bill creation, number generation, or calls to other methods
+
+**Example Method Discovery:**
+```java
+public void pharmacyPurchaseCancel() {
+    // ... validation logic ...
+    CancelledBill cb = pharmacyCreateCancelBill();  // <-- Bill creation method
+    // ... existing bill number generation logic ...
+}
+```
+
+#### Step 3: Find the Department ID Generation Logic
+
+Look for one of these patterns in the method or sub-methods it calls:
+
+**Pattern 1: Direct bill number generation in the main method**
+```java
+cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(...));
+cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(...));
+```
+
+**Pattern 2: Bill number generation in a helper method**
+```java
+CancelledBill cb = createSomeCancelBill(); // <-- Check this method for bill number generation
+```
+
+**Pattern 3: Bill number generation in inherited/parent method**
+```java
+// Sometimes the generation is in parent class methods or shared utility methods
+```
+
+#### Step 4: Identify the Bill Type Atomic
+
+1. **Find the BillTypeAtomic**: Look for lines like `cb.setBillTypeAtomic(BillTypeAtomic.SOMETHING)`
+2. **Note the bill type**: This determines what suffix configuration key to use
+
+**Example:**
+```java
+cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+```
+
+### Complete Implementation Checklist
+
+#### Phase 1: Discovery and Analysis
+- [ ] **Page Analysis**: Found the XHTML page and identified the button
+- [ ] **Controller Discovery**: Located the controller class and method
+- [ ] **Method Analysis**: Found where bill creation and number generation occurs
+- [ ] **Bill Type Identification**: Identified the BillTypeAtomic being used
+
+#### Phase 2: Configuration Setup
+- [ ] **Add Suffix Configuration**: Add suffix config to `ConfigOptionApplicationController.loadPharmacyConfigurationDefaults()`
+```java
+getShortTextValueByKey("Bill Number Suffix for YOUR_BILL_TYPE_ATOMIC", "YOUR_SUFFIX");
+```
+
+#### Phase 3: Implementation
+- [ ] **Replace Bill Number Logic**: Implement the new configurable generation pattern
+- [ ] **Preserve P1 Behavior**: Ensure fallback logic reuses deptId for insId when all strategies are disabled
+- [ ] **Test Independence**: Verify department and institution strategies work independently
+
+#### Phase 4: Validation
+- [ ] **Compilation**: Code compiles without errors
+- [ ] **Configuration Loading**: New suffix appears in admin configuration
+- [ ] **Strategy Testing**: All three strategies work independently
+- [ ] **Backward Compatibility**: Existing behavior preserved when strategies disabled
+
+### Detailed Implementation Template
+
+```java
+public void yourMethodName() {
+    // ... existing validation logic ...
+
+    CancelledBill cb = createYourCancelBill();
+    cb.setBillTypeAtomic(BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
+
+    // Handle Department ID generation (independent)
+    String deptId;
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
+    } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
+    } else {
+        // Use existing method for backward compatibility
+        deptId = getBillNumberBean().institutionBillNumberGenerator(
+                getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.YOUR_SUFFIX);
+    }
+
+    // Handle Institution ID generation (completely separate)
+    String insId;
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
+        insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
+    } else {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+            configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+            insId = deptId; // Use same number as department
+        } else {
+            // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+            insId = deptId;
+        }
+    }
+
+    cb.setDeptId(deptId);
+    cb.setInsId(insId);
+
+    // ... rest of your method logic ...
+}
+```
+
+### Real-World Example: Direct Purchase Cancellation
+
+**Given**: Page `/pharmacy/pharmacy_cancel_purchase.xhtml`
+
+**Step 1: Button Discovery**
+```xml
+<h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPurchaseCancel()}" >
+```
+
+**Step 2: Method Location**
+- **File**: `PharmacyBillSearch.java`
+- **Method**: `pharmacyPurchaseCancel()`
+
+**Step 3: Department ID Generation Found**
+```java
+public void pharmacyPurchaseCancel() {
+    // ... validation ...
+    CancelledBill cb = pharmacyCreateCancelBill();
+    // OLD CODE (replaced):
+    // cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(...));
+    // cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(...));
+
+    // NEW CODE (implemented):
+    // [The improved bill number generation logic from template above]
+}
+```
+
+**Step 4: Bill Type Identified**
+```java
+cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+```
+
+**Step 5: Configuration Added**
+```java
+// In ConfigOptionApplicationController.loadPharmacyConfigurationDefaults():
+getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_CANCELLED", "C-DP");
+```
+
+### Common Scenarios and Variations
+
+#### Scenario 1: Bill Number Generation in Main Method
+- **Pattern**: Bill numbers are set directly in the action method
+- **Implementation**: Replace the `setDeptId()` and `setInsId()` calls with new logic
+
+#### Scenario 2: Bill Number Generation in Helper Method
+- **Pattern**: Action method calls a helper like `createCancelBill()` that handles numbering
+- **Implementation**: Modify the helper method to use new generation logic
+
+#### Scenario 3: Multiple Bill Types in One Method
+- **Pattern**: Method handles different bill types based on conditions
+- **Implementation**: Use appropriate BillTypeAtomic for each branch
+
+#### Scenario 4: Inherited Bill Number Logic
+- **Pattern**: Bill numbering is handled in parent class or shared utility
+- **Implementation**: May need to pass additional parameters or override behavior
+
+### Troubleshooting Discovery Process
+
+#### Issue: Can't find the backend method
+**Solution**:
+1. Check for typos in method name
+2. Look in parent classes or interfaces
+3. Search across entire codebase for the method name
+
+#### Issue: Button action uses different controller
+**Solution**:
+1. Check if `#{controllerName}` matches expected controller
+2. Look for `@Named` annotation on controller class
+3. Check if action is in a different bean
+
+#### Issue: Bill number generation not in main method
+**Solution**:
+1. Look for method calls that create bills
+2. Check helper methods like `createCancelBill()`, `saveBill()`, etc.
+3. Search for `setDeptId` calls in the controller
+
+#### Issue: Multiple bill types handled
+**Solution**:
+1. Identify all BillTypeAtomic values used
+2. Add suffix configurations for each bill type
+3. Implement appropriate logic for each type
+
 ## Configuration Change Workflow
 
 ### Adding Support for New Bill Types
@@ -392,6 +612,7 @@ public void yourSaveMethod() {
 - **Keep department and institution ID generation completely independent**
 - **Test all configuration scenarios**
 - **Follow the exact pattern shown in examples**
+- **Preserve old behavior when all strategies are disabled (reuse deptId for insId)**
 
 #### Don'ts ❌
 
@@ -400,6 +621,7 @@ public void yourSaveMethod() {
 - **❌ Do NOT modify existing deprecated methods**
 - **❌ Do NOT combine department and institution strategies into single if/else**
 - **❌ Do NOT skip adding configuration defaults**
+- **❌ Do NOT call bill number generator twice when all strategies are disabled (causes sequence gaps)**
 
 ### Troubleshooting Configuration Issues
 
@@ -414,3 +636,60 @@ public void yourSaveMethod() {
 
 #### Issue: Different numbers for department and institution when they should be same
 **Solution**: Check that institution ID generation logic has proper fallback to use `deptId` when appropriate
+
+### Critical P1 Issue: Preserving Old Behavior When No Strategies Are Enabled
+
+#### **Issue Description**
+When all three configuration flags are left at their defaults (false), the fallback logic must preserve the original behavior exactly. For some bill types (like Direct Purchase bills), the original behavior was `deptId == insId`, meaning both identifiers had the same value and only one sequence number was consumed.
+
+#### **Problem Pattern**
+**❌ INCORRECT (consumes counter twice):**
+```java
+// When all strategies are false - this is WRONG
+String deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), ...);
+String insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), ...);
+```
+
+**✅ CORRECT (preserves old behavior):**
+```java
+// When all strategies are false - this preserves original behavior
+String deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), ...);
+String insId = deptId; // Reuse same number
+```
+
+#### **Correct Implementation Pattern**
+```java
+// Handle Institution ID generation (completely separate)
+String insId;
+if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
+    insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+            getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+} else {
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+        configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+        insId = deptId; // Use same number as department
+    } else {
+        // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+        insId = deptId;
+    }
+}
+```
+
+#### **Why This Matters**
+1. **Sequence Integrity**: Prevents gaps in bill number sequences
+2. **Backward Compatibility**: Maintains expected behavior for existing institutions
+3. **Database Consistency**: Preserves assumptions in downstream logic that relies on `deptId == insId`
+4. **Performance**: Avoids unnecessary database calls to increment counters
+
+#### **Bills Affected**
+This pattern applies specifically to bill types where the original behavior was `deptId == insId`:
+- **Direct Purchase Cancellation** (`PHARMACY_DIRECT_PURCHASE_CANCELLED`)
+- **Purchase Order Request Cancellation** (`PHARMACY_ORDER_CANCELLED`)
+- Other bill types may have different original behaviors (some may have always used different numbers)
+
+#### **Testing Verification**
+When all strategies are disabled, verify:
+1. `bill.getDeptId() == bill.getInsId()` (same value)
+2. Only one sequence number is consumed per bill
+3. No gaps appear in bill number sequences
+4. Existing institution behavior remains unchanged

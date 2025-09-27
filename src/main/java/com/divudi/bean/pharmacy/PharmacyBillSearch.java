@@ -2973,7 +2973,8 @@ public class PharmacyBillSearch implements Serializable {
                 if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
                     insId = deptId;
                 } else {
-                    insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PORCAN);
+                    // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                    insId = deptId;
                 }
             }
 
@@ -3250,9 +3251,37 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             CancelledBill cb = pharmacyCreateCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PURCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PURCAN));
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+
+            // Handle Department ID generation (independent)
+            String deptId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            } else {
+                deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PURCAN);
+            }
+
+            // Handle Institution ID generation (completely separate)
+            String insId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
+                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            } else {
+                if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+                    configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+                    insId = deptId;
+                } else {
+                    // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                    insId = deptId;
+                }
+            }
+
+            cb.setDeptId(deptId);
+            cb.setInsId(insId);
             cb.setReferenceBill(getBill());
 
             if (cb.getId() == null) {
