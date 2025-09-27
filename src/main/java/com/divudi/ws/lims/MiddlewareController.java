@@ -109,7 +109,7 @@ public class MiddlewareController {
             System.out.println("AA");
 
             PatientRecord pr = new PatientRecord(0,
-                    extractFirstAndLastFromBillNumber(ptSample.getBill().getDeptId()),
+                    extractLastFromBillNumber(ptSample.getBill().getDeptId()),
                     ptSample.getIdStr(),
                     ptSample.getPatient().getPerson().getNameWithTitle(),
                     "", ptSample.getPatient().getPerson().getSex().getLabel(),
@@ -152,6 +152,16 @@ public class MiddlewareController {
         String firstPart = input.substring(0, first);
         String lastPart = input.substring(last + 1);
         return firstPart + "/" + lastPart;
+    }
+    
+    private static String extractLastFromBillNumber(String input) {
+        if (input == null || !input.contains("/")) {
+            return input; // return as-is if null or no slashes
+        }
+        int last = input.lastIndexOf('/');
+        String lastPart = input.substring(last + 1);
+        String billNumber = lastPart.replaceFirst("^0+", "");
+        return billNumber;
     }
 
     @POST
