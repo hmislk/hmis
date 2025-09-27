@@ -1225,7 +1225,7 @@ public class LaboratoryManagementController implements Serializable {
 
         params.put("ret", false);
 
-        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        items = patientInvestigationFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsWithSampleId", sessionController.getLoggedUser());
     }
 
@@ -1311,7 +1311,7 @@ public class LaboratoryManagementController implements Serializable {
 
         params.put("ret", false);
 
-        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        items = patientInvestigationFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsWithoutSampleId", sessionController.getLoggedUser());
     }
 
@@ -1521,7 +1521,7 @@ public class LaboratoryManagementController implements Serializable {
         jpql += " ORDER BY r.id DESC";
         params.put("ret", false);
 
-        patientReports = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        patientReports = patientReportFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 
         items = new ArrayList();
 
