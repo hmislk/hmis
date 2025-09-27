@@ -3068,7 +3068,7 @@ public class PharmacyBillSearch implements Serializable {
 
             // Independent institution ID generation
             if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-                billId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                billId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
                 cb.setInsId(billId);
             } else {
                 cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
