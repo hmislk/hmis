@@ -222,7 +222,7 @@ public class PurchaseOrderController implements Serializable {
         String insId;
 
         if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCountInstitutionWide(
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.PHARMACY_ORDER_APPROVAL
             );
