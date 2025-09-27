@@ -184,6 +184,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false);
 
+        // Bill-type-specific numbering strategies for Issue Return (IR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false);
+
         // Bill Number Suffix Configuration Options - Default suffixes for different bill types
         // These provide default values when bill number suffix configurations are empty
         getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");
