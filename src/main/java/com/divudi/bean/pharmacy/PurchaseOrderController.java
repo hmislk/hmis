@@ -218,33 +218,35 @@ public class PurchaseOrderController implements Serializable {
         boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
 
+        // Handle Department ID generation
         String deptId;
-        String insId;
-
         if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.PHARMACY_ORDER_APPROVAL
             );
-            insId = deptId; // For department strategy, both are the same
         } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.PHARMACY_ORDER_APPROVAL
             );
-            insId = deptId; // For this strategy, both are the same
-        } else if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    getSessionController().getDepartment(),
-                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
-            );
-            deptId = insId; // For institution strategy, both are the same
         } else {
             // Default behavior - use the original method
             deptId = billNumberBean.departmentBillNumberGeneratorYearly(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.PHARMACY_ORDER_APPROVAL
             );
+        }
+
+        // Handle Institution ID generation separately
+        String insId;
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+        } else {
+            // Default behavior - use the department ID for institution ID
             insId = deptId;
         }
 
