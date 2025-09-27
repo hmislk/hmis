@@ -460,36 +460,33 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        String billId = "";
-        String deptId = "";
-        String insId = "";
-
-        boolean billNumberGenerationStrategyForPharmacyDisposalIssueIsByBillYearTypeAtomicAndLoggedDepartment
-                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Disposal Issue Is By Year, Bill Type Atomic And Logged Department", false);
-
-        if (billNumberGenerationStrategyForPharmacyDisposalIssueIsByBillYearTypeAtomicAndLoggedDepartment) {
-            billId = billNumberBean.departmentBillNumberGeneratorYearly(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
-            insId=billId;
-            deptId=billId;
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
         } else {
-            boolean billNumberGeberationStrategyForFromDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
-            boolean billNumberGeberationStrategyForToDept = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
-            boolean billNumberGeberationStrategyForFromAndToDepts = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        }
 
-            if (billNumberGeberationStrategyForFromDept) {
-                deptId = generateBillNumberForFromDepartment();
-                insId = deptId;
-            } else if (billNumberGeberationStrategyForToDept) {
-                deptId = generateBillNumberForToDepartment();
-                insId = deptId;
-            } else if (billNumberGeberationStrategyForFromAndToDepts) {
-                deptId = generateBillNumberForFromAndToDepartmentsCorrected();
-                insId = deptId;
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
             } else {
-                deptId = generateInstitutionBillNumber();
-                insId = generateInstitutionBillNumberForInstitution();
+                // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                insId = deptId;
             }
         }
 
