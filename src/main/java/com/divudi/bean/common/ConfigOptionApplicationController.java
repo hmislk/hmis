@@ -80,8 +80,6 @@ public class ConfigOptionApplicationController implements Serializable {
     @PostConstruct
     public void init() {
         loadApplicationOptions();
-        loadPharmacyAnalyticsConfigurationDefaults();
-        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
@@ -101,6 +99,8 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyAdjustmentReceiptConfigurationDefaults();
         loadPatientNameConfigurationDefaults();
         loadSecurityConfigurationDefaults();
+        loadPharmacyAnalyticsConfigurationDefaults();
+        loadReportMethodConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -147,8 +147,50 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
 
+        // Bill Numbering Configuration Options - Added for improved bill numbering functionality
+        // These options enable configurable bill numbering strategies across different bill types
+        // Future development: Apply these patterns to additional bill types as needed
+
+        // Generic bill numbering strategies (for backward compatibility)
+        getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
+
+        // Bill-type-specific numbering strategies for Purchase Order Requests (POR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Purchase Order Approvals (POA)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Approval - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Approval - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for GRN
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Cancelled Purchase Order Requests (C-POR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled Purchase Order Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Cancelled GRN (C-GRN)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled GRN - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled GRN - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for GRN Return (GRNR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill Number Suffix Configuration Options - Default suffixes for different bill types
+        // These provide default values when bill number suffix configurations are empty
+        getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");
+        getShortTextValueByKey("Bill Number Suffix for Purchase Order Approval", "POA");
+        getShortTextValueByKey("Bill Number Suffix for Cancelled Purchase Order Request", "C-POR");
+        getShortTextValueByKey("Bill Number Suffix for Cancelled GRN", "C-GRN");
+        getShortTextValueByKey("Bill Number Suffix for GRN Return", "GRNR");
+        getShortTextValueByKey("Bill Number Suffix for GRN", "GRN");
+
     }
-    
+
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
         getLongTextValueByKey("Pharmacy Issue Receipt CSS",
                 ".receipt-container {\n"
@@ -480,44 +522,44 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "}"
         );
         getLongTextValueByKey("Pharmacy Transfer Request Receipt Header",
-                "<table class=\"receipt-details-table\">\n" +
-                "    <tr>\n" +
-                "        <td>Request From</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>\n" +
-                "            {{from_dept}} ({{from_ins}})\n" +
-                "        </td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Request To</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>\n" +
-                "            {{to_dept}} ({{to_ins}})\n" +
-                "        </td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Req No</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>{{bill_id}}</td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Req By</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>{{user}}</td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Req Date/Time</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>\n" +
-                "           {{bill_date}}\n" +
-                "        </td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Document Status</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>{{bill_status}}</td>\n" +
-                "    </tr>\n" +
-                "</table>\n");
+                "<table class=\"receipt-details-table\">\n"
+                + "    <tr>\n"
+                + "        <td>Request From</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>\n"
+                + "            {{from_dept}} ({{from_ins}})\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Request To</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>\n"
+                + "            {{to_dept}} ({{to_ins}})\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Req No</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>{{bill_id}}</td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Req By</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>{{user}}</td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Req Date/Time</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>\n"
+                + "           {{bill_date}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Document Status</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>{{bill_status}}</td>\n"
+                + "    </tr>\n"
+                + "</table>\n");
         getBooleanValueByKey("Pharmacy Transfer Request - Show Rate and Value", false);
 
     }

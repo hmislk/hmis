@@ -3040,9 +3040,40 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
+            // Set default suffix for cancelled GRN if not already set
+            String billNumberSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for Cancelled GRN", "C-GRN");
+            if (billNumberSuffix == null || billNumberSuffix.trim().isEmpty()) {
+                billNumberSuffix = "C-GRN";
+            }
+
             CancelledBill cb = pharmacyCreateCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
+
+            // Get configuration options for bill numbering strategies
+            boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
+            boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
+            boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
+
+            String billId;
+
+            // Independent department ID generation
+            if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+                billId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                cb.setDeptId(billId);
+            } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+                billId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                cb.setDeptId(billId);
+            } else {
+                cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
+            }
+
+            // Independent institution ID generation
+            if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+                billId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                cb.setInsId(billId);
+            } else {
+                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
+            }
+
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             cb.setReferenceBill(getBill().getBilledBill());
 
