@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -91,6 +92,8 @@ public class PurchaseOrderController implements Serializable {
     private double totalBillItemsCount;
     @Inject
     NotificationController notificationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     private String emailRecipient;
 
@@ -204,13 +207,49 @@ public class PurchaseOrderController implements Serializable {
         saveBill();
         saveBillComponent();
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
-                getSessionController().getDepartment(),
-                BillTypeAtomic.PHARMACY_ORDER_APPROVAL
-        );
+        // Check if bill number suffix is configured, if not set default "POA" for Purchase Order Approvals
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Purchase Order Approvals if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL, "POA");
+        }
+
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        String deptId;
+        String insId;
+
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+            insId = deptId; // For department strategy, both are the same
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+            insId = deptId; // For this strategy, both are the same
+        } else if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+            deptId = insId; // For institution strategy, both are the same
+        } else {
+            // Default behavior - use the original method
+            deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+            insId = deptId;
+        }
 
         getAprovedBill().setDeptId(deptId);
-        getAprovedBill().setInsId(deptId);
+        getAprovedBill().setInsId(insId);
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         //        Approve Date and Time 
         getAprovedBill().setApproveAt(new Date());
