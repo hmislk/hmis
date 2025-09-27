@@ -109,7 +109,7 @@ public class MiddlewareController {
             System.out.println("AA");
 
             PatientRecord pr = new PatientRecord(0,
-                    ptSample.getPatient().getIdStr(),
+                    extractLastFromBillNumber(ptSample.getBill().getDeptId()),
                     ptSample.getIdStr(),
                     ptSample.getPatient().getPerson().getNameWithTitle(),
                     "", ptSample.getPatient().getPerson().getSex().getLabel(),
@@ -129,6 +129,39 @@ public class MiddlewareController {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred").build();
         }
+    }
+
+    public static String extractLastDigits(String input) {
+        if (input == null || !input.contains("/")) {
+            return "";
+        }
+        String lastPart = input.substring(input.lastIndexOf('/') + 1);
+        return lastPart.replaceAll("\\D+", ""); // keep only digits
+    }
+
+    // Contributed by ChatGPT
+    private static String extractFirstAndLastFromBillNumber(String input) {
+        if (input == null || !input.contains("/")) {
+            return input; // return as-is if null or no slashes
+        }
+        int first = input.indexOf('/');
+        int last = input.lastIndexOf('/');
+        if (first == last) {
+            return input; // only one slash, return as-is
+        }
+        String firstPart = input.substring(0, first);
+        String lastPart = input.substring(last + 1);
+        return firstPart + "/" + lastPart;
+    }
+    
+    private static String extractLastFromBillNumber(String input) {
+        if (input == null || !input.contains("/")) {
+            return input; // return as-is if null or no slashes
+        }
+        int last = input.lastIndexOf('/');
+        String lastPart = input.substring(last + 1);
+        String billNumber = lastPart.replaceFirst("^0+", "");
+        return billNumber;
     }
 
     @POST
@@ -159,7 +192,6 @@ public class MiddlewareController {
                 switch (analyzer) {
                     case BioRadD10:
                         return processBioRadD10(dataBundle);
-
 
                     case Dimension_Clinical_Chemistry_System:
                         return processDimensionClinicalChemistrySystem(dataBundle);
