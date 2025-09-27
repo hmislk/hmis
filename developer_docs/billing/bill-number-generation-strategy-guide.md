@@ -26,63 +26,78 @@ The new system supports three main formats:
 3. **Configuration-Driven**: All strategies controlled through ConfigOptionApplicationController
 4. **Thread-Safe**: All generation methods use ReentrantLock for concurrency safety
 
-## Required Configuration Options
+## Required Configuration Setup
 
-Add these configuration options to `ConfigOptionApplicationController.java`:
+### Step 1: Add Configuration Defaults to ConfigOptionApplicationController
+
+The configuration defaults are centrally managed in `ConfigOptionApplicationController.java` within the `loadPharmacyConfigurationDefaults()` method. This ensures all configuration options have proper defaults and are loaded at application startup.
+
+**CRITICAL**: All bill number generation configuration must be added to `loadPharmacyConfigurationDefaults()` method, NOT in individual controllers.
+
+#### Bill Number Generation Strategy Defaults
+
+These are already present in `loadPharmacyConfigurationDefaults()`:
 
 ```java
-// Bill Number Generation Strategy Configuration
-public static final String BILL_NUMBER_GENERATION_STRATEGY_FOR_DEPARTMENT_ID_IS_PREFIX_DEPT_INS_YEAR_COUNT = "Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count";
-public static final String BILL_NUMBER_GENERATION_STRATEGY_FOR_DEPARTMENT_ID_IS_PREFIX_INS_YEAR_COUNT = "Bill Number Generation Strategy for Department Id is Prefix Ins Year Count";
-public static final String BILL_NUMBER_GENERATION_STRATEGY_FOR_INSTITUTION_ID_IS_PREFIX_INS_YEAR_COUNT = "Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count";
+private void loadPharmacyConfigurationDefaults() {
+    // ... other pharmacy configurations ...
 
-// Bill Number Suffix Configuration (per bill type)
-// Format: "Bill Number Suffix for " + BillTypeAtomic.BILL_TYPE_NAME
-// Examples:
-// "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE -> "POR"
-// "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL -> "POA"
-// "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_CANCELLED -> "C-POR"
-// "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN -> "GRN"
+    // Bill Numbering Configuration Options - Added for improved bill numbering functionality
+    // Generic bill numbering strategies (for backward compatibility)
+    getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false);
+    getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false);
+    getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false);
+
+    // ... other bill-type-specific strategies ...
+}
+```
+
+#### Adding Bill Number Suffix for New Bill Types
+
+When adding support for a new bill type, add the suffix configuration to the same method:
+
+```java
+private void loadPharmacyConfigurationDefaults() {
+    // ... existing configurations ...
+
+    // Bill Number Suffix Configuration Options - Default suffixes for different bill types
+    getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");
+    getShortTextValueByKey("Bill Number Suffix for Purchase Order Approval", "POA");
+    getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
+    // Add your new bill type suffix here:
+    getShortTextValueByKey("Bill Number Suffix for YOUR_BILL_TYPE_ATOMIC", "YOUR_SUFFIX");
+}
+```
+
+**Example for Direct Purchase**:
+```java
+getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
 ```
 
 ## Step-by-Step Implementation
 
-### Step 1: Add Configuration Methods to Controller
+### Step 1: Ensure Controller Access to ConfigOptionApplicationController
 
-Ensure your controller has access to `ConfigOptionApplicationController`:
+Ensure your controller has access to `ConfigOptionApplicationController` (most controllers already have this):
 
 ```java
 @Inject
 ConfigOptionApplicationController configOptionApplicationController;
-
-// Get configuration values
-private boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount() {
-    return configOptionApplicationController.getBooleanValueByKey(
-        "Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false);
-}
-
-private boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount() {
-    return configOptionApplicationController.getBooleanValueByKey(
-        "Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false);
-}
-
-private boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount() {
-    return configOptionApplicationController.getBooleanValueByKey(
-        "Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false);
-}
 ```
+
+**IMPORTANT**: Do NOT create helper methods in controllers. Use the configuration service directly.
 
 ### Step 2: Implement Independent Department and Institution ID Generation
 
-**CRITICAL**: Department and Institution ID generation must be completely independent:
+**CRITICAL**: Department and Institution ID generation must be completely independent. Use direct calls to `configOptionApplicationController` without helper methods:
 
 ```java
 // Handle Department ID generation (independent)
 String deptId;
-if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount()) {
+if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
             sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
-} else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount()) {
+} else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
             sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
 } else {
@@ -93,38 +108,32 @@ if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount()) {
 
 // Handle Institution ID generation (completely separate)
 String insId;
-if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount()) {
+if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
     insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
             sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
 } else {
     // Smart fallback logic
-    if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount() ||
-        billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount()) {
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+        configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
         insId = deptId; // Use same number as department
     } else {
         // Use existing institution method for backward compatibility
-        insId = getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(),
-                BillType.YourBillType,
-                BillClassType.BilledBill,
-                BillNumberSuffix.YOUR_SUFFIX);
+        insId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
     }
 }
 ```
 
-### Step 3: Implement Default Suffix Logic
+### Step 3: Configuration Defaults Handle Suffix Logic
 
-Handle default suffix in the controller (NOT in the service):
+**IMPORTANT**: Do NOT implement suffix logic in controllers. The configuration defaults in `ConfigOptionApplicationController.loadPharmacyConfigurationDefaults()` handle this automatically.
 
+The suffix configuration is already handled by:
 ```java
-// Check if bill number suffix is configured, if not set default
-String billSuffix = configOptionApplicationController.getLongTextValueByKey(
-    "Bill Number Suffix for " + BillTypeAtomic.YOUR_BILL_TYPE, "");
-if (billSuffix == null || billSuffix.trim().isEmpty()) {
-    configOptionApplicationController.setLongTextValueByKey(
-        "Bill Number Suffix for " + BillTypeAtomic.YOUR_BILL_TYPE, "YOUR_DEFAULT_SUFFIX");
-}
+getShortTextValueByKey("Bill Number Suffix for YOUR_BILL_TYPE_ATOMIC", "DEFAULT_SUFFIX");
 ```
+
+This ensures the suffix is available when needed without any controller logic.
 
 ### Step 4: Apply Bill Numbers to Entity
 
@@ -174,64 +183,61 @@ public String institutionBillNumberGeneratorYearlyWithPrefixInsYearCountDeprecat
 
 ## Implementation Examples
 
-### Example 1: Purchase Order Request (PurchaseOrderRequestController.java)
+### Example 1: Direct Purchase (PharmacyDirectPurchaseController.java)
 
 ```java
 // In saveBill() method
-String billSuffix = configOptionApplicationController.getLongTextValueByKey(
-    "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "");
-if (billSuffix == null || billSuffix.trim().isEmpty()) {
-    configOptionApplicationController.setLongTextValueByKey(
-        "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "POR");
-}
+// NOTE: No suffix configuration logic needed - handled by ConfigOptionApplicationController
 
-// Department ID generation
+// Handle Department ID generation (independent)
 String deptId;
-if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount()) {
+if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-} else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount()) {
+            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+} else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 } else {
-    deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
-            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+    deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 }
 
-// Institution ID generation (independent)
+// Handle Institution ID generation (completely separate)
 String insId;
-if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount()) {
+if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
     insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 } else {
-    if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount() ||
-        billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount()) {
-        insId = deptId;
+    // Smart fallback logic
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+        configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+        insId = deptId; // Use same number as department
     } else {
-        insId = getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(),
-                BillType.PharmacyOrderRequest,
-                BillClassType.PreBill,
-                BillNumberSuffix.PHAORD);
+        // Use existing institution method for backward compatibility
+        insId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
     }
 }
 
-getCurrentBill().setDeptId(deptId);
-getCurrentBill().setInsId(insId);
+getBill().setDeptId(deptId);
+getBill().setInsId(insId);
 ```
 
-### Example 2: GRN Costing (GrnCostingController.java)
+### Example 2: Configuration Setup in ConfigOptionApplicationController
 
 ```java
-// In requestFinalizeWithSaveApprove() method
-String billSuffix = configOptionApplicationController.getLongTextValueByKey(
-    "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "");
-if (billSuffix == null || billSuffix.trim().isEmpty()) {
-    configOptionApplicationController.setLongTextValueByKey(
-        "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
-}
+private void loadPharmacyConfigurationDefaults() {
+    // ... other pharmacy configurations ...
 
-// Similar independent department and institution ID generation...
+    // Bill Number Generation Strategy Defaults
+    getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false);
+    getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false);
+    getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false);
+
+    // Bill Number Suffix Defaults
+    getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");
+    getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
+    getShortTextValueByKey("Bill Number Suffix for PHARMACY_GRN", "GRN");
+    // Add new bill types here
+}
 ```
 
 ## Testing Strategy
@@ -309,3 +315,102 @@ Expected: [legacy format] (dept), POR/MPH/25/000001 (ins)
 - **ALWAYS** test with different configuration combinations
 
 This pattern can be applied to any bill type in the HMIS system while maintaining complete backward compatibility.
+
+## Configuration Change Workflow
+
+### Adding Support for New Bill Types
+
+Follow this systematic approach when adding bill number generation support for new bill types:
+
+#### 1. Add Configuration Defaults First
+
+**File**: `ConfigOptionApplicationController.java`
+**Method**: `loadPharmacyConfigurationDefaults()`
+
+```java
+// Add the suffix configuration for your new bill type
+getShortTextValueByKey("Bill Number Suffix for YOUR_BILL_TYPE_ATOMIC", "YOUR_DEFAULT_SUFFIX");
+```
+
+#### 2. Implement Controller Logic
+
+**File**: Your controller's save/finalize method
+
+```java
+public void yourSaveMethod() {
+    // Department ID generation (independent)
+    String deptId;
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+    } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+    } else {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+    }
+
+    // Institution ID generation (completely separate)
+    String insId;
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
+        insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+    } else {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+            configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+            insId = deptId;
+        } else {
+            insId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+        }
+    }
+
+    yourBill.setDeptId(deptId);
+    yourBill.setInsId(insId);
+
+    // ... rest of your save logic
+}
+```
+
+#### 3. Testing Checklist
+
+- [ ] Configuration defaults are loaded at application startup
+- [ ] Default suffix appears in admin configuration UI
+- [ ] Bill numbers generate correctly with default suffix
+- [ ] All three generation strategies work independently
+- [ ] Backward compatibility preserved for existing institutions
+- [ ] No compilation errors
+- [ ] No null pointer exceptions
+
+### Configuration Management Best Practices
+
+#### Do's ✅
+
+- **Add all configuration defaults to `loadPharmacyConfigurationDefaults()`**
+- **Use direct calls to `configOptionApplicationController.getBooleanValueByKey()`**
+- **Keep department and institution ID generation completely independent**
+- **Test all configuration scenarios**
+- **Follow the exact pattern shown in examples**
+
+#### Don'ts ❌
+
+- **❌ Do NOT create helper methods in controllers**
+- **❌ Do NOT add suffix configuration logic in controllers**
+- **❌ Do NOT modify existing deprecated methods**
+- **❌ Do NOT combine department and institution strategies into single if/else**
+- **❌ Do NOT skip adding configuration defaults**
+
+### Troubleshooting Configuration Issues
+
+#### Issue: Configuration option not appearing in admin UI
+**Solution**: Ensure `loadPharmacyConfigurationDefaults()` contains the configuration and restart application
+
+#### Issue: Default suffix not working
+**Solution**: Check that `getShortTextValueByKey("Bill Number Suffix for BILL_TYPE", "DEFAULT")` is in `loadPharmacyConfigurationDefaults()`
+
+#### Issue: Bill numbers not following new format
+**Solution**: Verify configuration strategies are enabled in admin UI and check BillTypeAtomic parameter is correct
+
+#### Issue: Different numbers for department and institution when they should be same
+**Solution**: Check that institution ID generation logic has proper fallback to use `deptId` when appropriate
