@@ -337,7 +337,43 @@ Expected: [legacy format] (dept), [legacy format] (ins)
 3. **Multi-Year Support**: Can extend to support financial year vs calendar year
 4. **Audit Trail**: Can add logging for bill number generation events
 
-## Notes
+## Critical Rules and Safety Guidelines
+
+### 🚨 CRITICAL WARNING: Do NOT Change Existing Bill Types or BillTypeAtomic Values
+
+**❌ NEVER DO THIS:**
+- Do NOT change existing `BillType` enum values
+- Do NOT change existing `BillTypeAtomic` enum values
+- Do NOT modify the meaning of existing bill types
+- Do NOT create new bill types when existing ones should be used
+
+**✅ CORRECT APPROACH:**
+- Use existing `BillTypeAtomic` values that match the business process
+- If no appropriate `BillTypeAtomic` exists, request creation of a new one through proper channels
+- When unsure, check all existing usage of a `BillTypeAtomic` before proceeding
+
+**Why This Matters:**
+- Other cancellation processes may use the same `BillTypeAtomic`
+- Reports and queries depend on consistent bill type usage
+- Financial calculations may be tied to specific bill types
+- Database triggers and stored procedures may reference these values
+
+**Example of Dangerous Changes:**
+```java
+// ❌ WRONG - Don't create new bill types for existing processes
+cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED); // This may not exist!
+
+// ✅ CORRECT - Use existing bill types that match the business process
+cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED); // This is the correct existing type
+```
+
+**Before Making ANY Bill Type Changes:**
+1. Search the entire codebase for existing usage: `grep -r "PHARMACY_ISSUE_CANCELLED" .`
+2. Check if other methods depend on that bill type
+3. Verify the bill type actually represents the correct business process
+4. When in doubt, ask the domain expert
+
+### Implementation Safety Rules
 
 - **NEVER** modify deprecated methods - they are used by existing institutions
 - **ALWAYS** maintain backward compatibility
@@ -345,6 +381,7 @@ Expected: [legacy format] (dept), [legacy format] (ins)
 - **ALWAYS** handle default suffixes in controller, not service
 - **ALWAYS** use appropriate BillTypeAtomic for each bill type
 - **ALWAYS** test with different configuration combinations
+- **ALWAYS** verify existing bill type usage before making changes
 
 This pattern can be applied to any bill type in the HMIS system while maintaining complete backward compatibility.
 
