@@ -180,9 +180,22 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Year + Yearly Number", false);
 
+
         // Bill-type-specific numbering strategies for Transfer Receive (TR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Direct Purchase Refund (DPR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Issue Return (IR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Issue Cancelled (IC)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Institution Code + Year + Yearly Number", false);
 
         // Bill Number Suffix Configuration Options - Default suffixes for different bill types
         // These provide default values when bill number suffix configurations are empty
@@ -195,6 +208,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_CANCELLED", "C-DP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_REFUND", "DPR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");
 
     }
 

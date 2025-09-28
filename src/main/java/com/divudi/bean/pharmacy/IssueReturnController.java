@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.core.data.BillClassType;
@@ -60,6 +61,8 @@ public class IssueReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -239,8 +242,37 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: use existing institution bill number generator
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET);
+            }
+        }
+
+        getReturnBill().setDeptId(deptId);
+        getReturnBill().setInsId(insId);
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {
@@ -544,6 +576,14 @@ public class IssueReturnController implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
 }
