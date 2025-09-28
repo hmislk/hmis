@@ -180,9 +180,18 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Year + Yearly Number", false);
 
+
         // Bill-type-specific numbering strategies for Transfer Issue (TI)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Pre Bill (SPB)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Cashier Pre Bill (SCPB)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
 
         // Bill-type-specific numbering strategies for Sale Refund (SR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
@@ -238,6 +247,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_CANCELLED", "C-DP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE", "TI");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_ISSUE", "DTI");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE", "SPB");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER", "SCPB");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE", "SB");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS", "SR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL", "SRP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_CANCELLED", "SC");
