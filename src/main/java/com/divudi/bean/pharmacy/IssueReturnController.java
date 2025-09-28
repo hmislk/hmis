@@ -7,7 +7,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -32,6 +31,8 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.service.BillService;
+import com.divudi.core.util.BigDecimalUtil;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -75,6 +76,8 @@ public class IssueReturnController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private DisposalReturnWorkflowController disposalReturnWorkflowController;
 
     private Bill originalBill;
     private Bill returnBill;
@@ -87,12 +90,21 @@ public class IssueReturnController implements Serializable {
     private List<BillItem> selectedBillItems;
 
     public void saveDisposalIssueReturnBill() {
+        // Validate return quantities before saving
+        if (!validateReturnQuantities()) {
+            return;
+        }
         saveBill();
         saveBillComponents();
         JsfUtil.addSuccessMessage("Saved");
     }
 
     public void finalizeDisposalIssueReturnBill() {
+        // Validate return quantities before finalizing
+        if (!validateReturnQuantities()) {
+            return;
+        }
+
         saveDisposalIssueReturnBill();
         getReturnBill().setEditedAt(new Date());
         getReturnBill().setEditor(sessionController.getLoggedUser());
@@ -110,6 +122,10 @@ public class IssueReturnController implements Serializable {
         }
         if (!hasQtyToReturn(returnBillItems)) {
             JsfUtil.addErrorMessage("Return Quantity is Zero. Can not Return");
+            return;
+        }
+        // Final validation before settlement to ensure data integrity
+        if (!validateReturnQuantities()) {
             return;
         }
         calculateBillTotal();
@@ -139,6 +155,36 @@ public class IssueReturnController implements Serializable {
         return false;
     }
 
+    /**
+     * Validates that no item is being returned more than the available quantity
+     * Checks against original issued quantity and previously returned quantities
+     * @return true if all return quantities are valid, false otherwise
+     */
+    public boolean validateReturnQuantities() {
+        if (returnBillItems == null || returnBillItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items found to return");
+            return false;
+        }
+
+        for (BillItem returnItem : returnBillItems) {
+            if (returnItem == null || returnItem.getReferanceBillItem() == null) {
+                continue;
+            }
+
+            double requestedReturnQty = returnItem.getQty();
+            if (requestedReturnQty <= 0) {
+                continue; // Skip items with zero or negative return quantity
+            }
+
+            // Use the new comprehensive validation method that handles all validations
+            if (!validateItemReturnQuantity(returnItem)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public Bill getOriginalBill() {
         return originalBill;
     }
@@ -152,10 +198,21 @@ public class IssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Programming Error");
             return null;
         }
+        if (originalIssueBill.isFullReturned()) {
+            JsfUtil.addErrorMessage("This disposal issue bill has been fully returned. No further returns are allowed.");
+            return null;
+        }
         if (!getSessionController().getDepartment().getId().equals(originalIssueBill.getDepartment().getId())) {
             JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
             return null;
         }
+
+        // Check for existing pending disposal returns for this specific bill
+        if (disposalReturnWorkflowController.hasPendingDisposalReturnForSpecificBill(originalIssueBill)) {
+            JsfUtil.addErrorMessage("Cannot create new return for this disposal issue bill. There is already a disposal return pending approval for this bill. Please approve or reject the existing return first.");
+            return null;
+        }
+
         resetBillValues();
         originalBill = originalIssueBill;
         if (!generateBillComponent()) {
@@ -252,6 +309,9 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setBillType(BillType.PharmacyIssue);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
         getReturnBill().setBilledBill(getOriginalBill());
+        getReturnBill().setCompleted(true);
+        getReturnBill().setCompletedAt(new Date());
+        getReturnBill().setCompletedBy(sessionController.getLoggedUser());
 
         getReturnBill().setForwardReferenceBill(getOriginalBill().getForwardReferenceBill());
 
@@ -289,63 +349,55 @@ public class IssueReturnController implements Serializable {
     }
 
     private void saveSettlingBillComponents() {
-
-        double purchaseValue = 0.0;
-        double retailValue = 0.0;
-
-        for (BillItem i : getOriginalBillItems()) {
-            double itemPurchaseValue;
-            double itemRetialValue;
-
-            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
-
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
-                continue;
-            }
+        boolean fullyReturned = true;
+        for (BillItem i : getReturnBillItems()) {
+            i.getPharmaceuticalBillItem().setQty(Math.abs(i.getQty()));
 
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty(0 - i.getPharmaceuticalBillItem().getQty());
+            i.setQty(Math.abs(i.getPharmaceuticalBillItem().getQty()));
 
             double value = i.getRate() * i.getQty();
             i.setGrossValue(0 - value);
             i.setNetValue(0 - value);
 
-            itemPurchaseValue = i.getPharmaceuticalBillItem().getPurchaseRate() * i.getQty();
-            itemRetialValue = i.getPharmaceuticalBillItem().getRetailRate() * i.getQty();
+            BillItem referenceBillItem = i.getReferanceBillItem();
+            BillItemFinanceDetails financeDetailsOfOriginal = referenceBillItem != null ? referenceBillItem.getBillItemFinanceDetails() : null;
+            BillItemFinanceDetails financeDetailsOfReturn = i.getBillItemFinanceDetails();
 
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
+            BigDecimal settledQty = financeDetailsOfReturn == null
+                    ? BigDecimal.ZERO
+                    : BigDecimalUtil.valueOrZero(financeDetailsOfReturn.getQuantity());
+
+            if (financeDetailsOfOriginal != null) {
+                BigDecimal alreadyReturned = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getReturnQuantity());
+                BigDecimal updatedReturnQty = alreadyReturned.add(settledQty);
+                financeDetailsOfOriginal.setReturnQuantity(updatedReturnQty);
+
+                BigDecimal originalQty = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getQuantity());
+                if (originalQty.compareTo(updatedReturnQty) > 0) {
+                    fullyReturned = false;
+                }
+
+                getBillItemFacade().edit(referenceBillItem);
+            } else {
+                fullyReturned = false;
             }
 
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
 
-            //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            //System.err.println("STOCK " + i.getPharmaceuticalBillItem().getStock());
             getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
-            //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());
-            //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
-            //      updateRemainingQty(i);
             getReturnBill().getBillItems().add(i);
 
-            purchaseValue += itemPurchaseValue;
-            retailValue += itemRetialValue;
         }
-        StockBill clonedStockBill = getOriginalBill().getStockBill().createNewBill();
-        clonedStockBill.setStockValueAtPurchaseRates(purchaseValue);
-        clonedStockBill.setStockValueAsSaleRate(retailValue);
-        getReturnBill().setStockBill(clonedStockBill);
-        getReturnBill().getStockBill().invertStockBillValues(getReturnBill());
-
+        if(fullyReturned){
+            getOriginalBill().setFullReturned(true);
+            getOriginalBill().setFullReturnedAt(new Date());
+            getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(getOriginalBill());
+        }
         getBillFacade().edit(getReturnBill());
 
     }
@@ -661,6 +713,124 @@ public class IssueReturnController implements Serializable {
         this.returnBillItems = returnBillItems;
     }
 
+    /**
+     * Validates return quantity for a specific item against both remaining quantity and stock availability
+     * Similar to GRN return validation logic but adapted for issue returns
+     * @param bi The bill item to validate
+     * @return true if validation passes, false if validation fails and quantity was corrected
+     */
+    public boolean validateItemReturnQuantity(BillItem bi) {
+        if (bi == null) {
+            return false;
+        }
+
+        double requestedQty = bi.getQty();
+        String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown Item";
+
+        // First check: Validate against remaining quantity (what can be returned)
+        if (requestedQty > 0 && bi.getRemainingQty() > 0 && requestedQty > bi.getRemainingQty()) {
+            JsfUtil.addErrorMessage(String.format(
+                "Return quantity %.2f for '%s' exceeds available quantity %.2f. Corrected to maximum available.",
+                requestedQty, itemName, bi.getRemainingQty()
+            ));
+            bi.setQty(bi.getRemainingQty());
+            return false;
+        }
+
+        // Second check: Validate against current stock (what's physically available)
+        if (bi.getPharmaceuticalBillItem() != null &&
+            bi.getPharmaceuticalBillItem().getStock() != null &&
+            requestedQty > 0) {
+
+            double currentStock = bi.getPharmaceuticalBillItem().getStock().getStock();
+            double requestedQtyInUnits = requestedQty;
+
+            // Convert to units for AMPP items
+            if (bi.getItem() instanceof Ampp && bi.getItem().getDblValue() > 0) {
+                requestedQtyInUnits = requestedQty * bi.getItem().getDblValue();
+            }
+
+            // Calculate total stock usage from all items in this return that use the same stock
+            double totalStockUsageFromCurrentReturn = calculateTotalStockUsageFromCurrentReturn(
+                bi.getPharmaceuticalBillItem().getStock(), bi, requestedQtyInUnits);
+
+            if (totalStockUsageFromCurrentReturn > currentStock) {
+                // Calculate maximum allowable quantity for this item
+                double otherItemsUsage = totalStockUsageFromCurrentReturn - requestedQtyInUnits;
+                double maxAllowableQtyInUnits = Math.max(0, currentStock - otherItemsUsage);
+                double maxAllowableQty = maxAllowableQtyInUnits;
+
+                // Convert back to packs for AMPP items
+                if (bi.getItem() instanceof Ampp && bi.getItem().getDblValue() > 0) {
+                    maxAllowableQty = maxAllowableQtyInUnits / bi.getItem().getDblValue();
+                }
+
+                String batchInfo = bi.getPharmaceuticalBillItem().getStock().getItemBatch() != null ?
+                    " (Batch: " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getBatchNo() + ")" : "";
+
+                JsfUtil.addErrorMessage(String.format(
+                    "Return quantity %.2f for '%s' exceeds current stock %.2f%s. " +
+                    "Total stock usage would be %.2f. Corrected to maximum allowable: %.2f",
+                    requestedQty, itemName, currentStock, batchInfo,
+                    totalStockUsageFromCurrentReturn, maxAllowableQty
+                ));
+
+                bi.setQty(maxAllowableQty);
+                return false;
+            }
+        }
+
+        return true; // All validations passed
+    }
+
+    /**
+     * Calculates total stock usage from all items in the current return that use the same stock
+     * This prevents over-allocation of stock across multiple items
+     * @param stock The stock being checked
+     * @param currentItem The item currently being processed
+     * @param currentItemQtyInUnits The quantity in units for the current item
+     * @return Total stock usage in units
+     */
+    private double calculateTotalStockUsageFromCurrentReturn(
+            com.divudi.core.entity.pharmacy.Stock stock, BillItem currentItem, double currentItemQtyInUnits) {
+
+        if (returnBillItems == null || stock == null) {
+            return currentItemQtyInUnits;
+        }
+
+        double totalUsage = 0.0;
+
+        for (BillItem bi : returnBillItems) {
+            if (bi == null || bi.getPharmaceuticalBillItem() == null ||
+                bi.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+
+            // Only count items that use the same stock
+            if (!bi.getPharmaceuticalBillItem().getStock().getId().equals(stock.getId())) {
+                continue;
+            }
+
+            double itemQtyInUnits;
+            if (bi.getId() != null && bi.getId().equals(currentItem.getId())) {
+                // Use the current item's new quantity
+                itemQtyInUnits = currentItemQtyInUnits;
+            } else {
+                // Use existing quantity for other items
+                double itemQty = bi.getQty();
+                if (bi.getItem() instanceof Ampp && bi.getItem().getDblValue() > 0) {
+                    itemQtyInUnits = itemQty * bi.getItem().getDblValue();
+                } else {
+                    itemQtyInUnits = itemQty;
+                }
+            }
+
+            totalUsage += itemQtyInUnits;
+        }
+
+        return totalUsage;
+    }
+
     public void calculateBillItemTotals(BillItem bi) {
         if (bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getItemBatch() == null) {
             return;
@@ -672,6 +842,11 @@ public class IssueReturnController implements Serializable {
             return;
         }
         double qty = bi.getQty();
+
+        // Comprehensive validation: remaining quantity and stock availability
+        if (!validateItemReturnQuantity(bi)) {
+            return; // Validation failed, quantity has been corrected
+        }
 
         // Get rates from item batch - these are always in units
         double costRate = bi.getPharmaceuticalBillItem().getItemBatch().getCostRate();

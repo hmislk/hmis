@@ -20027,5 +20027,43 @@ public class SearchController implements Serializable {
         return "pharmacy_transfer_request_list";
     }
 
+    /**
+     * Search disposal issue bills for return processing
+     */
+    public void createTableByKeywordForPharmacyDisposalIssue() {
+        bills = new ArrayList<>();
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = :retired "
+                + "AND b.billTypeAtomic = :billTypeAtomic "
+                + "AND b.department = :department "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) ";
+
+        params.put("retired", false);
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        params.put("department", sessionController.getDepartment());
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("cancelled", false);
+
+        jpql += "ORDER BY b.createdAt DESC";
+
+        try {
+            bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP, 1000);
+            if (bills == null) {
+                bills = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error searching disposal issue bills: " + e.getMessage());
+            bills = new ArrayList<>();
+        }
+    }
+
     // </editor-fold>
 }

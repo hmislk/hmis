@@ -83,17 +83,43 @@
                                     rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}" />
                             </p:panelGrid>
                         </p:tab>
+                        <p:tab title="Disposal Returns" >
+                            <p:panelGrid columns="1" >
+                                <p:commandButton
+                                    value="Create Disposal Return"
+                                    ajax="false"
+                                    action="#{disposalReturnWorkflowController.navigateToCreateDisposalReturn()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-plus-circle"
+                                    rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}" />
+                                <p:commandButton
+                                    value="Finalize Disposal Return"
+                                    ajax="false"
+                                    action="#{disposalReturnWorkflowController.navigateToFinalizeDisposalReturn()}"
+                                    actionListener="#{disposalReturnWorkflowController.makeNull()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-tasks"
+                                    rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}" />
+                                <p:commandButton
+                                    value="Approve Disposal Return"
+                                    ajax="false"
+                                    action="#{disposalReturnWorkflowController.navigateToApproveDisposalReturn()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}" />
+                            </p:panelGrid>
+                        </p:tab>
                         <p:tab title="Other Functions" >
                             <p:panelGrid columns="1">
-                                <p:commandButton 
-                                    value="Return without Receipt" 
+                                <p:commandButton
+                                    value="Return without Receipt"
                                     ajax="false"
                                     action="#{searchController.navigateToPharmacyReturnWithoutReceipt()}"
                                     class="ui-button-secondary w-100"
                                     icon="fas fa-exchange-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutReceiptBill')}" />
-                                <p:commandButton 
-                                    value="Multiple Purchase Order Cancellation" 
+                                <p:commandButton
+                                    value="Multiple Purchase Order Cancellation"
                                     ajax="false"
                                     action="#{searchController.navigateToCancelPurchaseOrder()}"
                                     class="ui-button-danger w-100"

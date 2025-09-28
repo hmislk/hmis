@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/returns_and_cancellations_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveDisposalReturn')}">
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup id="gpReturnApprove" rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}">
+        <h:form>
+            <p:panel styleClass="shadow-sm border-0">
+                <f:facet name="header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <h4 class="mb-0 text-success">Approve Disposal Return Requests</h4>
+                    </div>
+                </f:facet>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>From Date
+                                </label>
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>To Date
+                                </label>
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    id="toDate"
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-user me-1"></i>Patient Name
+                                </label>
+                                <p:inputText
+                                    class="form-control"
+                                    autocomplete="off"
+                                    value="#{searchController.searchKeyword.patientName}"
+                                    placeholder="Enter patient name" />
+                            </div>
+
+                            <!-- Search Button -->
+                            <div class="mb-4">
+                                <p:commandButton
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-search"
+                                    value="Search Disposal Returns"
+                                    action="#{disposalReturnWorkflowController.fillDisposalReturnsToApprove()}"
+                                    ajax="false"
+                                    style="min-height: 45px;">
+                                </p:commandButton>
+                            </div>
+                           
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <p:panel header="Disposal Return Requests to Approve" styleClass="shadow-sm">
+                            <p:dataTable
+                                id="tbl"
+                                value="#{disposalReturnWorkflowController.disposalReturnsToApprove}"
+                                var="b"
+                                rows="15"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="table-striped"
+                                emptyMessage="No disposal return requests found matching your criteria"
+                                filteredValue="#{disposalReturnWorkflowController.filteredDisposalReturnsToApprove}"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
+
+                            <p:column headerText="Finalized At" sortBy="#{b.checkeAt}" styleClass="text-nowrap">
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-clock text-info me-2"></i>
+                                        <span class="fw-medium">
+                                            <h:outputLabel value="#{b.checkeAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </span>
+                                    </div>
+                                    <h:panelGroup rendered="#{b.cancelled}">
+                                        <div class="alert alert-danger py-1 px-2 mb-0 small">
+                                            <i class="fas fa-times-circle me-1"></i>
+                                            <strong>Cancelled:</strong>
+                                            <h:outputLabel rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Finalized By" sortBy="#{b.checkedBy.webUserPerson.name}">
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-user-check text-primary me-2"></i>
+                                        <span class="fw-medium">#{b.checkedBy.webUserPerson.name}</span>
+                                    </div>
+                                    <h:panelGroup rendered="#{b.cancelled}">
+                                        <div class="text-danger small">
+                                            <i class="fas fa-user-times me-1"></i>
+                                            <strong>Cancelled by:</strong> #{b.cancelledBill.creater.webUserPerson.name}
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-injured text-success me-2"></i>
+                                    <span class="fw-medium">#{b.patient.person.nameWithTitle}</span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Return No" sortBy="#{b.deptId}">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-hashtag text-info me-2"></i>
+                                    <span class="fw-medium">#{b.deptId}</span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Original Issue Bill" sortBy="#{b.referenceBill.deptId}">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-link text-secondary me-2"></i>
+                                    <span class="fw-medium">#{b.referenceBill.deptId}</span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Department" sortBy="#{b.department.name}">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-hospital text-info me-2"></i>
+                                    <span class="fw-medium">#{b.department.name}</span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Return Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-success me-2"></i>
+                                    <span class="fw-bold text-success fs-6">
+                                        <h:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <p:commandButton
+                                        id="approve"
+                                        ajax="false"
+                                        title="#{b.completed ? 'Already Approved' : (b.cancelled eq true ? 'Cancelled Return' : 'Review and Approve Disposal Return')}"
+                                        icon="fas #{b.completed ? 'fa-check-circle' : 'fa-eye'}"
+                                        class="#{b.completed ? 'ui-button-success ui-button-outlined' : (b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
+                                        value="#{b.completed ? 'Approved' : 'Approve'}"
+                                        action="#{disposalReturnWorkflowController.navigateToProcessDisposalReturn(b)}"
+                                        disabled="#{b.completed or b.cancelled eq true}"
+                                        style="min-width: 90px;">
+                                    </p:commandButton>
+                                </div>
+                                <h:panelGroup rendered="#{b.cancelled}" styleClass="d-block mt-1">
+                                    <small class="text-muted fst-italic">
+                                        <i class="fas fa-ban me-1"></i>Cancelled
+                                    </small>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{b.completed and not b.cancelled}" styleClass="d-block mt-1">
+                                    <small class="text-success fst-italic">
+                                        <i class="fas fa-check-double me-1"></i>Approved
+                                    </small>
+                                </h:panelGroup>
+                            </p:column>
+                        </p:dataTable>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+        </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
