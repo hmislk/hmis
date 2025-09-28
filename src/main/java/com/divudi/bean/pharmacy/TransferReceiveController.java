@@ -482,13 +482,12 @@ public class TransferReceiveController implements Serializable {
             insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
         } else {
-            // Smart fallback logic
-            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
-                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
-                insId = deptId; // Use same number as department
+            // Check if any of the new prefix strategies are enabled
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department to avoid consuming counter twice
             } else {
-                // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
-                insId = deptId;
+                // Preserve backward compatibility: generate separate institution number
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI);
             }
         }
 
