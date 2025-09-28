@@ -443,6 +443,22 @@ public class PatientDepositController implements Serializable, ControllerWithPat
                 handleOPDBill(b, pd);
                 break;
 
+            case PHARMACY_RETAIL_SALE:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                handleOPDBillCancel(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_REFUND:
+                handleOPDBillCancel(b, pd);
+                break;
+
             case OPD_BATCH_BILL_CANCELLATION:
                 handleOPDBillCancel(b, pd);
                 break;
@@ -544,24 +560,34 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     @Deprecated // Use the methods in  PatientDepositService
     public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-//        m.put("dep", d.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", d.getId());
+        }
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
 
         patientController.save(p);
 
+        // Refresh patient to ensure it's in current UnitOfWork
+        Patient managedPatient = patientFacade.find(p.getId());
+
         if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);
-            pd.setPatient(p);
-            pd.setDepartment(sessionController.getDepartment());
-            pd.setInstitution(sessionController.getInstitution());
+            pd.setPatient(managedPatient);
+            pd.setDepartment(d);
+            pd.setInstitution(d.getInstitution());
             pd.setCreater(sessionController.getLoggedUser());
             pd.setCreatedAt(new Date());
             patientDepositFacade.create(pd);
@@ -574,12 +600,19 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return new PatientDeposit();
         }
         Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-//        m.put("dep", d.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", d.getId());
+        }
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);

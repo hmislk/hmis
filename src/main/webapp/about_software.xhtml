@@ -39,9 +39,12 @@
                                 <h:outputLabel class="mx-2 h6" value="Current version" />
                                 <h:outputLabel class="mx-2 h6" value=":" />
                                 <h:outputLabel class="mx-2 h6" value="#{versionController.systemVersion}" />
-                                <h:outputLabel class="mx-2 h6" value="Latest version" />
+                                <h:outputLabel class="mx-2 h6" value="Build time" />
                                 <h:outputLabel class="mx-2 h6" value=": " />
-                                <h:outputLabel class="mx-2 h6" value="#{versionController.latestVersion}" />
+                                <h:outputLabel class="mx-2 h6" value="#{versionController.gitBuildTime}" />
+                                <h:outputLabel class="mx-2 h6" value="Last commit" />
+                                <h:outputLabel class="mx-2 h6" value=": " />
+                                <h:outputLabel class="mx-2 h6" value="#{versionController.gitCommitIdAbbrev} (#{versionController.gitBranch})" />
                             </h:panelGrid>
                         </div>
                     </div>
