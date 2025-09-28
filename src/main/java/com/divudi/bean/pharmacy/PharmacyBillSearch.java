@@ -2377,10 +2377,34 @@ public class PharmacyBillSearch implements Serializable {
 
             CancelledBill newlyCreatedRetailSaleCancellationBill = createPharmacyRetailSaleCancellationBill(getBill());
 
-            String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            // Handle Department ID generation
+            String deptId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Year + Yearly Number", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            } else {
+                // Use existing method for backward compatibility
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            }
+
+            // Handle Institution ID generation
+            String insId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        getSessionController().getDepartment(), getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            } else {
+                // Use existing method for backward compatibility
+                insId = deptId;
+            }
 
             newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
-            newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
+            newlyCreatedRetailSaleCancellationBill.setInsId(insId);
 
             if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
                 getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
