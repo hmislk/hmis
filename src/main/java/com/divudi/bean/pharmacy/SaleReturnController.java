@@ -210,17 +210,18 @@ public class SaleReturnController implements Serializable {
             deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
         }
 
-        // Handle Institution ID generation
+        // Handle Institution ID generation (completely separate)
         String insId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                    getSessionController().getDepartment(), getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
         } else {
-            // Use existing method for backward compatibility
-            insId = deptId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Use existing method for backward compatibility
+                insId = deptId;
+            }
         }
 
         getReturnBill().setInsId(insId);
@@ -264,17 +265,18 @@ public class SaleReturnController implements Serializable {
             deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         }
 
-        // Handle Institution ID generation
+        // Handle Institution ID generation (completely separate)
         String insId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                    sessionController.getDepartment(), sessionController.getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         } else {
-            // Use existing method for backward compatibility
-            insId = deptId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Use existing method for backward compatibility
+                insId = deptId;
+            }
         }
 
         refundBill.setInsId(insId);
