@@ -23,6 +23,7 @@ public enum Analyzer {
     HumaLyte("HumaLyte"),
     HumaStar600("HumaStar600"),
     MaglumiX3HL7("Maglumi X3 HL7"),
+    MindrayCL1000i("MindrayCL1000i"),
     XL_200("XL 200"),
     AIA_360("AIA 360");
 
