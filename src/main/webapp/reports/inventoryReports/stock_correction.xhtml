@@ -221,6 +221,16 @@
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{item.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="#{item.costRate * item.quantity}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
                             <p:column headerText="Old Rate">
                                 <h:outputText value="#{item.beforeAdjustment}" >
                                     <f:convertNumber pattern="#,##0.00"/>
