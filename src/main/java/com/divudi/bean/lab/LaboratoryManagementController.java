@@ -299,7 +299,6 @@ public class LaboratoryManagementController implements Serializable {
                 + " join fetch bi.item it "
                 + " left join fetch b.patient p "
                 + " left join fetch p.person per "
-                + " left join fetch per.sex s "
                 + " WHERE i.retired = :ret "
                 + " and b =:bill"
                 + " ORDER BY i.id DESC";
