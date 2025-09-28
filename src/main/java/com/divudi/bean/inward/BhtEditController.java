@@ -402,6 +402,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         getPersonFacade().editAndFlush(getCurrent().getPatient().getPerson());
         getPersonFacade().editAndFlush(getCurrent().getGuardian());
         getEjbFacade().editAndFlush(current);
+        
+        current = getEjbFacade().find(current.getId());
+        Patient pt = getPatientFacade().find(getCurrent().getPatient().getId());
+        Person ptp = getPersonFacade().find(getCurrent().getPatient().getPerson().getId());
+        Person ptg = getPersonFacade().find(getCurrent().getGuardian().getId());
         savePatientAllergies();
 
         JsfUtil.addSuccessMessage("Detail Updated");
