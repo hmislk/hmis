@@ -1692,11 +1692,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         // Handle Institution ID generation
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                    sessionController.getDepartment(), sessionController.getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            insId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         } else {
             // Use existing method for backward compatibility
             insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
