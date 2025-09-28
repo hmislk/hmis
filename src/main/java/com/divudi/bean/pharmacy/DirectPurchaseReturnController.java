@@ -290,9 +290,38 @@ public class DirectPurchaseReturnController implements Serializable {
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                insId = deptId;
+            }
+        }
+
         getReturnBill().setDeptId(deptId);
-        getReturnBill().setInsId(deptId); // for insId also dept Id is used intentionally
+        getReturnBill().setInsId(insId);
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
