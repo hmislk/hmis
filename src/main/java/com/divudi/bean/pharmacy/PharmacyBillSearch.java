@@ -2420,12 +2420,9 @@ public class PharmacyBillSearch implements Serializable {
 
             // Handle Institution ID generation
             String insId;
-            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                        getSessionController().getDepartment(), getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Year + Yearly Number", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Year + Yearly Number", false)) {
                 insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                        getSessionController().getInstitution(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             } else {
                 // Use existing method for backward compatibility
                 insId = deptId;
