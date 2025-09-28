@@ -202,7 +202,17 @@
                         </h:outputScript>
 
                         <br/>
-                        <p:dataTable value="#{pharmacyReportController.stockCorrectionRows}" var="item" style="width:100%;" id="tbl1">
+                        <p:dataTable value="#{pharmacyReportController.stockCorrectionRows}" 
+                                     var="item" 
+                                     style="width:100%;" 
+                                     id="tbl1"
+                                     rowIndexVar="n" 
+                                     paginator="true" 
+                                     paginatorPosition="bottom"
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
                             <p:column headerText="Item">
                                 <h:outputText value="#{item.itemName}" />
                             </p:column>
