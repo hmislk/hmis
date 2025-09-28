@@ -294,8 +294,14 @@ public class LaboratoryManagementController implements Serializable {
 
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
+                + " join fetch i.billItem bi "
+                + " join fetch bi.bill b "
+                + " join fetch bi.item it "
+                + " left join fetch b.patient p "
+                + " left join fetch p.person per "
+                + " left join fetch per.sex s "
                 + " WHERE i.retired = :ret "
-                + " and i.billItem.bill =:bill"
+                + " and b =:bill"
                 + " ORDER BY i.id DESC";
 
         params.put("ret", false);
@@ -323,8 +329,14 @@ public class LaboratoryManagementController implements Serializable {
 
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
+                + " join fetch i.billItem bi "
+                + " join fetch bi.bill b "
+                + " join fetch bi.item it "
+                + " left join fetch b.patient p "
+                + " left join fetch p.person per "
+                + " left join fetch per.sex s "
                 + " WHERE i.retired =:ret "
-                + " and i.billItem.bill =:bill"
+                + " and b =:bill"
                 + " ORDER BY i.id DESC";
 
         params.put("ret", false);
@@ -348,8 +360,14 @@ public class LaboratoryManagementController implements Serializable {
 
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
+                + " join fetch i.billItem bi "
+                + " join fetch bi.bill b "
+                + " join fetch bi.item it "
+                + " left join fetch b.patient p "
+                + " left join fetch p.person per "
+                + " left join fetch per.sex s "
                 + " WHERE i.retired =:ret "
-                + " and i.billItem.bill =:bill"
+                + " and b =:bill"
                 + " ORDER BY i.id DESC";
 
         params.put("ret", false);
@@ -1142,13 +1160,19 @@ public class LaboratoryManagementController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        // Query PatientSampleComponent to get PatientInvestigations
-        jpql = "SELECT i "
+        // Query PatientSampleComponent to get PatientInvestigations with full object graph
+        jpql = "SELECT DISTINCT i "
                 + "FROM PatientSampleComponant psc "
                 + " join psc.patientInvestigation i "
+                + " join fetch i.billItem bi "
+                + " join fetch bi.bill b "
+                + " join fetch bi.item it "
+                + " left join fetch b.patient p "
+                + " left join fetch p.person per "
+                + " left join fetch per.sex s "
                 + " WHERE psc.retired = :ret "
                 + " AND psc.patientSample.id LIKE :sampleId "
-                + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td "
+                + " AND b.createdAt BETWEEN :fd AND :td "
                 + " AND i.retired = :ret ";
 
         params.put("ret", false);
@@ -1157,22 +1181,22 @@ public class LaboratoryManagementController implements Serializable {
         params.put("td", getToDate());
 
         if (billNo != null && !billNo.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.deptId LIKE :billNo";
+            jpql += " AND b.deptId LIKE :billNo";
             params.put("billNo", "%" + getBillNo().trim() + "%");
         }
 
         if (bhtNo != null && !bhtNo.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patientEncounter is not null AND i.billItem.bill.patientEncounter.bhtNo LIKE :bht";
+            jpql += " AND b.patientEncounter is not null AND b.patientEncounter.bhtNo LIKE :bht";
             params.put("bht", "%" + getBhtNo().trim() + "%");
         }
 
         if (orderedInstitution != null) {
-            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            jpql += " AND b.institution = :orderedInstitution ";
             params.put("orderedInstitution", getOrderedInstitution());
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            jpql += " AND b.department = :orderedDepartment ";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 
@@ -1187,32 +1211,32 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         if (collectionCenter != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            jpql += " AND (b.collectingCentre = :collectionCenter OR b.fromInstitution = :collectionCenter) ";
             params.put("collectionCenter", getCollectionCenter());
         }
 
         if (route != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            jpql += " AND (b.collectingCentre.route = :route OR b.fromInstitution.route = :route) ";
             params.put("route", getRoute());
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            jpql += " AND p.person.name LIKE :patientName ";
             params.put("patientName", "%" + getPatientName().trim() + "%");
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
+            jpql += " AND b.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
         if (referringDoctor != null) {
-            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            jpql += " AND b.referringDoctor = :referringDoctor ";
             params.put("referringDoctor", getReferringDoctor());
         }
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
-            jpql += " AND i.billItem.item.name like :investigation ";
+            jpql += " AND it.name like :investigation ";
             params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
@@ -1237,28 +1261,34 @@ public class LaboratoryManagementController implements Serializable {
 
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
+                + " join fetch i.billItem bi "
+                + " join fetch bi.bill b "
+                + " join fetch bi.item it "
+                + " left join fetch b.patient p "
+                + " left join fetch p.person per "
+                + " left join fetch per.sex s "
                 + " WHERE i.retired = :ret "
-                + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+                + " AND b.createdAt BETWEEN :fd AND :td ";
         params.put("fd", getFromDate());
         params.put("td", getToDate());
 
         if (billNo != null && !billNo.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.deptId LIKE :billNo";
+            jpql += " AND b.deptId LIKE :billNo";
             params.put("billNo", "%" + getBillNo().trim() + "%");
         }
 
         if (bhtNo != null && !bhtNo.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patientEncounter is not null AND i.billItem.bill.patientEncounter.bhtNo LIKE :bht";
+            jpql += " AND b.patientEncounter is not null AND b.patientEncounter.bhtNo LIKE :bht";
             params.put("bht", "%" + getBhtNo().trim() + "%");
         }
 
         if (orderedInstitution != null) {
-            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            jpql += " AND b.institution = :orderedInstitution ";
             params.put("orderedInstitution", getOrderedInstitution());
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            jpql += " AND b.department = :orderedDepartment ";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 
@@ -1273,32 +1303,32 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         if (collectionCenter != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            jpql += " AND (b.collectingCentre = :collectionCenter OR b.fromInstitution = :collectionCenter) ";
             params.put("collectionCenter", getCollectionCenter());
         }
 
         if (route != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            jpql += " AND (b.collectingCentre.route = :route OR b.fromInstitution.route = :route) ";
             params.put("route", getRoute());
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            jpql += " AND p.person.name LIKE :patientName ";
             params.put("patientName", "%" + getPatientName().trim() + "%");
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
+            jpql += " AND b.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
         if (referringDoctor != null) {
-            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            jpql += " AND b.referringDoctor = :referringDoctor ";
             params.put("referringDoctor", getReferringDoctor());
         }
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
-            jpql += " AND i.billItem.item.name like :investigation ";
+            jpql += " AND it.name like :investigation ";
             params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
@@ -1544,6 +1574,7 @@ public class LaboratoryManagementController implements Serializable {
         }
         return sampleSendingDepartment;
     }
+
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
