@@ -300,9 +300,9 @@ public abstract class AbstractFacade<T> {
         getEntityManager().flush(); // Immediately write to the database
         Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().clear(); // Clear first-level (persistence context) cache
-        if (id != null) {
-            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
-        }
+//        if (id != null) {
+//            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
+//        }
     }
 
     public void editAndFlush(T entity) {
@@ -310,9 +310,9 @@ public abstract class AbstractFacade<T> {
         getEntityManager().merge(entity);
         getEntityManager().flush(); // Immediately write to the database
         getEntityManager().clear(); // Clear first-level (persistence context) cache
-        if (id != null) {
-            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
-        }
+//        if (id != null) {
+//            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
+//        }
     }
 
     public void refresh(T entity) {
