@@ -211,6 +211,7 @@ public class MiddlewareController {
                     case HumaCount5D:
                     case HumaLyte:
                     case HumaStar600:
+                    case MindrayCL1000i:
                     case XL_200:
                     case AIA_360:
                         System.out.println("going to direct to processResultsCommon");
