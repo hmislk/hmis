@@ -180,6 +180,14 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Year + Yearly Number", false);
 
+        // Bill-type-specific numbering strategies for Sale Refund (SR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Refund Pre Bill (SRP)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
+
         // Bill Number Suffix Configuration Options - Default suffixes for different bill types
         // These provide default values when bill number suffix configurations are empty
         getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");
@@ -190,6 +198,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for GRN", "GRN");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_CANCELLED", "C-DP");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS", "SR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL", "SRP");
 
     }
 
