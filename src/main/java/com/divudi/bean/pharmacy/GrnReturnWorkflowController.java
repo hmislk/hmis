@@ -117,6 +117,7 @@ public class GrnReturnWorkflowController implements Serializable {
     private List<Bill> filteredGrnReturnsToApprove;
     
     private Integer activeIndex;
+    private Integer activeIndexForReturnsAndCancellations;
 
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -2531,6 +2532,15 @@ public class GrnReturnWorkflowController implements Serializable {
     public void setActiveIndex(Integer activeIndex) {
         this.activeIndex = activeIndex;
     }
+
+    public Integer getActiveIndexForReturnsAndCancellations() {
+        return activeIndexForReturnsAndCancellations;
+    }
+
+    public void setActiveIndexForReturnsAndCancellations(Integer activeIndexForReturnsAndCancellations) {
+        this.activeIndexForReturnsAndCancellations = activeIndexForReturnsAndCancellations;
+    }
+    
     
    
 }

@@ -818,6 +818,7 @@ public class PharmacyIssueController implements Serializable {
         BigDecimal grossRate = baseIssueRate.multiply(unitsPerPack);
         // For display purposes, the issue rate should be the base rate per unit, not multiplied by units per pack
         fd.setLineGrossRate(baseIssueRate);
+        fd.setGrossRate(baseIssueRate);
 
         BigDecimal lineGrossTotal = grossRate.multiply(qty);
         fd.setLineGrossTotal(lineGrossTotal);
