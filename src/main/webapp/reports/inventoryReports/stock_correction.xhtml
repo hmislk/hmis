@@ -166,7 +166,7 @@
                                              icon="fas fa-cogs" 
                                              ajax="false"  
                                              value="Process" 
-                                             action="#{pharmacyReportController.createStockCorrectionReport()}">
+                                             action="#{pharmacyReportController.createStockCorrectionReportWithDTO()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              onclick="hidePaginatorBeforePrint()">
@@ -202,37 +202,57 @@
                         </h:outputScript>
 
                         <br/>
-                        <p:dataTable value="#{pharmacyReportController.stockCorrectionRows}" var="item" style="width:100%;" id="tbl1">
+                        <p:dataTable value="#{pharmacyReportController.stockCorrectionRows}" 
+                                     var="item" 
+                                     style="width:100%;" 
+                                     id="tbl1"
+                                     rowIndexVar="n" 
+                                     paginator="true" 
+                                     paginatorPosition="bottom"
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
                             <p:column headerText="Item">
                                 <h:outputText value="#{item.itemName}" />
                             </p:column>
                             <p:column headerText="Qty">
-                                <h:outputText value="#{item.qty}" >
+                                <h:outputText value="#{item.quantity}" >
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{item.costRate}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Rate">
-                                <h:outputText value="#{item.oldRate}" >
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="#{item.costRate * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Value">
-                                <h:outputText value="#{item.oldValue}" >
+                            <p:column headerText="Old Rate">
+                                <h:outputText value="#{item.beforeAdjustment}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Old Value">
+                                <h:outputText value="#{item.beforeAdjustment * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="New Rate">
-                                <h:outputText value="#{item.newRate}" >
+                                <h:outputText value="#{item.afterAdjustment }" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="New Value">
-                                <h:outputText value="#{item.newValue}" >
+                                <h:outputText value="#{item.afterAdjustment * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Variance">
-                                <h:outputText value="#{item.variance}" >
+                                <h:outputText value="#{(item.afterAdjustment  - item.beforeAdjustment) * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
