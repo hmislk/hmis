@@ -226,11 +226,14 @@ public class DisposalReturnWorkflowController implements Serializable {
             return null;
         }
 
+        Bill returnBill = billService.reloadBill(disposalReturnBill);
+        Bill originalBill =billService.reloadBill(disposalReturnBill.getReferenceBill());
         // Set the bill in the IssueReturnController
-        issueReturnController.setReturnBill(billService.reloadBill(disposalReturnBill));
-        issueReturnController.setOriginalBill(billService.reloadBill(disposalReturnBill.getReferenceBill()));
-        issueReturnController.setReturnBillItems(disposalReturnBill.getBillItems());
-        issueReturnController.setOriginalBillItems(disposalReturnBill.getReferenceBill().getBillItems());
+        issueReturnController.setReturnBill(returnBill);
+        issueReturnController.setOriginalBill(originalBill);
+        
+        issueReturnController.setReturnBillItems(returnBill.getBillItems());
+        issueReturnController.setOriginalBillItems(originalBill.getBillItems());
         // Navigate to the unified return processing page
         return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
     }
