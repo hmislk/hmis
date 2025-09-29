@@ -2034,6 +2034,279 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
+    public String departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+        // Generate the bill number string - Format: PREFIX/DEPARTMENT_CODE/INSTITUTION_CODE/YEAR/YEARLY_NUMBER
+        StringBuilder result = new StringBuilder();
+        // Append bill suffix as prefix
+        result.append(billSuffix);
+        result.append("/");
+        // Append department code
+        result.append(dep.getDepartmentCode());
+        result.append("/");
+        // Append institution code
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append("/");
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        result.append("/");
+        // Append formatted 6-digit bill number
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        // Return the formatted bill number
+        return result.toString();
+    }
+
+    @Deprecated // This method uses existing logic. Use departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide for true institution-wide counting
+    public String departmentBillNumberGeneratorYearlyWithPrefixInsYearCount(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billType);
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+        // Generate the bill number string - Format: PREFIX/INSTITUTION_CODE/YEAR/YEARLY_NUMBER
+        StringBuilder result = new StringBuilder();
+        // Append bill suffix as prefix
+        result.append(billSuffix);
+        result.append("/");
+        // Append institution code
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append("/");
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        result.append("/");
+        // Append formatted 6-digit bill number
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        // Return the formatted bill number
+        return result.toString();
+    }
+
+    @Deprecated // This method uses existing logic. Use institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide for true institution-wide counting
+    public String institutionBillNumberGeneratorYearlyWithPrefixInsYearCount(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billType);
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+        // Generate the bill number string - Format: PREFIX + INSTITUTION_CODE + YEAR + YEARLY_NUMBER
+        StringBuilder result = new StringBuilder();
+        // Append bill suffix as prefix
+        result.append(billSuffix);
+        // Append institution code
+        result.append(dep.getInstitution().getInstitutionCode());
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        // Append formatted 6-digit bill number
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        // Return the formatted bill number
+        return result.toString();
+    }
+
+    public BillNumber fetchLastBillNumberForYearInstitutionOnly(Institution institution, BillTypeAtomic billType) {
+        String lockKey = getLockKey(institution, null, billType);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedInstitutionOnly(institution, billType);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private BillNumber fetchLastBillNumberSynchronizedInstitutionOnly(Institution institution, BillTypeAtomic billType) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        // Find existing BillNumber for institution only (ignoring department)
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic=:bTp "
+                + " and b.institution=:ins "
+                + " and b.toDepartment is null "
+                + " AND b.billYear=:yr";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bTp", billType);
+        hm.put("ins", institution);
+        hm.put("yr", currentYear);
+
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
+
+        if (billNumber == null) {
+            // Create new BillNumber for institution-only counting
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(billType);
+            billNumber.setInstitution(institution);
+            billNumber.setToDepartment(null); // This is institution-only counting
+            billNumber.setBillYear(currentYear);
+
+            // Count ALL bills for this institution and bill type, regardless of department
+            sql = "SELECT count(b) FROM Bill b "
+                    + " where b.billTypeAtomic=:bTp "
+                    + " and b.retired=false"
+                    + " and b.institution=:ins "
+                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear";
+
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            Calendar endOfYear = Calendar.getInstance();
+            endOfYear.set(Calendar.MONTH, 11);  // December
+            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+
+            hm = new HashMap<>();
+            hm.put("bTp", billType);
+            hm.put("ins", institution);
+            hm.put("startOfYear", startOfYear.getTime());
+            hm.put("endOfYear", endOfYear.getTime());
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+            if (dd == null) {
+                dd = 0L;
+            }
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
+
+    public String departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        // Use true institution-wide counting - count all bills for this institution regardless of department
+        billNumber = fetchLastBillNumberForYearInstitutionOnly(dep.getInstitution(), billType);
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+        // Generate the bill number string - Format: PREFIX/INSTITUTION_CODE/YEAR/YEARLY_NUMBER
+        StringBuilder result = new StringBuilder();
+        // Append bill suffix as prefix
+        result.append(billSuffix);
+        result.append("/");
+        // Append institution code
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append("/");
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        result.append("/");
+        // Append formatted 6-digit bill number
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        // Return the formatted bill number
+        return result.toString();
+    }
+
+    public String institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        // Use true institution-wide counting - count all bills for this institution regardless of department
+        billNumber = fetchLastBillNumberForYearInstitutionOnly(dep.getInstitution(), billType);
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+        // Generate the bill number string - Format: PREFIX/INSTITUTION_CODE/YEAR/YEARLY_NUMBER
+        StringBuilder result = new StringBuilder();
+        // Append bill suffix as prefix
+        result.append(billSuffix);
+        result.append("/");
+        // Append institution code
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append("/");
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        result.append("/");
+        // Append formatted 6-digit bill number
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        // Return the formatted bill number
+        return result.toString();
+    }
+
     public String departmentBillNumberGeneratorYearly(Department dep, List<BillTypeAtomic> billTypes) {
         if (dep == null) {
             return "";

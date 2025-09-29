@@ -2925,12 +2925,52 @@ public class GrnCostingController implements Serializable {
 
         }
 
-        String billId;
-        // Generate final bill numbers if not already generated
+        // Check if bill number suffix is configured, if not set default "GRN" for Pharmacy GRN
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Pharmacy GRN if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
+        }
 
-        billId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
-        getCurrentGrnBillPre().setDeptId(billId);
-        getCurrentGrnBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        // Handle Department ID generation
+        String deptId;
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else {
+            // Default behavior - use the original method
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
+        }
+
+        // Handle Institution ID generation separately
+        String insId;
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else {
+            // Default behavior - use the department ID for institution ID or original method
+            if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+                insId = deptId;
+            } else {
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN);
+            }
+        }
+
+        getCurrentGrnBillPre().setDeptId(deptId);
+        getCurrentGrnBillPre().setInsId(insId);
 
         // Set finalization timestamps and user
         getCurrentGrnBillPre().setEditedAt(new Date());

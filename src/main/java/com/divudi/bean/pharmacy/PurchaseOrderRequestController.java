@@ -299,7 +299,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         lineBillItem.getBillItemFinanceDetails().setQuantity(bdQty);
         lineBillItem.getBillItemFinanceDetails().setFreeQuantity(bdFreeQty);
-        
+
         // Calculate quantity by units (for AMPP items)
         BigDecimal quantityByUnits;
         if (lineBillItem.getItem() instanceof Ampp) {
@@ -320,12 +320,12 @@ public class PurchaseOrderRequestController implements Serializable {
 
         lineBillItem.getBillItemFinanceDetails().setValueAtPurchaseRate(bdPurchaseValue);
         lineBillItem.getBillItemFinanceDetails().setValueAtRetailRate(bdRetailValue);
-        
+
         // Set costing values to zero (not relevant for purchase orders)
         lineBillItem.getBillItemFinanceDetails().setLineCost(BigDecimal.ZERO);
         lineBillItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.ZERO);
         lineBillItem.getBillItemFinanceDetails().setValueAtCostRate(BigDecimal.ZERO);
-        
+
         // Set audit fields for BillItemFinanceDetails
         if (lineBillItem.getBillItemFinanceDetails().getId() == null) {
             lineBillItem.getBillItemFinanceDetails().setCreatedAt(new Date());
@@ -365,12 +365,11 @@ public class PurchaseOrderRequestController implements Serializable {
             lineBillItem.getPharmaceuticalBillItem().setRetailRateInUnit(bdRetailRate.doubleValue());
             lineBillItem.getPharmaceuticalBillItem().setRetailValue(bdRetailValue.doubleValue());
         }
-        
-        
+
         lineBillItem.getPharmaceuticalBillItem().setCostRate(0.0); // Not relevant for purchase orders
         lineBillItem.getPharmaceuticalBillItem().setCostRatePack(0.0); // Not relevant for purchase orders  
         lineBillItem.getPharmaceuticalBillItem().setCostValue(0.0); // Not relevant for purchase orders
-        
+
         // Set audit fields for PharmaceuticalBillItem
         if (lineBillItem.getPharmaceuticalBillItem().getId() == null) {
             lineBillItem.getPharmaceuticalBillItem().setCreatedAt(new Date());
@@ -385,7 +384,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         lineBillItem.setNetValue(bdNetValue.doubleValue()); // User entered rate × user entered quantity
         lineBillItem.setGrossValue(bdGrossValue.doubleValue()); // Same as net value (no discount)
-        
+
         // Set audit fields for BillItem
         if (lineBillItem.getId() == null) {
             lineBillItem.setCreatedAt(new Date());
@@ -399,10 +398,49 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveBill() {
-        if (getCurrentBill().getDeptId()==null||getCurrentBill().getDeptId().trim().equals("")) {
-            String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-            getCurrentBill().setDeptId(deptId);
-            getCurrentBill().setInsId(deptId);
+        // Check if bill number suffix is configured, if not set default "POR" for Purchase Order Requests
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Purchase Order Requests if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "POR");
+        }
+
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        String billId = "";
+
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        }
+
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
+                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setInsId(insId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
+                if (billId != null && !billId.trim().isEmpty()) {
+                    getCurrentBill().setInsId(billId);
+                }
+            }
         }
 
         getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -804,9 +842,9 @@ public class PurchaseOrderRequestController implements Serializable {
                 return false;
             }
             BigDecimal qtyUnits = fd.getQuantityByUnits() != null
-                ? fd.getQuantityByUnits() : BigDecimal.ZERO;
+                    ? fd.getQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal freeUnits = fd.getFreeQuantityByUnits() != null
-                ? fd.getFreeQuantityByUnits() : BigDecimal.ZERO;
+                    ? fd.getFreeQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal totalUnits = qtyUnits.add(freeUnits);
             // Require at least one atomic unit (e.g., tablet)
             if (totalUnits.compareTo(BigDecimal.ONE) < 0) {

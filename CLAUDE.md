@@ -1,5 +1,10 @@
 # Claude Code Configuration for HMIS Project
 
+## Repository Information
+- **GitHub Repository**: https://github.com/hmislk/hmis
+- **Issues URL**: https://github.com/hmislk/hmis/issues
+- **Main Repository**: hmislk/hmis (not buddhika75/hmis)
+
 ## Core Workflows
 
 ### Persistence Configuration
