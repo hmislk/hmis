@@ -134,8 +134,7 @@ import java.util.Collections;
 
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 // </editor-fold>
 
 /**
@@ -146,7 +145,7 @@ import org.slf4j.LoggerFactory;
 public class SearchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -3740,8 +3739,6 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.createdAt desc  ";
-        logger.debug("Executing query: {}", sql);
-        logger.trace("Query parameters: {}", redactPiiFromParameters(tmp));
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
         for (Bill b : bills) {
             b.setTmpRefBill(getRefBill(b));
@@ -8264,8 +8261,6 @@ public class SearchController implements Serializable {
     }
 
     public void createPreBillsForReturn() {
-        Date startTime = new Date();
-
         createPreBillsForReturn(BillType.PharmacyPre, BillType.PharmacySale);
 
     }
@@ -20030,6 +20025,44 @@ public class SearchController implements Serializable {
     public String navigateToRequestListAndRefresh() {
         createRequestTableDto();
         return "pharmacy_transfer_request_list";
+    }
+
+    /**
+     * Search disposal issue bills for return processing
+     */
+    public void createTableByKeywordForPharmacyDisposalIssue() {
+        bills = new ArrayList<>();
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = :retired "
+                + "AND b.billTypeAtomic = :billTypeAtomic "
+                + "AND b.department = :department "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) ";
+
+        params.put("retired", false);
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        params.put("department", sessionController.getDepartment());
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("cancelled", false);
+
+        jpql += "ORDER BY b.createdAt DESC";
+
+        try {
+            bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP, 1000);
+            if (bills == null) {
+                bills = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error searching disposal issue bills: " + e.getMessage());
+            bills = new ArrayList<>();
+        }
     }
 
     // </editor-fold>

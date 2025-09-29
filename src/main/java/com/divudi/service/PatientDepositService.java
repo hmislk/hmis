@@ -57,10 +57,13 @@ public class PatientDepositService {
 
         save(p);
 
+        // Refresh patient to ensure it's in current UnitOfWork
+        Patient managedPatient = patientFacade.find(p.getId());
+
         if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);
-            pd.setPatient(p);
+            pd.setPatient(managedPatient);
             pd.setDepartment(d);
             pd.setInstitution(d.getInstitution());
             pd.setCreatedAt(new Date());
@@ -96,6 +99,10 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE:
+                handleOutPayment(p, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
                 handleOutPayment(p, pd);
                 break;
 
@@ -151,6 +158,10 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE:
+                handleOPDBill(b, pd);
+                break;
+
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
                 handleOPDBill(b, pd);
                 break;
 
