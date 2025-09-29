@@ -2925,7 +2925,7 @@ public class PharmacyReportController implements Serializable {
 
             System.out.println("sql = " + sql);
             System.out.println("parameters = " + parameters);
-            
+
             billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             if (billItems.isEmpty()) {
@@ -3003,15 +3003,15 @@ public class PharmacyReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        
+
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-        
+
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PurchaseReturn);
         bts.add(BillType.PharmacyPurchaseBill);
-        
+
         params.put("bta", btas);
         params.put("bt", bts);
         params.put("ret", false);
@@ -3042,7 +3042,7 @@ public class PharmacyReportController implements Serializable {
             params.put("fromIns", fromInstitutionList);
 
         }
-        
+
         jpql.append("order by bill.createdAt desc");
 
         dtoList = (List<DirectPurchaseReportDto>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -3256,7 +3256,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
-                
+
                 billTypes.add(BillType.PharmacyIssue);
                 billTypes.add(BillType.PharmacyTransferIssue);
                 billTypes.add(BillType.PharmacyTransferReceive);
@@ -3354,7 +3354,12 @@ public class PharmacyReportController implements Serializable {
         }
 
         jpql.append("and sh.createdAt < :et ");
-        params.put("et", CommonFunctions.getEndOfDay(toDate));
+        if ("Opening Stock".equals(type)) {
+            //For cost of good sold report opening stock value report
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
+        } else {
+            params.put("et", CommonFunctions.getEndOfDay(toDate));
+        }
 
         // Group by itemBatch (and department if you want per-department breakdown)
         jpql.append("group by sh.department, sh.itemBatch ");
@@ -3648,7 +3653,13 @@ public class PharmacyReportController implements Serializable {
         }
 
         jpql.append("and sh.createdAt < :et ");
-        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        if ("Opening Stock".equals(type)) {
+            //For cost of good sold report opening stock value report
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
+        } else {
+            params.put("et", CommonFunctions.getEndOfDay(toDate));
+        }
 
         //        jpql.append("group by sh.department, sh.itemBatch.item ");
         jpql.append("group by sh.department, sh.itemBatch ");
