@@ -2055,16 +2055,16 @@ public class BillNumberGenerator {
         billNumber.setLastBillNumber(dd);
         // Update the BillNumber entity in the database
         billNumberFacade.edit(billNumber);
-        // Generate the bill number string - Format: PREFIX/DEPARTMENT_CODE/INSTITUTION_CODE/YEAR/YEARLY_NUMBER
+        // Generate the bill number string - Format: PREFIX/INSTITUTION_CODE/DEPARTMENT_CODE/YEAR/YEARLY_NUMBER
         StringBuilder result = new StringBuilder();
         // Append bill suffix as prefix
         result.append(billSuffix);
         result.append("/");
-        // Append department code
-        result.append(dep.getDepartmentCode());
-        result.append("/");
         // Append institution code
         result.append(dep.getInstitution().getInstitutionCode());
+        result.append("/");
+        // Append department code
+        result.append(dep.getDepartmentCode());
         result.append("/");
         // Append current year (last two digits)
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
