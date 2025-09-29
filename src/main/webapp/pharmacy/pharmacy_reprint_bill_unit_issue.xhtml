@@ -27,17 +27,14 @@
                                         disabled="#{pharmacyBillSearch.bill.cancelled}">   
                                         <f:setPropertyActionListener value="false" target="#{pharmacyBillSearch.printPreview}"/>
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Return" 
                                         class="mx-2 ui-button-warning"
                                         icon="fa fa-money-bill-wave"
-                                        action="pharmacy_bill_return_issue?faces-redirect=true"   
+                                        action="#{issueReturnController.navigateToReturnDisposalIssueBill(pharmacyBillSearch.bill)}"   
                                         disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
-                                        <f:setPropertyActionListener 
-                                            value="#{pharmacyBillSearch.bill}" 
-                                            target="#{issueReturnController.bill}"  />
                                     </p:commandButton>
 
                                     <p:commandButton 

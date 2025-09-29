@@ -44,6 +44,7 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private Map<String, ConfigOption> applicationOptions;
+    private boolean isLoadingApplicationOptions = false;
 
     private ConfigOption findActiveOptionWithLock(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.retired=false AND o.optionKey=:key AND o.scope=:scope");
@@ -73,7 +74,9 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
         ConfigOption option = optionFacade.createOptionIfNotExists(key, OptionScope.APPLICATION, null, null, null, type, value);
-        loadApplicationOptions();
+        if (!isLoadingApplicationOptions) {
+            loadApplicationOptions();
+        }
         return option;
     }
 
@@ -83,24 +86,29 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     public void loadApplicationOptions() {
-        applicationOptions = new HashMap<>();
-        List<ConfigOption> options = getApplicationOptions();
-        for (ConfigOption option : options) {
-            applicationOptions.put(option.getOptionKey(), option);
+        isLoadingApplicationOptions = true;
+        try {
+            applicationOptions = new HashMap<>();
+            List<ConfigOption> options = getApplicationOptions();
+            for (ConfigOption option : options) {
+                applicationOptions.put(option.getOptionKey(), option);
+            }
+            loadEmailGatewayConfigurationDefaults();
+            loadPharmacyConfigurationDefaults();
+            loadPharmacyIssueReceiptConfigurationDefaults();
+            loadPharmacyTransferIssueReceiptConfigurationDefaults();
+            loadPharmacyTransferReceiveReceiptConfigurationDefaults();
+            loadPharmacyTransferRequestReceiptConfigurationDefaults();
+            loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
+            loadPharmacyCommonBillConfigurationDefaults();
+            loadPharmacyAdjustmentReceiptConfigurationDefaults();
+            loadPatientNameConfigurationDefaults();
+            loadSecurityConfigurationDefaults();
+            loadPharmacyAnalyticsConfigurationDefaults();
+            loadReportMethodConfigurationDefaults();
+        } finally {
+            isLoadingApplicationOptions = false;
         }
-        loadEmailGatewayConfigurationDefaults();
-        loadPharmacyConfigurationDefaults();
-        loadPharmacyIssueReceiptConfigurationDefaults();
-        loadPharmacyTransferIssueReceiptConfigurationDefaults();
-        loadPharmacyTransferReceiveReceiptConfigurationDefaults();
-        loadPharmacyTransferRequestReceiptConfigurationDefaults();
-        loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
-        loadPharmacyCommonBillConfigurationDefaults();
-        loadPharmacyAdjustmentReceiptConfigurationDefaults();
-        loadPatientNameConfigurationDefaults();
-        loadSecurityConfigurationDefaults();
-        loadPharmacyAnalyticsConfigurationDefaults();
-        loadReportMethodConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
