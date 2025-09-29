@@ -247,13 +247,21 @@
                                     </h:panelGroup>
 
                                     <p:outputLabel 
+                                        value="Comments"
+                                        class="form-label w-100">
+                                    </p:outputLabel>
+                                    <p:inputTextarea 
+                                        value="#{purchaseOrderRequestController.currentBill.comments}" 
+                                        class="form-control w-100" ></p:inputTextarea>
+
+                                    <p:outputLabel 
                                         value="Total Value"
-                                        class="form-label w-100"
-                                        for="tot"></p:outputLabel>
-                                    <p:outputLabel class="m-1 w-100" 
-                                                   id="tot" 
-                                                   style="font-weight: bold;" 
-                                                   value="#{purchaseOrderRequestController.currentBill.netTotal}">
+                                        class="form-label w-100"></p:outputLabel>
+                                    <p:outputLabel 
+                                        class="m-1 w-100" 
+                                        id="tot" 
+                                        style="font-weight: bold;" 
+                                        value="#{purchaseOrderRequestController.currentBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
 
@@ -443,24 +451,24 @@
                     </f:facet>
 
                     <div class="d-flex justify-content-center">
-                        
-                        
-                            <h:panelGroup style="width: 212mm; height: 275mm;" id="printPaper" layout="block">
 
-                                <po:purchase_order_request_custom_1
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
-                                    bill="#{purchaseOrderRequestController.currentBill}"
-                                    billItems="#{purchaseOrderRequestController.billItems}">
-                                </po:purchase_order_request_custom_1>
 
-                                <po:purchase_order_request_custom_2
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', false)}"
-                                    bill="#{purchaseOrderRequestController.currentBill}"
-                                    billItems="#{purchaseOrderRequestController.billItems}">
-                                </po:purchase_order_request_custom_2>
+                        <h:panelGroup style="width: 212mm; height: 275mm;" id="printPaper" layout="block">
 
-                            </h:panelGroup>
-                        
+                            <po:purchase_order_request_custom_1
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                                bill="#{purchaseOrderRequestController.currentBill}"
+                                billItems="#{purchaseOrderRequestController.billItems}">
+                            </po:purchase_order_request_custom_1>
+
+                            <po:purchase_order_request_custom_2
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', false)}"
+                                bill="#{purchaseOrderRequestController.currentBill}"
+                                billItems="#{purchaseOrderRequestController.billItems}">
+                            </po:purchase_order_request_custom_2>
+
+                        </h:panelGroup>
+
                     </div>
                 </p:panel>
 

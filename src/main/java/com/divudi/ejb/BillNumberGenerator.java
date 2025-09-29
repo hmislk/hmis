@@ -141,7 +141,7 @@ public class BillNumberGenerator {
         String delimiter = getBillNumberDelimiter();
         String[] parts = value.split(Pattern.quote(delimiter));
         if (parts.length <= 1 && !"/".equals(delimiter)) {
-            parts = value.split("/");
+            parts = value.split(Pattern.quote("/"));
         }
         return parts;
     }
