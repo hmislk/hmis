@@ -1387,6 +1387,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public String findTokenNumberFromBill(Bill bill) {
         Token currentToken = tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+        if(currentToken == null){
+            return null;
+        }
         return currentToken.getTokenNumber();
     }
 
