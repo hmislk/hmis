@@ -89,6 +89,7 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean directPurchaseA4Details;
     private boolean directPurchaseCustom1;
     private boolean directPurchaseCustom2;
+    private boolean directPurchaseCustomLetter;
 
     public PharmacyRetailConfigController() {
     }
@@ -162,6 +163,7 @@ public class PharmacyRetailConfigController implements Serializable {
         directPurchaseA4Details = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 Details", false);
         directPurchaseCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 1", false);
         directPurchaseCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 2", false);
+        directPurchaseCustomLetter = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", false);
     }
 
     /**
@@ -233,6 +235,7 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", directPurchaseCustomLetter);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -277,6 +280,7 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", directPurchaseCustomLetter);
 
             JsfUtil.addSuccessMessage("Direct Purchase configuration saved successfully");
 
@@ -650,6 +654,14 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setTransferIssueCustom1(boolean transferIssueCustom1) {
         this.transferIssueCustom1 = transferIssueCustom1;
+    }
+
+    public boolean isDirectPurchaseCustomLetter() {
+        return directPurchaseCustomLetter;
+    }
+
+    public void setDirectPurchaseCustomLetter(boolean directPurchaseCustomLetter) {
+        this.directPurchaseCustomLetter = directPurchaseCustomLetter;
     }
     
     
