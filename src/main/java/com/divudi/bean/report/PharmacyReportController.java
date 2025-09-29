@@ -326,6 +326,7 @@ public class PharmacyReportController implements Serializable {
     private List<BillItemDTO> billItemsDtos;
     private List<CostOfGoodSoldBillDTO> cogsBillDtos;
     private double totalCostValue;
+    private double totalPurchaseValue;
 
     //Constructor
     public PharmacyReportController() {
@@ -1950,12 +1951,12 @@ public class PharmacyReportController implements Serializable {
                         double costRate = bi.getPharmaceuticalBillItem()
                                 .getItemBatch()
                                 .getCostRate();
-                        BigDecimal  quantity = bi.getBillItemFinanceDetails()
+                        BigDecimal quantity = bi.getBillItemFinanceDetails()
                                 .getQuantityByUnits();
                         return costRate * quantity.doubleValue();
                     })
                     .sum();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             billItems = new ArrayList<>();
@@ -2011,6 +2012,9 @@ public class PharmacyReportController implements Serializable {
 
     private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
         try {
+            netTotal = 0.0;
+            totalCostValue = 0.0;
+            totalPurchaseValue = 0.0;
             // STEP 1: Fetch all parent bills (CostOfGoodSoldBillDTOs) in one query.
             StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
                     .append("b, ")
@@ -2090,6 +2094,16 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(CostOfGoodSoldBillDTO::getNetTotal)
                     .sum();
 
+            totalCostValue = allBillItems.stream()
+                    .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                    .mapToDouble(item -> item.getCostRate() * item.getQty())
+                    .sum();
+
+            totalPurchaseValue = allBillItems.stream()
+                    .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                    .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
+                    .sum();
+            
         } catch (Exception e) {
             e.printStackTrace();
             cogsBillDtos = new ArrayList<>();
@@ -3074,6 +3088,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setTotalCostValue(double totalCostValue) {
         this.totalCostValue = totalCostValue;
+    }
+
+    public double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
     }
 
     public static class DirectPurchaseReportDto {

@@ -237,8 +237,8 @@
                                     <p:column headerText="QTY" width="4em"/>
                                     <p:column headerText="COST RATE" width="6em"/>
                                     <p:column headerText="COST VALUE" width="6em"/>
-                                    <p:column headerText="RATE" width="6em"/>
-                                    <p:column headerText="VALUE" width="6em"/>
+                                    <p:column headerText="PURCHASE RATE" width="6em"/>
+                                    <p:column headerText="PURCHASE VALUE" width="6em"/>
                                     <p:column headerText="MRP" width="6em"/>
                                     <p:column headerText="MRP Value" width="6em"/>
                                     <p:column headerText="Net Total" width="6em"/>
@@ -276,6 +276,11 @@
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="PURCHASE RATE">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
@@ -286,6 +291,11 @@
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             
                             <p:column headerText="MRP" width="8em">
