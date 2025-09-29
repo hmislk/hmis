@@ -204,6 +204,8 @@ public class Bill implements Serializable, RetirableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
     @ManyToOne(fetch = FetchType.LAZY)
+    private Institution site;
+    @ManyToOne(fetch = FetchType.LAZY)
     private Institution fromInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution toInstitution;
@@ -266,8 +268,8 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    //Checking Property
-    private boolean checked=false;
+    //Checking Property == Finalized
+    private boolean checked = false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -3022,8 +3024,6 @@ public class Bill implements Serializable, RetirableEntity {
     public void setIndication(String indication) {
         this.indication = indication;
     }
-    
-    
 
     public Institution getTransientSupplier() {
         if (this.getBillTypeAtomic() == null) {
@@ -3046,4 +3046,15 @@ public class Bill implements Serializable, RetirableEntity {
     public void setChecked(boolean checked) {
         this.checked = checked;
     }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+    
+    
+    
 }

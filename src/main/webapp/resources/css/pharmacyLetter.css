@@ -170,4 +170,33 @@ root {
     padding-right: 5px;
 }
 
+.simple-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12pt;
+}
+
+.simple-table th,
+.simple-table td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+}
+
+/* Headers bold + centered */
+.simple-table th {
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Alignments */
+.simple-table .left-col {
+    text-align: left;
+}
+
+.simple-table .right-col {
+    text-align: right;
+}
+
+
+
 

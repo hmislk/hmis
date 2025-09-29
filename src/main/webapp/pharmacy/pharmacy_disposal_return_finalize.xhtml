@@ -7,16 +7,16 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
-        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('CreateGrnReturn'))}">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('FinalizeDisposalReturn')}">
             You are NOT authorized
         </h:panelGroup>
-        <h:panelGroup id="gpReturnFinalize" rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('CreateGrnReturn')}">
+        <h:panelGroup id="gpReturnFinalize" rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}">
         <h:form>
             <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-clipboard-list text-primary me-2"></i>
-                        <h4 class="mb-0 text-primary">Finalize GRN Return Requests</h4>
+                        <i class="fas fa-clipboard-list text-warning me-2"></i>
+                        <h:outputText value="Finalize Disposal Return Requests" styleClass="mb-0 text-warning" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
                     </div>
                 </f:facet>
                 <div class="row g-3">
@@ -26,113 +26,59 @@
                                 <label class="form-label fw-bold text-secondary">
                                     <i class="fas fa-calendar-alt me-1"></i>From Date
                                 </label>
-                                <p:calendar 
-                                    class="w-100" 
-                                    inputStyleClass="form-control" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    navigator="false" 
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
+                                    navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    placeholder="Select start date">      
+                                    placeholder="Select start date">
                                 </p:calendar>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary">
                                     <i class="fas fa-calendar-alt me-1"></i>To Date
                                 </label>
-                                <p:calendar 
-                                    class="w-100" 
-                                    inputStyleClass="form-control" 
-                                    id="toDate" 
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    id="toDate"
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    placeholder="Select end date">                                                                              
+                                    placeholder="Select end date">
                                 </p:calendar>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-building me-1"></i>Supplier
+                                    <i class="fas fa-user me-1"></i>Patient Name
                                 </label>
-                                <p:inputText 
-                                    class="form-control" 
-                                    autocomplete="off" 
-                                    value="#{searchController.searchKeyword.toInstitution}" 
-                                    placeholder="Enter supplier name" />
+                                <p:inputText
+                                    class="form-control"
+                                    autocomplete="off"
+                                    value="#{searchController.searchKeyword.patientName}"
+                                    placeholder="Enter patient name" />
                             </div>
-                            
-                            <!-- Search Button positioned right after supplier for better visibility -->
+
+                            <!-- Search Button -->
                             <div class="mb-4">
-                                <p:commandButton 
-                                    class="ui-button-warning w-100" 
-                                    icon="fas fa-search" 
-                                    value="Search GRN Return Requests" 
-                                    action="#{grnReturnWorkflowController.fillGrnReturnsToFinalize()}" 
+                                <p:commandButton
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-search"
+                                    value="Search Disposal Returns"
+                                    action="#{disposalReturnWorkflowController.fillDisposalReturnsToFinalize()}"
                                     ajax="false"
                                     style="min-height: 45px;">
                                 </p:commandButton>
                             </div>
-
-                            <!-- Collapsible Advanced Filters -->
-                            <p:panel header="Advanced Filters" toggleable="true" collapsed="true" styleClass="mb-3">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-user me-1"></i>Requested User
-                                    </label>
-                                    <p:inputText 
-                                        class="form-control" 
-                                        autocomplete="off" 
-                                        value="#{searchController.searchKeyword.creator}" 
-                                        placeholder="Enter user name" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-department me-1"></i>Department
-                                    </label>
-                                    <p:inputText 
-                                        class="form-control" 
-                                        autocomplete="off" 
-                                        value="#{searchController.searchKeyword.department}" 
-                                        placeholder="Enter department" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-hashtag me-1"></i>Return Number
-                                    </label>
-                                    <p:inputText 
-                                        class="form-control" 
-                                        autocomplete="off" 
-                                        value="#{searchController.searchKeyword.refBillNo}" 
-                                        placeholder="Enter return number" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-coins me-1"></i>Return Value
-                                    </label>
-                                    <p:inputText 
-                                        class="form-control" 
-                                        autocomplete="off" 
-                                        value="#{searchController.searchKeyword.total}" 
-                                        placeholder="Enter amount" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-list-ol me-1"></i>Max Results
-                                    </label>
-                                    <p:inputText 
-                                        class="form-control" 
-                                        autocomplete="off" 
-                                        value="#{searchController.maxResult}" 
-                                        placeholder="Max number of results" />
-                                </div>
-                            </p:panel>
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="GRN Return Requests to Finalize" styleClass="shadow-sm">
-                            <p:dataTable 
-                                id="tbl" 
-                                value="#{grnReturnWorkflowController.grnReturnsToFinalize}" 
+                        <p:panel header="Disposal Return Requests to Finalize" styleClass="shadow-sm">
+                            <p:dataTable
+                                id="tbl"
+                                value="#{disposalReturnWorkflowController.disposalReturnsToFinalize}"
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -140,12 +86,13 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
-                                emptyMessage="No GRN return requests found matching your criteria"
-                                filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToFinalize}"
+                                emptyMessage="No disposal return requests found matching your criteria"
+                                filteredValue="#{disposalReturnWorkflowController.filteredDisposalReturnsToFinalize}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
-                            <p:column headerText="Requested At" sortBy="#{b.createdAt}" styleClass="text-nowrap">
+
+                            <p:column headerText="Created At" sortBy="#{b.createdAt}" styleClass="text-nowrap">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-clock text-info me-2"></i>
@@ -165,9 +112,9 @@
                                         </div>
                                     </h:panelGroup>
                                 </div>
-                            </p:column> 
+                            </p:column>
 
-                            <p:column headerText="Requested By" sortBy="#{b.creater.webUserPerson.name}">
+                            <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-user text-primary me-2"></i>
@@ -180,12 +127,12 @@
                                         </div>
                                     </h:panelGroup>
                                 </div>
-                            </p:column>    
+                            </p:column>
 
-                            <p:column headerText="Supplier" sortBy="#{b.toInstitution.name}">
+                            <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-building text-success me-2"></i>
-                                    <span class="fw-medium">#{b.toInstitution.name}</span>
+                                    <i class="fas fa-user-injured text-success me-2"></i>
+                                    <span class="fw-medium">#{b.patient.person.nameWithTitle}</span>
                                 </div>
                             </p:column>
 
@@ -196,7 +143,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Original GRN" sortBy="#{b.referenceBill.deptId}">
+                            <p:column headerText="Original Issue Bill" sortBy="#{b.referenceBill.deptId}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-link text-secondary me-2"></i>
                                     <span class="fw-medium">#{b.referenceBill.deptId}</span>
@@ -208,7 +155,7 @@
                                     <i class="fas fa-hospital text-info me-2"></i>
                                     <span class="fw-medium">#{b.department.name}</span>
                                 </div>
-                            </p:column> 
+                            </p:column>
 
                             <p:column headerText="Return Value" sortBy="#{b.netTotal}" styleClass="text-end">
                                 <div class="d-flex align-items-center justify-content-end">
@@ -226,15 +173,13 @@
                                     <p:commandButton
                                         id="finalize"
                                         ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('FinalizeGrnReturn')}"
-                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.cancelled eq true ? 'Cancelled Return' : 'Edit and Finalize GRN Return')}"
+                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.cancelled eq true ? 'Cancelled Return' : 'Edit and Finalize Disposal Return')}"
                                         icon="fas #{b.checkedBy ne null ? 'fa-check-double' : 'fa-edit'}"
-                                        class="#{b.checkedBy ne null ? 'ui-button-success ui-button-outlined' : (b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
+                                        class="#{b.checkedBy ne null ? 'ui-button-success ui-button-outlined' : (b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-warning')}"
                                         value="#{b.checkedBy ne null ? 'Finalized' : 'Finalize'}"
-                                        action="#{grnReturnWorkflowController.navigateToUpdateGrnReturn()}"
+                                        action="#{disposalReturnWorkflowController.navigateToProcessDisposalReturn(b)}"
                                         disabled="#{b.checkedBy ne null or b.cancelled eq true}"
                                         style="min-width: 90px;">
-                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>
                                 </div>
                                 <h:panelGroup rendered="#{b.cancelled}" styleClass="d-block mt-1">
@@ -252,9 +197,8 @@
                         </p:panel>
                     </div>
                 </div>
-            </p:panel>            
+            </p:panel>
         </h:form>
         </h:panelGroup>
-    </ui:define>  
-
+    </ui:define>
 </ui:composition>
