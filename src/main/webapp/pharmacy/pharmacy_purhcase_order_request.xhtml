@@ -245,6 +245,14 @@
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
                                         <p:selectBooleanCheckbox value="#{purchaseOrderRequestController.currentBill.consignment}" itemLabel="Consignment"/>
                                     </h:panelGroup>
+                                    
+                                    <p:outputLabel 
+                                        value="Comments"
+                                        class="form-label w-100"
+                                        for="tot"></p:outputLabel>
+                                    <p:inputTextarea 
+                                        value="#{purchaseOrderRequestController.currentBill.comments}" 
+                                        class="form-control w-100" ></p:inputTextarea>
 
                                     <p:outputLabel 
                                         value="Total Value"

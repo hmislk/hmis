@@ -639,8 +639,8 @@ public class PaymentService {
                         return bv;
                     }
                     if (paymentMethodData.getEwallet().getInstitution() == null
-                            || paymentMethodData.getEwallet().getReferenceNo() == null
-                            || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty()) {
+                            || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
+                                && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                         bv.setErrorMessage("Please Fill eWallet Reference Number and Bank.");
                         bv.setErrorPresent(true);
                         return bv;
@@ -734,8 +734,8 @@ public class PaymentService {
         }
         if (paymentMethod == PaymentMethod.ewallet) {
             if (paymentMethodData.getEwallet().getInstitution() == null
-                    || paymentMethodData.getEwallet().getReferenceNo() == null
-                    || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty()) {
+                    || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
+                        && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
             }
