@@ -1850,48 +1850,43 @@ public class PharmacyReportController implements Serializable {
 
     private List<StockCorrectionRow> stockCorrectionRows;
 
-    public void createStockCorrectionReport() {
+    public void createStockCorrectionReportWithDTO() {
         stockCorrectionRows = new ArrayList<>();
         try {
-            List<BillType> billTypes = Arrays.asList(
-                    BillType.PharmacyAdjustmentSaleRate,
-                    BillType.PharmacyAdjustmentPurchaseRate,
-                    BillType.PharmacyAdjustmentWholeSaleRate
+            List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT
             );
 
-            StringBuilder jpql = new StringBuilder("SELECT sh2 FROM StockHistory sh2 "
-                    + "WHERE sh2.retired = false "
-                    + "AND sh2.createdAt BETWEEN :fd AND :td "
-                    + "AND (sh2.itemBatch.item.departmentType IS NULL OR sh2.itemBatch.item.departmentType = :depty) "
-                    + "AND sh2.pbItem.billItem.bill.billType IN :doctype");
+            StringBuilder jpql = new StringBuilder(
+                    "SELECT new com.divudi.core.data.StockCorrectionRow("
+                    + "    bi.item.name, "
+                    + "    bi.billItemFinanceDetails.quantity, "
+                    + "    bi.pharmaceuticalBillItem.itemBatch.purcahseRate, "
+                    + "    bi.pharmaceuticalBillItem.itemBatch.costRate, "
+                    + "    bi.pharmaceuticalBillItem.itemBatch.retailsaleRate, "
+                    + "    bi.pharmaceuticalBillItem.beforeAdjustmentValue, "
+                    + "    bi.pharmaceuticalBillItem.afterAdjustmentValue"
+                    + ") "
+                    + "FROM BillItem bi "
+                    + "WHERE bi.retired = false "
+                    + "AND bi.createdAt BETWEEN :fd AND :td "
+                    + "AND bi.bill.billTypeAtomic IN :doctype "
+
+            );
 
             Map<String, Object> params = new HashMap<>();
-            params.put("depty", DepartmentType.Pharmacy);
             params.put("fd", fromDate);
             params.put("td", toDate);
-            params.put("doctype", billTypes);
+            params.put("doctype", billTypeAtomics);
 
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
+            addFilter(jpql, params, "bi.bill.institution", "ins", institution);
+            addFilter(jpql, params, "bi.bill.department.site", "sit", site);
+            addFilter(jpql, params, "bi.bill.department", "dep", department);
 
-            List<StockHistory> histories = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            if (histories != null) {
-                for (StockHistory sh : histories) {
-                    if (sh.getPbItem() == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
-                        continue;
-                    }
-                    StockCorrectionRow row = new StockCorrectionRow();
-                    row.setItemName(sh.getItemBatch().getItem().getName());
-                    row.setQty(sh.getPbItem().getStock().getStock());
-                    row.setOldRate(sh.getPbItem().getBeforeAdjustmentValue());
-                    row.setOldValue(sh.getPbItem().getStock().getStock() * sh.getPbItem().getBeforeAdjustmentValue());
-                    row.setNewRate(sh.getPbItem().getAfterAdjustmentValue());
-                    row.setNewValue(sh.getPbItem().getStock().getStock() * sh.getPbItem().getAfterAdjustmentValue());
-                    row.setVariance(row.getNewValue() - row.getOldValue());
-                    stockCorrectionRows.add(row);
-                }
-            }
+            stockCorrectionRows = (List<StockCorrectionRow>) billItemFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error creating Stock Correction Report");
         }
@@ -3245,12 +3240,12 @@ public class PharmacyReportController implements Serializable {
 
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
-                
+
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
-                
+
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
@@ -3855,6 +3850,7 @@ public class PharmacyReportController implements Serializable {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
 
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
