@@ -111,6 +111,8 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE_REFUND:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
                 handleInPayment(p, pd);
                 break;
 

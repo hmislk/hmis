@@ -96,7 +96,7 @@
                                             required="true"
                                             requiredMessage="Please select a payment method">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}"/>
                                             <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </p:panelGrid>
