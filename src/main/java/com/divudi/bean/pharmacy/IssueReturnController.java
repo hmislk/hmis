@@ -644,7 +644,7 @@ public class IssueReturnController implements Serializable {
                 selectedItem.setRetired(true);
                 billItemFacade.edit(selectedItem);
             }
-            originalBillItems.remove(selectedItem);
+            returnBillItems.remove(selectedItem);
         }
         selectedBillItems.clear();
         calculateBillTotal();
@@ -661,7 +661,7 @@ public class IssueReturnController implements Serializable {
             itemToDelete.setRetired(true);
             billItemFacade.edit(itemToDelete);
         }
-        originalBillItems.remove(itemToDelete);
+        returnBillItems.remove(itemToDelete);
         calculateBillTotal();
         JsfUtil.addSuccessMessage("Item deleted successfully");
     }
