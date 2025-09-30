@@ -70,6 +70,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -758,6 +759,19 @@ public class BillService {
             }
         }
     }
+    public List<Payment> fetchBillPaymentsFromBillId(Long billId) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill.id=:billId "
+                + "order by p.id";
+        params.put("billId", billId);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+    
 
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
@@ -1044,7 +1058,88 @@ public class BillService {
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
+    
+    public List<BillLight> fetchBillDtos(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            boolean allowPpaymentScheme) {
+        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme, allowPpaymentScheme);
+    }
+    
+    
+    
+    public List<BillLight> fetchBillDtos(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            boolean allowPpaymentScheme) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
 
+        jpql = "select new com.divudi.core.light.common.BillLight( b.id, b.billTypeAtomic, b.netTotal ) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+        
+        if(allowPpaymentScheme){
+            jpql += " and b.paymentScheme <> Null ";
+        }
+        if(!allowPpaymentScheme){
+            jpql += " and b.paymentScheme = Null ";
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        //System.out.println("DTO Bill List = " + fetchedBills.size());
+        return fetchedBills;
+    }
+    
     public List<LabIncomeReportDTO> fetchBillsAsLabIncomeReportDTOs(Date fromDate,
             Date toDate,
             Institution institution,
