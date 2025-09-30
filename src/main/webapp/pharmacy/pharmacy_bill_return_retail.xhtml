@@ -160,54 +160,57 @@
                                         class="row"
                                         layout="block"
                                         rendered="#{saleReturnController.returnPaymentMethod eq 'Credit'}" >
-                                        <div class="my-1" id="credit">
+                                        <div class="my-1" id="creditPayment">
                                             <div class="row">
                                                 <div class="col-12">
-                                                    <div class="d-flex gap-2">
-                                                        <p:autoComplete
-                                                            id="creditCompany"
-                                                            class="w-100 -mx-2"
-                                                            inputStyleClass="form-control"
-                                                            forceSelection="true"
-                                                            value="#{saleReturnController.paymentMethodData.credit.institution}"
-                                                            completeMethod="#{institutionController.completeCreditCompany}"
-                                                            var="ix"
-                                                            minQueryLength="2"
-                                                            placeholder="Company (Type at least 4 letters to search)"
-                                                            itemLabel="#{ix.name}"
-                                                            itemValue="#{ix}"
-                                                            size="10"  >
-                                                        </p:autoComplete>
+                                                    <div class="d-flex gap-2 align-items-end">
+                                                        <div>
+                                                            <p:outputLabel for="creditCompany" value="Company"/>
+                                                            <p:autoComplete
+                                                                id="creditCompany"
+                                                                class="w-100"
+                                                                inputStyleClass="form-control"
+                                                                forceSelection="true"
+                                                                value="#{saleReturnController.paymentMethodData.credit.institution}"
+                                                                completeMethod="#{institutionController.completeCreditCompany}"
+                                                                var="ix"
+                                                                minQueryLength="2"
+                                                                placeholder="Type to search..."
+                                                                itemLabel="#{ix.name}"
+                                                                itemValue="#{ix}"
+                                                                size="10"  >
+                                                            </p:autoComplete>
+                                                        </div>
 
-                                                        <p:inputText
-                                                            id="polNo"
-                                                            style="width: 100px;"
-                                                            value="#{saleReturnController.paymentMethodData.credit.referralNo}"
-                                                            placeholder="Policy NO" >
-                                                        </p:inputText>
+                                                        <div>
+                                                            <p:outputLabel for="polNo" value="Policy No"/>
+                                                            <p:inputText
+                                                                id="polNo"
+                                                                style="width: 100px;"
+                                                                value="#{saleReturnController.paymentMethodData.credit.referralNo}"
+                                                                placeholder="Policy NO" >
+                                                            </p:inputText>
+                                                        </div>
 
-                                                        <p:inputText
-                                                            id="refNo"
-                                                            style="width: 100px;"
-                                                            value="#{saleReturnController.paymentMethodData.credit.referenceNo}"
-                                                            placeholder="Reference NO" >
-                                                        </p:inputText>
+                                                        <div>
+                                                            <p:outputLabel for="refNo" value="Reference No"/>
+                                                            <p:inputText
+                                                                id="refNo"
+                                                                style="width: 100px;"
+                                                                value="#{saleReturnController.paymentMethodData.credit.referenceNo}"
+                                                                placeholder="Reference NO" >
+                                                            </p:inputText>
+                                                        </div>
 
-                                                        <p:inputText
-                                                            id="memo"
-                                                            style="width: 300px;"
-                                                            value="#{saleReturnController.paymentMethodData.credit.comment}"
-                                                            placeholder="Memo" >
-                                                        </p:inputText>
-
-                                                        <p:commandLink
-                                                            id="btnAddNewCreditCom"
-                                                            value="(+)"
-                                                            class="mx-3 mt-1"
-                                                            title="Add New Credit Company"
-                                                            ajax="false"
-                                                            action="#{navigationController.navigateToCreditCompany()}"
-                                                            actionListener="#{creditCompanyController.prepareAdd()}" />
+                                                        <div>
+                                                            <p:outputLabel for="memo" value="Memo"/>
+                                                            <p:inputText
+                                                                id="memo"
+                                                                style="width: 300px;"
+                                                                value="#{saleReturnController.paymentMethodData.credit.comment}"
+                                                                placeholder="Memo" >
+                                                            </p:inputText>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
