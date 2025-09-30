@@ -1913,6 +1913,47 @@ public class PharmacyReportController implements Serializable {
         retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
     }
 
+    
+    private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
+        try {
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+
+            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
+                    + "LEFT JOIN FETCH bi.item "
+                    + "LEFT JOIN FETCH bi.bill b "
+                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN FETCH pbi.itemBatch "
+                    + "WHERE bi.retired = false "
+                    + "AND b.retired = false "
+                    + "AND b.billTypeAtomic IN :billTypes "
+                    + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypes", billTypeValue);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+//            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+        }
+    }
+
+    
     private void retrieveBillItems(String billTypeField, Object billTypeValue) {
         try {
             billItems = new ArrayList<>();
@@ -2237,10 +2278,12 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacyDisposalIssue);
-        billTypes.add(BillType.PharmacyIssue);
-        retrieveBillItems("b.billType", billTypes);
+        List<BillTypeAtomic> btasToGetBillItems = new ArrayList<>();
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_ISSUE);
+        retrieveBillItems(btasToGetBillItems);
         calculateStockConsumptionTotals(billItems);
     }
 
@@ -3287,6 +3330,8 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             } else if ("consumptionDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
             } else if ("transferIssueDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyTransferIssue);
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
