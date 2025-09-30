@@ -2081,8 +2081,14 @@ public class PharmacyReportController implements Serializable {
 
             // STEP 5: Attach the grouped items to their corresponding parent bills.
             for (CostOfGoodSoldBillDTO billDto : cogsBillDtos) {
+                // 1. Accumulate the grand netTotal directly from the bill
+                netTotal += billDto.getNetTotal();
+
+                // Get the items associated with this specific bill
                 List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
-                if (itemsForThisBill != null) {
+               
+                if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+                    
                     // Populate the map as needed
                     Map<Long, Object> billItemMap = itemsForThisBill.stream()
                             .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
@@ -2090,23 +2096,26 @@ public class PharmacyReportController implements Serializable {
 
                     // For the list, simply set it
                     billDto.setBillItems(itemsForThisBill);
+                    
+                    // Calculate Cost Value for THIS bill
+                    double billCost = itemsForThisBill.stream()
+                            .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getCostRate() * item.getQty())
+                            .sum();
+
+                    // Calculate Purchase Value for THIS bill
+                    double billPurchase = itemsForThisBill.stream()
+                            .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
+                            .sum();
+
+                    // 2. Accumulate the grand total for Cost
+                    totalCostValue += billCost;
+
+                    // 3. Accumulate the grand total for Purchase
+                    totalPurchaseValue += billPurchase;
                 }
             }
-
-            netTotal = cogsBillDtos.stream()
-                    .mapToDouble(CostOfGoodSoldBillDTO::getNetTotal)
-                    .sum();
-
-            totalCostValue = allBillItems.stream()
-                    .filter(item -> item.getCostRate() != null && item.getQty() != null)
-                    .mapToDouble(item -> item.getCostRate() * item.getQty())
-                    .sum();
-
-            totalPurchaseValue = allBillItems.stream()
-                    .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
-                    .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
-                    .sum();
-
         } catch (Exception e) {
             e.printStackTrace();
             cogsBillDtos = new ArrayList<>();
