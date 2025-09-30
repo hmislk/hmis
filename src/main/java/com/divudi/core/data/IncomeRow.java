@@ -160,6 +160,7 @@ public class IncomeRow implements Serializable {
     private double noneValue;
     private double opdCreditValue;
     private double inpatientCreditValue;
+    private double otherValue;
 
     private double grossTotal;
     private double discount;
@@ -1644,5 +1645,13 @@ public class IncomeRow implements Serializable {
 
     public void setItemValue(Double itemValue) {
         this.itemValue = itemValue;
+    }
+
+    public double getOtherValue() {
+        return otherValue;
+    }
+
+    public void setOtherValue(double otherValue) {
+        this.otherValue = otherValue;
     }
 }
