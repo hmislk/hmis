@@ -1067,8 +1067,8 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
             PaymentScheme paymentScheme,
-            boolean allowPpaymentScheme) {
-        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme, allowPpaymentScheme);
+            boolean allowPaymentScheme) {
+        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme, allowPaymentScheme);
     }
     
     
@@ -1083,7 +1083,7 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
             PaymentScheme paymentScheme,
-            boolean allowPpaymentScheme) {
+            boolean allowPaymentScheme) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1127,10 +1127,10 @@ public class BillService {
             params.put("paymentScheme", paymentScheme);
         }
         
-        if(allowPpaymentScheme){
+        if(allowPaymentScheme){
             jpql += " and b.paymentScheme <> Null ";
         }
-        if(!allowPpaymentScheme){
+        if(!allowPaymentScheme){
             jpql += " and b.paymentScheme = Null ";
         }
 

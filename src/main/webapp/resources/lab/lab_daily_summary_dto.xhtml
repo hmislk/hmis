@@ -90,7 +90,7 @@
                         <p:selectOneMenu
                             rendered="#{laborataryReportController.institution eq null and laborataryReportController.site eq null}"
                             styleClass="w-100 form-control"
-                            value="#{opdReportController.department}"
+                            value="#{laborataryReportController.department}"
                             filterMatchMode="contains"
                             filter="true">
                             <f:selectItem itemLabel="All Departments"/>
@@ -110,7 +110,7 @@
                             filter="true">
                             <f:selectItem itemLabel="All Departments"/>
                             <f:selectItems
-                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.site)}"
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.site)}"
                                 var="d"
                                 itemLabel="#{d.name}"
                                 itemValue="#{d}"/>
@@ -120,7 +120,7 @@
                         <p:selectOneMenu
                             rendered="#{laborataryReportController.institution ne null and laborataryReportController.site eq null}"
                             styleClass="w-100 form-control"
-                            value="#{opdReportController.department}"
+                            value="#{laborataryReportController.department}"
                             filterMatchMode="contains"
                             filter="true">
                             <f:selectItem itemLabel="All Departments"/>

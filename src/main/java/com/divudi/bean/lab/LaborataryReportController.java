@@ -1346,7 +1346,7 @@ public class LaborataryReportController implements Serializable {
         row.setOnlineSettlementValue(0.0);
         row.setCreditValue(0.0);
         row.setInpatientTotal(0.0);
-        row.setLong3(0L);
+        row.setOtherIncomeValue(0.0);
         row.setTotal(0.0);
         row.setDiscount(0.0);
         row.setServiceCharge(0.0);
@@ -1623,7 +1623,7 @@ public class LaborataryReportController implements Serializable {
         row.setOnlineSettlementValue(0.0);
         row.setCreditValue(0.0);
         row.setInpatientCreditValue(0.0);
-        row.setLong3(0L);
+        row.setOtherValue(0.0);
         row.setNetTotal(0.0);
         row.setDiscount(0.0);
         row.setServiceCharge(0.0);
@@ -1654,7 +1654,7 @@ public class LaborataryReportController implements Serializable {
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         default:
-                            row.setLong3(row.getLong3() + Math.round(p.getPaidValue()));
+                            row.setOtherValue(row.getOtherValue() + p.getPaidValue());
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                     }
