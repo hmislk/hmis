@@ -35,18 +35,18 @@ public class BillLight {
 
     public BillLight() {
     }
-    
-    public BillLight(BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public BillLight(BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.count = count;
     }
-    
-    public BillLight(Department  toDpartment, Long count) {
+
+    public BillLight(Department toDpartment, Long count) {
         this.toDpartment = toDpartment;
         this.count = count;
     }
-    
-    public BillLight(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public BillLight(Department toDpartment, BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.toDpartment = toDpartment;
         this.count = count;
@@ -115,8 +115,13 @@ public class BillLight {
         this.ccTotal = ccTotal;
         this.hospitalTotal = hospitalTotal;
     }
-    
-    
+
+    //Use 9B Report
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double netValue) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.netValue = netValue;
+    }
 
     public Long getId() {
         return id;
@@ -260,11 +265,11 @@ public class BillLight {
         this.canterName = canterName;
     }
 
-    public BillTypeAtomic  getBillTypeAtomic() {
+    public BillTypeAtomic getBillTypeAtomic() {
         return billTypeAtomic;
     }
 
-    public void setBillTypeAtomic(BillTypeAtomic  billTypeAtomic) {
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
     }
 
@@ -307,5 +312,5 @@ public class BillLight {
     public void setReferenceNumber(String referenceNumber) {
         this.referenceNumber = referenceNumber;
     }
-    
+
 }
