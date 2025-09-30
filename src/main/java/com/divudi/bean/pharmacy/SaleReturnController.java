@@ -17,6 +17,7 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
+import com.divudi.service.PaymentService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
@@ -85,6 +86,8 @@ public class SaleReturnController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     StaffService staffBean;
+    @EJB
+    PaymentService paymentService;
 
     PaymentMethodData paymentMethodData;
 
@@ -525,6 +528,12 @@ public class SaleReturnController implements Serializable {
         Payment p = createPayment(b, getReturnPaymentMethod());
         drawerController.updateDrawerForOuts(p);
         saveSaleComponent(b, p);
+
+        // Update patient deposit balances and create history records
+        List<Payment> payments = new ArrayList<>();
+        payments.add(p);
+        paymentService.updateBalances(payments);
+
         getReturnBill().setReferenceBill(getBill());
         getReturnBill().getReturnCashBills().add(b);
         getBillFacade().edit(getReturnBill());
