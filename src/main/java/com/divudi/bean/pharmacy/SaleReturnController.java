@@ -106,6 +106,7 @@ public class SaleReturnController implements Serializable {
         finalReturnBill = null;
         printPreview = false;
         billItems = null;
+        paymentMethodData = new PaymentMethodData();
         generateBillComponent();
         returnPaymentMethod = bill.getPaymentMethod();
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";

@@ -247,6 +247,9 @@ public class PharmacyCalculation implements Serializable {
     }
     
     public double getTotalQty(BillItem b, List<BillTypeAtomic> btas) {
+        if (btas == null || btas.isEmpty()) {
+            return 0.0;
+        }
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
                 + " from BillItem p "
                 + " where (p.bill.retired is null or p.bill.retired=false)"
