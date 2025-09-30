@@ -1576,7 +1576,7 @@ public class LaborataryReportController implements Serializable {
                 onlineSettlementValue += rtr.getOnlineSettlementValue();
                 creditValue += rtr.getCreditValue();
                 inwardCreditValue += rtr.getInpatientTotal();
-                otherValue += rtr.getLong3() != null ? rtr.getLong3().doubleValue() : 0.0;
+                otherValue += rtr.getOtherIncomeValue();
                 totalValue += rtr.getTotal();
                 discountValue += rtr.getDiscount();
                 serviceChargeValue += rtr.getServiceCharge();
@@ -1587,7 +1587,7 @@ public class LaborataryReportController implements Serializable {
                 onlineSettlementValue += ir.getOnlineSettlementValue();
                 creditValue += ir.getCreditValue();
                 inwardCreditValue += ir.getInpatientCreditValue();
-                otherValue += ir.getLong3() != null ? ir.getLong3().doubleValue() : 0.0;
+                otherValue += ir.getOtherValue();
                 totalValue += ir.getNetTotal();
                 discountValue += ir.getDiscount();
                 serviceChargeValue += ir.getServiceCharge();
