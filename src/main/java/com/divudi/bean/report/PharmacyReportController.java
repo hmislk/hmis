@@ -1945,14 +1945,17 @@ public class PharmacyReportController implements Serializable {
 
             totalCostValue = billItems.stream()
                     .filter(bi -> bi.getPharmaceuticalBillItem() != null
-                    && bi.getPharmaceuticalBillItem().getItemBatch() != null
-                    && bi.getBillItemFinanceDetails() != null)
+                    && bi.getPharmaceuticalBillItem().getItemBatch() != null)
                     .mapToDouble(bi -> {
                         double costRate = bi.getPharmaceuticalBillItem()
                                 .getItemBatch()
                                 .getCostRate();
-                        BigDecimal quantity = bi.getBillItemFinanceDetails()
-                                .getQuantityByUnits();
+
+                        BigDecimal quantity = (bi.getBillItemFinanceDetails() != null
+                                && bi.getBillItemFinanceDetails().getQuantityByUnits() != null)
+                                ? bi.getBillItemFinanceDetails().getQuantityByUnits()
+                                : BigDecimal.valueOf(bi.getQty() != null ? bi.getQty() : 0.0);
+
                         return costRate * quantity.doubleValue();
                     })
                     .sum();
@@ -2103,7 +2106,7 @@ public class PharmacyReportController implements Serializable {
                     .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
                     .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
                     .sum();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             cogsBillDtos = new ArrayList<>();
