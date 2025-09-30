@@ -169,6 +169,7 @@
                                     headerText="Return rate (#{grnReturnWorkflowController.returnRateLabel})" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
+                                            id="lblReturnRate"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
@@ -199,7 +200,7 @@
                                         <p:ajax 
                                             event="blur" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal messages @form" 
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -218,7 +219,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
-                                            update="txtLineReturnValue returnTotal messages @form" 
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -235,7 +236,7 @@
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
-                                            update="txtLineReturnValue returnTotal messages @form"
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                 </p:column>

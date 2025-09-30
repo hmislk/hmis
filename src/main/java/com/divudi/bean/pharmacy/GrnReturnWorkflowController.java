@@ -1339,9 +1339,19 @@ public class GrnReturnWorkflowController implements Serializable {
 
         BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
 
-        // Return the purchase rate per unit
-        if (originalFd.getLineGrossRate() != null && originalFd.getUnitsPerPack() != null) {
-            return originalFd.getLineGrossRate().divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
+        // Use same logic as DirectPurchaseReturnController.getReturnRate()
+        BigDecimal rate = originalFd.getGrossRate();
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
+                && originalFd.getLineCostRate() != null) {
+            rate = originalFd.getLineCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
+                && originalFd.getTotalCostRate() != null) {
+            rate = originalFd.getTotalCostRate();
+        }
+
+        // Convert to per unit rate if we have units per pack
+        if (rate != null && rate.compareTo(BigDecimal.ZERO) > 0 && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+            return rate.divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
         } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
             return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
         }
@@ -1943,7 +1953,13 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String getReturnRateLabel() {
-        return "per Unit";
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)) {
+            return "Line Cost Rate";
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)) {
+            return "Total Cost Rate";
+        }
+        return "Purchase Rate";
     }
 
     // Event handlers for quantity changes (with validation) - following legacy pattern
