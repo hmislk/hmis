@@ -2215,15 +2215,17 @@ public class PharmacyReportController implements Serializable {
             double itemNetValue = item.getNetValue();
 
             if (item.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE) {
-                netTotal += itemNetValue;
-                purchaseValueTotal += purchaseValue;
-                costValueTotal += costValue;
-                retailValueTotal += retailValue;
-            } else {
+                // Disposal Issue - stock reduces - negative values
                 netTotal -= itemNetValue;
                 purchaseValueTotal -= purchaseValue;
                 costValueTotal -= costValue;
                 retailValueTotal -= retailValue;
+            } else {
+                // Disposal Return - stock increases - positive values
+                netTotal += itemNetValue;
+                purchaseValueTotal += purchaseValue;
+                costValueTotal += costValue;
+                retailValueTotal += retailValue;
             }
         }
     }
@@ -4221,11 +4223,13 @@ public class PharmacyReportController implements Serializable {
                 double itemCostValue = item.getQty() * item.getPharmaceuticalBillItem().getItemBatch().getCostRate();
 
                 if (item.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE) {
-                    purchaseValue += itemPurchaseValue;
-                    costValue += itemCostValue;
-                } else {
+                    // Disposal Issue - stock reduces - negative values
                     purchaseValue -= itemPurchaseValue;
                     costValue -= itemCostValue;
+                } else {
+                    // Disposal Return - stock increases - positive values
+                    purchaseValue += itemPurchaseValue;
+                    costValue += itemCostValue;
                 }
             }
 
