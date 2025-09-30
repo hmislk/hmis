@@ -18,6 +18,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -3684,6 +3685,18 @@ public class BillBeanController implements Serializable {
         m.put("ret", false);
         m.put("b", b);
         return billItemFacade.findByJpql(j, m);
+    }
+    
+    public List<BillItemDTO> fillBillItemDTOs(Long billId) {
+        String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.bill.id, bi.item.id, bi.bill.paymentMethod, bi.item.clazz, bi.netValue, bi.discount, bi.marginValue ) "
+                + " from BillItem bi "
+                + " where bi.bill.id=:billId "
+                + " and bi.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("billId", billId);
+        List<BillItemDTO> dtos = billItemFacade.findLightsByJpql(j, m);
+        return dtos;
     }
 
     public List<BillFee> fillBillItemFees(BillItem bi) {
