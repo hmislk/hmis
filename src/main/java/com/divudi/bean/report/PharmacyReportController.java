@@ -2233,10 +2233,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockConsumption() {
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacyDisposalIssue);
-        billTypes.add(BillType.PharmacyIssue);
-        retrieveBillItems("b.billType", billTypes);
+        List<BillTypeAtomic> btasToGetBillItems = new ArrayList<>();
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        retrieveBillItems(btasToGetBillItems);
         calculateStockConsumptionNetTotal(billItems);
     }
 
@@ -3241,6 +3242,8 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             } else if ("consumptionDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
             } else if ("transferIssueDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyTransferIssue);
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
