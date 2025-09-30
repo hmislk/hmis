@@ -1339,9 +1339,23 @@ public class GrnReturnWorkflowController implements Serializable {
 
         BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
 
-        // Return the purchase rate per unit
-        if (originalFd.getLineGrossRate() != null && originalFd.getUnitsPerPack() != null) {
-            return originalFd.getLineGrossRate().divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
+        // Check configuration options to determine which rate to use
+        BigDecimal rateToUse = BigDecimal.ZERO;
+
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
+                && originalFd.getLineCostRate() != null) {
+            rateToUse = originalFd.getLineCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
+                && originalFd.getTotalCostRate() != null) {
+            rateToUse = originalFd.getTotalCostRate();
+        } else {
+            // Default to purchase rate (Purchase Return Based On Purchase Rate)
+            rateToUse = originalFd.getGrossRate() != null ? originalFd.getGrossRate() : BigDecimal.ZERO;
+        }
+
+        // Convert to per unit rate if we have units per pack
+        if (rateToUse.compareTo(BigDecimal.ZERO) > 0 && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+            return rateToUse.divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
         } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
             return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
         }
@@ -1943,7 +1957,13 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String getReturnRateLabel() {
-        return "per Unit";
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)) {
+            return "Line Cost Rate";
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)) {
+            return "Total Cost Rate";
+        }
+        return "Purchase Rate";
     }
 
     // Event handlers for quantity changes (with validation) - following legacy pattern
