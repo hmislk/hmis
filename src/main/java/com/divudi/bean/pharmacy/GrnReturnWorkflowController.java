@@ -1339,23 +1339,19 @@ public class GrnReturnWorkflowController implements Serializable {
 
         BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
 
-        // Check configuration options to determine which rate to use
-        BigDecimal rateToUse = BigDecimal.ZERO;
-
+        // Use same logic as DirectPurchaseReturnController.getReturnRate()
+        BigDecimal rate = originalFd.getGrossRate();
         if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
                 && originalFd.getLineCostRate() != null) {
-            rateToUse = originalFd.getLineCostRate();
+            rate = originalFd.getLineCostRate();
         } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
                 && originalFd.getTotalCostRate() != null) {
-            rateToUse = originalFd.getTotalCostRate();
-        } else {
-            // Default to purchase rate (Purchase Return Based On Purchase Rate)
-            rateToUse = originalFd.getGrossRate() != null ? originalFd.getGrossRate() : BigDecimal.ZERO;
+            rate = originalFd.getTotalCostRate();
         }
 
         // Convert to per unit rate if we have units per pack
-        if (rateToUse.compareTo(BigDecimal.ZERO) > 0 && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
-            return rateToUse.divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
+        if (rate != null && rate.compareTo(BigDecimal.ZERO) > 0 && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+            return rate.divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
         } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
             return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
         }
