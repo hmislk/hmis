@@ -42,7 +42,7 @@
             <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
         </div>
         <div class="purchase-order">
-            <h:panelGrid columns="6" class="my-2 w-100">
+            <h:panelGrid columns="6" class="mt-2 w-100">
                 <h:outputLabel value="Order No" />
                 <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                 <h:outputLabel value="#{cc.attrs.bill.deptId}" />
@@ -68,7 +68,14 @@
                 <h:outputLabel value="Consignment" />
                 <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                 <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
+
             </h:panelGrid>
+            <div class="mb-2" >
+                <h:outputLabel value="Comments" />
+                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                <h:outputLabel value="#{cc.attrs.bill.comments}" />
+            </div>
+
         </div>
         <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
             <thead>

@@ -169,6 +169,7 @@
                                     headerText="Return rate (#{grnReturnWorkflowController.returnRateLabel})" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
+                                            id="lblReturnRate"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />

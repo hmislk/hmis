@@ -363,7 +363,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 return "";
             } else {
                 setPreBill(args);
-                return "/pharmacy/pharmacy_bill_return_pre_cash";
+                return "/pharmacy/pharmacy_bill_return_pre_cash?faces-redirect=true";
             }
         } else {
             searchController.makeListNull();
@@ -1387,6 +1387,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public String findTokenNumberFromBill(Bill bill) {
         Token currentToken = tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+        if(currentToken == null){
+            return null;
+        }
         return currentToken.getTokenNumber();
     }
 
@@ -1561,6 +1564,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getSaleReturnBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleReturnBill().getId()));
+
+        paymentService.updateBalances(refundPayments);
 
         clearBill();
         clearBillItem();
