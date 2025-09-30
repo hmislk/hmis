@@ -97,6 +97,7 @@ public class LaborataryReportController implements Serializable {
     ReportTimerController reportTimerController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
@@ -114,6 +115,7 @@ public class LaborataryReportController implements Serializable {
     BillFeeFacade billFeeFacade;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -234,6 +236,7 @@ public class LaborataryReportController implements Serializable {
     private double totalDeductionServiceChargeValue;
 
 // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -286,6 +289,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functions">
 // Simple tab persistence - no complex event handling needed
     // The activeIndex binding handles persistence automatically
@@ -1259,15 +1263,6 @@ public class LaborataryReportController implements Serializable {
         normalIncomeRow = genarateRowBundle(normalIncomeList, normalIncomeRow);
         bundleReport.getReportTemplateRows().add(normalIncomeRow);
 
-        List<BillLight> paymentSchemeIncomeList = billService.fetchBillDtos(fromDate, toDate, institution, site, department, getOpdAndPackageBillTypeAtomics(), null, null, true);
-        
-        
-        System.out.println("----------------------------------------");
-        System.out.println("paymentSchemeIncomeList = " + paymentSchemeIncomeList.size());
-        System.out.println("normalIncomeList = " + normalIncomeList.size());
-        System.out.println("----------------------------------------");
-        
-        
         //Member Schemes
         List<PaymentScheme> pss = paymentSchemeController.getPaymentSchemesForOPD();
         for (PaymentScheme ps : pss) {
@@ -1689,10 +1684,14 @@ public class LaborataryReportController implements Serializable {
         totalDeductionTotalValue = 0.0;
         totalDeductionDiscountValue = 0.0;
         totalDeductionServiceChargeValue = 0.0;
+        
+        bundleReport = new ReportTemplateRowBundle();
+        bundle = new IncomeBundle();
     }
 
     // </editor-fold>
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
@@ -2372,8 +2371,6 @@ public class LaborataryReportController implements Serializable {
         this.totalDeductionServiceChargeValue = totalDeductionServiceChargeValue;
     }
 
-    // </editor-fold>
-
     public double getTotalAdditionOnlineSettlementValue() {
         return totalAdditionOnlineSettlementValue;
     }
@@ -2389,4 +2386,6 @@ public class LaborataryReportController implements Serializable {
     public void setTotalDeductionOnlineSettlementValue(double totalDeductionOnlineSettlementValue) {
         this.totalDeductionOnlineSettlementValue = totalDeductionOnlineSettlementValue;
     }
+    
+    // </editor-fold>
 }

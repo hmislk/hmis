@@ -1136,7 +1136,6 @@ public class BillService {
 
         jpql += " order by b.createdAt desc  ";
         List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        //System.out.println("DTO Bill List = " + fetchedBills.size());
         return fetchedBills;
     }
     
