@@ -245,6 +245,22 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("GETTING TOTAL QTY " + value);
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
+    
+    public double getTotalQty(BillItem b, List<BillTypeAtomic> btas) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p "
+                + " where (p.bill.retired is null or p.bill.retired=false)"
+                + " and (p.retired is null or p.retired=false) "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic in :btas";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btas", btas);
+
+        //System.err.println("GETTING TOTAL QTY " + value);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
 
     public double getTotalFreeQty(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"

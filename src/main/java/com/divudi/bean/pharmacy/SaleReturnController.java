@@ -48,7 +48,7 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class SaleReturnController implements Serializable {
-    
+
     private Bill bill;
     private Bill returnBill;
     private Bill finalReturnBill;
@@ -90,9 +90,9 @@ public class SaleReturnController implements Serializable {
     StaffService staffBean;
     @EJB
     PaymentService paymentService;
-    
+
     PaymentMethodData paymentMethodData;
-    
+
     public String navigateToReturnItemsAndPaymentsForPharmacyRetailSale() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Please select a bill to return");
@@ -103,57 +103,55 @@ public class SaleReturnController implements Serializable {
             return null;
         }
         returnBill = null;
-        finalReturnBill=null;
+        finalReturnBill = null;
         printPreview = false;
         billItems = null;
         generateBillComponent();
         returnPaymentMethod = bill.getPaymentMethod();
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
     }
-    
+
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
     }
-    
+
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-    
+
     public Bill getBill() {
         return bill;
     }
-    
+
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-    
-    
-    
+
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new RefundBill();
         }
         return returnBill;
     }
-    
+
     public void setReturnBill(Bill returnBill) {
         this.returnBill = returnBill;
     }
-    
+
     public boolean isPrintPreview() {
         return printPreview;
     }
-    
+
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
-    
+
     @Inject
     private PharmacyCalculation pharmacyRecieveBean;
-    
+
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
         double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
@@ -161,46 +159,46 @@ public class SaleReturnController implements Serializable {
             tmp.setQty(remainingQty);
             JsfUtil.addErrorMessage("You cant return over than the remaining quanty to return. The returning qtantity was set to Remaining Quantity.");
         }
-        
+
         calTotal();
         getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
-    
+
     public void makeNull() {
         bill = null;
         returnBill = null;
-        finalReturnBill=null;
+        finalReturnBill = null;
         printPreview = false;
         billItems = null;
-        
+
     }
-    
+
     public String getReturnBillcomment() {
         return returnBillcomment;
     }
-    
+
     public void setReturnBillcomment(String returnBillcomment) {
         this.returnBillcomment = returnBillcomment;
     }
-    
+
     private void savePreReturnBill() {
         //   getReturnBill().setReferenceBill(getBill());
 
         getReturnBill().copy(getBill());
-        
+
         getReturnBill().setPaymentMethod(returnPaymentMethod);
         getReturnBill().setBillType(BillType.PharmacyPre);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
-        
+
         getReturnBill().setBilledBill(getBill());
-        
+
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
         getReturnBill().setDiscount(0 - Math.abs(getReturnBill().getDiscount()));
-        
+
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-        
+
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
 
@@ -230,31 +228,33 @@ public class SaleReturnController implements Serializable {
                 insId = deptId;
             }
         }
-        
+
         getReturnBill().setInsId(insId);
         getReturnBill().setDeptId(deptId);
-        
+
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
+        } else {
+            getBillFacade().edit(getReturnBill());
         }
-        
+
     }
-    
+
     private Bill saveSaleFinalReturnBill() {
         RefundBill finalRefundBill = new RefundBill();
         finalRefundBill.copy(getReturnBill());
         finalRefundBill.setPaymentMethod(returnPaymentMethod);
         finalRefundBill.setBillType(BillType.PharmacySale);
         finalRefundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        
+
         finalRefundBill.setReferenceBill(getReturnBill());
         finalRefundBill.setTotal(getReturnBill().getTotal());
         finalRefundBill.setNetTotal(getReturnBill().getNetTotal());
         finalRefundBill.setDiscount(getReturnBill().getDiscount());
-        
+
         finalRefundBill.setCreater(getSessionController().getLoggedUser());
         finalRefundBill.setCreatedAt(Calendar.getInstance().getTime());
-        
+
         finalRefundBill.setInstitution(getSessionController().getInstitution());
         finalRefundBill.setDepartment(getSessionController().getDepartment());
         finalRefundBill.setComments(returnBillcomment);
@@ -285,26 +285,22 @@ public class SaleReturnController implements Serializable {
                 insId = deptId;
             }
         }
-        
+
         finalRefundBill.setInsId(insId);
         finalRefundBill.setDeptId(deptId);
         finalRefundBill.setBillTime(new Date());
-        
+
         if (finalRefundBill.getId() == null) {
             getBillFacade().create(finalRefundBill);
         }
-        
-       
+
         getReturnBill().setReferenceBill(finalRefundBill);
         getBillFacade().edit(getReturnBill());
-    
-        
+
         return finalRefundBill;
-        
+
     }
-    
-    
-    
+
     private void savePreReturnBillComponents() {
         for (BillItem returningBillItem : getBillItems()) {
             returningBillItem.getPharmaceuticalBillItem().setQty(returningBillItem.getQty());
@@ -321,11 +317,11 @@ public class SaleReturnController implements Serializable {
             returningBillItem.setGrossValue(0 - grossValue);
             returningBillItem.setNetValue(0 - netValue);
             returningBillItem.setDiscount(discountValue);
-            
+
             PharmaceuticalBillItem tmpPh = returningBillItem.getPharmaceuticalBillItem();
             tmpPh.setBillItem(returningBillItem);
             returningBillItem.setPharmaceuticalBillItem(tmpPh);
-            
+
             if (returningBillItem.getId() == null) {
                 getBillItemFacade().create(returningBillItem);
             } else {
@@ -335,7 +331,7 @@ public class SaleReturnController implements Serializable {
         }
         returnBill = billService.reloadBill(returnBill);
         updateReturnTotal();
-        
+
     }
 
     private void saveSaleComponent(Bill finalReturnBill) {
@@ -359,7 +355,7 @@ public class SaleReturnController implements Serializable {
         }
         getBillFacade().edit(finalReturnBill);
     }
-    
+
     public void saveBillFee(BillItem bi) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
@@ -374,13 +370,12 @@ public class SaleReturnController implements Serializable {
         bf.setDepartment(getSessionController().getDepartment());
         bf.setInstitution(getSessionController().getInstitution());
         bf.setBill(bi.getBill());
-        
+
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
     }
-    
-   
+
     private void updateReturnTotal() {
         double tot = 0;
         double discount = 0;
@@ -390,11 +385,11 @@ public class SaleReturnController implements Serializable {
             discount += b.getDiscount();
             netTotal += b.getNetValue();
         }
-        
+
         getReturnBill().setTotal(tot);
         getReturnBill().setDiscount(discount);
         getReturnBill().setNetTotal(netTotal);
-        
+
         getBillFacade().edit(getReturnBill());
     }
 
@@ -410,21 +405,21 @@ public class SaleReturnController implements Serializable {
 //    }
     @EJB
     CashTransactionBean cashTransactionBean;
-    
+
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
-    
+
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
-    
+
     public void settle() {
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
         }
-        
+
         if (getReturnBillcomment() == null || getReturnBillcomment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
@@ -437,7 +432,7 @@ public class SaleReturnController implements Serializable {
                 return;
             }
         }
-        
+
         if (returnPaymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a payment method to return");
             return;
@@ -446,7 +441,7 @@ public class SaleReturnController implements Serializable {
             JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed. Please select another payment method to return");
             return;
         }
-        
+
         savePreReturnBill();
         savePreReturnBillComponents();
 
@@ -461,20 +456,20 @@ public class SaleReturnController implements Serializable {
         }
         // Update patient deposit balances and create history records
         paymentService.updateBalances(payments);
-        
+
         getReturnBill().setReferenceBill(getBill());
         getReturnBill().getReturnCashBills().add(finalReturnBill);
         getReturnBill().setCreditCompany(getFinalReturnBill().getCreditCompany());
         getBillFacade().edit(getReturnBill());
 //        getBillFacade().edit(getFinalReturnBill());
-        
+
         finalReturnBill = billService.reloadBill(finalReturnBill);
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
-        
+
     }
-    
+
     public void fillReturningQty() {
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("Please add bill items");
@@ -485,15 +480,15 @@ public class SaleReturnController implements Serializable {
             onEdit(bi);
         }
     }
-    
+
     private void calTotal() {
         double grossTotal = 0.0;
         double discount = 0;
-        
+
         for (BillItem p : getBillItems()) {
             grossTotal += p.getNetRate() * p.getQty();
             discount += p.getDiscountRate() * p.getQty();
-            
+
         }
         getReturnBill().setDiscount(discount);
         getReturnBill().setTotal(grossTotal);
@@ -501,7 +496,7 @@ public class SaleReturnController implements Serializable {
 
         //  return grossTotal;
     }
-    
+
     public void generateBillComponent() {
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
             BillItem bi = new BillItem();
@@ -510,137 +505,142 @@ public class SaleReturnController implements Serializable {
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
             bi.setQty(0.0);
-            
+
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
             tmp.copy(i);
-            
-            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyPre, new RefundBill());
-            //  double rCacnelled = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacySale, new CancelledBill());
 
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), btas);
+
+            //  double rCacnelled = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacySale, new CancelledBill());
             //System.err.println("Refund " + rFund);
 //                //System.err.println("Cancelled "+rCacnelled);
 //                //System.err.println("Net "+(rBilled-rCacnelled));
             tmp.setQty(Math.abs(i.getQty()) - Math.abs(rFund));
-            
+
             bi.setPharmaceuticalBillItem(tmp);
-            
+
             getBillItems().add(bi);
-            
+
         }
-        
+
     }
-    
+
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
     }
-    
+
     public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
-    
+
     public PharmaceuticalItemController getPharmaceuticalItemController() {
         return pharmaceuticalItemController;
     }
-    
+
     public void setPharmaceuticalItemController(PharmaceuticalItemController pharmaceuticalItemController) {
         this.pharmaceuticalItemController = pharmaceuticalItemController;
     }
-    
+
     public PharmacyController getPharmacyController() {
         return pharmacyController;
     }
-    
+
     public void setPharmacyController(PharmacyController pharmacyController) {
         this.pharmacyController = pharmacyController;
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }
-    
+
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
-    
+
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-    
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
-    
+
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
+
     public PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
-    
+
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
     }
-    
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
-    
+
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
-    
+
     public PharmacyCalculation getPharmacyRecieveBean() {
         return pharmacyRecieveBean;
     }
-    
+
     public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
         this.pharmacyRecieveBean = pharmacyRecieveBean;
     }
-    
+
     public List<BillItem> getBillItems() {
         if (billItems == null) {
             billItems = new ArrayList<>();
         }
         return billItems;
     }
-    
+
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
     }
-    
+
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
-    
+
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
     }
+
     public PaymentFacade getPaymentFacade() {
         return paymentFacade;
     }
-    
+
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
-    
+
     public StaffService getStaffBean() {
         return staffBean;
     }
-    
+
     public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
-    
+
     public PaymentMethod getReturnPaymentMethod() {
         return returnPaymentMethod;
     }
-    
+
     public void setReturnPaymentMethod(PaymentMethod returnPaymentMethod) {
         this.returnPaymentMethod = returnPaymentMethod;
     }
