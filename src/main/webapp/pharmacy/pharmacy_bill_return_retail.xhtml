@@ -92,15 +92,10 @@
                                         autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
                                         <p:ajax 
                                             event="blur"
-                                            delay="500"
                                             update=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId}"  
                                             process="@this" 
-                                            listener="#{saleReturnController.onEdit(ph)}" ></p:ajax>
-<!--                                        <f:validateDoubleRange
-                                            minimum="0"
-                                            maximum="#{ph.pharmaceuticalBillItem.qty}" />
-                                            CAN NOT Use Client Side Validation. It involves complex logic. Have to dynamically calculate the remaining qty by going through all the previous return bills. Removing the validator
--->
+                                            listener="#{saleReturnController.onEdit(ph)}" >
+                                        </p:ajax>
                                     </p:inputText>
                                 </p:column>  
 
@@ -397,22 +392,22 @@
 
                     <h:panelGroup   id="gpBillPreviewSingle" rendered="true">                   
                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                            <ph:returnBill bill="#{saleReturnController.returnBill}"></ph:returnBill>
+                            <ph:returnBill bill="#{saleReturnController.finalReturnBill}"></ph:returnBill>
                         </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                            <ph:saleBill_five_five bill="#{saleReturnController.returnBill}"></ph:saleBill_five_five>
+                            <ph:saleBill_five_five bill="#{saleReturnController.finalReturnBill}"></ph:saleBill_five_five>
                         </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
-                        <ph:saleBill_Header_Return bill="#{saleReturnController.returnBill}"></ph:saleBill_Header_Return>
+                        <ph:saleBill_Header_Return bill="#{saleReturnController.finalReturnBill}"></ph:saleBill_Header_Return>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
-                        <ph:sale_bill_five_five_custom_3_Return bill="#{saleReturnController.returnBill}"/>
+                        <ph:sale_bill_five_five_custom_3_Return bill="#{saleReturnController.finalReturnBill}"/>
                     </h:panelGroup>
 
                 </h:panelGroup>

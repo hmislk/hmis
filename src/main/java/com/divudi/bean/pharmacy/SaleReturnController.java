@@ -51,6 +51,7 @@ public class SaleReturnController implements Serializable {
     
     private Bill bill;
     private Bill returnBill;
+    private Bill finalReturnBill;
     private boolean printPreview;
     private String returnBillcomment;
     private PaymentMethod returnPaymentMethod;
@@ -102,6 +103,7 @@ public class SaleReturnController implements Serializable {
             return null;
         }
         returnBill = null;
+        finalReturnBill=null;
         printPreview = false;
         billItems = null;
         generateBillComponent();
@@ -127,6 +129,8 @@ public class SaleReturnController implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
+    
+    
     
     public Bill getReturnBill() {
         if (returnBill == null) {
@@ -165,6 +169,7 @@ public class SaleReturnController implements Serializable {
     public void makeNull() {
         bill = null;
         returnBill = null;
+        finalReturnBill=null;
         printPreview = false;
         billItems = null;
         
@@ -236,23 +241,23 @@ public class SaleReturnController implements Serializable {
     }
     
     private Bill saveSaleFinalReturnBill() {
-        RefundBill refundBill = new RefundBill();
-        refundBill.copy(getReturnBill());
-        refundBill.setPaymentMethod(returnPaymentMethod);
-        refundBill.setBillType(BillType.PharmacySale);
-        refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        RefundBill finalRefundBill = new RefundBill();
+        finalRefundBill.copy(getReturnBill());
+        finalRefundBill.setPaymentMethod(returnPaymentMethod);
+        finalRefundBill.setBillType(BillType.PharmacySale);
+        finalRefundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         
-        refundBill.setReferenceBill(getReturnBill());
-        refundBill.setTotal(getReturnBill().getTotal());
-        refundBill.setNetTotal(getReturnBill().getNetTotal());
-        refundBill.setDiscount(getReturnBill().getDiscount());
+        finalRefundBill.setReferenceBill(getReturnBill());
+        finalRefundBill.setTotal(getReturnBill().getTotal());
+        finalRefundBill.setNetTotal(getReturnBill().getNetTotal());
+        finalRefundBill.setDiscount(getReturnBill().getDiscount());
         
-        refundBill.setCreater(getSessionController().getLoggedUser());
-        refundBill.setCreatedAt(Calendar.getInstance().getTime());
+        finalRefundBill.setCreater(getSessionController().getLoggedUser());
+        finalRefundBill.setCreatedAt(Calendar.getInstance().getTime());
         
-        refundBill.setInstitution(getSessionController().getInstitution());
-        refundBill.setDepartment(getSessionController().getDepartment());
-        refundBill.setComments(returnBillcomment);
+        finalRefundBill.setInstitution(getSessionController().getInstitution());
+        finalRefundBill.setDepartment(getSessionController().getDepartment());
+        finalRefundBill.setComments(returnBillcomment);
 
         // Handle Department ID generation
         String deptId;
@@ -281,24 +286,24 @@ public class SaleReturnController implements Serializable {
             }
         }
         
-        refundBill.setInsId(insId);
-        refundBill.setDeptId(deptId);
-        refundBill.setBillTime(new Date());
+        finalRefundBill.setInsId(insId);
+        finalRefundBill.setDeptId(deptId);
+        finalRefundBill.setBillTime(new Date());
         
-        if (refundBill.getId() == null) {
-            getBillFacade().create(refundBill);
+        if (finalRefundBill.getId() == null) {
+            getBillFacade().create(finalRefundBill);
         }
         
-        updatePreReturnBill(refundBill);
+       
+        getReturnBill().setReferenceBill(finalRefundBill);
+        getBillFacade().edit(getReturnBill());
+    
         
-        return refundBill;
+        return finalRefundBill;
         
     }
     
-    public void updatePreReturnBill(Bill ref) {
-        getReturnBill().setReferenceBill(ref);
-        getBillFacade().edit(getReturnBill());
-    }
+    
     
     private void savePreReturnBillComponents() {
         for (BillItem returningBillItem : getBillItems()) {
@@ -470,44 +475,24 @@ public class SaleReturnController implements Serializable {
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
 
-        Bill finalReturnBill = saveSaleFinalReturnBill();
-//        saveSaleComponent(b);
-        //saveSaleComponent and billfees
+        finalReturnBill = saveSaleFinalReturnBill();
+        saveSaleComponent(finalReturnBill);
         List<Payment> payments = paymentService.createPayment(finalReturnBill, getPaymentMethodData());
         for (Payment p : payments) {
             drawerController.updateDrawerForOuts(p);
         }
-
-        saveSaleComponent(finalReturnBill);
         // Update patient deposit balances and create history records
         paymentService.updateBalances(payments);
         
         getReturnBill().setReferenceBill(getBill());
         getReturnBill().getReturnCashBills().add(finalReturnBill);
         getBillFacade().edit(getReturnBill());
+        getBillFacade().edit(getFinalReturnBill());
         
+        finalReturnBill = billService.reloadBill(finalReturnBill);
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
-        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-            //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-            //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
-            if (getBill().getToStaff() != null) {
-                //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
-                getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
-                JsfUtil.addSuccessMessage("Staff Credit Updated");
-                getReturnBill().setFromStaff(getBill().getToStaff());
-                getBillFacade().edit(getReturnBill());
-            }
-        }
-        if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            if (getBill().getToStaff() != null) {
-                getStaffBean().updateStaffWelfare(getBill().getToStaff(), getReturnBill().getNetTotal());
-                JsfUtil.addSuccessMessage("Staff Welfare Updated");
-                getReturnBill().setFromStaff(getBill().getToStaff());
-                getBillFacade().edit(getReturnBill());
-            }
-        }
         
     }
     
@@ -687,6 +672,14 @@ public class SaleReturnController implements Serializable {
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+
+    public Bill getFinalReturnBill() {
+        return finalReturnBill;
+    }
+
+    public void setFinalReturnBill(Bill finalReturnBill) {
+        this.finalReturnBill = finalReturnBill;
     }
 
 }
