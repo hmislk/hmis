@@ -19,6 +19,7 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
 import com.divudi.service.PaymentService;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Payment;
@@ -53,6 +54,7 @@ public class SaleReturnController implements Serializable {
     private boolean printPreview;
     private String returnBillcomment;
     private PaymentMethod returnPaymentMethod;
+    private Staff toStaff;
     ////////
 
     private List<BillItem> billItems;
@@ -349,9 +351,6 @@ public class SaleReturnController implements Serializable {
             } else {
                 getBillItemFacade().edit(finalReturnBillItem);
             }
-
-            // Explicitly persist the PharmaceuticalBillItem to avoid transient property exception
-            getPharmaceuticalBillItemFacade().create(finalReturnPbi);
         }
         getBillFacade().edit(finalReturnBill);
     }
@@ -681,5 +680,13 @@ public class SaleReturnController implements Serializable {
     public void setReturnPaymentMethod(PaymentMethod returnPaymentMethod) {
         this.returnPaymentMethod = returnPaymentMethod;
     }
-    
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
+    }
+
 }
