@@ -2670,9 +2670,22 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
                     break;
                 case ewallet:
-
-                case Agent:
+                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    p.setComments(paymentMethodData.getEwallet().getComment());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    break;
                 case Credit:
+                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                    p.setPaidValue(paymentMethodData.getCredit().getTotalValue());
+                    p.setComments(paymentMethodData.getCredit().getComment());
+                    getSaleBill().setToInstitution(paymentMethodData.getCredit().getInstitution());
+                    getSaleBill().setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                    break;
+                case Agent:
                 case PatientDeposit:
                 case Slip:
                 case OnCall:

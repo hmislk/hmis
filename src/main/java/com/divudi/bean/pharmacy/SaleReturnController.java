@@ -360,7 +360,7 @@ public class SaleReturnController implements Serializable {
         getBillFacade().edit(finalReturnBill);
     }
     
-    public void saveBillFee(BillItem bi, Payment p) {
+    public void saveBillFee(BillItem bi) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
@@ -380,29 +380,7 @@ public class SaleReturnController implements Serializable {
         }
     }
     
-    public Payment createPayment(Bill bill, PaymentMethod pm) {
-        Payment p = new Payment();
-        p.setBill(bill);
-        setPaymentMethodData(p, pm);
-        return p;
-    }
-    
-    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
-        
-        p.setInstitution(getSessionController().getInstitution());
-        p.setDepartment(getSessionController().getDepartment());
-        p.setCreatedAt(new Date());
-        p.setCreater(getSessionController().getLoggedUser());
-        p.setPaymentMethod(pm);
-        
-        p.setPaidValue(p.getBill().getNetTotal());
-        
-        if (p.getId() == null) {
-            getPaymentFacade().create(p);
-        }
-        
-    }
-    
+   
     private void updateReturnTotal() {
         double tot = 0;
         double discount = 0;
@@ -486,8 +464,9 @@ public class SaleReturnController implements Serializable {
         
         getReturnBill().setReferenceBill(getBill());
         getReturnBill().getReturnCashBills().add(finalReturnBill);
+        getReturnBill().setCreditCompany(getFinalReturnBill().getCreditCompany());
         getBillFacade().edit(getReturnBill());
-        getBillFacade().edit(getFinalReturnBill());
+//        getBillFacade().edit(getFinalReturnBill());
         
         finalReturnBill = billService.reloadBill(finalReturnBill);
         printPreview = true;
