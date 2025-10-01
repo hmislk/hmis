@@ -229,6 +229,9 @@ public class PharmacyController implements Serializable {
     private List<DepartmentCategoryWiseItems> resultsList;
     private Map<String, List<PharmacyRow>> departmentWiseRows;
     private Map<String, Double[]> departmentTotalsMap;
+    private List<TransferBreakdownGroup> transferBreakdownGroups;
+    private TransferBreakdownTotals transferBreakdownTotals;
+    private String breakdownPrimaryColumnLabel;
 
     private String transferType;
     private Institution fromSite;
@@ -1972,6 +1975,9 @@ public class PharmacyController implements Serializable {
         totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
         grantIssueQty = 0.0;
+        transferBreakdownGroups = null;
+        transferBreakdownTotals = null;
+        breakdownPrimaryColumnLabel = null;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -3166,6 +3172,14 @@ public class PharmacyController implements Serializable {
             } else if ("byBill".equals(reportType)) {
                 generateReportByDepartmentWiseBill(bt);
 
+            } else if ("breakdownSummary".equals(reportType)) {
+                boolean primaryFromDepartment = "issue".equals(transferType);
+                breakdownPrimaryColumnLabel = primaryFromDepartment ? "Issued From" : "Received To";
+                List<BillTypeAtomic> atomics = Collections.singletonList(
+                        primaryFromDepartment ? BillTypeAtomic.PHARMACY_ISSUE : BillTypeAtomic.PHARMACY_RECEIVE
+                );
+                generateBreakdownSummary(atomics, primaryFromDepartment);
+
             }
         }, InventoryReports.STOCK_TRANSFER_REPORT, sessionController.getLoggedUser());
     }
@@ -3511,6 +3525,98 @@ public class PharmacyController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating report by bill items", e);
         }
+    }
+
+    public void generateBreakdownSummary(List<BillTypeAtomic> billTypeAtomics, boolean primaryFromDepartment) {
+        transferBreakdownGroups = new ArrayList<>();
+        transferBreakdownTotals = new TransferBreakdownTotals();
+
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
+                .append("AND bi.bill.retired = false ")
+                .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                .append("AND bi.bill.billTypeAtomic IN :billTypeAtomics ")
+                .append("AND bi.pharmaceuticalBillItem IS NOT NULL ");
+
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billTypeAtomics", billTypeAtomics);
+
+        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+        addFilter(sql, parameters, "bi.item", "item", item);
+
+        try {
+            List<BillItem> items = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            if (items == null || items.isEmpty()) {
+                return;
+            }
+
+            Map<String, TransferBreakdownGroup> groupAccumulator = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+            for (BillItem billItem : items) {
+                PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+                if (pharmaItem == null) {
+                    continue;
+                }
+
+                double quantity = Math.abs(pharmaItem.getQty());
+
+                BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+                double purchaseValue = extractPositive(financeDetails != null ? financeDetails.getValueAtPurchaseRate() : null);
+                double costValue = extractPositive(financeDetails != null ? financeDetails.getValueAtCostRate() : null);
+                double retailValue = extractPositive(financeDetails != null ? financeDetails.getValueAtRetailRate() : null);
+
+                if (quantity == 0.0 && purchaseValue == 0.0 && costValue == 0.0 && retailValue == 0.0) {
+                    continue;
+                }
+
+                String primaryDepartmentName = resolveDepartmentName(
+                        primaryFromDepartment ? billItem.getBill().getFromDepartment() : billItem.getBill().getToDepartment()
+                );
+                String secondaryDepartmentName = resolveDepartmentName(
+                        primaryFromDepartment ? billItem.getBill().getToDepartment() : billItem.getBill().getFromDepartment()
+                );
+
+                TransferBreakdownGroup group = groupAccumulator.computeIfAbsent(primaryDepartmentName, TransferBreakdownGroup::new);
+                group.addEntry(secondaryDepartmentName, quantity, purchaseValue, costValue, retailValue);
+
+                transferBreakdownTotals.add(quantity, purchaseValue, costValue, retailValue);
+            }
+
+            transferBreakdownGroups = groupAccumulator.values().stream()
+                    .peek(TransferBreakdownGroup::finalizeChildren)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating breakdown summary", e);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to prepare the breakdown summary."));
+        }
+    }
+
+    private double extractPositive(BigDecimal value) {
+        if (value == null) {
+            return 0.0;
+        }
+        return Math.abs(value.doubleValue());
+    }
+
+    private String resolveDepartmentName(Department department) {
+        if (department == null || department.getName() == null || department.getName().trim().isEmpty()) {
+            return "Unspecified Department";
+        }
+        return department.getName();
     }
 
     private List<ItemBatch> getItemBatchesByItems(List<Item> items) {
@@ -7200,6 +7306,21 @@ public class PharmacyController implements Serializable {
         this.departmentWiseRows = departmentWiseRows;
     }
 
+    public List<TransferBreakdownGroup> getTransferBreakdownGroups() {
+        return transferBreakdownGroups;
+    }
+
+    public TransferBreakdownTotals getTransferBreakdownTotals() {
+        if (transferBreakdownTotals == null) {
+            transferBreakdownTotals = new TransferBreakdownTotals();
+        }
+        return transferBreakdownTotals;
+    }
+
+    public String getBreakdownPrimaryColumnLabel() {
+        return breakdownPrimaryColumnLabel;
+    }
+
     public List<DepartmentWiseBill> getDepartmentWiseBillList() {
         return departmentWiseBillList;
     }
@@ -7382,5 +7503,135 @@ public class PharmacyController implements Serializable {
 
     public void setPendingPoDtos(List<com.divudi.core.data.dto.PharmacyItemPoDTO> pendingPoDtos) {
         this.pendingPoDtos = pendingPoDtos;
+    }
+
+    public static class TransferBreakdownGroup implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+        private final String primaryDepartmentName;
+        private double totalQuantity;
+        private double totalPurchaseValue;
+        private double totalCostValue;
+        private double totalRetailValue;
+        private final Map<String, TransferBreakdownEntry> childEntries = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        private List<TransferBreakdownEntry> children;
+
+        public TransferBreakdownGroup(String primaryDepartmentName) {
+            this.primaryDepartmentName = primaryDepartmentName;
+        }
+
+        public void addEntry(String childName, double quantity, double purchaseValue, double costValue, double retailValue) {
+            totalQuantity += quantity;
+            totalPurchaseValue += purchaseValue;
+            totalCostValue += costValue;
+            totalRetailValue += retailValue;
+
+            TransferBreakdownEntry entry = childEntries.computeIfAbsent(childName, TransferBreakdownEntry::new);
+            entry.add(quantity, purchaseValue, costValue, retailValue);
+        }
+
+        public void finalizeChildren() {
+            children = new ArrayList<>(childEntries.values());
+        }
+
+        public String getPrimaryDepartmentName() {
+            return primaryDepartmentName;
+        }
+
+        public double getTotalQuantity() {
+            return totalQuantity;
+        }
+
+        public double getTotalPurchaseValue() {
+            return totalPurchaseValue;
+        }
+
+        public double getTotalCostValue() {
+            return totalCostValue;
+        }
+
+        public double getTotalRetailValue() {
+            return totalRetailValue;
+        }
+
+        public List<TransferBreakdownEntry> getChildren() {
+            if (children == null) {
+                finalizeChildren();
+            }
+            return children;
+        }
+    }
+
+    public static class TransferBreakdownEntry implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+        private final String secondaryDepartmentName;
+        private double quantity;
+        private double purchaseValue;
+        private double costValue;
+        private double retailValue;
+
+        public TransferBreakdownEntry(String secondaryDepartmentName) {
+            this.secondaryDepartmentName = secondaryDepartmentName;
+        }
+
+        public void add(double quantity, double purchaseValue, double costValue, double retailValue) {
+            this.quantity += quantity;
+            this.purchaseValue += purchaseValue;
+            this.costValue += costValue;
+            this.retailValue += retailValue;
+        }
+
+        public String getSecondaryDepartmentName() {
+            return secondaryDepartmentName;
+        }
+
+        public double getQuantity() {
+            return quantity;
+        }
+
+        public double getPurchaseValue() {
+            return purchaseValue;
+        }
+
+        public double getCostValue() {
+            return costValue;
+        }
+
+        public double getRetailValue() {
+            return retailValue;
+        }
+    }
+
+    public static class TransferBreakdownTotals implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+        private double totalQuantity;
+        private double totalPurchaseValue;
+        private double totalCostValue;
+        private double totalRetailValue;
+
+        public void add(double quantity, double purchaseValue, double costValue, double retailValue) {
+            totalQuantity += quantity;
+            totalPurchaseValue += purchaseValue;
+            totalCostValue += costValue;
+            totalRetailValue += retailValue;
+        }
+
+        public double getTotalQuantity() {
+            return totalQuantity;
+        }
+
+        public double getTotalPurchaseValue() {
+            return totalPurchaseValue;
+        }
+
+        public double getTotalCostValue() {
+            return totalCostValue;
+        }
+
+        public double getTotalRetailValue() {
+            return totalRetailValue;
+        }
     }
 }

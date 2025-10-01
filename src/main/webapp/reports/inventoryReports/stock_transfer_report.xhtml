@@ -295,6 +295,7 @@
                         </h:panelGroup>
                         <p:selectOneMenu class="w-100" id="reportType" value="#{pharmacyController.reportType}">
                             <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
+                            <f:selectItem itemLabel="Breakdown Summary" itemValue="breakdownSummary"/>
                             <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
                             <f:selectItem itemLabel="Bill" itemValue="byBill"/>
                         </p:selectOneMenu>
@@ -350,6 +351,127 @@
                             <p:dataExporter type="pdf" target="tbl3" fileName="stock_trnsfer_bill"/>
                         </p:commandButton>
                     </div>
+
+                    <h:panelGroup id="tblBreakdown" class="mt-5" rendered="#{pharmacyController.reportType eq 'breakdownSummary'}">
+                        <h5>
+                            <h:outputText
+                                    value="#{pharmacyController.transferType eq 'issue'
+                                    ? 'Transfer Issue Breakdown Summary'
+                                    : 'Transfer Receive Breakdown Summary'}"/>
+                        </h5>
+                        <h:panelGroup rendered="#{empty pharmacyController.transferBreakdownGroups}">
+                            <h:outputText value="No records found for the selected filters."/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty pharmacyController.transferBreakdownGroups}">
+                            <table style="width:100%; border-collapse:collapse;" class="table table-bordered table-sm">
+                                <thead>
+                                <tr>
+                                    <th>
+                                        <h:outputText
+                                                value="#{empty pharmacyController.breakdownPrimaryColumnLabel
+                                                ? 'Department'
+                                                : pharmacyController.breakdownPrimaryColumnLabel}"/>
+                                    </th>
+                                    <th style="text-align:right;">
+                                        <h:outputText value="Quantity"/>
+                                    </th>
+                                    <th style="text-align:right;">
+                                        <h:outputText value="Purchase Value"/>
+                                    </th>
+                                    <th style="text-align:right;">
+                                        <h:outputText value="Cost Value"/>
+                                    </th>
+                                    <th style="text-align:right;">
+                                        <h:outputText value="Retail Value"/>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <ui:repeat value="#{pharmacyController.transferBreakdownGroups}" var="group">
+                                    <tr style="background-color:#f6f6f6; font-weight:bold;">
+                                        <td>
+                                            <h:outputText value="#{group.primaryDepartmentName}"/>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <h:outputText value="#{group.totalQuantity}">
+                                                <f:convertNumber pattern="#,##0.##"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <h:outputText value="#{group.totalPurchaseValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <h:outputText value="#{group.totalCostValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <h:outputText value="#{group.totalRetailValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                    <ui:repeat value="#{group.children}" var="child">
+                                        <tr>
+                                            <td style="padding-left:2rem;">
+                                                <h:outputText value="#{child.secondaryDepartmentName}"/>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{child.quantity}">
+                                                    <f:convertNumber pattern="#,##0.##"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{child.purchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{child.costValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{child.retailValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                <tr style="font-weight:bold;">
+                                    <td>
+                                        <h:outputText value="Total"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalQuantity}">
+                                            <f:convertNumber pattern="#,##0.##"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalPurchaseValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalCostValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalRetailValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </h:panelGroup>
+                    </h:panelGroup>
 
                     <h:panelGroup class="mt-5" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                         <h5>Stock Issues Summary</h5>
