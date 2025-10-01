@@ -263,9 +263,24 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Purchase Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.purcahseRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Purchase Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.purcahseRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
                             <p:column headerText="Sale Rate">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
                                     <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Sale Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.retailsaleRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Total">
