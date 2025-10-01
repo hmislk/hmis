@@ -574,21 +574,20 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveRequest() {
+        boolean saved = saveRequestWithoutMessage();
+        if (saved) {
+            JsfUtil.addSuccessMessage("Request Saved");
+        }
+    }
+
+    private boolean saveRequestWithoutMessage() {
         if (getCurrentBill().isChecked()) {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
-            return;
-        }
-        if (getCurrentBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a payment method");
-            return;
-        }
-        if (getBillItems() == null || getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please add bill items");
-            return;
+            return false;
         }
         saveBill();
         saveBillComponent();
-        JsfUtil.addSuccessMessage("Request Saved");
+        return true;
     }
 
     public List<Item> getDealorItems() {
@@ -628,7 +627,7 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
         if (currentBill.getId() == null) {
-            saveRequest();
+            saveRequestWithoutMessage();
         }
         finalizeBill();
         totalBillItemsCount = 0;
