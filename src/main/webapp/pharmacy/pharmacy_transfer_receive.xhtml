@@ -244,6 +244,12 @@
                         styleClass="noBorder">
                         <ph:pharmacy_transfer_receive_receipt bill="#{transferReceiveController.receivedBill}" duplicate="true"/>
                     </h:panelGroup>
+                    
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Receive Receipt is Letter Paper Custom 1', true)}"
+                        styleClass="noBorder">
+                        <ph:transferReceive_custom_1_letter bill="#{transferReceiveController.receivedBill}"/>
+                    </h:panelGroup>
 
                     <h:panelGroup
                         rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Receive Receipt is A4 Detailed',true)}"
@@ -304,6 +310,14 @@
                                             value="#{pharmacyRetailConfigController.transferReceiveTemplate}" />
                                         <p:outputLabel for="transferReceiveTemplate" value="Template Bill Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Template-based receipt format for transfer receive bills</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="transferReceiveCustom1"
+                                            value="#{pharmacyRetailConfigController.transferReceiveCustom1}" />
+                                        <p:outputLabel for="transferReceiveCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom letter size receipt format for transfer receive bills</small>
                                     </div>
 
                                     <div class="mb-3">
