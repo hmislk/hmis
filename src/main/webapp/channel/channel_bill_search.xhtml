@@ -176,7 +176,7 @@
                                         <p:tag rendered="#{bill.cancelled}" value="Cancelled - #{bill.cancelledBill.deptId}" severity="danger" ></p:tag>
                                         <p:tag rendered="#{bill.refunded}" value="Refunded - #{bill.refundedBill.deptId}"  severity="warning" ></p:tag>
                                         <p:tag rendered="#{bookingControllerViewScope.checkBillClass(bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
-                                        <p:tag rendered="#{bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
+                                        <p:tag rendered="#{bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' || bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITHOUT_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                                     </p:column>
                                     <p:column headerText="Consultant"
                                               filterMatchMode="contains"
