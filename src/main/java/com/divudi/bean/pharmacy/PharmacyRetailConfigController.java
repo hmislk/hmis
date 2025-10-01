@@ -70,6 +70,7 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean transferReceiveA4Detailed;
     private boolean transferReceiveA4Custom1;
     private boolean transferReceiveA4Custom2;
+    private boolean transferReceiveCustom1;
 
     // Transfer Request Settings
     private boolean transferRequestA4;
@@ -144,6 +145,7 @@ public class PharmacyRetailConfigController implements Serializable {
         transferReceiveA4Detailed = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Detailed", true);
         transferReceiveA4Custom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", true);
         transferReceiveA4Custom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", true);
+        transferReceiveCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is Letter Paper Custom 1", true);
 
         // Transfer Request Settings
         transferRequestA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", true);
@@ -216,6 +218,7 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Detailed", transferReceiveA4Detailed);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", transferReceiveA4Custom1);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", transferReceiveA4Custom2);
+            configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is Letter Paper Custom 1", transferReceiveCustom1);
 
             // Transfer Request Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", transferRequestA4);
@@ -662,6 +665,14 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setDirectPurchaseCustomLetter(boolean directPurchaseCustomLetter) {
         this.directPurchaseCustomLetter = directPurchaseCustomLetter;
+    }
+
+    public boolean isTransferReceiveCustom1() {
+        return transferReceiveCustom1;
+    }
+
+    public void setTransferReceiveCustom1(boolean transferReceiveCustom1) {
+        this.transferReceiveCustom1 = transferReceiveCustom1;
     }
     
     
