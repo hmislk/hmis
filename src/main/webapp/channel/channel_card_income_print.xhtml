@@ -156,12 +156,12 @@
                                                 <th style="text-align: center;">Serial</th>
                                                 <th style="text-align: center;">Created At</th>
                                                 <th style="text-align: center;">Bill No</th>
-                                                <th style="text-align: center;">Bill Type</th>
                                                 <th style="text-align: center;">Patient</th>
                                                 <th style="text-align: center;">Cashier</th>
                                                 <th style="text-align: center;">Hospital Fee</th>
                                                 <th style="text-align: center;">Doctor fee</th>
-                                                <th style="text-align: center;">Gross Total</th>
+                                                <th style="text-align: center;">Bill Gross Total</th>
+                                                <th style="text-align: center;">Card Total</th>
                                                 <th style="text-align: center;">Card Last 4 Numbers</th>
                                                 <th style="text-align: center;">Bank</th>
                                             </tr>
@@ -190,9 +190,9 @@
                                                             <span style="color: red; font-weight: bold;"> [Cancel Bill]</span>
                                                         </h:panelGroup>
                                                     </td>
-                                                    <td>
-                                                        <h:outputText value="#{row.bill.billType}"/>
-                                                    </td>
+                                                    <!--                                                    <td>
+                                                                                                            <h:outputText value="#{row.bill.billType}"/>
+                                                                                                        </td>-->
                                                     <td>
                                                         <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}"/>
                                                         <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}"/>
@@ -220,10 +220,16 @@
                                                         </h:outputText>
                                                     </td>
 
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="cardValue" value="#{row.paidValue}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+
                                                     <h:panelGroup >
                                                         <td style="text-align: right;">
                                                             <h:outputText styleClass="discountValue" value="#{row.creditCardRefNo}">
-                                                               
+
                                                             </h:outputText>
                                                         </td>
                                                     </h:panelGroup>
@@ -231,18 +237,18 @@
                                                     <h:panelGroup>
                                                         <td style="text-align: right;">
                                                             <h:outputText value="#{row.bank.name}">
-                                                         
+
                                                             </h:outputText>
                                                         </td>
                                                     </h:panelGroup>
 
-                                                    
+
                                                 </tr>
                                             </ui:repeat>
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="6" style="text-align: center; font-weight: 700;">
+                                                <td colspan="5" style="text-align: center; font-weight: 700;">
                                                     <h:outputText value="Total"/>
                                                 </td>
                                                 <td style="text-align: right; font-weight: 700;">
@@ -260,7 +266,12 @@
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </td>
-                                                
+                                                 <td style="text-align: right; font-weight: 700;">
+                                                    <h:outputText styleClass="totalCardValue" value="0.00">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -292,7 +303,8 @@
                                             calculateTotals('.grossValue', '.totalGrossValue');
                                             calculateTotals('.hosValue', '.totalHosValue');
                                             calculateTotals('.staffValue', '.totalStaffValue');
-                                            
+                                            calculateTotals('.cardValue', '.totalCardValue');
+
                                         }
 
                                         // Run the calculation after page loads
