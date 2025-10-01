@@ -792,7 +792,7 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addErrorMessage("From date should be before to toDate.");
             return;
         }
-        if(categoryList != null && !categoryList.isEmpty()){
+        if(categoryList == null || categoryList.isEmpty()){
             JsfUtil.addErrorMessage("Please select categories to proceed the report.");
             return;
         }

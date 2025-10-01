@@ -1255,8 +1255,8 @@ public class ChannelService {
                 + "person.name, "
                 + "person.phone, "
                 + "bill.paymentMethod, "
-                + "COALESCE(bill.hospitalFee, 0), "
                 + "COALESCE(bill.staffFee, 0), "
+                + "COALESCE(bill.hospitalFee, 0), "
                 + "COALESCE(bill.netTotal, 0), "
                 + "bill.comments, "
                 + "bill.cancelled, "
@@ -1276,6 +1276,7 @@ public class ChannelService {
             btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
             btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+            btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
             
 //        } else {
 //            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
