@@ -8,16 +8,23 @@ This guide explains how to implement improved bill number generation strategies 
 
 ### Bill Number Formats
 
-The new system supports three main formats:
+The new system supports four main formats:
 
 1. **Department + Institution Format**: `PREFIX/DEPT_CODE/INS_CODE/YEAR/NUMBER`
    - Example: `POR/ICU/MPH/25/000001`
+   - Config Key: `"Prefix + Department Code + Institution Code + Year + Yearly Number"`
 
-2. **Institution-wide Department Format**: `PREFIX/INS_CODE/YEAR/NUMBER` (counting department bills institution-wide)
-   - Example: `POR/MPH/25/000001`
+2. **Institution + Department Format**: `PREFIX/INS_CODE/DEPT_CODE/YEAR/NUMBER`
+   - Example: `POR/MPH/ICU/25/000001`
+   - Config Key: `"Prefix + Institution Code + Department Code + Year + Yearly Number"`
 
-3. **Institution-only Format**: `PREFIX/INS_CODE/YEAR/NUMBER` (counting all bills institution-wide)
+3. **Institution-wide Department Format**: `PREFIX/INS_CODE/YEAR/NUMBER` (counting department bills institution-wide)
    - Example: `POR/MPH/25/000001`
+   - Config Key: `"Prefix + Institution Code + Year + Yearly Number"`
+
+4. **Institution-only Format**: `PREFIX/INS_CODE/YEAR/NUMBER` (counting all bills institution-wide)
+   - Example: `POR/MPH/25/000001`
+   - Config Key: `"Prefix + Institution Code + Year + Yearly Number"`
 
 ### Key Principles
 
@@ -36,11 +43,13 @@ For consistency and better maintainability, always use bill-type-specific config
 **✅ Correct Pattern:**
 ```
 Bill Number Generation Strategy for Pharmacy [BILL_TYPE_NAME] - Prefix + Department Code + Institution Code + Year + Yearly Number
+Bill Number Generation Strategy for Pharmacy [BILL_TYPE_NAME] - Prefix + Institution Code + Department Code + Year + Yearly Number
 Bill Number Generation Strategy for Pharmacy [BILL_TYPE_NAME] - Prefix + Institution Code + Year + Yearly Number
 ```
 
 **Examples:**
 - `"Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number"`
+- `"Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Department Code + Year + Yearly Number"`
 - `"Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Year + Yearly Number"`
 
 ### Generic Pattern (Legacy - Use Only for Backward Compatibility)
@@ -124,6 +133,9 @@ String deptId;
 if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
             sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+} else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+    deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+            sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
 } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
             sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
@@ -141,6 +153,7 @@ if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generati
 } else {
     // Smart fallback logic
     if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+        configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false) ||
         configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
         insId = deptId; // Use same number as department
     } else {
@@ -177,6 +190,10 @@ bill.setInsId(insId);
 ```java
 // Format: PREFIX/DEPT_CODE/INS_CODE/YEAR/NUMBER
 public String departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+    Department department, BillTypeAtomic billTypeAtomic)
+
+// Format: PREFIX/INS_CODE/DEPT_CODE/YEAR/NUMBER
+public String departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
     Department department, BillTypeAtomic billTypeAtomic)
 
 // Format: PREFIX/INS_CODE/YEAR/NUMBER (department bills counted institution-wide)
@@ -223,6 +240,9 @@ String deptId;
 if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
             sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+} else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+    deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+            sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Institution Code + Year + Yearly Number", false)) {
     deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
             sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
@@ -238,6 +258,7 @@ if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generati
 } else {
     // Smart fallback logic
     if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+        configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Institution Code + Department Code + Year + Yearly Number", false) ||
         configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Institution Code + Year + Yearly Number", false)) {
         insId = deptId; // Use same number as department
     } else {
@@ -264,6 +285,7 @@ private void loadPharmacyConfigurationDefaults() {
 
     // Bill-type-specific strategies (recommended approach for uniformity)
     getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+    getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
     getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false);
 
     // Bill Number Suffix Defaults
@@ -290,12 +312,17 @@ private void loadPharmacyConfigurationDefaults() {
 "Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number" = true
 Expected: POR/ICU/MPH/25/000001 (dept), POR/ICU/MPH/25/000001 (ins)
 
-// Test Case 2: Institution-wide department format (Bill-Type-Specific)
+// Test Case 2: Institution + Department format (Bill-Type-Specific)
+"Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Department Code + Year + Yearly Number" = true
+Expected: POR/MPH/ICU/25/000001 (dept), POR/MPH/ICU/25/000001 (ins)
+
+// Test Case 3: Institution-wide department format (Bill-Type-Specific)
 "Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Year + Yearly Number" = true
 Expected: POR/MPH/25/000001 (dept), POR/MPH/25/000001 (ins)
 
-// Test Case 3: Legacy format (No new strategies enabled)
+// Test Case 4: Legacy format (No new strategies enabled)
 "Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number" = false
+"Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Department Code + Year + Yearly Number" = false
 "Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Year + Yearly Number" = false
 Expected: [legacy format] (dept), [legacy format] (ins)
 ```
@@ -492,6 +519,9 @@ public void yourMethodName() {
     if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
         deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
                 getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
+    } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
     } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
         deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                 getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
@@ -508,6 +538,7 @@ public void yourMethodName() {
                 getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE_ATOMIC);
     } else {
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+            configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false) ||
             configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = deptId; // Use same number as department
         } else {
@@ -632,6 +663,9 @@ public void yourSaveMethod() {
     if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
         deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
                 sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
+    } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+        deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
     } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
         deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                 sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
@@ -647,6 +681,7 @@ public void yourSaveMethod() {
                 sessionController.getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
     } else {
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+            configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false) ||
             configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = deptId;
         } else {
@@ -735,6 +770,7 @@ if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generati
             getSessionController().getDepartment(), BillTypeAtomic.YOUR_BILL_TYPE);
 } else {
     if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+        configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Department Code + Year + Yearly Number", false) ||
         configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy YOUR_BILL_TYPE_NAME - Prefix + Institution Code + Year + Yearly Number", false)) {
         insId = deptId; // Use same number as department
     } else {
