@@ -108,7 +108,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="Return Item Only " 
-                                            action="pharmacy_bill_return_pre?faces-redirect=true" 
+                                            action="#{preReturnController.navigateToReturnRetailSaleItemsOnly}" 
                                             class="mx-2"
                                             disabled="#{bill.cancelled eq true}">                                
                                             <f:setPropertyActionListener value="#{bill}" target="#{preReturnController.bill}"  />

@@ -269,10 +269,22 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Stock Consumption" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
+                            <p:column headerText="Purchase Value" width="5em">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{0.0 - (f.pharmaceuticalBillItem.purchaseRate * f.qty)}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.purchaseValueTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Cost Rate" width="5em">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
@@ -280,20 +292,52 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Cost Value" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{0.0 - (f.pharmaceuticalBillItem.itemBatch.costRate * f.qty)}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.costValueTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Retail Rate" width="5em">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Retail Value" width="5em">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{0.0 - (f.pharmaceuticalBillItem.itemBatch.retailsaleRate * f.qty)}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.retailsaleRate * f.qty}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.retailValueTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
                             <p:column headerText="Net Total" width="5em">
-                                <h:panelGroup rendered="#{f.bill.billType eq 'PharmacyDisposalIssue'}">
-
-                                    <h:outputText value="#{f.bill.total}" >
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{0.0 - f.netValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{f.bill.billType ne 'PharmacyDisposalIssue'}">
-
-                                    <h:outputText value="#{0.0 - f.bill.total}" >
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                    <h:outputText value="#{f.netValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </h:panelGroup>

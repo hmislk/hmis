@@ -57,6 +57,7 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsUnderMultipleForPharmacyBilling;
     private List<PaymentMethod> paymentMethodsForMultiplePaymentMethod;
     private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
     private List<PaymentMethod> paymentMethodsForPatientDepositCancel;
@@ -255,6 +256,20 @@ public class EnumController implements Serializable {
             }
         }
     }
+    
+    public void fillPaymentMethodsUnderMultipleForPharmacyBilling() {
+        paymentMethodsUnderMultipleForPharmacyBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            if(pm==PaymentMethod.MultiplePaymentMethods){
+                continue;
+            }
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
+            if (include) {
+                paymentMethodsUnderMultipleForPharmacyBilling.add(pm);
+            }
+        }
+    }
+    
 
     public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
         paymentTypeOfPaymentMethods = new ArrayList<>();
@@ -1273,6 +1288,17 @@ public class EnumController implements Serializable {
             fillPaymentMethodsForDirectPurchase();
         }
         return paymentMethodsForDirectPurchase;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsUnderMultipleForPharmacyBilling() {
+        if (paymentMethodsUnderMultipleForPharmacyBilling == null) {
+            fillPaymentMethodsUnderMultipleForPharmacyBilling();
+        }
+        return paymentMethodsUnderMultipleForPharmacyBilling;
+    }
+
+    public void setPaymentMethodsUnderMultipleForPharmacyBilling(List<PaymentMethod> paymentMethodsUnderMultipleForPharmacyBilling) {
+        this.paymentMethodsUnderMultipleForPharmacyBilling = paymentMethodsUnderMultipleForPharmacyBilling;
     }
     
     

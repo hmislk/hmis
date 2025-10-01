@@ -462,15 +462,26 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                if (patient == null || patient.getId() == null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                    return; // Patient not selected yet, ignore
+                }
                 // Initialize patient deposit data for UI component
                 pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+                PatientDeposit pd = patientDepositController.getDepositOfThePatient(patient, sessionController.getDepartment());
                 if (pd != null && pd.getId() != null) {
                     pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                     pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                    // Set total value to remain amount only if there's sufficient balance, otherwise set to available balance
+                    double availableBalance = pd.getBalance();
+                    if (availableBalance >= remainAmount) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                    }
                 } else {
                     pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -1665,21 +1676,31 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        String billId = "";
-        String insId = "";
-        String deptId = "";
-        boolean billNumberGenerationStrategyForPharmacyOpdRetailSaleIsByBillYearTypeAtomicAndLoggedDepartment
-                = configOptionController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Opd Retail Sale Is By Year, Bill Type Atomic And Logged Department", false);
-
-        if (billNumberGenerationStrategyForPharmacyOpdRetailSaleIsByBillYearTypeAtomicAndLoggedDepartment) {
-            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
-            insId=billId;
-            deptId=billId;
+        // Handle Department ID generation
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         } else {
-            insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+            // Use existing method for backward compatibility
             deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        } else {
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department to avoid consuming counter twice
+            } else {
+                // Use existing method for backward compatibility
+                insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+            }
         }
         getPreBill().setInsId(insId);
         getPreBill().setDeptId(deptId);
@@ -1717,21 +1738,32 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        String billId = "";
-        String insId = "";
-        String deptId = "";
-        boolean billNumberGenerationStrategyForPharmacyRetailSaleForCashierIsByBillYearTypeAtomicAndLoggedDepartment
-                = configOptionController.getBooleanValueByKey("Bill Number Generation Strategy For Pharmacy Retail Sale For Cashier Is By Year, Bill Type Atomic And Logged Department", false);
-
-        if (billNumberGenerationStrategyForPharmacyRetailSaleForCashierIsByBillYearTypeAtomicAndLoggedDepartment) {
-            billId = getBillNumberBean().departmentBillNumberGeneratorYearly(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-            insId=billId;
-            deptId=billId;
+        // Handle Department ID generation
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         } else {
-            insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+            // Use existing method for backward compatibility
             deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        }
+
+        // Handle Institution ID generation
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        } else {
+            // Check if department strategy is enabled
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department to avoid consuming counter twice
+            } else {
+                // Use existing method for backward compatibility
+                insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+            }
         }
         getPreBill().setInsId(insId);
         getPreBill().setDeptId(deptId);
@@ -2529,7 +2561,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
                     double creditLimitAbsolute = 0.0;
-                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getPatient(), sessionController.getDepartment());
+                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
 
                     if (pd == null) {
                         JsfUtil.addErrorMessage("No Patient Deposit.");
@@ -2638,9 +2670,22 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
                     break;
                 case ewallet:
-
-                case Agent:
+                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    p.setComments(paymentMethodData.getEwallet().getComment());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    break;
                 case Credit:
+                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                    p.setPaidValue(paymentMethodData.getCredit().getTotalValue());
+                    p.setComments(paymentMethodData.getCredit().getComment());
+                    getSaleBill().setToInstitution(paymentMethodData.getCredit().getInstitution());
+                    getSaleBill().setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                    break;
+                case Agent:
                 case PatientDeposit:
                 case Slip:
                 case OnCall:
@@ -3846,19 +3891,33 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Override
     public void listnerForPaymentMethodChange() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (patient == null || patient.getId() == null) {
+                return; // Patient not selected yet, ignore
+            }
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
-            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
-            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(patient, sessionController.getDepartment());
             if (pd != null && pd.getId() != null) {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                // Set total value to net total only if there's sufficient balance, otherwise set to available balance
+                double availableBalance = pd.getBalance();
+                if (availableBalance >= netTotal) {
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+                } else {
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                }
+            } else {
+                getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            if (patient == null || patient.getId() == null) {
+                return; // Patient not selected yet, ignore
+            }
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
-            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(patient, sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
                 boolean hasPatientDeposit = false;

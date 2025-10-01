@@ -144,7 +144,7 @@
                                             <p:commandButton  process="itemList" update="itemList :#{p:resolveFirstComponentWithId('po',view).clientId}" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
                                         </p:column>
                                     </p:dataTable> 
-                                    
+
                                     <div >
                                         <ph:history/>
                                     </div>
@@ -186,13 +186,39 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <p:spacer class="my-4"
+                                    <p:spacer class="my-1"
                                               rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}" />
-                                    <h:panelGroup class="my-4"
-                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
-                                        <p:selectBooleanCheckbox value="#{purchaseOrderController.aprovedBill.consignment}"
-                                                                 itemLabel="Consignment" />
+
+                                    <p:outputLabel 
+                                        class="my-1 w-100"
+                                        value="Consignment"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}" />
+
+                                    <h:panelGroup 
+                                        class="my-1 w-100"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                        <p:selectBooleanButton 
+                                            onLabel="Yes" 
+                                            offLabel="No"
+                                            class="w-100"
+                                            value="#{purchaseOrderController.aprovedBill.consignment}"
+                                            />
                                     </h:panelGroup>
+
+                                    <p:outputLabel 
+                                        value="Request Comments"
+                                        class="form-label mt-1"/>
+                                    <p:outputLabel 
+                                        class="form-control"
+                                        value="#{purchaseOrderController.requestedBill.comments}"/>
+                                    
+                                    <p:outputLabel 
+                                        value="Approve Comments"
+                                        class="form-label mt-1"/>
+                                    <p:inputTextarea 
+                                        class="form-control"
+                                        value="#{purchaseOrderController.aprovedBill.comments}"/>
+
 
                                     <p:outputLabel value="Total Value"
                                                    class="form-label w-100"
@@ -250,7 +276,7 @@
                         <ph:po_custom_2
                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', true)}"
                             bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
-                        
+
                         <ph:po_custom_3_letter
                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - Letter Paper Format', true)}"
                             bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
@@ -337,7 +363,7 @@
                                     <p:outputLabel for="custom2Paper" value="A4 Paper Custom Format 2" class="ms-2" />
                                     <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
                                         id="letterPaper"
@@ -345,7 +371,7 @@
                                     <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
                                     <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>

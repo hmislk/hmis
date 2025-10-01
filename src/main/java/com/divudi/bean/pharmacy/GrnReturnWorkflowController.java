@@ -117,6 +117,7 @@ public class GrnReturnWorkflowController implements Serializable {
     private List<Bill> filteredGrnReturnsToApprove;
     
     private Integer activeIndex;
+    private Integer activeIndexForReturnsAndCancellations;
 
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -466,6 +467,12 @@ public class GrnReturnWorkflowController implements Serializable {
         boolean isNewBill = (currentBill.getId() == null);
 
         if (isNewBill) {
+            // Set default suffix for GRN Return if not already set
+            String billNumberSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for GRN Return", "GRNR");
+            if (billNumberSuffix == null || billNumberSuffix.trim().isEmpty()) {
+                billNumberSuffix = "GRNR";
+            }
+
             currentBill.setBillType(BillType.PharmacyGrnReturn);
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
             currentBill.setInstitution(sessionController.getInstitution());
@@ -473,11 +480,37 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCreater(sessionController.getLoggedUser());
             currentBill.setCreatedAt(new Date());
 
-            String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN_RETURN);
-            currentBill.setDeptId(billNumber);
-            currentBill.setInsId(billNumber);
+            // Get configuration options for bill numbering strategies
+            boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
+            boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
+            boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
+
+            String billId;
+
+            // Independent department ID generation
+            if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setDeptId(billId);
+            } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setDeptId(billId);
+            } else {
+                String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
+                        sessionController.getDepartment(),
+                        BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setDeptId(billNumber);
+            }
+
+            // Independent institution ID generation
+            if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+                billId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setInsId(billId);
+            } else {
+                String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
+                        sessionController.getDepartment(),
+                        BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setInsId(billNumber);
+            }
         }
 
         if (finalize) {
@@ -1306,9 +1339,19 @@ public class GrnReturnWorkflowController implements Serializable {
 
         BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
 
-        // Return the purchase rate per unit
-        if (originalFd.getLineGrossRate() != null && originalFd.getUnitsPerPack() != null) {
-            return originalFd.getLineGrossRate().divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
+        // Use same logic as DirectPurchaseReturnController.getReturnRate()
+        BigDecimal rate = originalFd.getGrossRate();
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
+                && originalFd.getLineCostRate() != null) {
+            rate = originalFd.getLineCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
+                && originalFd.getTotalCostRate() != null) {
+            rate = originalFd.getTotalCostRate();
+        }
+
+        // Convert to per unit rate if we have units per pack
+        if (rate != null && rate.compareTo(BigDecimal.ZERO) > 0 && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+            return rate.divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
         } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
             return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
         }
@@ -1910,7 +1953,13 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String getReturnRateLabel() {
-        return "per Unit";
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)) {
+            return "Line Cost Rate";
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)) {
+            return "Total Cost Rate";
+        }
+        return "Purchase Rate";
     }
 
     // Event handlers for quantity changes (with validation) - following legacy pattern
@@ -2499,6 +2548,15 @@ public class GrnReturnWorkflowController implements Serializable {
     public void setActiveIndex(Integer activeIndex) {
         this.activeIndex = activeIndex;
     }
+
+    public Integer getActiveIndexForReturnsAndCancellations() {
+        return activeIndexForReturnsAndCancellations;
+    }
+
+    public void setActiveIndexForReturnsAndCancellations(Integer activeIndexForReturnsAndCancellations) {
+        this.activeIndexForReturnsAndCancellations = activeIndexForReturnsAndCancellations;
+    }
+    
     
    
 }

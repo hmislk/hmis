@@ -66,6 +66,13 @@
                         <h:outputText value="Consignment" />
                         <h:outputText value=":" />
                         <h:outputText value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
+
+
+                        <h:outputText value="Request Comments" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.referenceBill.comments}">
+                        </h:outputText>
+
                     </h:panelGrid>
                 </div>
 
@@ -91,6 +98,11 @@
                         <h:outputText value=":" />
                         <h:outputText value="#{cc.attrs.bill.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputText>
+
+                        <h:outputText value="Approve Comments" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.comments}">
                         </h:outputText>
                     </h:panelGrid>
                 </div>

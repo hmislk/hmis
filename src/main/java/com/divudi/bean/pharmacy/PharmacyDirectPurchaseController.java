@@ -1040,10 +1040,36 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void saveBill() {
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Use existing institution method for backward compatibility
+                insId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            }
+        }
 
         getBill().setDeptId(deptId);
-        getBill().setInsId(deptId);
+        getBill().setInsId(insId);
         getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 
         getBill().setInstitution(getSessionController().getInstitution());
@@ -1775,5 +1801,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
     }
+
 
 }
