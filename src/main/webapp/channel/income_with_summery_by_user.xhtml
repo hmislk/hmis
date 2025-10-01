@@ -89,11 +89,23 @@
                                                   styleClass="fa mr-2"/>
                                     <h:outputLabel class="mx-2"  value="Category"  />
                                     <h:outputLabel value=":" />
-                                    <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.category}" filter="true" >
-                                        <f:selectItem itemLabel="All Category" />
-                                        <f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                                        <p:ajax event="change" process="@this"/>
-                                    </p:selectOneMenu>
+
+                                    <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="Select Categories"
+                                                          id="supplierMenu"
+                                                          filter="true"
+                                                          class="w-100 mx-4"
+                                                          converter="categoryConverter"
+                                                          filterMatchMode="contains">
+                                        <f:selectItems value="#{serviceCategoryController.items}" var="item"
+                                                       itemLabel="#{item.name}" itemValue="#{item}" />
+
+                                    </p:selectCheckboxMenu>
+
+<!--                                    <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.category}" filter="true" >
+<f:selectItem itemLabel="All Category" />
+<f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+<p:ajax event="change" process="@this"/>
+</p:selectOneMenu>-->
 
                                 </h:panelGrid>
                             </div>
@@ -147,7 +159,7 @@
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
                                          rowKey="#{row.bsId}">
-<!--                                <p:ajax event="page" oncomplete="updateTotals()" />-->
+                                <!--                                <p:ajax event="page" oncomplete="updateTotals()" />-->
                                 <f:facet name="header">
 
                                     <h:outputLabel value="#{channelReportController.institution.name}"/>
@@ -159,11 +171,11 @@
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
-                                    
+
                                     <h:outputLabel value="&emsp;&emsp;Processed By :"/>
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processedBy}" >
                                     </h:outputLabel>
-                                    
+
                                     <h:outputLabel value="&emsp;&emsp;Processed At :"/>
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -184,14 +196,14 @@
                                             pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column headerText="Created Date" style=" text-align: center;">
                                     <h:outputText value="#{row.billedDate}">
                                         <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column headerText="Billed By" style=" text-align: center;">
                                     <h:outputText value="#{row.billedBy}"/>
                                 </p:column>
@@ -211,7 +223,7 @@
                                 <p:column headerText="Doctor Fee" style=" text-align: center;">
                                     <h:outputText value="#{row.doctorFee}"/>
                                 </p:column>
-                                
+
                                 <p:column headerText="Total Fee" style=" text-align: center; font-weight: bold">
                                     <h:outputText value="#{row.totalAppoinmentFee}"/>
                                 </p:column>
@@ -245,11 +257,11 @@
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
-                                    
+
                                     <h:outputLabel value="&emsp;&emsp;Processed By :"/>
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processedBy}" >
                                     </h:outputLabel>
-                                    
+
                                     <h:outputLabel value="&emsp;&emsp;Processed At :"/>
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -262,8 +274,8 @@
 
                                 <p:column headerText="Appoinment Date" style=" text-align: center;">
                                     <h:outputText value="#{row.appoimentDate}">
-                                    <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputText>
                                 </p:column>
 

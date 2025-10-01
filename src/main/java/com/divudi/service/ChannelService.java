@@ -1246,7 +1246,7 @@ public class ChannelService {
 
     }
 
-    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, Category category, String reportStatus, String paidStatus) {
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList , String reportStatus, String paidStatus) {
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
                 + "session.sessionDate, "
@@ -1298,9 +1298,13 @@ public class ChannelService {
             params.put("ins", institution);
         }
 
-        if (category != null) {
-            sql += "and session.originatingSession.category = :category ";
-            params.put("category", category);
+        if (categoryList != null && !categoryList.isEmpty()) {
+            System.out.println("line 1302");
+            for(Category c: categoryList){
+                System.out.println(c.getName()+categoryList.size());
+            }
+            sql += "and session.originatingSession.category in :category ";
+            params.put("category", categoryList);
         }
 
         sql += "order by bill.createdAt desc";
@@ -1325,10 +1329,8 @@ public class ChannelService {
                     summery1.setAppoimentDate(dto.getAppoinmentDate());
                     summeryDtoList.add(summery1);
                     fillPaymentsDataToDto(summeryDtoList, dto);
-                    System.out.println("line 1114");
                     continue;
                 } else {
-                    System.out.println("line 1116");
                     fillPaymentsDataToDto(summeryDtoList, dto);
                 }
 

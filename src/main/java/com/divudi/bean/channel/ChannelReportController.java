@@ -128,6 +128,15 @@ public class ChannelReportController implements Serializable {
     private Department department;
     boolean paid = false;
     private Category category;
+    private List<Category> categoryList;
+
+    public List<Category> getCategoryList() {
+        return categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -370,6 +379,11 @@ public class ChannelReportController implements Serializable {
     public String navigateToIncomeForAgentBookings() {
         makeNull();
         return "/channel/income_with_agent_bookings?faces-redirect=true";
+    }
+    
+    public String navigateToFutureIncomeForChanneling() {
+        makeNull();
+        return "/channel/income_with_summery_by_user?faces-redirect=true";
     }
 
     private List<Payment> paymentsFromCardAppoinments;
@@ -778,8 +792,12 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addErrorMessage("From date should be before to toDate.");
             return;
         }
+        if(categoryList != null && !categoryList.isEmpty()){
+            JsfUtil.addErrorMessage("Please select categories to proceed the report.");
+            return;
+        }
         
-       wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, category, reportStatus, reportStatus);
+       wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
        
        if(wrapperDto == null){
            return;
@@ -3808,6 +3826,7 @@ public class ChannelReportController implements Serializable {
         billSessions = null;
         valueList = null;
         dataBundle = null;
+        categoryList = null;
     }
 
     List<BillSession> nurseViewSessions;
