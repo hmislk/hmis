@@ -1392,10 +1392,20 @@ public class ChannelService {
                     default:
                         break;
                 }
-                summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
-                summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
-                summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
-                summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
+                if (dto.isIsCancelled() || dto.isIsRefunded()) {
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
+                    summeryDto.setCancelOrRefundTotal(summeryDto.getCancelOrRefundTotal() + dto.getTotalAppoinmentFee());
+                    if (dto.isIsCancelled()) {
+                        summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
+                    }
+
+                } else {
+                    summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
+                    summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
+                    summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
+                }
+
             }
 
 //            }else if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate()) && (dto.isIsCancelled() || dto.isIsRefunded())) {
@@ -1489,10 +1499,20 @@ public class ChannelService {
                     break;
             }
 
-            newSummery.setTotalDocFee(dto.getDoctorFee());
-            newSummery.setTotalHosFee(dto.getHosFee());
-            newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
-            newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
+            if (dto.isIsCancelled() || dto.isIsRefunded()) {
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
+                newSummery.setCancelOrRefundTotal(newSummery.getCancelOrRefundTotal() + dto.getTotalAppoinmentFee());
+                if (dto.isIsCancelled()) {
+                    newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
+                }
+
+            } else {
+                newSummery.setTotalDocFee(dto.getDoctorFee());
+                newSummery.setTotalHosFee(dto.getHosFee());
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
+                newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
+            }
+
             summeryDtoList.add(newSummery);
         }
     }
