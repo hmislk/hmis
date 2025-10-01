@@ -17,8 +17,8 @@
                         </f:facet>
 
                         <div class="row">
-                            <div class="col-2">
-                                <h:panelGrid columns="1" >
+                            <div class="col-2" >
+                                <h:panelGrid columns="1" class="w-100" >
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar
                                         styleClass="dateTimePicker"
@@ -41,14 +41,14 @@
                                         maxdate="#{commonFunctionsProxy.endOfDay}">
                                     </p:calendar>
                                     <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                    <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <h:outputLabel value="Patient Name"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <h:outputLabel value="Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                                    <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                     <h:outputLabel value="Net Total"/>
 
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                                    <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                                     <p:commandButton class="w-100 my-1 ui-button-warning" icon="fas fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createPreRefundTable}"/>
 
                                 </h:panelGrid>
