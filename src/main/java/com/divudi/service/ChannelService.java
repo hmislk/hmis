@@ -1246,7 +1246,7 @@ public class ChannelService {
 
     }
 
-    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, Category category, String reportStatus, String paidStatus) {
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
                 + "session.sessionDate, "
@@ -1255,8 +1255,8 @@ public class ChannelService {
                 + "person.name, "
                 + "person.phone, "
                 + "bill.paymentMethod, "
-                + "COALESCE(bill.hospitalFee, 0), "
                 + "COALESCE(bill.staffFee, 0), "
+                + "COALESCE(bill.hospitalFee, 0), "
                 + "COALESCE(bill.netTotal, 0), "
                 + "bill.comments, "
                 + "bill.cancelled, "
@@ -1267,26 +1267,21 @@ public class ChannelService {
                 + "join bill.patient patient "
                 + "left join patient.person person "
                 + "where bs.createdAt between :fromDate and :todate "
-                + "and bill.billTypeAtomic in :bta ";
-
+                + "and bill.billTypeAtomic in :bta "
+                + "and bill.billType <> :bt ";
 
         List<BillTypeAtomic> btaList = new ArrayList<>();
 
-//        if (paidStatus != null && paidStatus.equalsIgnoreCase("Paid")) {
-            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-            btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
-            btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-            
-//        } else {
-//            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-//            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-//            btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-//        }
+        btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
 
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("todate", toDate);
         params.put("bta", btaList);
+        params.put("bt", BillType.ChannelAgent);
 
         if (user != null) {
             sql += "and bill.creater = :user ";
@@ -1298,9 +1293,13 @@ public class ChannelService {
             params.put("ins", institution);
         }
 
-        if (category != null) {
-            sql += "and session.originatingSession.category = :category ";
-            params.put("category", category);
+        if (categoryList != null && !categoryList.isEmpty()) {
+            System.out.println("line 1302");
+            for (Category c : categoryList) {
+                System.out.println(c.getName() + categoryList.size());
+            }
+            sql += "and session.originatingSession.category in :category ";
+            params.put("category", categoryList);
         }
 
         sql += "order by bill.createdAt desc";
@@ -1325,15 +1324,24 @@ public class ChannelService {
                     summery1.setAppoimentDate(dto.getAppoinmentDate());
                     summeryDtoList.add(summery1);
                     fillPaymentsDataToDto(summeryDtoList, dto);
-                    System.out.println("line 1114");
                     continue;
                 } else {
-                    System.out.println("line 1116");
                     fillPaymentsDataToDto(summeryDtoList, dto);
                 }
 
             }
             wrapperDto.setSummeryDtos(summeryDtoList);
+
+            for (ChannelReportController.ChannelIncomeSummeryDto summery : wrapperDto.getSummeryDtos()) {
+                wrapperDto.setAllCashTotal(wrapperDto.getAllCashTotal() + summery.getCashTotal());
+                wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + summery.getCardTotal());
+                wrapperDto.setAllCreditTotal(wrapperDto.getAllCreditTotal() + summery.getCreditTotal());
+                wrapperDto.setAllCancelTotal(wrapperDto.getAllCancelTotal() + summery.getCancelTotal());
+                wrapperDto.setAllRefundTotal(wrapperDto.getAllRefundTotal() + summery.getRefundTotal());
+                wrapperDto.setAllCancelAppoinments(wrapperDto.getAllCancelAppoinments() + summery.getTotalCancelAppoinments());
+                wrapperDto.setAllRefundAppoinments(wrapperDto.getAllRefundAppoinments() + summery.getTotalRefundAppoinments());
+                wrapperDto.setTotalValidAppoinments(wrapperDto.getTotalValidAppoinments() + summery.getTotalActiveAppoinments());
+            }
         }
 
         return wrapperDto;
@@ -1356,7 +1364,6 @@ public class ChannelService {
 
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
             if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())) {
-                System.out.println("line 1345");
                 availableSummery = true;
                 switch (dto.getPaymentMethod()) {
                     case Cash:
@@ -1395,10 +1402,23 @@ public class ChannelService {
                     default:
                         break;
                 }
+                if (dto.isIsCancelled()) {
+                    summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
+                    summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
+                } else if (dto.isIsRefunded()) {
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
+                    summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
+                    summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
+                } else {
+
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
+
+                }
                 summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
                 summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
-                summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
                 summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
+
             }
 
 //            }else if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate()) && (dto.isIsCancelled() || dto.isIsRefunded())) {
@@ -1449,7 +1469,6 @@ public class ChannelService {
         }
 
         if (!availableSummery) {
-            System.out.println("line 1385");
             ChannelReportController.ChannelIncomeSummeryDto newSummery = new ChannelReportController.ChannelIncomeSummeryDto();
             newSummery.setAppoimentDate(dto.getAppoinmentDate());
 
@@ -1492,10 +1511,23 @@ public class ChannelService {
                     break;
             }
 
+            if (dto.isIsCancelled()) {
+                newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
+                newSummery.setCancelTotal(newSummery.getCancelTotal() + dto.getTotalAppoinmentFee());
+            } else if (dto.isIsRefunded()) {
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
+                newSummery.setTotalRefundAppoinments(newSummery.getTotalRefundAppoinments() + 1);
+                newSummery.setRefundTotal(newSummery.getRefundTotal() + dto.getTotalAppoinmentFee());
+            } else {
+
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
+
+            }
             newSummery.setTotalDocFee(dto.getDoctorFee());
             newSummery.setTotalHosFee(dto.getHosFee());
-            newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
             newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
+
             summeryDtoList.add(newSummery);
         }
     }
