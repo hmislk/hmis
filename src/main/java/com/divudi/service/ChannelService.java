@@ -1364,7 +1364,6 @@ public class ChannelService {
 
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
             if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())) {
-                System.out.println("line 1345");
                 availableSummery = true;
                 switch (dto.getPaymentMethod()) {
                     case Cash:
@@ -1470,7 +1469,6 @@ public class ChannelService {
         }
 
         if (!availableSummery) {
-            System.out.println("line 1385");
             ChannelReportController.ChannelIncomeSummeryDto newSummery = new ChannelReportController.ChannelIncomeSummeryDto();
             newSummery.setAppoimentDate(dto.getAppoinmentDate());
 
