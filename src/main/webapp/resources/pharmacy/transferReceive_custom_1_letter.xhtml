@@ -25,7 +25,7 @@
             </div>
 
             <div class="institutionName">
-                <h:outputLabel value="Transfer Issue Note" />
+                <h:outputLabel value="Transfer Receive Note" />
                 <br />
                 <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.cancelled eq true or cc.attrs.bill.cancelled eq true}" />
@@ -36,7 +36,7 @@
                     <tr>
                         <td width="120px">Location From</td>
                         <td>:</td>
-                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.department.name}" /></td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.fromDepartment.name}" /></td>
 
                         <td width="120px">Location To</td>
                         <td>:</td>
@@ -46,29 +46,33 @@
                     <tr>
                         <td width="120px">Issued By</td>
                         <td>:</td>
-                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}" /></td>
 
-                        <td width="120px">Requested By</td>
+                        <td width="120px">Received By</td>
                         <td>:</td>
-                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.name}"/></td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.creater.name}"/></td>
                     </tr>
 
                     <tr>
                         <td width="120px">Issue No.</td>
                         <td>:</td>
-                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" /></td>
 
-                        <td width="120px">Request No.</td>
+                        <td width="120px">Receive No.</td>
                         <td>:</td>
-                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" /></td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
                     </tr>
 
                     <tr>
-                        <td width="120px">Transporter</td>
-                        <td>:</td>
-                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.toStaff.person.name}" /></td>
-
                         <td width="120px">Issued Time</td>
+                        <td>:</td>
+                        <td width="250px">
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputLabel>
+                        </td>
+                        
+                        <td width="120px">Received Time</td>
                         <td>:</td>
                         <td width="250px">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}">
@@ -88,8 +92,8 @@
                             <th style="width:15em;">Item Name</th>
                             <th style="width:5em;">Code</th>
                             <th style="width:7em;">D O E</th>
+                            <th style="width:6em;">Received Qty</th>
                             <th style="width:6em;">Issued Qty</th>
-                            <th style="width:6em;">Req. Qty</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,13 +111,13 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy" />
                                     </h:outputText>
                                 </td>
-                                <!-- Issued Qty -->
+                                <!-- Received Qty -->
                                 <td class="right-col">
-                                    <h:outputLabel value="#{0 - bip.pharmaceuticalBillItem.qty}">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber />
                                     </h:outputLabel>
                                 </td>
-                                <!-- Requested Qty -->
+                                <!-- Issued Qty -->
                                 <td class="right-col">
                                     <h:outputLabel value="#{bip.referanceBillItem.qty}">
                                         <f:convertNumber />

@@ -61,8 +61,9 @@
                                 class="w-100 mx-4"
                                 value="#{channelReportController.reportStatus}"
                                 >
-                                <f:selectItem itemLabel="Summery View" itemValue="Summery" />
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
+                                <f:selectItem itemLabel="Summery View" itemValue="Summery" />
+                                
 
                             </p:selectOneMenu>
                             <p:spacer width="50"/>
@@ -217,12 +218,23 @@
 
                             </p:column>
 
-                            <p:column headerText="Gross Total" style=" text-align: center;">
+                            <p:column headerText="Bill Gross Total" style=" text-align: center;">
                                 <h:outputText styleClass="grossFee" value="#{row.bill.total}">
 
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText styleClass="grossTotal" value="#{channelReportController.calculateTotalsFromPayment(channelReportController.paymentsFromCardAppoinments, 'TotalFee')}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Card Total" style=" text-align: center; font-weight: bold">
+                                <h:outputText styleClass="grossFee" value="#{row.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="grossTotal" value="#{channelReportController.calculateTotalsFromPayment(channelReportController.paymentsFromCardAppoinments, 'Card')}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
