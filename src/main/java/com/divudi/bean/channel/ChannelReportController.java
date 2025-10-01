@@ -37,6 +37,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
@@ -146,6 +147,34 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+    private List<Staff> doctorList;
+    private List<SessionInstance> sessionInstanceList;
+
+    public List<SessionInstance> getSessionInstanceList() {
+        return sessionInstanceList;
+    }
+
+    public void setSessionInstanceList(List<SessionInstance> sessionInstanceList) {
+        this.sessionInstanceList = sessionInstanceList;
+    }
+
+    public List<Staff> getDoctorList() {
+        return doctorList;
+    }
+
+    public void setDoctorList(List<Staff> doctorList) {
+        this.doctorList = doctorList;
+    }
+    
+    public List<SessionInstance> getSessionInstanceFromDoctor(){
+        if(doctorList == null || doctorList.isEmpty()){
+            JsfUtil.addErrorMessage("Please Select Doctor to proceed. ");
+            return null;
+        }
+        
+        return channelService.getSessionsFromDoctor(fromDate, toDate, doctorList, institution);
+    }
+    
 
     /////
     @EJB

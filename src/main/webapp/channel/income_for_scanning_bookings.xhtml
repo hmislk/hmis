@@ -50,17 +50,6 @@
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
                             
-<!--                            <p:selectCheckboxMenu value="#{pharmacyReportController.fromInstitutionList}" label="Select Suppliers"
-                                                  id="supplierMenu"
-                                                  filter="true"
-                                                  class="w-100"
-                                                  converter="deal"
-                                                  filterMatchMode="contains">
-                                <f:selectItems value="#{doctorController.selectedItems}" var="item"
-                                               itemLabel="#{item.name}" itemValue="#{item}" />
-
-                            </p:selectCheckboxMenu>-->
-                            
                             <p:spacer width="50"/>
                             <i class="fa-solid fa-circle-check"></i>
                             <h:outputLabel class="mx-2"  value="Status"  ></h:outputLabel>
@@ -77,6 +66,55 @@
 
                             </p:selectOneMenu>
                              <p:spacer width="50"/>
+                             
+                             <h:outputText class="mx-2" value="&#xf073;"
+                                          styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2" value="Select Specific Dr. " />
+                            <h:outputLabel value=":" />
+                             
+                             <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
+                                                  id="supplierMenu"
+                                                  filter="true"
+                                                  class="w-100"
+                                                  converter="deal"
+                                                  filterMatchMode="contains">
+                                <f:selectItems value="#{doctorController.selectedItems}" var="item"
+                                               itemLabel="#{item.name}" itemValue="#{item}" />
+
+                            </p:selectCheckboxMenu>
+                            <p:spacer width="50"/>
+                            
+                            <h:outputText class="mx-2" value="&#xf073;"
+                                          styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2" value="Select Specific Dr. " />
+                            <h:outputLabel value=":" />
+                             
+                             <p:selectCheckboxMenu value="#{channelReportController.sessionInstanceList}" label="Select Suppliers"
+                                                  id="supplierMenu"
+                                                  filter="true"
+                                                  class="w-100"
+                                                  converter="deal"
+                                                  filterMatchMode="contains">
+                                <f:selectItems value="#{channelReportController.getSessionInstanceFromDoctor}" var="item"
+                                               itemLabel="#{item.name}" itemValue="#{item}" />
+                                
+                                 <p:spacer width="50"/>
+                            
+                            <h:outputText class="mx-2" value="&#xf073;"
+                                          styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2" value="Select Specific Dr. " />
+                            <h:outputLabel value=":" />
+                             
+                             <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
+                                                  id="supplierMenu"
+                                                  filter="true"
+                                                  class="w-100"
+                                                  converter="deal"
+                                                  filterMatchMode="contains">
+                                <f:selectItems value="#{doctorController.selectedItems}" var="item"
+                                               itemLabel="#{item.name}" itemValue="#{item}" />
+                            
+                            
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.fetchScanningSessionForIncome()}" ajax="false" ></p:commandButton>
