@@ -19,19 +19,21 @@
 
         <div class="institutionName">
             <h:outputLabel value="#{cc.attrs.bill.creater.institution.name}"/>
+            <br/>
+            <h:outputLabel value="#{cc.attrs.bill.creater.department.name}"/>
         </div>
         <div class="institutionContact" >
             <div class="d-flex gap-2 justify-content-center">
-                <h:outputLabel value="#{cc.attrs.bill.creater.institution.address}" rendered="#{!empty cc.attrs.bill.creater.institution.address}"/>
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.address}" rendered="#{!empty cc.attrs.bill.creater.department.address}"/>
             </div>
             <div class="d-flex gap-2 justify-content-center">
-                <h:outputLabel value="Telephone : " rendered="#{!empty cc.attrs.bill.creater.institution.phone or !empty cc.attrs.bill.creater.department.telephone1}" />
-                <h:outputLabel value="#{cc.attrs.bill.creater.institution.phone}" rendered="#{!empty cc.attrs.bill.creater.institution.phone}"/>
-                <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{cc.attrs.bill.creater.department.telephone1}"/>
+                <h:outputLabel value="Telephone : " rendered="#{!empty cc.attrs.bill.creater.department.telephone1}" />
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}" rendered="#{!empty cc.attrs.bill.creater.department.telephone1}"/>
+                <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{cc.attrs.bill.creater.department.telephone2}"/>
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}" rendered="#{!empty cc.attrs.bill.creater.department.telephone2}"/>
             </div>
             <div >
-                <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.creater.institution.fax}" rendered="#{!empty cc.attrs.bill.creater.institution.fax}"/>
+                <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.creater.department.fax}" rendered="#{!empty cc.attrs.bill.creater.department.fax}"/>
             </div>
             <div >
                 <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.creater.department.email}"/>
@@ -70,14 +72,9 @@
                 <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
 
             </h:panelGrid>
-            <div class="mb-2" >
-                <h:outputLabel value="Comments" />
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                <h:outputLabel value="#{cc.attrs.bill.comments}" />
-            </div>
 
         </div>
-        <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
+        <table style="border-collapse: collapse; width: 100%; border: 1px solid black;" class="mt-2 mb-2">
             <thead>
                 <tr style="border: 1px solid black;">
                     <th style="border: 1px solid black;">Item Code</th>
@@ -129,44 +126,58 @@
                 </tr>
             </tfoot>
         </table>
-        <br/>
-        <div class="purchase-order">
-            <div>
-                <h:outputLabel value="Order Initiated By"/>
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+
+        <div style="font-size: 17px">
+            <h:outputLabel value="Comments" />
+            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+            <h:outputLabel value="#{cc.attrs.bill.comments}" />
+        </div>
+        <div class="row">
+            <div class="col-5">
+                <h:outputLabel value="Order Initiated By : &nbsp;"/>
                 <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
             </div>
-            <div>
-                <h:outputLabel value="Order Finalized By"/>
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                #{cc.attrs.bill.checkedBy.name}
-            </div>
-            <div>
-                <h:outputLabel value="Order Finalized At"/>
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                <h:outputLabel value="#{cc.attrs.bill.checkeAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-            </div>
-            <div>
-                <h:outputLabel value="Printed By"/>
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                #{sessionController.loggedUser.name}
-            </div>
-            <div>
-                <h:outputLabel value="Printed At"/>
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                <h:outputLabel value="#{sessionController.currentDate}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-            </div>
-            <div>
-                <h:outputLabel value="Total"/>
-                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                    <f:convertNumber pattern="#,##0.00"/>
+            <div class="col-2"></div>
+            <div class="col-5" style="text-align: right;">
+                <h:outputLabel style="text-align: right" value="Order Initiated At : &nbsp;"/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                 </h:outputLabel>
             </div>
         </div>
+        <div class="row">
+            <div class="col-5">
+                <h:outputLabel value="Order Finalized By : &nbsp;"/>
+                <h:outputLabel value="#{cc.attrs.bill.checkedBy.name}"/>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-5" style="text-align: right;">
+                <h:outputLabel style="text-align: right" value="Order Finalized At : &nbsp;"/>
+                <h:outputLabel value="#{cc.attrs.bill.checkeAt}">
+                    <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                </h:outputLabel>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-5">
+                <h:outputLabel value="Printed By : &nbsp;"/>
+                <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-5" style="text-align: right;" >
+                <h:outputLabel style="text-align: right" value="Printed At : &nbsp;"/>
+                <h:outputLabel value="#{sessionController.currentDate}" >
+                    <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                </h:outputLabel>
+            </div>
+        </div>
+        <div style="font-size: 17px">
+            <h:outputLabel value="Total"/>
+            <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                <f:convertNumber pattern="#,##0.00"/>
+            </h:outputLabel>
+        </div>
+
     </cc:implementation>
 </html>
