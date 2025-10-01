@@ -338,6 +338,7 @@
 
                                     <p:column headerText="Actions">
                                         <p:commandLink
+                                            disabled="#{bill.referenceBill ne null}"
                                             ajax="false"
                                             value="View BillSession"
                                             action="#{bookingControllerViewScope.navigateToViewBillSession(bill.singleBillSession)}">
