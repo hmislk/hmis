@@ -101,12 +101,6 @@
 
                                     </p:selectCheckboxMenu>
 
-<!--                                    <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.category}" filter="true" >
-<f:selectItem itemLabel="All Category" />
-<f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-<p:ajax event="change" process="@this"/>
-</p:selectOneMenu>-->
-
                                 </h:panelGrid>
                             </div>
                         </div>
@@ -217,15 +211,39 @@
                                 </p:column>
 
                                 <p:column headerText="Hospital Fee" style=" text-align: center;">
-                                    <h:outputText value="#{row.hosFee}"/>
+                                    <h:outputText styleClass="hosFee" value="#{row.hosFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="totalhosFee" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Doctor Fee" style=" text-align: center;">
-                                    <h:outputText value="#{row.doctorFee}"/>
+                                    <h:outputText styleClass="doctorFee" value="#{row.doctorFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="totalDocFee" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Total Fee" style=" text-align: center; font-weight: bold">
-                                    <h:outputText value="#{row.totalAppoinmentFee}"/>
+                                    <h:outputText styleClass="total" value="#{row.totalAppoinmentFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="totalFee" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
 
@@ -307,31 +325,31 @@
 
                             </p:dataTable>
 
-                            <!--                            <script>
-                                                            function calculateTotals(selector, targeter) {
-                                                                const values = Array.from(document.querySelectorAll(selector));
-                                                                const totalValue = values
-                                                                        .map(value => {
-                                                                            const cleanValue = value.innerText.replace(/,/g, "");
-                                                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                                                        })
-                                                                        .reduce((total, value) => total + value, 0);
-                            
-                                                                const targetElement = document.querySelector(targeter);
-                                                                if (targetElement) {
-                                                                    targetElement.innerText = totalValue.toFixed(2);
-                                                                }
-                            
-                                                            }
-                            
-                                                            function updateTotals() {
-                                                                calculateTotals('.grossFee', '.grossTotal');
-                                                                calculateTotals('.staffFee', '.staffFeeTotal');
-                                                                calculateTotals('.hosFee', '.hosFeeTotal');
-                                                            }
-                            
-                                                            setTimeout(updateTotals, 500);
-                                                        </script>-->
+                            <script>
+                                function calculateTotals(selector, targeter) {
+                                    const values = Array.from(document.querySelectorAll(selector));
+                                    const totalValue = values
+                                            .map(value => {
+                                                const cleanValue = value.innerText.replace(/,/g, "");
+                                                return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                            })
+                                            .reduce((total, value) => total + value, 0);
+
+                                    const targetElement = document.querySelector(targeter);
+                                    if (targetElement) {
+                                        targetElement.innerText = totalValue.toFixed(2);
+                                    }
+
+                                }
+
+                                function updateTotals() {
+                                    calculateTotals('.hosFee', '.totalhosFee');
+                                    calculateTotals('.doctorFee', '.totalDocFee');
+                                    calculateTotals('.total', '.totalFee');
+                                }
+
+                                setTimeout(updateTotals, 500);
+                            </script>
 
                         </p:panel>
                     </p:panel>
