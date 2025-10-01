@@ -221,6 +221,9 @@ public class PharmacyController implements Serializable {
     private double totalCreditSaleValue;
     private double totalCashSaleValue;
     private double totalCostValue;
+    private double billTablePurchaseTotal;
+    private double billTableRetailTotal;
+    private double billTableCostTotal;
     private Item item;
     private List<BillItem> billItems;
     private List<PharmacyRow> pharmacyRows;
@@ -1978,6 +1981,9 @@ public class PharmacyController implements Serializable {
         transferBreakdownGroups = null;
         transferBreakdownTotals = null;
         breakdownPrimaryColumnLabel = null;
+        billTablePurchaseTotal = 0.0;
+        billTableRetailTotal = 0.0;
+        billTableCostTotal = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -3391,6 +3397,9 @@ public class PharmacyController implements Serializable {
             departmentWiseBillList = new ArrayList<>();
             totalPurchase = 0;
             totalCostValue = 0;
+            billTableCostTotal = 0.0;
+            billTablePurchaseTotal = 0.0;
+            billTableRetailTotal = 0.0;
 
             for (Object[] result : results) {
                 Department toDepartment = (Department) result[0];
@@ -3411,11 +3420,20 @@ public class PharmacyController implements Serializable {
                 departmentWiseBillList.add(departmentWiseBill);
                 totalPurchase += departmentWiseBill.getBill().getNetTotal();
 
-                double costValue = Math.abs(departmentWiseBill.getBill().getBillFinanceDetails() != null
-                        && departmentWiseBill.getBill().getBillFinanceDetails().getTotalCostValue() != null
-                        ? departmentWiseBill.getBill().getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0);
+                Bill financeBill = departmentWiseBill.getBill();
+                BillFinanceDetails financeDetails = financeBill != null ? financeBill.getBillFinanceDetails() : null;
 
-                totalCostValue += departmentWiseBill.getBill().getNetTotal() < 0 ? -costValue : costValue;
+                double costValue = Math.abs(financeDetails != null && financeDetails.getTotalCostValue() != null
+                        ? financeDetails.getTotalCostValue().doubleValue() : 0.0);
+
+                totalCostValue += financeBill.getNetTotal() < 0 ? -costValue : costValue;
+
+                double purchaseValue = extractPositive(financeDetails != null ? financeDetails.getTotalPurchaseValue() : null);
+                double retailValue = extractPositive(financeDetails != null ? financeDetails.getTotalRetailSaleValue() : null);
+
+                billTableCostTotal += costValue;
+                billTablePurchaseTotal += purchaseValue;
+                billTableRetailTotal += retailValue;
             }
 
             departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
@@ -7176,6 +7194,18 @@ public class PharmacyController implements Serializable {
 
     public void setTotalPurchase(double totalPurchase) {
         this.totalPurchase = totalPurchase;
+    }
+
+    public double getBillTablePurchaseTotal() {
+        return billTablePurchaseTotal;
+    }
+
+    public double getBillTableRetailTotal() {
+        return billTableRetailTotal;
+    }
+
+    public double getBillTableCostTotal() {
+        return billTableCostTotal;
     }
 
     public List<String1Value1> getData() {
