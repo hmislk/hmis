@@ -276,15 +276,20 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Rate">
+                            <p:column headerText="Cost Rate" width="5em">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Value">
+                            <p:column headerText="Cost Value" width="5em">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.billItemFinanceDetails.quantityByUnits}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Net Total" width="5em">
                                 <h:outputText value="#{f.bill.netTotal}" >

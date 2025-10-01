@@ -20,6 +20,9 @@ public class BillItemDTO implements Serializable {
     private Long billId;
     private Double discount;
     private PaymentMethod paymentMethod;
+    private Long itemId;
+    private String itemClass;
+    private Double marginValue;
 
     public BillItemDTO() {
     }
@@ -63,6 +66,19 @@ public class BillItemDTO implements Serializable {
         this.retailRate = retailRate;
         this.billNetTotal = netTotal;
     }
+    
+    //Use 9B Report
+    public BillItemDTO(Long id, Long billId, Long itemId, PaymentMethod paymentMethod, String itemClass, Double billNetTotal, Double discount, Double marginValue) {
+        this.id = id;
+        this.billId = billId;
+        this.itemId = itemId;
+        this.paymentMethod = paymentMethod;
+        this.itemClass = itemClass;
+        this.billNetTotal = billNetTotal;
+        this.discount = discount;
+        this.marginValue = marginValue;
+    }
+    
         
     // Calculated fields (Cost Value and Sale Value are calculated in JSF)
     public Double getCostValue() {
@@ -184,6 +200,30 @@ public class BillItemDTO implements Serializable {
 
     public void setPurchaseRate(Double purchaseRate) {
         this.purchaseRate = purchaseRate;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getItemClass() {
+        return itemClass;
+    }
+
+    public void setItemClass(String itemClass) {
+        this.itemClass = itemClass;
+    }
+
+    public Double getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(Double marginValue) {
+        this.marginValue = marginValue;
     }
 
 }

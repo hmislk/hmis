@@ -19,6 +19,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.StaffFacade;
@@ -56,6 +57,8 @@ public class PaymentService {
     StaffFacade staffFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
     @EJB
     StaffService staffService;
     @EJB
@@ -337,7 +340,33 @@ public class PaymentService {
     }
 
     private void updateCompanyCredit(Payment p) {
-        //TODO: Add Logic Here
+        if (p == null) {
+            return;
+        }
+
+        // Get credit company directly from the payment
+        Institution creditCompany = p.getCreditCompany();
+        if (creditCompany == null) {
+            return;
+        }
+
+        // Refresh the institution from database to get current balance
+        Institution institution = institutionFacade.find(creditCompany.getId());
+        if (institution == null) {
+            return;
+        }
+
+        // Update the credit balance
+        // For sales, we add to the balance (company owes more)
+        // For refunds, we subtract from the balance (company owes less)
+        double currentBalance = institution.getAllowedCredit();
+        double newBalance = currentBalance + p.getPaidValue();
+
+        institution.setAllowedCredit(newBalance);
+        institutionFacade.edit(institution);
+
+        LOGGER.log(Level.INFO, "Updated credit company balance. Company: {0}, Previous Balance: {1}, Payment Amount: {2}, New Balance: {3}",
+                new Object[]{institution.getName(), currentBalance, p.getPaidValue(), newBalance});
     }
 
     private void updateStaffCredit(Payment p) {
@@ -639,7 +668,8 @@ public class PaymentService {
                         return bv;
                     }
                     if (paymentMethodData.getEwallet().getInstitution() == null
-                            || paymentMethodData.getEwallet().getNo() == null) {
+                            || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
+                                && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                         bv.setErrorMessage("Please Fill eWallet Reference Number and Bank.");
                         bv.setErrorPresent(true);
                         return bv;
@@ -733,7 +763,8 @@ public class PaymentService {
         }
         if (paymentMethod == PaymentMethod.ewallet) {
             if (paymentMethodData.getEwallet().getInstitution() == null
-                    || paymentMethodData.getEwallet().getNo() == null) {
+                    || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
+                        && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
             }

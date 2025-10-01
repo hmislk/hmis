@@ -277,13 +277,19 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Rate">
-                                <h:outputText value="#{row.rate}">
+                            <p:column headerText="Purchase Rate" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Purchase Value" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate* row.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Total">
+                            <p:column headerText="Total" width="5em">
                                 <h:outputText value="#{row.rate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -295,23 +301,23 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="MRP">
+                            <p:column headerText="MRP" width="5em">
                                 <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="MRP Value">
+                            <p:column headerText="MRP Value" width="5em">
                                 <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Payment Mode">
+                            <p:column headerText="Payment Mode" width="5em">
                                 <h:outputText value="#{row.bill.paymentMethod}" />
                             </p:column>
 
-                            <p:column headerText="Discount">
+                            <p:column headerText="Discount" width="5em">
                                 <h:outputText value="#{row.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
