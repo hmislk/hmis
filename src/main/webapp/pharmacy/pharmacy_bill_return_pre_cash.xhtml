@@ -104,27 +104,190 @@
                                     <h:panelGroup id="paymentDetails"  >
                                         <h:panelGroup
                                             class="row my-1"
-                                            layout="block"  
+                                            layout="block"
+                                            rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Credit'}" >
+                                            <div class="my-1" id="credit">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex gap-2">
+                                                            <p:autoComplete
+                                                                id="creditCompany"
+                                                                class="w-100 -mx-2"
+                                                                inputStyleClass="form-control"
+                                                                forceSelection="true"
+                                                                value="#{pharmacyPreSettleController.paymentMethodData.credit.institution}"
+                                                                completeMethod="#{institutionController.completeCreditCompany}"
+                                                                var="ix"
+                                                                minQueryLength="4"
+                                                                placeholder="Company (Type at least 4 letters to search)"
+                                                                itemLabel="#{ix.name}"
+                                                                itemValue="#{ix}"
+                                                                size="10"  >
+                                                            </p:autoComplete>
+
+                                                            <p:inputText
+                                                                id="polNo"
+                                                                style="width: 100px;"
+                                                                value="#{pharmacyPreSettleController.paymentMethodData.credit.referralNo}"
+                                                                placeholder="Policy NO" >
+                                                            </p:inputText>
+
+                                                            <p:inputText
+                                                                id="refNo"
+                                                                style="width: 100px;"
+                                                                value="#{pharmacyPreSettleController.paymentMethodData.credit.referenceNo}"
+                                                                placeholder="Reference NO" >
+                                                            </p:inputText>
+
+                                                            <p:inputText
+                                                                id="memo"
+                                                                style="width: 300px;"
+                                                                value="#{pharmacyPreSettleController.paymentMethodData.credit.comment}"
+                                                                placeholder="Memo" >
+                                                            </p:inputText>
+
+                                                            <p:commandLink
+                                                                id="btnAddNewCreditCom"
+                                                                value="(+)"
+                                                                class="mx-3 mt-1"
+                                                                title="Add New Credit Company"
+                                                                ajax="false"
+                                                                action="#{navigationController.navigateToCreditCompany()}"
+                                                                actionListener="#{creditCompanyController.prepareAdd()}" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"
+                                            rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff'}" >
+                                            <div class="my-1" id="staffCredit">
+                                                <div class="row mt-1">
+                                                    <div class="col-12">
+                                                        <p:autoComplete
+                                                            minQueryLength="2"
+                                                            forceSelection="true"
+                                                            value="#{pharmacyPreSettleController.toStaff}"
+                                                            id="creditStaff"
+                                                            completeMethod="#{staffController.completeStaff}"
+                                                            var="mys"
+                                                            class="w-100"
+                                                            placeholder="Staff (Type at least 4 letters to search)"
+                                                            inputStyleClass="form-control"
+                                                            itemLabel="#{mys.person.name}"
+                                                            itemValue="#{mys}"
+                                                            size="10">
+                                                            <p:column headerText="Name" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="EPF" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.creditLimitQualified}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                            <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.currentCreditValue}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                        </p:autoComplete>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"
+                                            rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}" >
+                                            <div class="my-1" id="credit">
+                                                <div class="row mt-1">
+                                                    <div class="col-12">
+                                                        <p:autoComplete
+                                                            minQueryLength="1"
+                                                            forceSelection="true"
+                                                            value="#{pharmacyPreSettleController.toStaff}"
+                                                            id="welfareStaff"
+                                                            completeMethod="#{staffController.completeStaff}"
+                                                            var="mys"
+                                                            class="w-100"
+                                                            placeholder="Staff (Type Name, Code or EPF No to search)"
+                                                            inputStyleClass="form-control"
+                                                            itemLabel="#{mys.person.name}"
+                                                            itemValue="#{mys}"
+                                                            size="10">
+                                                            <p:column headerText="Name" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="Code" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="EPF" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                            <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                        </p:autoComplete>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"
                                             id="creditCard" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Card'}" >
                                             <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
                                         </h:panelGroup>
+
                                         <h:panelGroup
                                             class="row my-1"
-                                            layout="block" 
+                                            layout="block"
+                                            id="ptdeposit" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"
+                                            id="ewallet"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'ewallet'}" >
+                                            <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"
                                             id="cheque"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
                                             <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup 
+
+                                        <h:panelGroup
                                             class="row my-1"
-                                            layout="block" 
+                                            layout="block"
                                             id="slip"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Slip'}" >
                                             <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="ewallet"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+
+                                        <h:panelGroup
+                                            class="row my-1 w-100"
+                                            layout="block"
+                                            id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}"
+                                            >
+                                            <pa:multiple_payment_methods class="w-100" controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
                                 </p:panel>

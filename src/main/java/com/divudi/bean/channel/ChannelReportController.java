@@ -432,6 +432,13 @@ public class ChannelReportController implements Serializable {
                     }
                 }
                 return total;
+            case "Card":
+                for(Payment p : payments){
+                    if(!p.getBill().isCancelled()){
+                        total += p.getPaidValue();
+                    }
+                }
+                return total;
             default:
                 throw new AssertionError();
         }
