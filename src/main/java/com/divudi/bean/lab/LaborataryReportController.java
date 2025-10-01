@@ -1281,7 +1281,7 @@ public class LaborataryReportController implements Serializable {
             ReportTemplateRow inwardIncomeRow = new ReportTemplateRow();
             inwardIncomeRow.setItemName(at + " Income");
             initializeRows(inwardIncomeRow);
-            List<BillLight> inpatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getInwardBillTypeAtomics(), at,null ,false);
+            List<BillLight> inpatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getInwardBillTypeAtomics(), at,null ,null);
             inwardIncomeRow = genarateRowBundleInward(inpatientIncome, inwardIncomeRow);
             bundleReport.getReportTemplateRows().add(inwardIncomeRow);
         }
@@ -1290,7 +1290,7 @@ public class LaborataryReportController implements Serializable {
         ReportTemplateRow outPatientIncomeRow = new ReportTemplateRow();
         outPatientIncomeRow.setItemName("Outpatient Income");
         initializeRows(outPatientIncomeRow);
-        List<BillLight> outPatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null,null ,false);
+        List<BillLight> outPatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null,null ,null);
         outPatientIncomeRow = genarateRowBundle(outPatientIncome, outPatientIncomeRow);
         bundleReport.getReportTemplateRows().add(outPatientIncomeRow);
         
@@ -1298,7 +1298,7 @@ public class LaborataryReportController implements Serializable {
         ReportTemplateRow floatIncomeRow = new ReportTemplateRow();
         floatIncomeRow.setItemName("Float Income");
         initializeRows(floatIncomeRow);
-        List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null,null ,false);
+        List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null,null ,null);
         floatIncomeRow = genarateRowBundleOther(floatIncome, floatIncomeRow);
         bundleReport.getReportTemplateRows().add(floatIncomeRow);
         
@@ -1318,7 +1318,7 @@ public class LaborataryReportController implements Serializable {
         IncomeRow floatTransferDeductionRow = new IncomeRow();
         floatTransferDeductionRow.setItemName("Float Transfer");
         initializeDeductionRows(floatTransferDeductionRow);
-        List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null,null ,false);
+        List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null,null ,null);
         floatTransferDeductionRow = genarateDeductionRowBundleOther(floatTransfer, floatTransferDeductionRow);
         bundle.getRows().add(floatTransferDeductionRow);
 
