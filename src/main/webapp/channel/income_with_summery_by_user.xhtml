@@ -401,7 +401,7 @@
                                         <h:outputText value="Total Cash Collection" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCashTotal}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -409,7 +409,7 @@
                                         <h:outputText value="Total Card Collection" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                        <h:outputText styleClass="summeryCardValueTotal" value="0.00" />
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCardTotal}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -417,7 +417,7 @@
                                         <h:outputText value="Total Credit Collection" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCreditTotal}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -425,7 +425,7 @@
                                         <h:outputText value="Total Valid Appointments" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                        <h:outputText value="#{channelReportController.wrapperDto.totalValidAppoinments}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -433,7 +433,7 @@
                                         <h:outputText value="Cancel and Refund Collection" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCancelTotal + channelReportController.wrapperDto.allRefundTotal}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -441,7 +441,7 @@
                                         <h:outputText value="Total Cancel and Refund Appointments" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCancelAppoinments + channelReportController.wrapperDto.allRefundAppoinments}" />
                                     </td>
                                 </tr>
                             </table>

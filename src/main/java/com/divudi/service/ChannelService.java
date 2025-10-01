@@ -1268,7 +1268,7 @@ public class ChannelService {
                 + "left join patient.person person "
                 + "where bs.createdAt between :fromDate and :todate "
                 + "and bill.billTypeAtomic in :bta "
-                + "and bill.billType <> :bt";
+                + "and bill.billType <> :bt ";
 
         List<BillTypeAtomic> btaList = new ArrayList<>();
 
@@ -1405,18 +1405,20 @@ public class ChannelService {
                 }
                 if (dto.isIsCancelled()) {
                     summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
-                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 2);
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
                     summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
                 } else if (dto.isIsRefunded()) {
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
                     summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
                     summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
                 } else {
-                    summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
-                    summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
+
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
-                    summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
+
                 }
+                summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
+                summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
+                summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
 
             }
 
@@ -1513,18 +1515,20 @@ public class ChannelService {
 
             if (dto.isIsCancelled()) {
                 newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
-                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 2);
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
                 newSummery.setCancelTotal(newSummery.getCancelTotal() + dto.getTotalAppoinmentFee());
             } else if (dto.isIsRefunded()) {
                 newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
                 newSummery.setTotalRefundAppoinments(newSummery.getTotalRefundAppoinments() + 1);
                 newSummery.setRefundTotal(newSummery.getRefundTotal() + dto.getTotalAppoinmentFee());
             } else {
-                newSummery.setTotalDocFee(dto.getDoctorFee());
-                newSummery.setTotalHosFee(dto.getHosFee());
+
                 newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
-                newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
+
             }
+            newSummery.setTotalDocFee(dto.getDoctorFee());
+            newSummery.setTotalHosFee(dto.getHosFee());
+            newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
 
             summeryDtoList.add(newSummery);
         }
