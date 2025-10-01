@@ -1246,7 +1246,7 @@ public class ChannelService {
 
     }
 
-    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList , String reportStatus, String paidStatus) {
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
                 + "session.sessionDate, "
@@ -1267,27 +1267,21 @@ public class ChannelService {
                 + "join bill.patient patient "
                 + "left join patient.person person "
                 + "where bs.createdAt between :fromDate and :todate "
-                + "and bill.billTypeAtomic in :bta ";
-
+                + "and bill.billTypeAtomic in :bta "
+                + "and bill.billType <> :bt";
 
         List<BillTypeAtomic> btaList = new ArrayList<>();
 
-//        if (paidStatus != null && paidStatus.equalsIgnoreCase("Paid")) {
-            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-            btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
-            btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-            btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
-            
-//        } else {
-//            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-//            btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-//            btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-//        }
+        btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
 
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("todate", toDate);
         params.put("bta", btaList);
+        params.put("bt", BillType.ChannelAgent);
 
         if (user != null) {
             sql += "and bill.creater = :user ";
@@ -1301,8 +1295,8 @@ public class ChannelService {
 
         if (categoryList != null && !categoryList.isEmpty()) {
             System.out.println("line 1302");
-            for(Category c: categoryList){
-                System.out.println(c.getName()+categoryList.size());
+            for (Category c : categoryList) {
+                System.out.println(c.getName() + categoryList.size());
             }
             sql += "and session.originatingSession.category in :category ";
             params.put("category", categoryList);
