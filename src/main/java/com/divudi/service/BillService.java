@@ -545,7 +545,7 @@ public class BillService {
         }
         return billFacade.findWithoutCache(bill.getId());
     }
-
+    
     public Bill reloadBill(Long billId) {
         if (billId == null) {
             return null;
@@ -759,7 +759,6 @@ public class BillService {
             }
         }
     }
-
     public List<Payment> fetchBillPaymentsFromBillId(Long billId) {
         List<Payment> fetchingBillComponents;
         String jpql;
@@ -772,6 +771,7 @@ public class BillService {
         fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
         return fetchingBillComponents;
     }
+    
 
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
@@ -1058,7 +1058,7 @@ public class BillService {
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
-
+    
     public List<BillLight> fetchBillDtos(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1066,11 +1066,12 @@ public class BillService {
             Department department,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
-            PaymentScheme paymentScheme,
-            Boolean allowPaymentScheme) {
-        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme, allowPaymentScheme);
+            PaymentScheme paymentScheme) {
+        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme);
     }
-
+    
+    
+    
     public List<BillLight> fetchBillDtos(
             Date fromDate,
             Date toDate,
@@ -1080,8 +1081,7 @@ public class BillService {
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
-            PaymentScheme paymentScheme,
-            Boolean allowPaymentScheme) {
+            PaymentScheme paymentScheme) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1095,7 +1095,7 @@ public class BillService {
         params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-
+        
         if (institution != null) {
             jpql += " and b.institution=:ins ";
             params.put("ins", institution);
@@ -1123,21 +1123,16 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
+        }else{
+            jpql += " and b.paymentScheme is null";
         }
-        if (allowPaymentScheme != null) {
-            if (allowPaymentScheme) {
-                jpql += " and b.paymentScheme <> Null ";
-            }
-            if (!allowPaymentScheme) {
-                jpql += " and b.paymentScheme = Null ";
-            }
-        }
+        
 
         jpql += " order by b.createdAt desc  ";
-        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
-
+    
     public List<LabIncomeReportDTO> fetchBillsAsLabIncomeReportDTOs(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1351,7 +1346,9 @@ public class BillService {
 
         jpql += " order by b.createdAt desc  ";
 
+
         List<PharmacyIncomeBillDTO> results = (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
 
         if (results != null && !results.isEmpty()) {
             for (int i = 0; i < Math.min(5, results.size()); i++) {
@@ -2882,6 +2879,7 @@ public class BillService {
             Double retailRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
             Double purchaseRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
             Double costRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+
 
             double billItemRetailValue = 0;
             double billItemPurchaseValue = 0;
