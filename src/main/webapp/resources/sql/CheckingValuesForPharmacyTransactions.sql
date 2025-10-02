@@ -14,7 +14,7 @@ select `CREATEDAT`, `CREATER_ID`, `ID`, `BILLITEM_ID`,  `QTY`, `RETAILRATE`, `PU
 
 -- Check the latest bill header information
 -- This query retrieves the most recent bill with key totals and transaction type
-select `ID` , `DTYPE`, `CREATEDAT`, `BILLTYPEATOMIC`, `BILLTYPE`,  `NETTOTAL`, `TOTAL`, `SALEVALUE` , `DEPARTMENT_ID`, `BILLFINANCEDETAILS_ID` from BILL order by id desc limit 10;
+select `ID` , `DTYPE`, `CREATEDAT`,  FROMDEPARTMENT_ID, TODEPARTMENT_ID,   `BILLTYPEATOMIC`, `BILLTYPE`,  `NETTOTAL`, `TOTAL`, `SALEVALUE` , `DEPARTMENT_ID`, `BILLFINANCEDETAILS_ID` from BILL order by id desc limit 10;
 
 -- Check the latest bill finance details summary
 -- This query fetches bill-level financial totals for verification
