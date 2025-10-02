@@ -21,18 +21,26 @@
         <div style="width: 212mm; height: 275mm; padding-left: 0px">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <br/>
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
             <div class="institutionContact" >
                 <div >
-                    <h:outputLabel value="Telephone : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}" rendered="#{!empty cc.attrs.bill.department.address}"/>                                          
                 </div>
                 <div >
-                    <h:outputLabel rendered="false" value="Fax : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>                                                 
+                    <h:outputLabel value="Telephone : " rendered="#{!empty cc.attrs.bill.department.telephone1}" />
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" rendered="#{!empty cc.attrs.bill.department.telephone1}"/>
+                    <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email : &nbsp;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.email}"/>                                                 
+                    <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>                                           
+                </div>
+                <div >
+                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{!empty cc.attrs.bill.department.email}"/>                                              
                 </div>
             </div>
 
@@ -170,7 +178,18 @@
                 </table>
             </div>
 
-            <div class="row mt-3">
+            <div style="font-size: 16px">
+                <h:outputLabel value="Request Comments" />
+                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                <h:outputLabel value="#{cc.attrs.bill.referenceBill.comments}" />
+            </div>
+            <div style="font-size: 16px">
+                <h:outputLabel value="Approve Comments" />
+                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                <h:outputLabel value="#{cc.attrs.bill.comments}" />
+            </div>
+
+            <div class="row mt-1">
                 <div class="col-5">
                     <h:outputLabel value="Prepared By : &nbsp;"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}"/>
@@ -206,7 +225,6 @@
                         <li>If unable to supply above goods within above period, 10% penalty will be claimed on the invoice value.</li>
                     </ol>
                     <h:outputText value="Goods receiving time - Monday to Friday 9.00 A.M. to 3.30 P.M." style="display:block;color:#000;font-size: 20px; font-weight: 500;"/>
-                    <h:outputText value="Comment :" style="display:block;font-weight:600;"/>
                 </div>
             </div>
 

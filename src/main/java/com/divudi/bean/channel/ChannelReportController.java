@@ -128,6 +128,15 @@ public class ChannelReportController implements Serializable {
     private Department department;
     boolean paid = false;
     private Category category;
+    private List<Category> categoryList;
+
+    public List<Category> getCategoryList() {
+        return categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -371,6 +380,11 @@ public class ChannelReportController implements Serializable {
         makeNull();
         return "/channel/income_with_agent_bookings?faces-redirect=true";
     }
+    
+    public String navigateToFutureIncomeForChanneling() {
+        makeNull();
+        return "/channel/income_with_summery_by_user?faces-redirect=true";
+    }
 
     private List<Payment> paymentsFromCardAppoinments;
 
@@ -610,6 +624,79 @@ public class ChannelReportController implements Serializable {
         private Institution hospital;
         private Date processDate;
         private String processedBy;
+        private double allCashTotal;
+        private double allCardTotal;
+        private double allCreditTotal;
+        private double totalValidAppoinments;
+        private double allCancelTotal;
+        private double allRefundTotal;
+        private double allCancelAppoinments;
+        private double allRefundAppoinments;
+
+        public double getAllCashTotal() {
+            return allCashTotal;
+        }
+
+        public void setAllCashTotal(double allCashTotal) {
+            this.allCashTotal = allCashTotal;
+        }
+
+        public double getAllCardTotal() {
+            return allCardTotal;
+        }
+
+        public void setAllCardTotal(double allCardTotal) {
+            this.allCardTotal = allCardTotal;
+        }
+
+        public double getAllCreditTotal() {
+            return allCreditTotal;
+        }
+
+        public void setAllCreditTotal(double allCreditTotal) {
+            this.allCreditTotal = allCreditTotal;
+        }
+
+        public double getTotalValidAppoinments() {
+            return totalValidAppoinments;
+        }
+
+        public void setTotalValidAppoinments(double totalValidAppoinments) {
+            this.totalValidAppoinments = totalValidAppoinments;
+        }
+
+        public double getAllCancelTotal() {
+            return allCancelTotal;
+        }
+
+        public void setAllCancelTotal(double allCancelTotal) {
+            this.allCancelTotal = allCancelTotal;
+        }
+
+        public double getAllRefundTotal() {
+            return allRefundTotal;
+        }
+
+        public void setAllRefundTotal(double allRefundTotal) {
+            this.allRefundTotal = allRefundTotal;
+        }
+
+        public double getAllCancelAppoinments() {
+            return allCancelAppoinments;
+        }
+
+        public void setAllCancelAppoinments(double allCancelAppoinments) {
+            this.allCancelAppoinments = allCancelAppoinments;
+        }
+
+        public double getAllRefundAppoinments() {
+            return allRefundAppoinments;
+        }
+
+        public void setAllRefundAppoinments(double allRefundAppoinments) {
+            this.allRefundAppoinments = allRefundAppoinments;
+        }
+        
 
         public List<ChannelIncomeDetailDto> getIncomeDtos() {
             return incomeDtos;
@@ -660,12 +747,22 @@ public class ChannelReportController implements Serializable {
         private double cardTotal;
         private double creditTotal;
         private double agentTotal;
-        private double cancelOrRefundTotal;
+        private double cancelTotal;
+        private double refundTotal;
         private double totalDocFee;
         private double totalHosFee;
         private double totalAmount;
         private double totalActiveAppoinments;
         private double totalCancelAppoinments;
+        private double totalRefundAppoinments;
+
+        public double getTotalRefundAppoinments() {
+            return totalRefundAppoinments;
+        }
+
+        public void setTotalRefundAppoinments(double totalRefundAppoinments) {
+            this.totalRefundAppoinments = totalRefundAppoinments;
+        }
 
         public double getAgentTotal() {
             return agentTotal;
@@ -707,13 +804,22 @@ public class ChannelReportController implements Serializable {
             this.creditTotal = creditTotal;
         }
 
-        public double getCancelOrRefundTotal() {
-            return cancelOrRefundTotal;
+        public double getCancelTotal() {
+            return cancelTotal;
         }
 
-        public void setCancelOrRefundTotal(double cancelOrRefundTotal) {
-            this.cancelOrRefundTotal = cancelOrRefundTotal;
+        public void setCancelTotal(double cancelTotal) {
+            this.cancelTotal = cancelTotal;
         }
+
+        public double getRefundTotal() {
+            return refundTotal;
+        }
+
+        public void setRefundTotal(double refundTotal) {
+            this.refundTotal = refundTotal;
+        }
+
 
         public double getTotalDocFee() {
             return totalDocFee;
@@ -778,8 +884,12 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addErrorMessage("From date should be before to toDate.");
             return;
         }
+        if(categoryList == null || categoryList.isEmpty()){
+            JsfUtil.addErrorMessage("Please select categories to proceed the report.");
+            return;
+        }
         
-       wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, category, reportStatus, reportStatus);
+       wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
        
        if(wrapperDto == null){
            return;
@@ -3808,6 +3918,7 @@ public class ChannelReportController implements Serializable {
         billSessions = null;
         valueList = null;
         dataBundle = null;
+        categoryList = null;
     }
 
     List<BillSession> nurseViewSessions;
