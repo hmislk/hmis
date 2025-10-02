@@ -1226,6 +1226,7 @@ public class ChannelService {
 
         if (reportStatus != null && reportStatus.equalsIgnoreCase("Details")) {
             bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+            bta.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         }
 
         params.put("bta", bta);
