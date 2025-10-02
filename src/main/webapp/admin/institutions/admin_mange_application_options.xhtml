@@ -40,6 +40,13 @@
                             <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel" style="float: right; margin-right: 0.5em;">
                                 <p:dataExporter type="xlsx" target="optionsTable" fileName="application_options" />
                             </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                action="#{configOptionController.navigateToDuplicateOptions()}"
+                                icon="pi pi-file-excel" 
+                                title="Navigate to Duplicates"
+                                style="float: right; margin-right: 0.5em;">
+                            </p:commandButton>
                         </f:facet>
                         <!-- Data Table for Options -->
                         <p:dataTable 
@@ -275,7 +282,7 @@
                                     sizeLimit="1000000"
                                     label="Choose CSV File" />
                             </div>
-                            
+
                             <div class="mb-3">
                                 <p:commandButton 
                                     value="Import CSV" 
