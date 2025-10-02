@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="reprint" />
+        <cc:attribute name="Cancelled" />
+    </cc:interface>
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+        <div style="width: 212mm; padding-left: 0px">
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <br/>
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+            </div>
+
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="Telephone :&nbsp;" rendered="#{!empty cc.attrs.bill.department.telephone1}" />
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} " rendered="#{!empty cc.attrs.bill.department.telephone1}"/>
+                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{not empty cc.attrs.bill.department.telephone2}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="Fax :&nbsp;" rendered="#{not empty cc.attrs.bill.department.fax}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="Email :&nbsp;" rendered="#{not empty cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{not empty cc.attrs.bill.department.email}"/>
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="GRN Return Note"   />
+                <br/>
+                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.Cancelled eq true}" style="font-size: 18px;"/>
+            </div>
+
+            <table class="table table-borderless">
+                <tr>
+                    <!-- Left column -->
+                    <td>GRN Return No</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+                    <td>GRN No</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" /> </td>
+                </tr>
+
+                <tr>
+                    <td>GRN Return Date</td>
+                    <td>:</td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                        </h:outputLabel>    
+                    </td>
+
+                    <td>GRN Date</td>
+                    <td>:</td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                        </h:outputLabel> 
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Return By</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
+
+                    <td>Invoice No</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.invoiceNumber}"/></td>
+                </tr>
+
+                <tr>
+                    <td>Location</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.creater.department.name}" /></td>
+
+                    <td>Supplier</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" /></td>
+                </tr>
+            </table>
+
+            <div>
+                <h:panelGroup rendered="#{not empty cc.attrs.bill.billItems}">
+                    <table style="border-collapse: collapse; width: 100%;">
+                        <thead style="font-size: 13px;">
+                            <tr>
+                                <th style="text-align: center; width: 4%; border: 1px solid black;">No</th>
+                                <th style="text-align: center; min-width: 25%; border: 1px solid black;">Item</th>
+                                <th style="text-align: right; width: 11%; border: 1px solid black;">Expiry</th>
+                                <th style="text-align: right; width: 10%; border: 1px solid black;">Batch No</th>
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
+                                    <th style="text-align: right; width: 10%; border: 1px solid black;">Total Return QTY</th>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
+                                    <th style="text-align: right; width: 10%; border: 1px solid black;">Return QTY</th>
+                                    <th style="text-align: right; width: 9%; border: 1px solid black;">Free QTY</th>
+                                </h:panelGroup>
+
+                                <th style="text-align: right; width: 10%; border: 1px solid black;">Rate</th>
+                                <th style="text-align: right; width: 12%; border: 1px solid black;">Amount</th>
+                            </tr>
+                        </thead>
+
+                        <tbody style="font-size: 14px;">
+                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="st">
+                                <tr>
+                                    <td style="text-align: center; border: 1px solid black;">#{st.index + 1}</td>
+                                    <td style="text-align: left; border: 1px solid black; padding-left: 4px">#{bip.item.name}</td>
+                                    <td style="text-align: right; border: 1px solid black; padding-right: 4px">
+                                        <h:outputText value="#{bip.referanceBillItem.pharmaceuticalBillItem.doe}">
+                                            <f:convertDateTime pattern="dd/MMM/yyyy" />
+                                        </h:outputText>
+                                    </td>
+                                    <td style="text-align: right; border: 1px solid black; padding-right: 4px">#{bip.referanceBillItem.pharmaceuticalBillItem.stringValue}</td>
+
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
+                                        <td style="text-align: right; border: 1px solid black; padding-right: 4px">
+                                            <h:outputText value="#{bip.billItemFinanceDetails.quantity + bip.billItemFinanceDetails.freeQuantity}">
+                                                <f:convertNumber />
+                                            </h:outputText>                
+                                        </td>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
+                                        <td style="text-align: right; border: 1px solid black; padding-right: 4px">
+                                            <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
+                                                <f:convertNumber />
+                                            </h:outputText>         
+                                        </td>
+                                        <td style="text-align: right; border: 1px solid black; padding-right: 4px">
+                                            <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
+                                                <f:convertNumber />
+                                            </h:outputText>
+                                        </td>
+                                    </h:panelGroup>
+
+                                    <td style="text-align: right; border: 1px solid black;">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td style="text-align: right; border: 1px solid black;">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate * (bip.billItemFinanceDetails.quantity + bip.billItemFinanceDetails.freeQuantity)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+
+                        <tfoot style="font-weight: bold; font-size: 15px">
+                            <tr>
+                                <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false) ? 6 : 7}" style="text-align: left; border: 1px solid black; padding-left: 6px">
+                                    <h:outputText value="Total"/>
+                                </td> 
+                                <td style="text-align: right; border: 1px solid black;">
+                                    <h:outputText value="#{0-cc.attrs.bill.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </h:panelGroup>
+            </div>
+
+            <div style="font-size: 16px" class="mt-2">
+                <h:outputLabel value="Return Comments" />
+                <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                <h:outputLabel value="#{cc.attrs.bill.comments}" />
+            </div>
+
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Prepared By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Prepared At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Finalized By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.checkedBy.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Finalized At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.checkeAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Approved By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.completedBy.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Approved At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.completedAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Printed By : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;" >
+                    <h:outputLabel style="text-align: right" value="Printed At : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.currentDate}" >
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+
+        </div>
+    </cc:implementation>
+</html>
