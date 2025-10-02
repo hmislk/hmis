@@ -63,6 +63,10 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean grnReceiptA4;
     private boolean grnReceiptCustom1;
     private boolean grnReceiptCustom2;
+    
+    // GRN Return Settings
+    private boolean grnReturnReceiptCustom1;
+    private boolean grnReturnReceiptCustom2;
 
     // Transfer Receive Settings
     private boolean transferReceiveA4;
@@ -148,6 +152,10 @@ public class PharmacyRetailConfigController implements Serializable {
         grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
         grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
+        
+        // GRN Return Settings
+        grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", false);
+        grnReturnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 2", true);
 
         // Transfer Receive Settings
         transferReceiveA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", true);
@@ -231,6 +239,10 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 2", grnReceiptCustom2);
+            
+            // GRN Return Settings
+            configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 1", grnReturnReceiptCustom1);
+            configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 2", grnReturnReceiptCustom2);
 
             // Transfer Receive Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", transferReceiveA4);
@@ -793,6 +805,22 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setBillReturnIssueCustom2(boolean billReturnIssueCustom2) {
         this.billReturnIssueCustom2 = billReturnIssueCustom2;
+    }
+
+    public boolean isGrnReturnReceiptCustom1() {
+        return grnReturnReceiptCustom1;
+    }
+
+    public void setGrnReturnReceiptCustom1(boolean grnReturnReceiptCustom1) {
+        this.grnReturnReceiptCustom1 = grnReturnReceiptCustom1;
+    }
+
+    public boolean isGrnReturnReceiptCustom2() {
+        return grnReturnReceiptCustom2;
+    }
+
+    public void setGrnReturnReceiptCustom2(boolean grnReturnReceiptCustom2) {
+        this.grnReturnReceiptCustom2 = grnReturnReceiptCustom2;
     }
 
 }
