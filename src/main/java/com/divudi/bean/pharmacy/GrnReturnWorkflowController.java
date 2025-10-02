@@ -1614,6 +1614,7 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+        BigDecimal preservedLineGrossRate = fd.getLineGrossRate(); // keep whatever rate the UI last set
         boolean isValid = true;
 
         // Get remaining quantities (excluding current transaction to avoid double counting)
@@ -1682,20 +1683,8 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if rate modification is allowed
-        boolean rateChangeAllowed = configOptionApplicationController.getBooleanValueByKey("Purchase Return - Changing Return Rate is allowed", false);
-        
-        if (!rateChangeAllowed && billItem.getReferanceBillItem() != null) {
-            // For AMPP items, we need to get the original pack rate, not unit rate
-            if (billItem.getItem() instanceof Ampp) {
-                // For AMPP: Get original pack rate from the original bill item
-                BigDecimal originalPackRate = getOriginalPackRate(billItem.getReferanceBillItem());
-                fd.setLineGrossRate(originalPackRate);
-            } else {
-                // For AMP: Use unit rate as before
-                BigDecimal originalRate = BigDecimal.valueOf(getOriginalPurchaseRate(billItem.getItem()));
-                fd.setLineGrossRate(originalRate);
-            }
+        if (preservedLineGrossRate != null) {
+            fd.setLineGrossRate(preservedLineGrossRate);
         }
 
         return isValid;
