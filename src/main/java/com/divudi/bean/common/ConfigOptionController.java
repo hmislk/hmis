@@ -30,7 +30,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import javax.faces.application.FacesMessage;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -89,7 +88,12 @@ public class ConfigOptionController implements Serializable {
         } else {
             return configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
         }
-        return configOptionApplicationController.getBooleanValueByKey(departmentName + " - " + key, defaultValue);
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue=configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKey(deptKey, defaultValue);
     }
 
     public void setBooleanValueByKey(String key, boolean value) {

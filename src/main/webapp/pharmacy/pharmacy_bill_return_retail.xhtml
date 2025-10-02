@@ -105,41 +105,47 @@
 
 
 
-                            <p:panel header="Repayment" id="totalPanel">
-                                <div class="mb-2">
-                                    <p:outputLabel class="form-label" value="Gross Amount" />
-                                    <p:outputLabel id="grossTotal"
-                                                   value="#{saleReturnController.returnBill.total}"
-                                                   class="form-control w-100 text-end fw-bold bg-light">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                </div>
+                            <p:panel header="Repayment" >
+                                <h:panelGroup id="totalPanel">
+                                    <div class="mb-2">
+                                        <p:outputLabel class="form-label" value="Gross Amount" />
+                                        <p:outputLabel id="grossTotal"
+                                                       value="#{saleReturnController.returnBill.total}"
+                                                       class="form-control w-100 text-end fw-bold bg-light">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </div>
 
-                                <div class="mb-2">
-                                    <p:outputLabel class="form-label" value="Discount Receivable" />
-                                    <p:outputLabel id="discount"
-                                                   value="#{saleReturnController.returnBill.discount}"
-                                                   class="form-control w-100 text-end fw-bold bg-light">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel class="form-label" value="Discount Receivable" />
+                                        <p:outputLabel id="discount"
+                                                       value="#{saleReturnController.returnBill.discount}"
+                                                       class="form-control w-100 text-end fw-bold bg-light">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </div>
 
-                                <div class="mb-2">
-                                    <p:outputLabel class="form-label" value="Recievable Amount" />
-                                    <p:outputLabel 
-                                        value="#{saleReturnController.returnBill.netTotal}"
-                                        class="form-control w-100 text-end fw-bold bg-light">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel class="form-label" value="Receivable Amount" />
+                                        <p:outputLabel 
+                                            value="#{saleReturnController.returnBill.netTotal}"
+                                            class="form-control w-100 text-end fw-bold bg-light">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </div>
+                                </h:panelGroup>
+
 
                                 <div class="mb-2">
                                     <p:outputLabel value="Comments" for="comment" class="form-label">
                                         <i class="fa fa-comment me-1"></i>
                                     </p:outputLabel>
-                                    <p:inputTextarea id="comment"
-                                                     class="form-control"
-                                                     value="#{saleReturnController.returnBillcomment}" />
+                                    <p:inputTextarea 
+                                        id="comment"
+                                        class="form-control"
+                                        value="#{saleReturnController.returnBillcomment}" >
+                                        <p:ajax event="blur" process="comment" ></p:ajax>
+                                    </p:inputTextarea>
                                 </div>
 
                                 <div class="mb-2">

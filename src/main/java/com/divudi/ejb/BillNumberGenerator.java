@@ -110,6 +110,7 @@ public class BillNumberGenerator {
         }
         return departmentId + "-" + billTypeKey;
     }
+
     private String getLockKey(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
         String institutionId = institution != null ? institution.getId().toString() : "null";
         String fromDepartmentId = fromDepartment != null ? fromDepartment.getId().toString() : "null";
@@ -615,7 +616,6 @@ public class BillNumberGenerator {
         }
     }
 
-   
     public BillNumber fetchLastBillNumberForYearOpdAndInpatientServiceBatchBills(Department department, List<BillTypeAtomic> billTypes) {
         String lockKey = getLockKey(department, billTypes);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
@@ -727,7 +727,7 @@ public class BillNumberGenerator {
         }
         return billNumber;
     }
-    
+
     private BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientIndividualBills(Department department, List<BillTypeAtomic> billTypes) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         HashMap<String, Object> hm = new HashMap<>();
@@ -1927,13 +1927,13 @@ public class BillNumberGenerator {
         String delimiter = getBillNumberDelimiter();
 
         boolean customFullBillNumberSuffix = configOptionApplicationController.getBooleanValueByKey("Enable Custom Full Bill Number Sufix");
- 
+
         if (customFullBillNumberSuffix) {
             String template = "{{department_code}}" + delimiter + "{{to_department_code}}" + delimiter + billSuffix;
             String billSuffixTemplate = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix Template for " + billType, template);
-            
+
             BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
-            
+
             Long dd = billNumber.getLastBillNumber();
 
             String detpCode = dep.getDepartmentCode();
@@ -2072,6 +2072,48 @@ public class BillNumberGenerator {
     }
 
     public String departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = "";
+        }
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+        // Generate the bill number string - Format: PREFIX{delimiter}INSTITUTION_CODE{delimiter}DEPARTMENT_CODE{delimiter}YEAR{delimiter}YEARLY_NUMBER
+        StringBuilder result = new StringBuilder();
+        // Append bill suffix as prefix
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        // Append department code
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        // Append institution code
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        result.append(getBillNumberDelimiter());
+        // Append formatted 6-digit bill number
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        // Return the formatted bill number
+        return result.toString();
+    }
+
+    public String departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(Department dep, BillTypeAtomic billType) {
         if (dep == null) {
             return "";
         }
@@ -2361,28 +2403,28 @@ public class BillNumberGenerator {
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
-        
+
         boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
-        
+
         boolean separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for All Departments, Institutions and Bill Types", false);
-        
+
         boolean separateBillNumberForInstitutionsOnly
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Institutions Only", false);
-        
+
         boolean separateBillNumberForDepartmentsOnly
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Departments Only", false);
-        
+
         boolean separateBillNumberForBillTypesOnly
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
-        
+
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
-        
+
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
-        
+
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(null, null, billTypes);
         } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
@@ -2435,7 +2477,7 @@ public class BillNumberGenerator {
         return finalResult;
     }
 
-    public BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear( Department department, List<BillTypeAtomic> billTypes) {
+    public BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear(Department department, List<BillTypeAtomic> billTypes) {
         String lockKey = getLockKey(department, billTypes);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 
@@ -2446,7 +2488,6 @@ public class BillNumberGenerator {
             lock.unlock();
         }
     }
-    
 
     public String departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
         BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear(dep, billTypes);
@@ -2487,8 +2528,7 @@ public class BillNumberGenerator {
         return finalResult;
     }
 
-    
-    public BillNumber fetchLastdepartmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices( Department department, List<BillTypeAtomic> billTypes) {
+    public BillNumber fetchLastdepartmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(Department department, List<BillTypeAtomic> billTypes) {
         String lockKey = getLockKey(department, billTypes);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 

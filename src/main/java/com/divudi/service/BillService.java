@@ -1066,9 +1066,8 @@ public class BillService {
             Department department,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
-            PaymentScheme paymentScheme,
-            boolean allowPaymentScheme) {
-        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme, allowPaymentScheme);
+            PaymentScheme paymentScheme) {
+        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme);
     }
     
     
@@ -1082,8 +1081,7 @@ public class BillService {
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
-            PaymentScheme paymentScheme,
-            boolean allowPaymentScheme) {
+            PaymentScheme paymentScheme) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1125,17 +1123,13 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
+        }else{
+            jpql += " and b.paymentScheme is null";
         }
         
-        if(allowPaymentScheme){
-            jpql += " and b.paymentScheme <> Null ";
-        }
-        if(!allowPaymentScheme){
-            jpql += " and b.paymentScheme = Null ";
-        }
 
         jpql += " order by b.createdAt desc  ";
-        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
     

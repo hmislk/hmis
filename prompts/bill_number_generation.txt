@@ -1,0 +1,10 @@
+please read /home/buddhika/development/rh/developer_docs/billing/bill-number-generation-strategy-guide.md
+
+Pleasegenerate bill numbers for accordingly for the following 
+
+Page : http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml
+EL: #{pharmacySaleController.settlePreBillAndNavigateToPrint()}
+Controller:
+Settle Method:
+
+
