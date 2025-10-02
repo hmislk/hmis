@@ -481,7 +481,7 @@
                 <h:panelGroup id="gpBillPreview">
 
                     <h:panelGroup class="d-flex justify-content-center"
-                                  rendered="#{configOptionController.getBooleanValueByKey('GRN Return Receipt Paper is Custom 1',true)}">
+                                  rendered="#{configOptionController.getBooleanValueByKey('GRN Return Receipt Paper is Custom 1',false)}">
                         <ph:grn_return_receipt_with_costing_custom_1 bill="#{grnReturnWorkflowController.currentBill}"/>
                     </h:panelGroup>  
 

@@ -154,7 +154,7 @@ public class PharmacyRetailConfigController implements Serializable {
         grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
         
         // GRN Return Settings
-        grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", true);
+        grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", false);
         grnReturnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 2", true);
 
         // Transfer Receive Settings
