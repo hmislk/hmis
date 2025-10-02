@@ -362,6 +362,17 @@ public class DepartmentController implements Serializable {
         List<Department> departments = getFacade().findByJpql(jpql.toString(), parameters);
         return departments != null ? departments : new ArrayList<>();
     }
+    
+    public DepartmentType findDepaermentTypeFromDeoaermnrt(Department department){
+        Department d = getFacade().find(department.getId());
+        
+        DepartmentType type = d.getDepartmentType();
+        
+        if(type == null){
+            return DepartmentType.Other;
+        }
+        return type;
+    }
 
 //    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
 //        if (ins == null && site == null) {

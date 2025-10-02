@@ -1244,6 +1244,11 @@ public class LaborataryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please Select the Department");
             return;
         }
+        
+        if (getDepartment().getDepartmentType() != DepartmentType.Lab) {
+            JsfUtil.addErrorMessage("This feature is available for only Laboratory type departments.");
+            return;
+        }
 
         bundleReport = new ReportTemplateRowBundle();
 
