@@ -10,7 +10,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="duplicate" />
-        
+
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -19,7 +19,9 @@
         <div  style="width: 210mm; ">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <br/>
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
             <div class="institutionContact" >
                 <div>
@@ -35,15 +37,15 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
-                    <h:outputLabel value="Email : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="Email : " rendered="#{not empty cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{not empty cc.attrs.bill.department.email}"/>
                 </div>
             </div>
 
             <div class="headingBill">
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
                 <h:outputLabel value="**Reprint**"  rendered="#{cc.attrs.duplicate eq true}" />
-                
+
             </div>
 
             <div style="font-size: 15px;" class="row justify-content-center" >
@@ -356,6 +358,11 @@
 
             <div style="display: flex; flex-direction: column; width: 100%; font-size: 15px; margin-top: 7px;">
 
+                <div style="font-size: 16px">
+                    <h:outputLabel value="Comments" />
+                    <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                    <h:outputLabel value="#{cc.attrs.bill.comments}" />
+                </div>
                 <div style="display: flex; justify-content: space-between; width: 100%;">
                     <div>
                         <h:outputLabel value="Prepared By &nbsp;&nbsp; : &nbsp;" />

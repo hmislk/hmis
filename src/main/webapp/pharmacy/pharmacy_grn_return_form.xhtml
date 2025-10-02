@@ -430,6 +430,14 @@
                             <h:outputLabel value="GRN Return - Print Preview" ></h:outputLabel>
                         </div>
                         <div class="text-end col-9" >
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary"
+                                type="button"
+                                onclick="PF('grnReturnConfigDialog').show();" >
+                            </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print" class="ui-button-success mx-1">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -470,10 +478,91 @@
                     </div>
                 </f:facet>
 
-                <p:panel id="gpBillPreview">
-                    <ph:grn_return_receipt_with_costing bill="#{grnReturnWorkflowController.currentBill}"/>
-                </p:panel>
+                <h:panelGroup id="gpBillPreview">
+
+                    <h:panelGroup class="d-flex justify-content-center"
+                                  rendered="#{configOptionController.getBooleanValueByKey('GRN Return Receipt Paper is Custom 1',false)}">
+                        <ph:grn_return_receipt_with_costing_custom_1 bill="#{grnReturnWorkflowController.currentBill}"/>
+                    </h:panelGroup>  
+
+                    <h:panelGroup class="d-flex justify-content-center"
+                                  rendered="#{configOptionController.getBooleanValueByKey('GRN Return Receipt Paper is Custom 2',true)}">
+                        <ph:grn_return_receipt_with_costing bill="#{grnReturnWorkflowController.currentBill}"/>
+                    </h:panelGroup>
+
+                </h:panelGroup>
             </p:panel>
+
+            <!-- Configuration Dialog -->
+            <p:dialog id="grnReturnConfigDialog"
+                      header="GRN Return Receipt Printer Configuration"
+                      widgetVar="grnReturnConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="400"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="grnReturnConfigForm" />
+
+                <h:form id="grnReturnConfigForm">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> GRN Return Receipt Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="grnReturnCustom1Paper"
+                                            value="#{pharmacyRetailConfigController.grnReturnReceiptCustom1}" />
+                                        <p:outputLabel for="grnReturnCustom1Paper" value="Custom Format 1" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom GRN Return receipt template design 1</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="grnReturnCustom2Paper"
+                                            value="#{pharmacyRetailConfigController.grnReturnReceiptCustom2}" />
+                                        <p:outputLabel for="grnReturnCustom2Paper" value="Custom Format 2" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom GRN Return receipt template design 2</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p:messages id="grnConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Apply &amp; Close"
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                ajax="false"
+                                                action="#{pharmacyRetailConfigController.saveConfig}" />
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('grnReturnConfigDialog').hide(); return false;"
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </p:dialog>
 
         </h:form>
 
