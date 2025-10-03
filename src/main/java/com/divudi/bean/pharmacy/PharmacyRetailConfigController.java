@@ -95,6 +95,10 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean directPurchaseCustom1;
     private boolean directPurchaseCustom2;
     private boolean directPurchaseCustomLetter;
+    
+    // Direct Purchase Return Settings
+    private boolean directPurchaseReturnCustom1;
+    private boolean directPurchaseReturnCustom2;
 
     // Disposal Issue Settings
     private boolean disposalIssueA4Paper;
@@ -185,6 +189,10 @@ public class PharmacyRetailConfigController implements Serializable {
         directPurchaseCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 2", false);
         directPurchaseCustomLetter = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", false);
 
+        // Direct Purchase Return Settings
+        directPurchaseReturnCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 1", false);
+        directPurchaseReturnCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 2", true);
+        
         // Disposal Issue Settings
         disposalIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is A4 Paper", true);
         disposalIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 1", false);
@@ -272,6 +280,10 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", directPurchaseCustomLetter);
 
+            // Direct Purchase Return Settings
+            configOptionController.setBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 1", directPurchaseReturnCustom1);
+            configOptionController.setBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 2", directPurchaseReturnCustom2);
+            
             // Disposal Issue Settings
             configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is A4 Paper", disposalIssueA4Paper);
             configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 1", disposalIssueCustom1);
@@ -821,6 +833,22 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setGrnReturnReceiptCustom2(boolean grnReturnReceiptCustom2) {
         this.grnReturnReceiptCustom2 = grnReturnReceiptCustom2;
+    }
+
+    public boolean isDirectPurchaseReturnCustom1() {
+        return directPurchaseReturnCustom1;
+    }
+
+    public void setDirectPurchaseReturnCustom1(boolean directPurchaseReturnCustom1) {
+        this.directPurchaseReturnCustom1 = directPurchaseReturnCustom1;
+    }
+
+    public boolean isDirectPurchaseReturnCustom2() {
+        return directPurchaseReturnCustom2;
+    }
+
+    public void setDirectPurchaseReturnCustom2(boolean directPurchaseReturnCustom2) {
+        this.directPurchaseReturnCustom2 = directPurchaseReturnCustom2;
     }
 
 }
