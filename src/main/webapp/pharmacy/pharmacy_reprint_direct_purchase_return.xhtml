@@ -51,7 +51,7 @@
 
                                 <h:panelGroup class="d-flex justify-content-center"
                                               rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Return Receipt Paper is Custom 2',true)}">
-                                    <ph:direct_purchase_return_receipt_with_costing bill="#{directPurchaseReturnWorkflowController.currentBill}"/>
+                                    <ph:direct_purchase_return_receipt_with_costing bill="#{pharmacyBillSearch.bill}"/>
                                 </h:panelGroup> 
 
                             </h:panelGroup>

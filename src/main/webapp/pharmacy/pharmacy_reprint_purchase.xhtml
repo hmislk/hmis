@@ -78,7 +78,7 @@
                             <pharmacy:direct_purhcase_with_costing_custom_letter
                                 rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}" 
                                 reprint="true"
-                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                bill="#{pharmacyBillSearch.bill}"
                                 ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                                 ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                             </pharmacy:direct_purhcase_with_costing_custom_letter>
