@@ -3332,9 +3332,8 @@ public class CreditCompanyDueController implements Serializable {
             response.setHeader("Content-Disposition", "attachment; filename=Credit Company Due_Report.xlsx");
             try (OutputStream outputStream = response.getOutputStream()) {
                 workbook.write(outputStream);
+                facesContext.responseComplete();
             }
-
-            facesContext.responseComplete();
         } catch (Exception e) {
             e.printStackTrace();
         }
