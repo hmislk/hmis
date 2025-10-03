@@ -257,12 +257,12 @@ public class DisposalReturnWorkflowController implements Serializable {
         // Add date filtering - dates default to today if not set
         jpql.append("AND b.completedAt >= :fromDate ");
         jpql.append("AND b.completedAt <= :toDate ");
-        params.put("fromDate", getFromDate(), TemporalType.TIMESTAMP);
-        params.put("toDate", getToDate(), TemporalType.TIMESTAMP);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
 
         jpql.append("ORDER BY b.completedAt DESC");
 
-        completedDisposalReturns = billFacade.findByJpql(jpql.toString(), params);
+        completedDisposalReturns = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         if (completedDisposalReturns == null) {
             completedDisposalReturns = new ArrayList<>();
         }
