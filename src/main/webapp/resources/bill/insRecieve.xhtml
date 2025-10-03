@@ -170,7 +170,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="lbl">Date</td><td class="colon">:</td>
+                        <td class="lbl">Date / Time </td><td class="colon">:</td>
                         <td class="val">
                             <h:outputText value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
@@ -178,9 +178,16 @@
                             <h:outputText value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputText>
+                            &nbsp;
+                            <h:outputText value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                            </h:outputText>
+                            <h:outputText value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                            </h:outputText>
                         </td>
                     </tr>
-                    <tr>
+<!--                    <tr>
                         <td class="lbl">Time</td><td class="colon">:</td>
                         <td class="val">
                             <h:outputText value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
@@ -190,7 +197,7 @@
                                 <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                             </h:outputText>
                         </td>
-                    </tr>
+                    </tr>-->
                     <tr>
                         <td class="lbl">Payment</td><td class="colon">:</td>
                         <td class="val"><h:outputText value="#{cc.attrs.bill.paymentMethod}"/></td>
