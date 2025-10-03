@@ -499,5 +499,5 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 
 - [Application Options Configuration](application-options.md)
 - [UI Styling Guidelines](../ui/ui-styling-guidelines.md)
-- [JSF Best Practices](../ui-best-practices.md)
-- [Security Privileges](../security/privileges.md)
+- [JSF Best Practices](../ui/best-practices.md)
+- [Security Privileges](../security/privilege-system.md)

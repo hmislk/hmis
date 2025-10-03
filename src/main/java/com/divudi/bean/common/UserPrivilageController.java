@@ -676,6 +676,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyCreateDisposalReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreateDisposalReturn, "Create Disposal Return"), ProcumentNode);
         TreeNode pharmacyFinalizeDisposalReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.FinalizeDisposalReturn, "Finalize Disposal Return"), ProcumentNode);
         TreeNode pharmacyApproveDisposalReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.ApproveDisposalReturn, "Approve Disposal Return"), ProcumentNode);
+        TreeNode pharmacyViewDisposalReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.ViewDisposalReturn, "View Disposal Return"), ProcumentNode);
         // Direct Purchase Return workflow
         TreeNode pharmacyCreateDirectPurchaseReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreateDirectPurchaseReturn, "Create Direct Purchase Return"), ProcumentNode);
         TreeNode pharmacyFinalizeDirectPurchaseReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.FinalizeDirectPurchaseReturn, "Finalize Direct Purchase Return"), ProcumentNode);

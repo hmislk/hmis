@@ -56,8 +56,10 @@ public class DisposalReturnWorkflowController implements Serializable {
     // Lists for workflow management
     private List<Bill> disposalReturnsToFinalize;
     private List<Bill> disposalReturnsToApprove;
+    private List<Bill> completedDisposalReturns;
     private List<Bill> filteredDisposalReturnsToFinalize;
     private List<Bill> filteredDisposalReturnsToApprove;
+    private List<Bill> filteredCompletedDisposalReturns;
 
     // Currently selected bills for processing
     private Bill selectedBillToFinalize;
@@ -85,6 +87,12 @@ public class DisposalReturnWorkflowController implements Serializable {
         // Navigate to list of disposal returns that need approval
         fillDisposalReturnsToApprove();
         return "/pharmacy/pharmacy_disposal_return_approve?faces-redirect=true";
+    }
+
+    public String navigateToCompletedDisposalReturns() {
+        // Navigate to list of completed disposal returns
+        fillCompletedDisposalReturns();
+        return "/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true";
     }
 
     /**
@@ -117,7 +125,8 @@ public class DisposalReturnWorkflowController implements Serializable {
     /**
      * Check if there are pending disposal returns for a specific disposal issue
      * bill This prevents creating multiple returns for the same disposal bill
-     * when one is already pending approval Similar to GRN return workflow logic
+     * when one is already pending (either saved as draft OR finalized awaiting approval)
+     * Similar to GRN return workflow logic
      *
      * @param disposalIssueBill The original disposal issue bill to check
      * @return true if there are pending returns for this specific bill
@@ -128,21 +137,22 @@ public class DisposalReturnWorkflowController implements Serializable {
         }
 
         Map<String, Object> params = new HashMap<>();
+        // Check for ANY pending return (draft or finalized) that is not yet completed and not closed
         String jpql = "SELECT COUNT(b) FROM Bill b "
                 + "WHERE b.retired = :retired "
                 + "AND b.billTypeAtomic = :billTypeAtomic "
                 + "AND b.department = :department "
                 + "AND b.referenceBill = :referenceBill "
-                + "AND b.checked = :checked "
                 + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) "
+                + "AND (b.billClosed = :closed OR b.billClosed IS NULL) "
                 + "AND (b.completed = :completed OR b.completed IS NULL) ";
 
         params.put("retired", false);
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
         params.put("department", sessionController.getDepartment());
         params.put("referenceBill", disposalIssueBill);
-        params.put("checked", true); // Finalized but not yet approved
         params.put("cancelled", false);
+        params.put("closed", false);
         params.put("completed", false); // Not yet completed/approved
 
         Long count = billFacade.countByJpql(jpql, params);
@@ -165,6 +175,7 @@ public class DisposalReturnWorkflowController implements Serializable {
                 + "AND b.department = :department "
                 + "AND (b.checked = :checked OR b.checked IS NULL) "
                 + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) "
+                + "AND (b.billClosed = :closed OR b.billClosed IS NULL) "
                 + "ORDER BY b.createdAt DESC";
 
         params.put("retired", false);
@@ -172,6 +183,7 @@ public class DisposalReturnWorkflowController implements Serializable {
         params.put("department", sessionController.getDepartment());
         params.put("checked", false);
         params.put("cancelled", false);
+        params.put("closed", false);
 
         disposalReturnsToFinalize = billFacade.findByJpql(jpql, params);
         if (disposalReturnsToFinalize == null) {
@@ -195,6 +207,7 @@ public class DisposalReturnWorkflowController implements Serializable {
                 + "AND b.department = :department "
                 + "AND b.checked = :checked "
                 + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) "
+                + "AND (b.billClosed = :closed OR b.billClosed IS NULL) "
                 + "AND (b.completed = :completed OR b.completed IS NULL) "
                 + "ORDER BY b.checkeAt DESC";
 
@@ -203,11 +216,42 @@ public class DisposalReturnWorkflowController implements Serializable {
         params.put("department", sessionController.getDepartment());
         params.put("checked", true);
         params.put("cancelled", false);
+        params.put("closed", false);
         params.put("completed", false);
 
         disposalReturnsToApprove = billFacade.findByJpql(jpql, params);
         if (disposalReturnsToApprove == null) {
             disposalReturnsToApprove = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Fill completed disposal returns
+     */
+    public void fillCompletedDisposalReturns() {
+        if (sessionController.getDepartment() == null) {
+            completedDisposalReturns = new ArrayList<>();
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = :retired "
+                + "AND b.billTypeAtomic = :billTypeAtomic "
+                + "AND b.department = :department "
+                + "AND b.completed = :completed "
+                + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) "
+                + "ORDER BY b.completedAt DESC";
+
+        params.put("retired", false);
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        params.put("department", sessionController.getDepartment());
+        params.put("completed", true);
+        params.put("cancelled", false);
+
+        completedDisposalReturns = billFacade.findByJpql(jpql, params);
+        if (completedDisposalReturns == null) {
+            completedDisposalReturns = new ArrayList<>();
         }
     }
 
@@ -231,11 +275,81 @@ public class DisposalReturnWorkflowController implements Serializable {
         // Set the bill in the IssueReturnController
         issueReturnController.setReturnBill(returnBill);
         issueReturnController.setOriginalBill(originalBill);
-        
+
         issueReturnController.setReturnBillItems(returnBill.getBillItems());
         issueReturnController.setOriginalBillItems(originalBill.getBillItems());
         // Navigate to the unified return processing page
         return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to print preview for a completed disposal return
+     */
+    public String navigateToPrintCompletedDisposalReturn(Bill completedReturnBill) {
+        if (completedReturnBill == null) {
+            JsfUtil.addErrorMessage("No disposal return bill selected");
+            return null;
+        }
+        if (completedReturnBill.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("No bill Error");
+            return null;
+        }
+
+        Bill returnBill = billService.reloadBill(completedReturnBill);
+        Bill originalBill = billService.reloadBill(completedReturnBill.getReferenceBill());
+
+        // Set the bill in the IssueReturnController
+        issueReturnController.setReturnBill(returnBill);
+        issueReturnController.setOriginalBill(originalBill);
+        issueReturnController.setReturnBillItems(returnBill.getBillItems());
+        issueReturnController.setOriginalBillItems(originalBill.getBillItems());
+
+        // Set print preview mode
+        issueReturnController.setPrintPreview(true);
+
+        // Navigate to the return page in print preview mode
+        return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
+    }
+
+    /**
+     * Close a disposal return that is pending (either draft or finalized)
+     * This allows users to close a return and create a new one if needed
+     *
+     * @param returnBillToClose The return bill to close
+     */
+    public void closeDisposalReturn(Bill returnBillToClose) {
+        if (returnBillToClose == null) {
+            JsfUtil.addErrorMessage("No disposal return selected to close");
+            return;
+        }
+
+        // Verify the bill is not already completed
+        if (returnBillToClose.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot close a completed disposal return");
+            return;
+        }
+
+        // Verify the bill is not already closed
+        if (returnBillToClose.isBillClosed()) {
+            JsfUtil.addErrorMessage("This disposal return is already closed");
+            return;
+        }
+
+        try {
+            // Mark the bill as closed
+            returnBillToClose.setBillClosed(true);
+
+            // Save the changes
+            billFacade.edit(returnBillToClose);
+
+            // Refresh the lists
+            fillDisposalReturnsToFinalize();
+            fillDisposalReturnsToApprove();
+
+            JsfUtil.addSuccessMessage("Disposal return closed successfully. You can now create a new return for this bill.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to close disposal return: " + e.getMessage());
+        }
     }
 
     /**
@@ -244,8 +358,10 @@ public class DisposalReturnWorkflowController implements Serializable {
     public void makeNull() {
         disposalReturnsToFinalize = null;
         disposalReturnsToApprove = null;
+        completedDisposalReturns = null;
         filteredDisposalReturnsToFinalize = null;
         filteredDisposalReturnsToApprove = null;
+        filteredCompletedDisposalReturns = null;
         selectedBillToFinalize = null;
         selectedBillToApprove = null;
     }
@@ -305,5 +421,21 @@ public class DisposalReturnWorkflowController implements Serializable {
 
     public void setActiveIndexForReturnsAndCancellations(String activeIndexForReturnsAndCancellations) {
         this.activeIndexForReturnsAndCancellations = activeIndexForReturnsAndCancellations;
+    }
+
+    public List<Bill> getCompletedDisposalReturns() {
+        return completedDisposalReturns;
+    }
+
+    public void setCompletedDisposalReturns(List<Bill> completedDisposalReturns) {
+        this.completedDisposalReturns = completedDisposalReturns;
+    }
+
+    public List<Bill> getFilteredCompletedDisposalReturns() {
+        return filteredCompletedDisposalReturns;
+    }
+
+    public void setFilteredCompletedDisposalReturns(List<Bill> filteredCompletedDisposalReturns) {
+        this.filteredCompletedDisposalReturns = filteredCompletedDisposalReturns;
     }
 }

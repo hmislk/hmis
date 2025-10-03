@@ -7,17 +7,17 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('FinalizeDisposalReturn')}">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ViewDisposalReturn')}">
             You are NOT authorized
         </h:panelGroup>
-        <h:panelGroup id="gpReturnFinalize" rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}">
+        <h:panelGroup id="gpReturnCompleted" rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}">
         <h:form>
             <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-clipboard-list text-warning me-2"></i>
-                            <h:outputText value="Finalize Disposal Return Requests" styleClass="mb-0 text-warning" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
+                            <i class="fas fa-check-double text-primary me-2"></i>
+                            <h:outputText value="Completed Disposal Return Requests" styleClass="mb-0 text-primary" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
@@ -104,10 +104,10 @@
                             <!-- Search Button -->
                             <div class="mb-4">
                                 <p:commandButton
-                                    class="ui-button-warning w-100"
+                                    class="ui-button-primary w-100"
                                     icon="fas fa-search"
-                                    value="Search Disposal Returns"
-                                    action="#{disposalReturnWorkflowController.fillDisposalReturnsToFinalize()}"
+                                    value="Search Completed Returns"
+                                    action="#{disposalReturnWorkflowController.fillCompletedDisposalReturns()}"
                                     ajax="false"
                                     style="min-height: 45px;">
                                 </p:commandButton>
@@ -115,10 +115,10 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="Disposal Return Requests to Finalize" styleClass="shadow-sm">
+                        <p:panel header="Completed Disposal Return Requests" styleClass="shadow-sm">
                             <p:dataTable
                                 id="tbl"
-                                value="#{disposalReturnWorkflowController.disposalReturnsToFinalize}"
+                                value="#{disposalReturnWorkflowController.completedDisposalReturns}"
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -126,46 +126,31 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
-                                emptyMessage="No disposal return requests found matching your criteria"
-                                filteredValue="#{disposalReturnWorkflowController.filteredDisposalReturnsToFinalize}"
+                                emptyMessage="No completed disposal return requests found matching your criteria"
+                                filteredValue="#{disposalReturnWorkflowController.filteredCompletedDisposalReturns}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
 
-                            <p:column headerText="Created At" sortBy="#{b.createdAt}" styleClass="text-nowrap">
+                            <p:column headerText="Completed At" sortBy="#{b.completedAt}" styleClass="text-nowrap">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-clock text-info me-2"></i>
                                         <span class="fw-medium">
-                                            <h:outputLabel value="#{b.createdAt}">
+                                            <h:outputLabel value="#{b.completedAt}">
                                                 <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </span>
                                     </div>
-                                    <h:panelGroup rendered="#{b.cancelled}">
-                                        <div class="alert alert-danger py-1 px-2 mb-0 small">
-                                            <i class="fas fa-times-circle me-1"></i>
-                                            <strong>Cancelled:</strong>
-                                            <h:outputLabel rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </div>
-                                    </h:panelGroup>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}">
+                            <p:column headerText="Completed By" sortBy="#{b.completedBy.webUserPerson.name}">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
-                                        <i class="fas fa-user text-primary me-2"></i>
-                                        <span class="fw-medium">#{b.creater.webUserPerson.name}</span>
+                                        <i class="fas fa-user-check text-primary me-2"></i>
+                                        <span class="fw-medium">#{b.completedBy.webUserPerson.name}</span>
                                     </div>
-                                    <h:panelGroup rendered="#{b.cancelled}">
-                                        <div class="text-danger small">
-                                            <i class="fas fa-user-times me-1"></i>
-                                            <strong>Cancelled by:</strong> #{b.cancelledBill.creater.webUserPerson.name}
-                                        </div>
-                                    </h:panelGroup>
                                 </div>
                             </p:column>
 
@@ -208,43 +193,22 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="180">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
                                 <div class="d-flex justify-content-center align-items-center gap-2">
                                     <p:commandButton
-                                        id="finalize"
+                                        id="viewPrint"
                                         ajax="false"
-                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.billClosed eq true ? 'Closed Return' : 'Edit and Finalize Disposal Return')}"
-                                        icon="fas #{b.checkedBy ne null ? 'fa-check-double' : 'fa-edit'}"
-                                        class="#{b.checkedBy ne null ? 'ui-button-success ui-button-outlined' : (b.billClosed eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-warning')}"
-                                        value="#{b.checkedBy ne null ? 'Finalized' : 'Finalize'}"
-                                        action="#{disposalReturnWorkflowController.navigateToProcessDisposalReturn(b)}"
-                                        disabled="#{b.checkedBy ne null or b.billClosed eq true}"
+                                        title="View and Print Completed Return"
+                                        icon="fas fa-print"
+                                        class="ui-button-info"
+                                        value="Print"
+                                        action="#{disposalReturnWorkflowController.navigateToPrintCompletedDisposalReturn(b)}"
                                         style="min-width: 90px;">
                                     </p:commandButton>
-                                    <p:commandButton
-                                        id="close"
-                                        ajax="false"
-                                        title="Close this disposal return"
-                                        icon="fas fa-times"
-                                        class="ui-button-danger ui-button-outlined"
-                                        value="Close"
-                                        action="#{disposalReturnWorkflowController.closeDisposalReturn(b)}"
-                                        disabled="#{b.billClosed eq true or b.checkedBy ne null}"
-                                        rendered="#{b.billClosed ne true and b.checkedBy eq null}"
-                                        style="min-width: 70px;">
-                                        <p:confirm header="Confirm Close"
-                                                   message="Are you sure you want to close this disposal return? This will allow creating a new return for the same bill."
-                                                   icon="pi pi-exclamation-triangle"/>
-                                    </p:commandButton>
                                 </div>
-                                <h:panelGroup rendered="#{b.billClosed}" styleClass="d-block mt-1">
-                                    <small class="text-muted fst-italic">
-                                        <i class="fas fa-times-circle me-1"></i>Closed
-                                    </small>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{b.checkedBy ne null and not b.billClosed}" styleClass="d-block mt-1">
+                                <h:panelGroup styleClass="d-block mt-1">
                                     <small class="text-success fst-italic">
-                                        <i class="fas fa-user-check me-1"></i>Checked
+                                        <i class="fas fa-check-double me-1"></i>Completed
                                     </small>
                                 </h:panelGroup>
                             </p:column>
@@ -253,15 +217,6 @@
                     </div>
                 </div>
             </p:panel>
-
-            <!-- Global Messages -->
-            <p:growl id="messages" showDetail="true" />
-
-            <!-- Global Confirmation Dialog -->
-            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
-                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
-                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" />
-            </p:confirmDialog>
         </h:form>
         </h:panelGroup>
     </ui:define>
