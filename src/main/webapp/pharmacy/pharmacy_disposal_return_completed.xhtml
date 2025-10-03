@@ -63,42 +63,32 @@
                     <div class="col-lg-3 col-md-4">
                         <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>From Date
-                                </label>
+                                <h:outputLabel for="fromDate" value="From Date" styleClass="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                </h:outputLabel>
                                 <p:calendar
                                     class="w-100"
                                     inputStyleClass="form-control"
                                     id="fromDate"
-                                    value="#{searchController.fromDate}"
+                                    value="#{disposalReturnWorkflowController.fromDate}"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     placeholder="Select start date">
                                 </p:calendar>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>To Date
-                                </label>
+                                <h:outputLabel for="toDate" value="To Date" styleClass="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                </h:outputLabel>
                                 <p:calendar
                                     class="w-100"
                                     inputStyleClass="form-control"
                                     id="toDate"
-                                    value="#{searchController.toDate}"
+                                    value="#{disposalReturnWorkflowController.toDate}"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     placeholder="Select end date">
                                 </p:calendar>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-user me-1"></i>Patient Name
-                                </label>
-                                <p:inputText
-                                    class="form-control"
-                                    autocomplete="off"
-                                    value="#{searchController.searchKeyword.patientName}"
-                                    placeholder="Enter patient name" />
                             </div>
 
                             <!-- Search Button -->

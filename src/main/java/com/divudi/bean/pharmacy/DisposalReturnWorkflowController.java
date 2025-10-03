@@ -11,6 +11,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 
@@ -25,6 +26,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  * Controller for Disposal Return Workflow - handles Create, Finalize, and
@@ -67,6 +69,10 @@ public class DisposalReturnWorkflowController implements Serializable {
 
     // Accordion panel management
     private String activeIndexForReturnsAndCancellations = "0";
+
+    // Date filters for searching
+    private Date fromDate;
+    private Date toDate;
 
     /**
      * Navigation Methods - Each page shows a list of bills with navigation to
@@ -125,8 +131,8 @@ public class DisposalReturnWorkflowController implements Serializable {
     /**
      * Check if there are pending disposal returns for a specific disposal issue
      * bill This prevents creating multiple returns for the same disposal bill
-     * when one is already pending (either saved as draft OR finalized awaiting approval)
-     * Similar to GRN return workflow logic
+     * when one is already pending (either saved as draft OR finalized awaiting
+     * approval) Similar to GRN return workflow logic
      *
      * @param disposalIssueBill The original disposal issue bill to check
      * @return true if there are pending returns for this specific bill
@@ -226,7 +232,7 @@ public class DisposalReturnWorkflowController implements Serializable {
     }
 
     /**
-     * Fill completed disposal returns
+     * Fill completed disposal returns with date filtering
      */
     public void fillCompletedDisposalReturns() {
         if (sessionController.getDepartment() == null) {
@@ -235,13 +241,12 @@ public class DisposalReturnWorkflowController implements Serializable {
         }
 
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT b FROM Bill b "
-                + "WHERE b.retired = :retired "
-                + "AND b.billTypeAtomic = :billTypeAtomic "
-                + "AND b.department = :department "
-                + "AND b.completed = :completed "
-                + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) "
-                + "ORDER BY b.completedAt DESC";
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b ")
+                .append("WHERE b.retired = :retired ")
+                .append("AND b.billTypeAtomic = :billTypeAtomic ")
+                .append("AND b.department = :department ")
+                .append("AND b.completed = :completed ")
+                .append("AND (b.cancelled = :cancelled OR b.cancelled IS NULL) ");
 
         params.put("retired", false);
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
@@ -249,7 +254,15 @@ public class DisposalReturnWorkflowController implements Serializable {
         params.put("completed", true);
         params.put("cancelled", false);
 
-        completedDisposalReturns = billFacade.findByJpql(jpql, params);
+        // Add date filtering - dates default to today if not set
+        jpql.append("AND b.completedAt >= :fromDate ");
+        jpql.append("AND b.completedAt <= :toDate ");
+        params.put("fromDate", getFromDate(), TemporalType.TIMESTAMP);
+        params.put("toDate", getToDate(), TemporalType.TIMESTAMP);
+
+        jpql.append("ORDER BY b.completedAt DESC");
+
+        completedDisposalReturns = billFacade.findByJpql(jpql.toString(), params);
         if (completedDisposalReturns == null) {
             completedDisposalReturns = new ArrayList<>();
         }
@@ -271,13 +284,17 @@ public class DisposalReturnWorkflowController implements Serializable {
         }
 
         Bill returnBill = billService.reloadBill(disposalReturnBill);
-        Bill originalBill =billService.reloadBill(disposalReturnBill.getReferenceBill());
+        Bill originalBill = billService.reloadBill(disposalReturnBill.getReferenceBill());
         // Set the bill in the IssueReturnController
         issueReturnController.setReturnBill(returnBill);
         issueReturnController.setOriginalBill(originalBill);
 
         issueReturnController.setReturnBillItems(returnBill.getBillItems());
         issueReturnController.setOriginalBillItems(originalBill.getBillItems());
+
+        // Reset print preview flag to ensure editing UI is shown
+        issueReturnController.setPrintPreview(false);
+
         // Navigate to the unified return processing page
         return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
     }
@@ -312,8 +329,8 @@ public class DisposalReturnWorkflowController implements Serializable {
     }
 
     /**
-     * Close a disposal return that is pending (either draft or finalized)
-     * This allows users to close a return and create a new one if needed
+     * Close a disposal return that is pending (either draft or finalized) This
+     * allows users to close a return and create a new one if needed
      *
      * @param returnBillToClose The return bill to close
      */
@@ -437,5 +454,27 @@ public class DisposalReturnWorkflowController implements Serializable {
 
     public void setFilteredCompletedDisposalReturns(List<Bill> filteredCompletedDisposalReturns) {
         this.filteredCompletedDisposalReturns = filteredCompletedDisposalReturns;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
 }

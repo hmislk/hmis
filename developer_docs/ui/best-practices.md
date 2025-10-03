@@ -345,19 +345,25 @@ Reference implementation showing all patterns:
 <p:commandButton styleClass="ui-button-warning" .../>
 ```
 
-❌ **Don't**: Use multiple different icon sets
+❌ **Don't**: Switch icon libraries within the same view without a reason
 ```xhtml
-<!-- WRONG: Mixing icon libraries -->
+<!-- WRONG: In-view inconsistency -->
 <p:commandButton icon="pi pi-check" .../>
-<p:commandButton icon="fas fa-check" .../>
-```
-
-✅ **Do**: Stick to Font Awesome (fas) for consistency
-```xhtml
-<!-- CORRECT: Consistent icon library -->
-<p:commandButton icon="fas fa-check" .../>
 <p:commandButton icon="fas fa-times" .../>
 ```
+
+✅ **Do**: Keep a single library per page and reuse icons across the workflow
+```xhtml
+<!-- CORRECT: One view using PrimeFaces icons throughout -->
+<p:commandButton icon="pi pi-play" .../>
+<p:commandButton icon="pi pi-print" .../>
+<p:commandButton icon="pi pi-file-excel" .../>
+```
+
+Additional guidance:
+- Prefer PrimeFaces `pi` icons when a suitable option exists; fall back to Font Awesome `fas` only when needed.
+- Reuse the same icon for the same action in every step of a workflow so users build recognition.
+- It is acceptable to use different libraries on different pages if that keeps each page internally consistent.
 
 ❌ **Don't**: Skip confirmation for destructive actions
 ```xhtml
