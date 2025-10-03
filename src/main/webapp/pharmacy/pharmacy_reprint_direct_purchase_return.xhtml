@@ -27,6 +27,14 @@
                                         ajax="false">
                                         <p:printer target="gpBillPreview" />
                                     </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-2"
+                                        type="button"
+                                        onclick="PF('directPurchaseReturnReprintConfigDialog').show();" >
+                                    </p:commandButton>
 
                                 </div>
                             </div>              
@@ -36,14 +44,92 @@
 
                             <h:panelGroup id="gpBillPreview" >
 
-                                <h:panelGroup class="d-flex justify-content-center">
+                                <h:panelGroup class="d-flex justify-content-center"
+                                              rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Return Receipt Paper is Custom 1',false)}">
+                                    <ph:direct_purchase_return_receipt_with_costing_custom_1 bill="#{pharmacyBillSearch.bill}" reprint="true"/>
+                                </h:panelGroup>    
+
+                                <h:panelGroup class="d-flex justify-content-center"
+                                              rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Return Receipt Paper is Custom 2',true)}">
                                     <ph:direct_purchase_return_receipt_with_costing bill="#{directPurchaseReturnWorkflowController.currentBill}"/>
-                                </h:panelGroup>
+                                </h:panelGroup> 
 
                             </h:panelGroup>
 
                         </div>
                     </p:panel>
+
+                    <!-- Configuration Dialog -->
+                    <p:dialog id="directPurchaseReturnReprintConfigDialog"
+                              header="Direct Purchase Return Receipt Reprint Printer Configuration"
+                              widgetVar="directPurchaseReturnReprintConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="400"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseReturnReprintConfigForm" />
+
+                        <h:form id="directPurchaseReturnReprintConfigForm">
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Direct Purchase Return Receipt Reprint Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="directPurchaseReturnReprintCustom1Paper"
+                                                    value="#{pharmacyRetailConfigController.directPurchaseReturnCustom1}" />
+                                                <p:outputLabel for="directPurchaseReturnReprintCustom1Paper" value="Custom Format 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom Direct Purchase Return receipt reprint template design 1</small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="directPurchaseReturnReprintCustom2Paper"
+                                                    value="#{pharmacyRetailConfigController.directPurchaseReturnCustom2}" />
+                                                <p:outputLabel for="directPurchaseReturnReprintCustom2Paper" value="Custom Format 2" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom Direct Purchase Return receipt reprint template design 2</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="directPurchaseConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('directPurchaseReturnReprintConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </h:form>
+                    </p:dialog>
+
                 </h:form>
             </ui:define>
         </ui:composition>
