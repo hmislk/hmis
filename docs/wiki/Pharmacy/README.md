@@ -7,6 +7,7 @@ This directory contains comprehensive documentation for the Pharmacy module of t
 ### Core Functionality
 - [Pharmacy Issue (Disposal)](../Pharmacy-Issue.md) - Main dispensing functionality
 - [Pharmacy Issue Configuration](../Pharmacy-Issue-Configuration.md) - Administrator configuration guide
+- [Disposal Issue Returns](Disposal-Issue-Returns.md) - Processing returns for disposal items
 - [Bill Number Configuration Guide](Bill-Number-Configuration-Guide.md) - Complete guide for configuring yearly bill number generation
 
 ### Related Features

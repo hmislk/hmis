@@ -109,22 +109,29 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <p:commandButton 
-                            value="Print Cancellation Bill" 
-                            ajax="false" 
-                            class="ui-button-info m-1" 
+                        <p:commandButton
+                            value="Print Cancellation Bill"
+                            ajax="false"
+                            class="ui-button-info m-1"
                             icon="fas fa-print">
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton 
-                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"  
-                            value="Search Sale Bill" 
-                            class="ui-button-warning m-1" 
+                        <p:commandButton
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
+                            class="ui-button-secondary mx-1"
+                            type="button"
+                            onclick="PF('cancelBillConfigDialog').show();" />
+                        <p:commandButton
+                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
+                            value="Search Sale Bill"
+                            class="ui-button-warning m-1"
                             icon="fas fa-arrow-left">
                         </p:commandButton>
                         <p:commandButton
-                            action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
-                            class="ui-button-warning m-1" 
+                            action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"
+                            class="ui-button-warning m-1"
                             icon="fas fa-arrow-left"
                             value="Search Sale Pre Bill">
                         </p:commandButton>
@@ -132,57 +139,126 @@
 <!--                        <pharmacy:saleBill id="gpBillPreview" bill="#{pharmacyBillSearch.bill.cancelledBill}" />-->
 
 
-                        <h:panelGroup   id="gpBillPreview"  > 
+                        <h:panelGroup id="gpBillPreview">
 
-                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <pharmacy:saleBill bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill>
-                                    </h:panelGroup>
-                                </div>
-
+                            <h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Paper',true)}">
+                                <pharmacy:saleBill bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <pharmacy:saleBill_prabodha bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_prabodha>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <pharmacy:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_five_five>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-                            
-                            <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1',false)}"> 
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Paper Custom 1',false)}">
                                 <phi:saleBill_Retail_Pos_paper_Custom_1 bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true"/>
                             </h:panelGroup>
 
-                        </h:panelGroup>
-    
-                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
-                            <phi:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_Header_Cancel>
-                        </h:panelGroup>
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is FiveFive Paper',true)}">
+                                <pharmacy:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_five_five>
+                            </h:panelGroup>
 
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Header Paper',true)}">
+                                <phi:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_Header_Cancel>
+                            </h:panelGroup>
 
-                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
-                            <phi:sale_bill_cancellation_five_five_custom_3 bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                            <h:panelGroup id="gpBillPreviewCustom3" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is Custom 3',true)}">
+                                <phi:sale_bill_cancellation_five_five_custom_3 bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                            </h:panelGroup>
+
                         </h:panelGroup>
 
                     </h:panelGroup>
 
+                    <!-- Pharmacy Cancel Bill Configuration Dialog -->
+                    <p:dialog id="cancelBillConfigDialog"
+                              rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                              header="Pharmacy Cancel Bill Printer Configuration"
+                              widgetVar="cancelBillConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="500"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
 
-                </h:form>                
+                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="cancelBillConfigForm" />
+
+                        <h:form id="cancelBillConfigForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h:panelGroup layout="block">
+                                                <i class="fas fa-file-alt"></i>
+                                                <h:outputText value=" Cancel Bill Paper Settings" styleClass="ms-2"/>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="cancelPosPaper"
+                                                    value="#{pharmacyRetailConfigController.cancelBillPosPaper}" />
+                                                <p:outputLabel for="cancelPosPaper" value="POS Paper (Default)" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard POS paper format for cancelled bills</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="cancelPosPaperCustom1"
+                                                    value="#{pharmacyRetailConfigController.cancelBillPosPaperCustom1}" />
+                                                <p:outputLabel for="cancelPosPaperCustom1" value="POS Paper Custom 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom POS paper format version 1</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="cancelFiveFivePaper"
+                                                    value="#{pharmacyRetailConfigController.cancelBillFiveFivePaper}" />
+                                                <p:outputLabel for="cancelFiveFivePaper" value="5.5 Inch Paper" class="ms-2" />
+                                                <small class="form-text text-muted d-block">5.5 inch paper format for cancelled bills</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="cancelPosHeaderPaper"
+                                                    value="#{pharmacyRetailConfigController.cancelBillPosHeaderPaper}" />
+                                                <p:outputLabel for="cancelPosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                                <small class="form-text text-muted d-block">POS paper format with header section</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="cancelCustom3"
+                                                    value="#{pharmacyRetailConfigController.cancelBillCustom3}" />
+                                                <p:outputLabel for="cancelCustom3" value="Custom Format 3" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom paper format 3 for cancelled bills</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="cancelBillConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyRetailConfigController.saveCancelBillConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('cancelBillConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

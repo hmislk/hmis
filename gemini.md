@@ -82,7 +82,7 @@ For comprehensive implementation details, see:
 - **GitHub CLI Usage**: [Complete GitHub CLI Guide](developer_docs/github/gh-cli-usage.md)
 - **Icon & UI Standards**: [UI guidelines](developer_docs/ui/icon-management.md)
 - **Privilege Implementation**: [Security patterns](developer_docs/security/privilege-system.md)
-- **Configuration Patterns**: [Config usage](developer_docs/config/application-options.md)
+- **Configuration Patterns**: [Config usage](developer_docs/configuration/application-options.md)
 
 ## Key Principles
 1. **Consistency**: Follow established patterns

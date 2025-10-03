@@ -14,9 +14,49 @@
         <h:form>
             <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        <h:outputText value="Approve Disposal Return Requests" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <h:outputText value="Approve Disposal Return Requests" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="List Issues To Create Return"
+                                action="/pharmacy/pharmacy_search_issue_bill_for_return?faces-redirect=true"
+                                ajax="false"
+                                icon="fas fa-plus-circle"
+                                styleClass="ui-button-info ui-button-outlined"
+                                rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
+                                title="Create a new Disposal Return Request">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="List Returns to Finalize"
+                                action="/pharmacy/pharmacy_disposal_return_finalize?faces-redirect=true"
+                                ajax="false"
+                                icon="fas fa-tasks"
+                                styleClass="ui-button-info ui-button-outlined"
+                                rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
+                                title="Finalize Disposal Return Requests">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="List Returns To Approve"
+                                action="/pharmacy/pharmacy_disposal_return_approve?faces-redirect=true"
+                                ajax="false"
+                                icon="fas fa-check-circle"
+                                styleClass="ui-button-info ui-button-outlined"
+                                rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
+                                title="Approve Disposal Return Requests">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Completed Returns"
+                                action="/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true"
+                                ajax="false"
+                                icon="fas fa-check-double"
+                                styleClass="ui-button-info ui-button-outlined"
+                                rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
+                                title="View Completed Disposal Returns">
+                            </p:commandButton>
+                        </div>
                     </div>
                 </f:facet>
                 <div class="row g-3">
@@ -169,26 +209,41 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="180">
                                 <div class="d-flex justify-content-center align-items-center gap-2">
                                     <p:commandButton
                                         id="approve"
                                         ajax="false"
-                                        title="#{b.completed ? 'Already Approved' : (b.cancelled eq true ? 'Cancelled Return' : 'Review and Approve Disposal Return')}"
+                                        title="#{b.completed ? 'Already Approved' : (b.billClosed eq true ? 'Closed Return' : 'Review and Approve Disposal Return')}"
                                         icon="fas #{b.completed ? 'fa-check-circle' : 'fa-eye'}"
-                                        class="#{b.completed ? 'ui-button-success ui-button-outlined' : (b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
+                                        class="#{b.completed ? 'ui-button-success ui-button-outlined' : (b.billClosed eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
                                         value="#{b.completed ? 'Approved' : 'Approve'}"
                                         action="#{disposalReturnWorkflowController.navigateToProcessDisposalReturn(b)}"
-                                        disabled="#{b.completed or b.cancelled eq true}"
+                                        disabled="#{b.completed or b.billClosed eq true}"
                                         style="min-width: 90px;">
                                     </p:commandButton>
+                                    <p:commandButton
+                                        id="close"
+                                        ajax="false"
+                                        title="Close this disposal return"
+                                        icon="fas fa-times"
+                                        class="ui-button-danger ui-button-outlined"
+                                        value="Close"
+                                        action="#{disposalReturnWorkflowController.closeDisposalReturn(b)}"
+                                        disabled="#{b.billClosed eq true or b.completed eq true}"
+                                        rendered="#{b.billClosed ne true and b.completed ne true and b.checkedBy ne null}"
+                                        style="min-width: 70px;">
+                                        <p:confirm header="Confirm Close"
+                                                   message="Are you sure you want to close this finalized disposal return? This will allow creating a new return for the same bill."
+                                                   icon="pi pi-exclamation-triangle"/>
+                                    </p:commandButton>
                                 </div>
-                                <h:panelGroup rendered="#{b.cancelled}" styleClass="d-block mt-1">
+                                <h:panelGroup rendered="#{b.billClosed}" styleClass="d-block mt-1">
                                     <small class="text-muted fst-italic">
-                                        <i class="fas fa-ban me-1"></i>Cancelled
+                                        <i class="fas fa-times-circle me-1"></i>Closed
                                     </small>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{b.completed and not b.cancelled}" styleClass="d-block mt-1">
+                                <h:panelGroup rendered="#{b.completed and not b.billClosed}" styleClass="d-block mt-1">
                                     <small class="text-success fst-italic">
                                         <i class="fas fa-check-double me-1"></i>Approved
                                     </small>
@@ -199,6 +254,15 @@
                     </div>
                 </div>
             </p:panel>
+
+            <!-- Global Messages -->
+            <p:growl id="messages" showDetail="true" />
+
+            <!-- Global Confirmation Dialog -->
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" />
+            </p:confirmDialog>
         </h:form>
         </h:panelGroup>
     </ui:define>

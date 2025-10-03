@@ -112,6 +112,7 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setCheckeAt(new Date());
         getReturnBill().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getReturnBill());
+        printPreview=true;
         JsfUtil.addSuccessMessage("Finalized");
     }
 
@@ -209,7 +210,7 @@ public class IssueReturnController implements Serializable {
 
         // Check for existing pending disposal returns for this specific bill
         if (disposalReturnWorkflowController.hasPendingDisposalReturnForSpecificBill(originalIssueBill)) {
-            JsfUtil.addErrorMessage("Cannot create new return for this disposal issue bill. There is already a disposal return pending approval for this bill. Please approve or reject the existing return first.");
+            JsfUtil.addErrorMessage("Cannot create new return for this disposal issue bill. There is already a pending disposal return for this bill. Please finalize and approve the existing return first, or cancel it before creating a new one.");
             return null;
         }
 
@@ -353,7 +354,8 @@ public class IssueReturnController implements Serializable {
 
     private void saveSettlingBillComponents() {
         boolean fullyReturned = true;
-        for (BillItem i : getReturnBillItems()) {
+        List<BillItem> itemsToProcess = new ArrayList<>(getReturnBillItems());
+        for (BillItem i : itemsToProcess) {
             i.getPharmaceuticalBillItem().setQty(Math.abs(i.getQty()));
 
             i.setBill(getReturnBill());

@@ -17,7 +17,49 @@
             <h:form id="disposalReturnForm">
                 <p:panel styleClass="shadow-sm border-0">
                     <f:facet name="header">
-                        <h:outputText value="Select Disposal Issue Bill for Return"/>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h:outputText value="Select Disposal Issue Bill for Return"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="List Issues To Create Return"
+                                    action="/pharmacy/pharmacy_search_issue_bill_for_return?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-plus-circle"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
+                                    title="Create a new Disposal Return Request">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="List Returns to Finalize"
+                                    action="/pharmacy/pharmacy_disposal_return_finalize?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-tasks"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
+                                    title="Finalize Disposal Return Requests">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="List Returns To Approve"
+                                    action="/pharmacy/pharmacy_disposal_return_approve?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-check-circle"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
+                                    title="Approve Disposal Return Requests">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Completed Returns"
+                                    action="/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-check-double"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
+                                    title="View Completed Disposal Returns">
+                                </p:commandButton>
+                            </div>
+                        </div>
                     </f:facet>
                     <div class="row g-3">
                         <div class="col-lg-3 col-md-4">
