@@ -32,7 +32,7 @@
                 <div >
                     <h:outputLabel value="Telephone : " rendered="#{!empty cc.attrs.bill.department.telephone1}" />
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" rendered="#{!empty cc.attrs.bill.department.telephone1}"/>
-                    <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
