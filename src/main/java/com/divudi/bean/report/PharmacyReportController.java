@@ -1913,7 +1913,6 @@ public class PharmacyReportController implements Serializable {
         retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
     }
 
-    
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
         try {
             billItems = new ArrayList<>();
@@ -1953,7 +1952,6 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    
     private void retrieveBillItems(String billTypeField, Object billTypeValue) {
         try {
             billItems = new ArrayList<>();
@@ -2130,9 +2128,9 @@ public class PharmacyReportController implements Serializable {
 
                 // Get the items associated with this specific bill
                 List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
-               
+
                 if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
-                    
+
                     // Populate the map as needed
                     Map<Long, Object> billItemMap = itemsForThisBill.stream()
                             .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
@@ -2140,7 +2138,7 @@ public class PharmacyReportController implements Serializable {
 
                     // For the list, simply set it
                     billDto.setBillItems(itemsForThisBill);
-                    
+
                     // Calculate Cost Value for THIS bill
                     double billCost = itemsForThisBill.stream()
                             .filter(item -> item.getCostRate() != null && item.getQty() != null)
@@ -5227,20 +5225,21 @@ public class PharmacyReportController implements Serializable {
 
         switch (dateRange) {
             case "within3months":
-                toDate = convertToDate(today.minusMonths(3));
-                fromDate = convertToDate(today);
+                fromDate = convertToDate(today.minusMonths(3));
+                toDate = convertToDate(today);
                 break;
             case "within6months":
-                toDate = convertToDate(today.minusMonths(6));
-                fromDate = convertToDate(today);
+                fromDate = convertToDate(today.minusMonths(6));
+                toDate = convertToDate(today);
                 break;
             case "within12months":
-                toDate = convertToDate(today.minusMonths(12));
-                fromDate = convertToDate(today);
+                fromDate = convertToDate(today.minusMonths(12));
+                toDate = convertToDate(today);
                 break;
             case "shortexpiry":
-                toDate = convertToDate(today);
-                fromDate = convertToDate(today.minusMonths(3));
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(3));
+                break;
         }
         // System.out.println("Updated From Date: " + fromDate);
         // System.out.println("Updated To Date: " + toDate);
