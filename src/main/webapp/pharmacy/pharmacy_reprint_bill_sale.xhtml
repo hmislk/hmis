@@ -168,6 +168,7 @@
 
                 <!-- Pharmacy Retail Sale Configuration Dialog (Reused for Reprint) -->
                 <p:dialog id="retailSaleConfigDialog"
+                          rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                           header="Pharmacy Retail Sale Printer Configuration"
                           widgetVar="retailSaleConfigDialog"
                           modal="true"
@@ -184,7 +185,10 @@
                             <div class="col-12">
                                 <div class="card config-section">
                                     <div class="card-header">
-                                        <h6><i class="fas fa-file-alt"></i> Retail Sale Paper Settings</h6>
+                                        <h:panelGroup layout="block">
+                                            <i class="fas fa-file-alt"></i>
+                                            <h:outputText value=" Retail Sale Paper Settings" styleClass="ms-2"/>
+                                        </h:panelGroup>
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-3">
