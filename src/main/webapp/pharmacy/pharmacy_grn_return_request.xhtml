@@ -90,7 +90,6 @@
 
                             <p:column 
                                 headerText="PO No" 
-                                width="10em" 
                                 sortBy="#{p.referenceBill.deptId}" 
                                 filterBy="#{p.referenceBill.deptId}" 
                                 filterMatchMode="contains">
@@ -99,7 +98,6 @@
 
                             <p:column 
                                 headerText="GRN No" 
-                                width="10em" 
                                 sortBy="#{p.deptId}" 
                                 filterBy="#{p.deptId}" 
                                 filterMatchMode="contains">
@@ -108,7 +106,6 @@
                             
                               <p:column 
                                 headerText="Invoice No" 
-                                width="10em" 
                                 sortBy="#{p.invoiceNumber}" 
                                 filterBy="#{p.invoiceNumber}" 
                                 filterMatchMode="contains">
@@ -118,8 +115,7 @@
 
                             <p:column 
                                 id="colPoDetails"
-                                headerText="PO Details" 
-                                width="16em">
+                                headerText="PO Details">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.referenceBill.createdAt}">
@@ -149,8 +145,7 @@
                             
                             <p:column 
                                 headerText="GRN Details" 
-                                id="colGrnDetails"
-                                width="16em">
+                                id="colGrnDetails">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
@@ -202,7 +197,6 @@
 
                             <p:column 
                                 headerText="PO Value" 
-                                width="10em" 
                                 sortBy="#{p.referenceBill.netTotal}" 
                                 filterBy="#{p.referenceBill.netTotal}" 
                                 filterMatchMode="equals"
@@ -214,7 +208,6 @@
 
                             <p:column 
                                 headerText="GRN Value" 
-                                width="10em" 
                                 sortBy="#{p.netTotal}" 
                                 filterBy="#{p.netTotal}" 
                                 filterMatchMode="equals" 
@@ -224,7 +217,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Actions" width="10em" styleClass="text-center">
+                            <p:column headerText="Actions" styleClass="text-center">
                                 <p:commandButton 
                                     ajax="false"
                                     icon="pi pi-undo"
@@ -237,9 +230,7 @@
                                 </p:commandButton>
                             </p:column>
 
-                            <p:column 
-                                headerText="Previous Returns" 
-                                width="40em">
+                            <p:column headerText="Previous Returns" width="15em">
                                 <h:dataTable 
                                     value="#{p.listOfBill}" 
                                     var="b" 

@@ -37,6 +37,7 @@ import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -880,14 +881,18 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         BigDecimal returnTotal = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
         int itemCount = 0;
-        
+
         for (BillItem bi : billItems) {
             if (bi == null || bi.isRetired()) {
                 continue;
             }
 
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
             if (fd == null) {
                 continue;
             }
@@ -898,6 +903,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 itemCount++;
                 // Also update the individual bill item net value for consistency
                 bi.setNetValue(lineGrossTotal.doubleValue());
+            }
+
+            // Calculate purchase, cost, and retail values from PharmaceuticalBillItem
+            if (phi != null) {
+                // Sum up the purchase, cost, and retail values
+                totalPurchaseValue = totalPurchaseValue.add(BigDecimal.valueOf(phi.getPurchaseValue()));
+                totalCostValue = totalCostValue.add(BigDecimal.valueOf(phi.getCostValue()));
+                totalRetailValue = totalRetailValue.add(BigDecimal.valueOf(phi.getRetailValue()));
             }
         }
 
@@ -910,7 +923,12 @@ public class GrnReturnWorkflowController implements Serializable {
         // Set the calculated totals
         currentBill.getBillFinanceDetails().setNetTotal(returnTotal);
         currentBill.getBillFinanceDetails().setGrossTotal(returnTotal);
-        
+
+        // Set purchase, cost, and retail sale values
+        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
+        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+
         // Also set the legacy total fields for backward compatibility
         currentBill.setTotal(returnTotal.doubleValue());
         currentBill.setNetTotal(returnTotal.doubleValue());
@@ -1341,17 +1359,25 @@ public class GrnReturnWorkflowController implements Serializable {
 
         // Use same logic as DirectPurchaseReturnController.getReturnRate()
         BigDecimal rate = originalFd.getGrossRate();
+        boolean usingCostRate = false;
+
         if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
                 && originalFd.getLineCostRate() != null) {
             rate = originalFd.getLineCostRate();
+            usingCostRate = true;  // Cost rates are already per unit
         } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
                 && originalFd.getTotalCostRate() != null) {
             rate = originalFd.getTotalCostRate();
+            usingCostRate = true;  // Cost rates are already per unit
         }
 
-        // Convert to per unit rate if we have units per pack
-        if (rate != null && rate.compareTo(BigDecimal.ZERO) > 0 && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+        // Convert to per unit rate ONLY if using GrossRate (which is per pack for AMPP)
+        // Cost rates (LineCostRate, TotalCostRate) are ALREADY per unit, so don't divide again
+        if (!usingCostRate && rate != null && rate.compareTo(BigDecimal.ZERO) > 0
+                && originalFd.getUnitsPerPack() != null && originalFd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
             return rate.divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
+        } else if (usingCostRate && rate != null) {
+            return rate;  // Already per unit
         } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
             return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
         }
@@ -1588,6 +1614,7 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+        BigDecimal preservedLineGrossRate = fd.getLineGrossRate(); // keep whatever rate the UI last set
         boolean isValid = true;
 
         // Get remaining quantities (excluding current transaction to avoid double counting)
@@ -1656,20 +1683,8 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if rate modification is allowed
-        boolean rateChangeAllowed = configOptionApplicationController.getBooleanValueByKey("Purchase Return - Changing Return Rate is allowed", false);
-        
-        if (!rateChangeAllowed && billItem.getReferanceBillItem() != null) {
-            // For AMPP items, we need to get the original pack rate, not unit rate
-            if (billItem.getItem() instanceof Ampp) {
-                // For AMPP: Get original pack rate from the original bill item
-                BigDecimal originalPackRate = getOriginalPackRate(billItem.getReferanceBillItem());
-                fd.setLineGrossRate(originalPackRate);
-            } else {
-                // For AMP: Use unit rate as before
-                BigDecimal originalRate = BigDecimal.valueOf(getOriginalPurchaseRate(billItem.getItem()));
-                fd.setLineGrossRate(originalRate);
-            }
+        if (preservedLineGrossRate != null) {
+            fd.setLineGrossRate(preservedLineGrossRate);
         }
 
         return isValid;
@@ -1978,58 +1993,59 @@ public class GrnReturnWorkflowController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null || bi.getPharmaceuticalBillItem() == null) {
             return;
         }
-        
+
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-        
+
         // User has changed the lineGrossRate - this is what we need to preserve
         BigDecimal userEnteredRate = fd.getLineGrossRate();
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
-        
+
         if (isAmpp) {
             // For AMPP items: User entered rate is per pack, we need to sync unit-based calculations
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
             BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
             BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
-            
-            
+
+
             // Calculate unit-based quantities
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
             BigDecimal freeQuantityByUnits = freeQuantity.multiply(unitsPerPack);
-            
+
             // Set calculated unit quantities
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
-            
-            // Calculate unit rate from pack rate
-            BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0 
-                ? userEnteredRate.divide(unitsPerPack, 4, BigDecimal.ROUND_HALF_UP)
+
+            // Calculate unit rate from pack rate (HMIS STANDARD: PBI rates ALWAYS per unit)
+            BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                ? userEnteredRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
-            
+
             // Sync pharmaceutical bill item with calculated unit-based values
-            phi.setQty(quantityByUnits.doubleValue());
-            phi.setFreeQty(freeQuantityByUnits.doubleValue());
+            phi.setQty(quantityByUnits.doubleValue());        // ALWAYS in units
+            phi.setFreeQty(freeQuantityByUnits.doubleValue()); // ALWAYS in units
             phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
             phi.setPurchaseRatePack(userEnteredRate.doubleValue());
-            phi.setPurchaseRate(userEnteredRate.doubleValue()); // Pack rate for AMPP
-            
+            phi.setPurchaseRate(ratePerUnit.doubleValue());    // CRITICAL: ALWAYS per unit, not pack rate!
+
         } else {
             // For AMP items: User entered rate is per unit
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
             BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-            
+
             // Set unit quantities (same as pack quantities for AMP)
             fd.setQuantityByUnits(quantity);
             fd.setFreeQuantityByUnits(freeQuantity);
-            
+
             // Sync pharmaceutical bill item with unit-based values
-            phi.setQty(quantity.doubleValue());
-            phi.setFreeQty(freeQuantity.doubleValue());
+            phi.setQty(quantity.doubleValue());               // In units (same as packs for AMP)
+            phi.setFreeQty(freeQuantity.doubleValue());       // In units (same as packs for AMP)
             phi.setPurchaseRateInUnit(userEnteredRate.doubleValue());
-            phi.setPurchaseRate(userEnteredRate.doubleValue()); // Same for AMP
+            phi.setPurchaseRate(userEnteredRate.doubleValue()); // Per unit
+            phi.setPurchaseRatePack(userEnteredRate.doubleValue()); // Same as unit for AMP
         }
-        
+
         // Always preserve the user-entered rate
         fd.setLineGrossRate(userEnteredRate);
     }
@@ -2065,58 +2081,59 @@ public class GrnReturnWorkflowController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null || bi.getPharmaceuticalBillItem() == null) {
             return;
         }
-        
+
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-        
+
         // CRITICAL: Store the current rate BEFORE any processing
         BigDecimal existingRate = fd.getLineGrossRate();
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
-        
+
         if (isAmpp) {
             // For AMPP items: Rate should remain as pack rate
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
             BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
             BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
-            
-            
+
+
             // Calculate unit-based quantities
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
             BigDecimal freeQuantityByUnits = freeQuantity.multiply(unitsPerPack);
-            
+
             // Update unit quantities but preserve the rate
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
-            
-            // Calculate unit rate from existing pack rate
-            BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0 
-                ? existingRate.divide(unitsPerPack, 4, BigDecimal.ROUND_HALF_UP)
+
+            // Calculate unit rate from existing pack rate (HMIS STANDARD: PBI rates ALWAYS per unit)
+            BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                ? existingRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
-            
+
             // Sync pharmaceutical bill item with calculated values
-            phi.setQty(quantityByUnits.doubleValue());
-            phi.setFreeQty(freeQuantityByUnits.doubleValue());
+            phi.setQty(quantityByUnits.doubleValue());        // ALWAYS in units
+            phi.setFreeQty(freeQuantityByUnits.doubleValue()); // ALWAYS in units
             phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
             phi.setPurchaseRatePack(existingRate.doubleValue());
-            phi.setPurchaseRate(existingRate.doubleValue()); // Pack rate for AMPP
-            
+            phi.setPurchaseRate(ratePerUnit.doubleValue());    // CRITICAL: ALWAYS per unit, not pack rate!
+
         } else {
             // For AMP items: Rate is per unit
             BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
             BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-            
+
             // Update unit quantities (same as pack quantities for AMP)
             fd.setQuantityByUnits(quantity);
             fd.setFreeQuantityByUnits(freeQuantity);
-            
+
             // Sync pharmaceutical bill item with values
-            phi.setQty(quantity.doubleValue());
-            phi.setFreeQty(freeQuantity.doubleValue());
+            phi.setQty(quantity.doubleValue());               // In units (same as packs for AMP)
+            phi.setFreeQty(freeQuantity.doubleValue());       // In units (same as packs for AMP)
             phi.setPurchaseRateInUnit(existingRate.doubleValue());
-            phi.setPurchaseRate(existingRate.doubleValue());
+            phi.setPurchaseRate(existingRate.doubleValue());  // Per unit
+            phi.setPurchaseRatePack(existingRate.doubleValue()); // Same as unit for AMP
         }
-        
+
         // CRITICAL: Restore the original rate to prevent external service interference
         fd.setLineGrossRate(existingRate);
     }
@@ -2126,37 +2143,110 @@ public class GrnReturnWorkflowController implements Serializable {
      * Uses proper quantity and rate calculations without external service interference
      */
     private void calculateLineTotal(BillItem bi) {
-        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null || bi.getPharmaceuticalBillItem() == null) {
             return;
         }
 
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-        BigDecimal qty = fd.getQuantity();
-        BigDecimal freeQty = fd.getFreeQuantity();
-        BigDecimal rate = fd.getLineGrossRate();
-        
-        String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
-        boolean isAmpp = bi.getItem() instanceof Ampp;
+        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+        Item item = bi.getItem();
+        boolean isAmpp = item instanceof Ampp;
 
-        if (qty == null) {
-            qty = BigDecimal.ZERO;
-        }
-        if (freeQty == null) {
-            freeQty = BigDecimal.ZERO;
-        }
-        if (rate == null) {
-            rate = BigDecimal.ZERO;
+        // Null-safe BigDecimal values
+        BigDecimal qty = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
+        BigDecimal freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
+        BigDecimal rate = fd.getLineGrossRate() != null ? fd.getLineGrossRate() : BigDecimal.ZERO;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+
+        // For GRN returns, line total = quantity × rate (paid quantity only, not including free)
+        BigDecimal lineGross = qty.multiply(rate);
+        BigDecimal lineNet = lineGross; // No discounts for GRN returns
+
+        // Set the calculated line totals in BillItemFinanceDetails
+        fd.setLineGrossTotal(lineGross);
+        fd.setLineNetTotal(lineNet);
+
+        // Calculate and set net rate (net total / quantity)
+        if (qty.compareTo(BigDecimal.ZERO) > 0) {
+            fd.setLineNetRate(lineNet.divide(qty, 4, RoundingMode.HALF_UP));
+        } else {
+            fd.setLineNetRate(BigDecimal.ZERO);
         }
 
-        // For GRN returns, line total = (quantity + free quantity) × rate
-        BigDecimal totalQty = qty.add(freeQty);
-        BigDecimal lineTotal = totalQty.multiply(rate);
-        
-        // Set the calculated line total
-        fd.setLineGrossTotal(lineTotal);
-        fd.setLineNetTotal(lineTotal);
-        bi.setNetValue(lineTotal.doubleValue());
-        
+        // Calculate unit-based quantities for PBI (ALWAYS in units per HMIS standard)
+        BigDecimal qtyByUnits;
+        BigDecimal freeQtyByUnits;
+
+        if (isAmpp) {
+            // AMPP: Convert packs to units
+            qtyByUnits = qty.multiply(unitsPerPack);
+            freeQtyByUnits = freeQty.multiply(unitsPerPack);
+        } else {
+            // AMP: Already in units
+            qtyByUnits = qty;
+            freeQtyByUnits = freeQty;
+        }
+
+        // Update BIFD unit quantities
+        fd.setQuantityByUnits(qtyByUnits);
+        fd.setFreeQuantityByUnits(freeQtyByUnits);
+        fd.setTotalQuantityByUnits(qtyByUnits.add(freeQtyByUnits));
+
+        // Set BillItem fields (as user entered)
+        bi.setRate(rate.doubleValue());
+        bi.setQty(qty.doubleValue());
+        bi.setNetRate(fd.getLineNetRate() != null ? fd.getLineNetRate().doubleValue() : 0.0);
+        bi.setGrossValue(lineGross.doubleValue());
+        bi.setNetValue(lineNet.doubleValue());
+
+        // CRITICAL: Set PharmaceuticalBillItem rates following HMIS standards
+        if (isAmpp) {
+            // AMPP: Convert pack rate to unit rate for PBI.purchaseRate
+            BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                    ? rate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+            phi.setPurchaseRate(ratePerUnit.doubleValue());  // ALWAYS per unit
+            phi.setPurchaseRatePack(rate.doubleValue());     // Pack rate only for AMPP
+        } else {
+            // AMP: Rate is already per unit
+            phi.setPurchaseRate(rate.doubleValue());         // Per unit
+            phi.setPurchaseRatePack(rate.doubleValue());     // Same as unit rate for AMP
+        }
+
+        // Set PBI quantities (ALWAYS in units per HMIS standard)
+        phi.setQty(qtyByUnits.doubleValue());
+        phi.setFreeQty(freeQtyByUnits.doubleValue());
+
+        // Calculate and set rates and values from original GRN item
+        if (bi.getReferanceBillItem() != null) {
+            PharmaceuticalBillItem originalPhi = bi.getReferanceBillItem().getPharmaceuticalBillItem();
+            if (originalPhi != null) {
+                // Get the original rates (ALWAYS per unit per HMIS standard)
+                double purchaseRatePerUnit = originalPhi.getPurchaseRate();
+                double costRatePerUnit = originalPhi.getCostRate();
+                double retailRatePerUnit = originalPhi.getRetailRate();
+
+                // Set cost rate in PBI (ALWAYS per unit)
+                phi.setCostRate(costRatePerUnit);
+
+                // Calculate total quantity in units for value calculations
+                double totalReturningQtyInUnits = qtyByUnits.doubleValue() + freeQtyByUnits.doubleValue();
+
+                // Calculate values (quantity in units × rate per unit)
+                phi.setPurchaseValue(totalReturningQtyInUnits * purchaseRatePerUnit);
+                phi.setCostValue(totalReturningQtyInUnits * costRatePerUnit);
+                phi.setRetailValue(totalReturningQtyInUnits * retailRatePerUnit);
+
+                // Set retail rate from original
+                phi.setRetailRate(retailRatePerUnit);
+
+                // Set in BillItemFinanceDetails for consistency
+                fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit));
+                fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit));
+                fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit));
+            }
+        }
     }
 
     // Utility methods

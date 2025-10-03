@@ -1455,7 +1455,8 @@ public class GrnCostingController implements Serializable {
             }
 
             bi.setSearialNo(serialNo++);
-            double netValue = bi.getQty() * bi.getRate();
+            // Use net rate, not gross rate for netValue
+            double netValue = bi.getQty() * bi.getNetRate();
             bi.setNetValue(0 - netValue);
 
             if (f != null) {
@@ -1481,7 +1482,7 @@ public class GrnCostingController implements Serializable {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
 
                 totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
-                totalPurchase = totalPurchase.add(Optional.ofNullable(f.getGrossTotal()).orElse(BigDecimal.ZERO));
+                totalPurchase = totalPurchase.add(Optional.ofNullable(f.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
                 totalRetail = totalRetail.add(retailValue);
                 totalWholesale = totalWholesale.add(wholesaleValue);
 
@@ -1614,11 +1615,16 @@ public class GrnCostingController implements Serializable {
             pbi.setFreeQtyInUnit(pbi.getFreeQty());
             pbi.setFreeQtyPacks(freeQtyPacks.doubleValue());
 
-            pbi.setPurchaseRate(Optional.ofNullable(f.getNetRate()).orElse(BigDecimal.ZERO).doubleValue());
-            pbi.setPurchaseRatePack(pbi.getPurchaseRate());
+            // CRITICAL FIX: Use grossRate (not netRate) and convert pack rate to unit rate for AMPP
+            // recalculateFinancialsBeforeAddingBillItem already set correct values, don't overwrite
+            // pbi.purchaseRate and purchaseRatePack already set correctly by recalculate method
 
-            pbi.setRetailRate(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
-            pbi.setRetailRatePack(pbi.getRetailRate());
+            // Set cost rate (ALWAYS per unit per HMIS standard)
+            BigDecimal lineCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+            pbi.setCostRate(lineCostRate.doubleValue());
+
+            pbi.setRetailRate(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setRetailRatePack(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
 
             // Update BillItem quantity and rate in packs
@@ -1636,8 +1642,12 @@ public class GrnCostingController implements Serializable {
             pbi.setFreeQtyInUnit(pbi.getFreeQty());
             pbi.setFreeQtyPacks(pbi.getFreeQty());
 
-            pbi.setPurchaseRate(Optional.ofNullable(f.getNetRate()).orElse(BigDecimal.ZERO).doubleValue());
-            pbi.setPurchaseRatePack(pbi.getPurchaseRate());
+            // CRITICAL FIX: recalculateFinancialsBeforeAddingBillItem already set correct values, don't overwrite
+            // pbi.purchaseRate and purchaseRatePack already set correctly by recalculate method
+
+            // Set cost rate (ALWAYS per unit per HMIS standard)
+            BigDecimal lineCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+            pbi.setCostRate(lineCostRate.doubleValue());
 
             double r = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
             pbi.setRetailRate(r);
@@ -3253,7 +3263,12 @@ public class GrnCostingController implements Serializable {
                 ? lineNetTotal.divide(totalQtyInUnits, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
-        BigDecimal retailValue = retailRate.multiply(totalQtyInUnits);
+        // CRITICAL FIX: Calculate values including BOTH paid and free quantities
+        // retailValue = retailRatePerUnit × totalQtyInUnits (includes free qty)
+        BigDecimal retailValue = BigDecimal.valueOf(rrPerUnit).multiply(totalQtyInUnits);
+
+        // purchaseValue = purchaseRatePerUnit × totalQtyInUnits (includes free qty)
+        BigDecimal purchaseValue = BigDecimal.valueOf(prPerUnit).multiply(totalQtyInUnits);
 
         billItemFinanceDetails.setLineGrossRate(lineGrossRate);
         billItemFinanceDetails.setLineNetRate(BigDecimalUtil.isPositive(qty)
@@ -3273,20 +3288,81 @@ public class GrnCostingController implements Serializable {
         billItemFinanceDetails.setLineCostRate(lineCostRate);
         billItemFinanceDetails.setTotalQuantity(totalQty);
 
+        // CRITICAL FIX: Calculate value fields for all rate types using total quantity by units
+        // Following Direct Purchase pattern (lines 1202-1227)
+        if (BigDecimalUtil.isPositive(totalQtyInUnits)) {
+            // Value at retail rate (total units × retail rate per unit)
+            BigDecimal retailRatePerUnit = BigDecimal.valueOf(rrPerUnit);
+            billItemFinanceDetails.setValueAtRetailRate(
+                    totalQtyInUnits.multiply(retailRatePerUnit)
+            );
+
+            // Value at purchase rate (total units × purchase rate per unit) - GROSS rate
+            BigDecimal purchaseRatePerUnit = BigDecimal.valueOf(prPerUnit);
+            billItemFinanceDetails.setValueAtPurchaseRate(
+                    totalQtyInUnits.multiply(purchaseRatePerUnit)
+            );
+
+            // Value at cost rate (total units × cost rate per unit)
+            billItemFinanceDetails.setValueAtCostRate(
+                    totalQtyInUnits.multiply(lineCostRate)
+            );
+
+            // Value at wholesale rate (if wholesale rate is set)
+            BigDecimal wholesaleRatePerUnit = billItemFinanceDetails.getWholesaleRatePerUnit();
+            if (wholesaleRatePerUnit != null && wholesaleRatePerUnit.compareTo(BigDecimal.ZERO) > 0) {
+                billItemFinanceDetails.setValueAtWholesaleRate(
+                        totalQtyInUnits.multiply(wholesaleRatePerUnit)
+                );
+            }
+        } else {
+            // Set zero values if no quantity
+            billItemFinanceDetails.setValueAtRetailRate(BigDecimal.ZERO);
+            billItemFinanceDetails.setValueAtPurchaseRate(BigDecimal.ZERO);
+            billItemFinanceDetails.setValueAtCostRate(BigDecimal.ZERO);
+            billItemFinanceDetails.setValueAtWholesaleRate(BigDecimal.ZERO);
+        }
+
         billItemFinanceDetails.setProfitMargin(calculateProfitMarginForPurchasesBigDecimal(billItemFinanceDetails.getBillItem()));
+
+        // CRITICAL FIX: Set BillItem fields (BI table)
+        BillItem bi = billItemFinanceDetails.getBillItem();
+        if (bi != null) {
+            // Set rate (gross rate as user entered - pack rate for AMPP, unit rate for AMP)
+            bi.setRate(lineGrossRate.doubleValue());
+
+            // Set quantity (as user entered - packs for AMPP, units for AMP)
+            bi.setQty(qty.doubleValue());
+
+            // Set net rate (from BIFD.lineNetRate - already calculated correctly)
+            BigDecimal lineNetRate = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getLineNetRate());
+            bi.setNetRate(lineNetRate.doubleValue());
+
+            // Set gross value (line gross total)
+            bi.setGrossValue(lineGrossTotal.doubleValue());
+
+            // Set net value (lineNetRate × qty) - negative for purchases
+            BigDecimal biNetValue = lineNetRate.multiply(qty);
+            bi.setNetValue(0 - biNetValue.doubleValue());
+        }
 
         pbi.setRetailRate(rrPerUnit);
         pbi.setRetailRateInUnit(rrPerUnit);
         pbi.setRetailRatePack(retailRate.doubleValue());
 
+        // CRITICAL FIX: Use calculated retail value (includes free qty)
         pbi.setRetailPackValue(retailValue.doubleValue());
         pbi.setRetailValue(retailValue.doubleValue());
 
         pbi.setPurchaseRate(prPerUnit);
         pbi.setPurchaseRatePack(lineGrossRate.doubleValue());
 
-        pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
-        pbi.setPurchaseValue(lineGrossTotal.doubleValue());
+        // CRITICAL FIX: Use calculated purchase value (includes free qty)
+        pbi.setPurchaseRatePackValue(purchaseValue.doubleValue());
+        pbi.setPurchaseValue(purchaseValue.doubleValue());
+
+        // CRITICAL FIX: Set cost rate (ALWAYS per unit per HMIS standard)
+        pbi.setCostRate(lineCostRate.doubleValue());
 
         pbi.setQty(qtyInUnits.doubleValue());
         pbi.setFreeQty(freeQtyInUnits.doubleValue());
@@ -3449,7 +3525,8 @@ public class GrnCostingController implements Serializable {
             }
 
             bi.setSearialNo(serialNo++);
-            double netValue = bi.getQty() * bi.getRate();
+            // Use net rate, not gross rate for netValue
+            double netValue = bi.getQty() * bi.getNetRate();
             bi.setNetValue(-netValue);
 
             if (f != null) {
@@ -3477,7 +3554,7 @@ public class GrnCostingController implements Serializable {
                 totalLineCosts = totalLineCosts.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
 
                 totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
-                totalPurchase = totalPurchase.add(Optional.ofNullable(f.getGrossTotal()).orElse(BigDecimal.ZERO));
+                totalPurchase = totalPurchase.add(Optional.ofNullable(f.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
                 totalRetail = totalRetail.add(retailValue);
                 totalWholesale = totalWholesale.add(wholesaleValue);
 

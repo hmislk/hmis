@@ -1,0 +1,1 @@
+http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_costing_with_save_approve.xhtml
