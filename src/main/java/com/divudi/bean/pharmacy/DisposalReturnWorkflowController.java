@@ -459,6 +459,8 @@ public class DisposalReturnWorkflowController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
+        } else {
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
