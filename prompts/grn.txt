@@ -1,1 +1,20 @@
-http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_costing_with_save_approve.xhtml
+GRNS are listed here - http://124.43.4.189:8010/rhLocal/faces/pharmacy/pharmacy_grn_return_request.xhtml
+When we click the Create Return button, we go to the page http://124.43.4.189:8010/rhLocal/faces/pharmacy/pharmacy_grn_return_form.xhtml
+During the navigation, depending on the preference, the total qty to be return and the Return rate (Total Cost Rate) are correctly filled.
+Once return rate is generated like that, the user may change it. We must not change it pro grammatically afterwords at any point. But is is changed at few places.
+for example, 
+once we click the save button, the rates is always converted to purchase rate, ignoring the configuration
+
+can you please fix it
+
+then we can click the save button any number of times
+Once we click the Finalize button, the order is finalized
+
+the orders waiting to be approves after finalizing are listed in 
+
+http://124.43.4.189:8010/rhLocal/faces/pharmacy/pharmacy_grn_return_form.xhtml
+
+Before finalized the Return rate (Total Cost Rate) is correct Ex. 9.090
+but when we select the same GRN Return
+
+

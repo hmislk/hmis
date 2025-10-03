@@ -122,6 +122,97 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 **Settings Button Location:**
 Settings button is placed in the print preview section (`printPreview = true`) alongside the Print and New Bill buttons, allowing users to configure print formats while reviewing the output.
 
+### 6. Pharmacy Retail Sale Configuration
+
+**Pages:**
+- `pharmacy_bill_retail_sale.xhtml` - Main retail sale page
+
+**Configuration Options:**
+- POS Paper Format (saleBill component)
+- POS Paper Custom 1 (saleBill_Retail_Pos_paper_Custom_1 component)
+- 5.5 Inch Paper (saleBill_five_five component)
+- POS Paper with Header (saleBill_Header component)
+- Custom Format 1, 2, 3 (various custom components)
+- POS Header Paper General (saleBill_Header component)
+
+**Configuration Keys (Department-specific via ConfigOptionController):**
+- `Pharmacy Retail Sale Bill Paper is POS Paper` (default: true)
+- `Pharmacy Retail Sale Bill Paper is POS Paper Custom 1` (default: false)
+- `Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header` (default: true)
+- `Pharmacy Retail Sale Bill Paper is POS paper with header` (default: true)
+- `Pharmacy Retail Sale Bill Paper is Custom 1` (default: true)
+- `Pharmacy Retail Sale Bill Paper is Custom 2` (default: true)
+- `Pharmacy Retail Sale Bill Paper is Custom 3` (default: true)
+- `Pharmacy Retail Sale Bill is PosHeaderPaper` (default: true)
+
+**Settings Button Location:**
+Settings button is placed in the print preview section alongside Print Bill, Print Labels, and New Bill buttons.
+
+**Rendering Example:**
+```xhtml
+<h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper',true)}">
+    <phi:saleBill bill="#{pharmacySaleController.printBill}"/>
+</h:panelGroup>
+```
+
+### 7. Pharmacy Retail Sale Reprint Configuration
+
+**Pages:**
+- `pharmacy_reprint_bill_sale.xhtml` - Reprint retail sale page
+
+**Configuration Approach:**
+This page **reuses** the same configuration keys and settings dialog as the main Pharmacy Retail Sale (Section 6 above). No separate configuration is needed.
+
+**Configuration Keys:**
+Uses the same keys as Pharmacy Retail Sale:
+- `Pharmacy Retail Sale Bill Paper is POS Paper`
+- `Pharmacy Retail Sale Bill Paper is POS Paper Custom 1`
+- `Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header`
+- `Pharmacy Retail Sale Bill Paper is POS paper with header`
+- `Pharmacy Retail Sale Bill Paper is Custom 1`
+- `Pharmacy Retail Sale Bill Paper is Custom 2`
+- `Pharmacy Retail Sale Bill Paper is Custom 3`
+- `Pharmacy Retail Sale Bill is PosHeaderPaper`
+
+**Settings Button Location:**
+Settings button is placed in the header alongside Reprint, Print Labels, and To Cancel buttons.
+
+**Rendering Example:**
+```xhtml
+<h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper',true)}">
+    <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+</h:panelGroup>
+```
+
+### 8. Pharmacy Cancel Bill Configuration
+
+**Pages:**
+- `pharmacy_cancel_bill_retail.xhtml` - Cancel retail sale bill page
+
+**Configuration Options:**
+- POS Paper Format (saleBill component)
+- POS Paper Custom 1 (saleBill_Retail_Pos_paper_Custom_1 component)
+- 5.5 Inch Paper (saleBill_five_five component)
+- POS Header Paper (saleBill_Header_Cancel component)
+- Custom Format 3 (sale_bill_cancellation_five_five_custom_3 component)
+
+**Configuration Keys (Department-specific via ConfigOptionController):**
+- `Pharmacy Cancel Bill Paper is POS Paper` (default: true)
+- `Pharmacy Cancel Bill Paper is POS Paper Custom 1` (default: false)
+- `Pharmacy Cancel Bill Paper is FiveFive Paper` (default: true)
+- `Pharmacy Cancel Bill Paper is POS Header Paper` (default: true)
+- `Pharmacy Cancel Bill Paper is Custom 3` (default: true)
+
+**Settings Button Location:**
+Settings button is placed in the print preview section alongside Print Cancellation Bill and navigation buttons.
+
+**Rendering Example:**
+```xhtml
+<h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Paper',true)}">
+    <pharmacy:saleBill bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+</h:panelGroup>
+```
+
 ## Implementation Guide
 
 ### Adding Settings to a New Page
