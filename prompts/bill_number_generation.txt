@@ -30,5 +30,5 @@ pharmacySaleController3 - Sale 4
 
 only the navigation methods should be different so that it navigate to corosponding page
 
-In the process, there should be no change in main page or main controller. all changes in other pages will be overwrittern by pasting contents from main page / controller
+In this process, there should be no changes in the main page or main controller. All changes in the other pages will be overwritten by pasting contents from the main page/controller.
 
