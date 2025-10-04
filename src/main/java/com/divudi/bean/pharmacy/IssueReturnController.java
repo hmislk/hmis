@@ -110,8 +110,11 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getReturnBill());
 
-        // Refresh the bill to ensure bill items collection is loaded for print preview
+        // Refresh the bill and reload bill items for print preview
         returnBill = getBillFacade().find(getReturnBill().getId());
+        if (returnBill != null) {
+            returnBillItems = billService.fetchBillItems(returnBill);
+        }
 
         printPreview=true;
         JsfUtil.addSuccessMessage("Finalized");
@@ -320,6 +323,20 @@ public class IssueReturnController implements Serializable {
 
         getReturnBill().setForwardReferenceBill(getOriginalBill().getForwardReferenceBill());
 
+        // Copy department-related fields from original bill WITHOUT swapping
+        // This is a return/cancellation of the original disposal issue bill
+        // The department structure remains the same to maintain the relationship with the original transaction
+        // Original: fromDepartment = pharmacy (issuing), toDepartment = consumption dept (receiving)
+        // Return: same structure to show this is reversing that exact transaction
+        getReturnBill().setToDepartment(originalBill.getToDepartment()); // Same consumption department
+        getReturnBill().setFromDepartment(originalBill.getFromDepartment()); // Same pharmacy department
+        getReturnBill().setFromInstitution(originalBill.getFromInstitution());
+        getReturnBill().setToInstitution(originalBill.getToInstitution());
+
+        // Copy reference information from original bill for traceability
+        getReturnBill().setReferenceNumber(originalBill.getReferenceNumber());
+        getReturnBill().setComments(originalBill.getComments());
+
         // Handle Department ID generation (independent)
         String deptId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
@@ -444,7 +461,6 @@ public class IssueReturnController implements Serializable {
             financeDetailsOfReturn.setNetTotal(BigDecimal.valueOf(retailValue));
 
             financeDetailsOfReturn.setReturnQuantity(BigDecimal.valueOf(returnQty));
-            financeDetailsOfReturn.setReturnQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
             financeDetailsOfReturn.setTotalReturnQuantity(BigDecimal.valueOf(returnQty));
             financeDetailsOfReturn.setReturnGrossTotal(BigDecimal.valueOf(retailValue));
             financeDetailsOfReturn.setReturnNetTotal(BigDecimal.valueOf(retailValue));
