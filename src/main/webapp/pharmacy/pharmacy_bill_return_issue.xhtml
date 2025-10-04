@@ -319,13 +319,13 @@
                             </f:facet>
 
                             <h:panelGroup id="gpBillPreview1">
-                                <ph:diposal_issue_return
+                                <ph:disposal_issue_return
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is A4 Paper',true)}"
                                     bill="#{issueReturnController.returnBill}"/>
-                                <ph:diposal_issue_return_custom_1
+                                <ph:disposal_issue_return_custom_1
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is Custom 1',false)}"
                                     bill="#{issueReturnController.returnBill}"/>
-                                <ph:diposal_issue_return_custom_2
+                                <ph:disposal_issue_return_custom_2
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is Custom 2',false)}"
                                     bill="#{issueReturnController.returnBill}"/>
                             </h:panelGroup>
