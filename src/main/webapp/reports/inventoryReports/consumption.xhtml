@@ -359,6 +359,8 @@
                                     filterMatchMode="contains"
                                     sortBy="#{b.bill.toDepartment.name}"
                                     filterBy="#{b.bill.toDepartment.name}">
+                                    #{b.bill.netTotal}
+                                    #{b.bill.total}
                                     <h:outputText value="#{b.bill.toDepartment.name}"/>
                                 </p:column>
 
@@ -568,7 +570,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalCostValue}">
+                                        <h:outputLabel value="#{pharmacyController.totalRetailValue}">
                                             <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>

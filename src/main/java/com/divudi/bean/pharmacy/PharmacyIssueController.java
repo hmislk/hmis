@@ -526,7 +526,7 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setBillTime(new Date());
 
         if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
+            getBillFacade().createAndFlush(getPreBill());
         }
 
     }
@@ -536,36 +536,29 @@ public class PharmacyIssueController implements Serializable {
 
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
-            if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
-                continue;
-            }
-
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
-            tbi.setCreatedAt(Calendar.getInstance().getTime());
-            tbi.setCreater(getSessionController().getLoggedUser());
 
-            getBillItemFacade().edit(tbi);
+            if (tbi.getId() == null) {
+                tbi.setCreatedAt(Calendar.getInstance().getTime());
+                tbi.setCreater(getSessionController().getLoggedUser());
+                getBillItemFacade().createAndFlush(tbi);
+            } else {
+                getBillItemFacade().editAndFlush(tbi);
+            }
 
             double qtyL = tbi.getPharmaceuticalBillItem().getQty() + tbi.getPharmaceuticalBillItem().getFreeQty();
-
             //Deduct Stock
             boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
                     Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
-
             if (!returnFlag) {
                 tbi.setTmpQty(0);
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
             }
-
             getPreBill().getBillItems().add(tbi);
         }
-
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-
         calculateAllRates();
-
         getBillFacade().edit(getPreBill());
     }
 
@@ -781,12 +774,11 @@ public class PharmacyIssueController implements Serializable {
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalExpense = BigDecimal.ZERO;
         BigDecimal totalTax = BigDecimal.ZERO;
-        
+
         BigDecimal costValue = BigDecimal.ZERO;
         BigDecimal purchaseValue = BigDecimal.ZERO;
         BigDecimal retailValue = BigDecimal.ZERO;
         BigDecimal wholesaleValue = BigDecimal.ZERO;
-        
 
         for (BillItem bi : billItems) {
             if (bi == null) {
@@ -802,7 +794,7 @@ public class PharmacyIssueController implements Serializable {
 
             bi.setSearialNo(serialNo++);
             double netValue = bi.getQty() * bi.getRate();
-            bi.setNetValue(- Math.abs(netValue));
+            bi.setNetValue(-Math.abs(netValue));
 
             BigDecimal qty = Optional.ofNullable(bifd.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal grossRate = Optional.ofNullable(bifd.getLineGrossRate()).orElse(BigDecimal.ZERO);
@@ -828,7 +820,7 @@ public class PharmacyIssueController implements Serializable {
                 costRate = bifd.getValueAtCostRate().divide(qty, 4, RoundingMode.HALF_UP);
                 bifd.setLineCostRate(costRate);
             }
-            
+
             BigDecimal retailRate = Optional.ofNullable(bifd.getRetailSaleRate()).orElse(BigDecimal.ZERO);
             BigDecimal wholesaleRate = Optional.ofNullable(bifd.getWholesaleRate()).orElse(BigDecimal.ZERO);
 
@@ -836,7 +828,6 @@ public class PharmacyIssueController implements Serializable {
             costValue = costValue.add(Optional.ofNullable(bifd.getValueAtCostRate()).orElse(BigDecimal.ZERO));
             purchaseValue = purchaseValue.add(Optional.ofNullable(bifd.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
             wholesaleValue = wholesaleValue.add(Optional.ofNullable(bifd.getValueAtWholesaleRate()).orElse(BigDecimal.ZERO));
-
 
             totalLineDiscounts = totalLineDiscounts.add(Optional.ofNullable(bifd.getLineDiscount()).orElse(BigDecimal.ZERO));
             totalLineExpenses = totalLineExpenses.add(Optional.ofNullable(bifd.getLineExpense()).orElse(BigDecimal.ZERO));
@@ -896,8 +887,7 @@ public class PharmacyIssueController implements Serializable {
         bfd.setTotalPurchaseValueFree(null);
         bfd.setTotalRetailSaleValueFree(null);
         bfd.setTotalWholesaleValueFree(null);
-        
-        
+
         bfd.setTotalQuantity(totalQty);
         bfd.setTotalFreeQuantity(totalFreeQty);
         bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
@@ -907,7 +897,7 @@ public class PharmacyIssueController implements Serializable {
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
     }
-    
+
     @EJB
     private StockHistoryFacade stockHistoryFacade;
 
@@ -1021,7 +1011,7 @@ public class PharmacyIssueController implements Serializable {
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
 
         BigDecimal qtyNeg = qty.negate();
-        
+
         fd.setQuantity(qtyNeg);
         fd.setQuantityByUnits(qtyByUnits.negate());
 
