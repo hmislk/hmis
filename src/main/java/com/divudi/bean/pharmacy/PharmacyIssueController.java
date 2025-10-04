@@ -42,6 +42,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Institution;
@@ -133,6 +134,8 @@ public class PharmacyIssueController implements Serializable {
 
     @EJB
     private CashTransactionBean cashTransactionBean;
+    @EJB
+    private DepartmentFacade departmentFacade;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -152,6 +155,7 @@ public class PharmacyIssueController implements Serializable {
     boolean billPreview = false;
 
     Department toDepartment;
+    private List<Department> recentToDepartments;
     StockDTO stockDto;
 
     /////////////////
@@ -1874,5 +1878,49 @@ public class PharmacyIssueController implements Serializable {
 
     public StockDtoConverter getStockDtoConverter() {
         return stockDtoConverter;
+    }
+
+    // Recent Departments functionality for department pre-selection
+    public List<Department> getRecentToDepartments() {
+        if (recentToDepartments == null) {
+            String jpql = "select distinct b.toDepartment from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTypeAtomic=:bt "
+                    + " and b.fromDepartment=:fd "
+                    + " order by b.id desc";
+            Map<String, Object> m = new HashMap<>();
+            m.put("bt", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            m.put("fd", sessionController.getDepartment());
+            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+        }
+        return recentToDepartments;
+    }
+
+    public String selectFromRecentDepartment(Department d) {
+        if (d == null) {
+            return "";
+        }
+        setToDepartment(d);
+        return processDisposalIssue();
+    }
+
+    public void changeDepartment() {
+        preBill = null;
+        setToDepartment(null);
+    }
+
+    public String processDisposalIssue() {
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please Select a Department");
+            return "";
+        }
+        if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Make an Issue to the Same Department");
+            return "";
+        }
+        getPreBill().setFromInstitution(sessionController.getInstitution());
+        getPreBill().setFromDepartment(sessionController.getDepartment());
+        getPreBill().setToDepartment(toDepartment);
+        return "";
     }
 }

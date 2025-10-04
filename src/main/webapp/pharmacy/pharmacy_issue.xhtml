@@ -15,33 +15,94 @@
                     <p:growl id="panelError" />
 
                     <p:panel rendered="#{!pharmacyIssueController.billPreview}">
+                        <h:panelGroup class="row" rendered="#{pharmacyIssueController.toDepartment eq null or pharmacyIssueController.toDepartment eq sessionController.loggedUser.department}">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputLabel styleClass="fas fa-building" />
+                                    <h:outputLabel value="Select Department to Issue" class="mx-4" />
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-3"></div>
+                                    <div class="col-6">
+                                        <p:panelGrid columns="3" layout="tabular" class="w-100 my-1">
+                                            <f:facet name="header">
+                                                <h:outputLabel styleClass="fas fa-building" />
+                                                <h:outputLabel value="Select Department" class="mx-4" />
+                                            </f:facet>
+                                            <h:outputLabel value="Select a Department to Issue : "/>
+                                            <p:autoComplete
+                                                value="#{pharmacyIssueController.toDepartment}"
+                                                forceSelection="true"
+                                                size="30"
+                                                inputStyleClass="w-100"
+                                                class="mx-2 w-100"
+                                                completeMethod="#{departmentController.completeDept}"
+                                                var="vt"
+                                                itemLabel="#{vt.name}"
+                                                itemValue="#{vt}">
+                                                <p:ajax process="@this" update="btn"></p:ajax>
+                                            </p:autoComplete>
+                                            <h:panelGroup id="btn">
+                                                <p:commandButton
+                                                    id="btnSelect"
+                                                    ajax="false"
+                                                    value="Select"
+                                                    action="#{pharmacyIssueController.processDisposalIssue}"/>
+                                            </h:panelGroup>
+                                        </p:panelGrid>
+
+                                        <p:panel
+                                            class="text-center my-1"
+                                            header="Departments with Recent Issues"
+                                            rendered="#{not empty pharmacyIssueController.recentToDepartments}">
+                                            <ui:repeat value="#{pharmacyIssueController.recentToDepartments}" var="d">
+                                                <p:commandButton
+                                                    value="#{d.name}"
+                                                    icon="pi pi-building"
+                                                    class="m-1 ui-button-success rounded-pill fw-bold px-3"
+                                                    action="#{pharmacyIssueController.selectFromRecentDepartment(d)}"
+                                                    ajax="false"/>
+                                            </ui:repeat>
+                                        </p:panel>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <p:panel rendered="#{pharmacyIssueController.toDepartment ne null and pharmacyIssueController.toDepartment ne sessionController.loggedUser.department}">
                         <f:facet name="header" >
-                            <i Class="fas fa-building mt-2" />
-                            <h:outputLabel class="mx-2 mt-2" value="Department Disposal - Issue" />
-
-                            <div class="float-end" >
-                                <p:commandButton
-                                    accesskey="n"
-                                    value="New Disposal Issue Bill"
-                                    icon="pi pi-plus"
-                                    class="ui-button-warning m-1"
-                                    ajax="false"
-                                    action="/pharmacy/pharmacy_issue"
-                                    actionListener="#{pharmacyIssueController.resetAll()}">
-                                </p:commandButton>
-                                <p:commandButton
-                                    id="btnIssue"
-                                    accesskey="s"
-                                    value="Settle Issue"
-                                    icon="pi pi-check"
-                                    class="ui-button-success m-1"
-                                    ajax="false"
-                                    action="#{pharmacyIssueController.settleDisposalIssueBill()}"
-                                    onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i Class="fas fa-building mt-2" />
+                                    <h:outputLabel class="mx-2 mt-2" value="Department Disposal - Issue to #{pharmacyIssueController.toDepartment.name}" />
+                                </div>
+                                <div class="float-end" >
+                                    <p:commandButton
+                                        accesskey="n"
+                                        value="New Disposal Issue Bill"
+                                        icon="pi pi-plus"
+                                        class="ui-button-warning m-1"
+                                        ajax="false"
+                                        action="/pharmacy/pharmacy_issue"
+                                        actionListener="#{pharmacyIssueController.resetAll()}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnIssue"
+                                        accesskey="s"
+                                        value="Settle Issue"
+                                        icon="pi pi-check"
+                                        class="ui-button-success m-1"
+                                        ajax="false"
+                                        action="#{pharmacyIssueController.settleDisposalIssueBill()}"
+                                        onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
+                                    <p:commandButton
+                                        value="Change Department"
+                                        class="ui-button-primary m-1"
+                                        ajax="false"
+                                        icon="pi pi-refresh"
+                                        action="#{pharmacyIssueController.changeDepartment()}" />
+                                </div>
                             </div>
-
-
-
                         </f:facet>
 
                         <div class="row">
@@ -466,6 +527,7 @@
 
                         <ph:history/>
 
+                        </p:panel>
                     </p:panel>
 
                     <p:panel rendered="#{pharmacyIssueController.billPreview}" >
