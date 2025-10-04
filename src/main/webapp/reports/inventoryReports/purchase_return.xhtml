@@ -267,12 +267,12 @@
                                 <h:outputText value="#{f.item.code}" />
                             </p:column>
                             <p:column headerText="Purchase Rate" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" >
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.purcahseRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Purchase Value" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.billItemFinanceDetails.quantityByUnits}" >
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.purcahseRate * f.billItemFinanceDetails.quantityByUnits}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
