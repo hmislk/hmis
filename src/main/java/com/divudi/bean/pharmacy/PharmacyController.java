@@ -1958,12 +1958,20 @@ public class PharmacyController implements Serializable {
                     break;
 
                 case "byBill":
-                    generateConsumptionReportTableByBill(BillType.PharmacyDisposalIssue);
+                    if (item != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when an item is selected");
+                        return;
+                    }
+                    if (category != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when a category is selected");
+                        return;
+                    }
+                    generateConsumptionReportTableByBill(disposalBillTypes);
                     break;
 
                 case "summeryReport":
                 case "categoryWise":
-                    generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyDisposalIssue);
+                    generateConsumptionReportTableByDepartmentAndCategoryWise(disposalBillTypes);
                     break;
 
                 default:
@@ -2124,16 +2132,16 @@ public class PharmacyController implements Serializable {
                 tmp.put("dept", dept);
             }
 
-            if (category != null) {
-                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
-                tmp.put("category", category);
-            }
-
-            if (item != null) {
-                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
-                tmp.put("item", item);
-            }
-
+            // For Bill, we should not consider the item or category
+//            if (category != null) {
+//                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+//                tmp.put("category", category);
+//            }
+//
+//            if (item != null) {
+//                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
+//                tmp.put("item", item);
+//            }
             if (toDepartment != null) {
                 jpql += " AND b.toDepartment = :toDept";
                 tmp.put("toDept", toDepartment);
@@ -2145,55 +2153,22 @@ public class PharmacyController implements Serializable {
 
             totalPurchase = 0.0;
             totalCostValue = 0.0;
+            totalRetailValue = 0.0;
 
             pharmacyRows = new ArrayList<>();
-            Set<Item> allUniqueItems = new HashSet<>();
 
             for (Bill b : bills) {
-                if (b != null && b.getBillItems() != null) {
-                    for (BillItem bi : b.getBillItems()) {
-                        if (bi.getItem() != null) {
-                            allUniqueItems.add(bi.getItem());
-                        }
-                    }
-                }
+                PharmacyRow row = new PharmacyRow();
+                row.setBill(b);
+
+                totalPurchase +=  b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                totalCostValue +=  b.getBillFinanceDetails().getTotalCostValue().doubleValue();
+                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+                
+                pharmacyRows.add(row);
+
             }
 
-            List<ItemBatch> allBatches = getItemBatchesByItems(new ArrayList<>(allUniqueItems));
-
-            Map<Long, ItemBatch> latestBatchMap = allBatches.stream()
-                    .filter(ib -> ib.getItem() != null && ib.getId() != null)
-                    .collect(Collectors.toMap(
-                            ib -> ib.getItem().getId(),
-                            Function.identity(),
-                            BinaryOperator.maxBy(Comparator.comparing(ItemBatch::getId))
-                    ));
-
-            for (Bill b : bills) {
-                if (b != null && b.getBillItems() != null && !b.getBillItems().isEmpty()) {
-                    PharmacyRow row = new PharmacyRow();
-                    row.setBill(b);
-
-                    double costRateTotal = 0.0;
-
-                    for (BillItem bi : b.getBillItems()) {
-                        Item item = bi.getItem();
-                        if (item != null) {
-                            ItemBatch latestBatch = latestBatchMap.get(item.getId());
-
-                            if (latestBatch != null && latestBatch.getCostRate() != null) {
-                                costRateTotal += latestBatch.getCostRate() * bi.getQty();
-                            }
-                        }
-                    }
-
-                    row.setCostValue(costRateTotal);
-                    totalPurchase += b.getStockBill() != null ? b.getStockBill().getStockValueAtPurchaseRates() : 0.0;
-                    totalCostValue += costRateTotal;
-
-                    pharmacyRows.add(row);
-                }
-            }
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, " Something Went Wrong!");
         }
@@ -6102,7 +6077,7 @@ public class PharmacyController implements Serializable {
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :bta "
                 + "AND b.createdAt BETWEEN :frm AND :to ";
-        
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
         params.put("bta", btas);
@@ -6700,9 +6675,6 @@ public class PharmacyController implements Serializable {
     }
 
     // </editor-fold>
-    
-    
-    
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
