@@ -13,7 +13,15 @@
             <h:panelGroup rendered="#{!saleReturnController.printPreview}"  >
                 <p:panel class="w-100">
                     <f:facet name="header" >
-                        <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
+                            <p:commandButton 
+                                ajax="false"
+                                value="Back to Reprint" 
+                                class="ui-button-secondary"
+                                icon="fa fa-arrow-left"
+                                action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />
+                        </div>
                     </f:facet>
 
                     <div class="row" >
@@ -84,15 +92,10 @@
                                         autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
                                         <p:ajax 
                                             event="blur"
-                                            delay="500"
                                             update=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId}"  
                                             process="@this" 
-                                            listener="#{saleReturnController.onEdit(ph)}" ></p:ajax>
-<!--                                        <f:validateDoubleRange
-                                            minimum="0"
-                                            maximum="#{ph.pharmaceuticalBillItem.qty}" />
-                                            CAN NOT Use Client Side Validation. It involves complex logic. Have to dynamically calculate the remaining qty by going through all the previous return bills. Removing the validator
--->
+                                            listener="#{saleReturnController.onEdit(ph)}" >
+                                        </p:ajax>
                                     </p:inputText>
                                 </p:column>  
 
@@ -102,41 +105,47 @@
 
 
 
-                            <p:panel header="Repayment" id="totalPanel">
-                                <div class="mb-2">
-                                    <p:outputLabel class="form-label" value="Gross Amount" />
-                                    <p:outputLabel id="grossTotal"
-                                                   value="#{saleReturnController.returnBill.total}"
-                                                   class="form-control w-100 text-end fw-bold bg-light">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                </div>
+                            <p:panel header="Repayment" >
+                                <h:panelGroup id="totalPanel">
+                                    <div class="mb-2">
+                                        <p:outputLabel class="form-label" value="Gross Amount" />
+                                        <p:outputLabel id="grossTotal"
+                                                       value="#{saleReturnController.returnBill.total}"
+                                                       class="form-control w-100 text-end fw-bold bg-light">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </div>
 
-                                <div class="mb-2">
-                                    <p:outputLabel class="form-label" value="Discount Receivable" />
-                                    <p:outputLabel id="discount"
-                                                   value="#{saleReturnController.returnBill.discount}"
-                                                   class="form-control w-100 text-end fw-bold bg-light">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel class="form-label" value="Discount Receivable" />
+                                        <p:outputLabel id="discount"
+                                                       value="#{saleReturnController.returnBill.discount}"
+                                                       class="form-control w-100 text-end fw-bold bg-light">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </div>
 
-                                <div class="mb-2">
-                                    <p:outputLabel class="form-label" value="Recievable Amount" />
-                                    <p:outputLabel 
-                                        value="#{saleReturnController.returnBill.netTotal}"
-                                        class="form-control w-100 text-end fw-bold bg-light">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel class="form-label" value="Receivable Amount" />
+                                        <p:outputLabel 
+                                            value="#{saleReturnController.returnBill.netTotal}"
+                                            class="form-control w-100 text-end fw-bold bg-light">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </div>
+                                </h:panelGroup>
+
 
                                 <div class="mb-2">
                                     <p:outputLabel value="Comments" for="comment" class="form-label">
                                         <i class="fa fa-comment me-1"></i>
                                     </p:outputLabel>
-                                    <p:inputTextarea id="comment"
-                                                     class="form-control"
-                                                     value="#{saleReturnController.returnBillcomment}" />
+                                    <p:inputTextarea 
+                                        id="comment"
+                                        class="form-control"
+                                        value="#{saleReturnController.returnBillcomment}" >
+                                        <p:ajax event="blur" process="comment" ></p:ajax>
+                                    </p:inputTextarea>
                                 </div>
 
                                 <div class="mb-2">
@@ -153,8 +162,164 @@
                                 </div>
 
                                 <h:panelGroup id="paymentDetails">
+                                    <h:panelGroup
+                                        class="row"
+                                        layout="block"
+                                        rendered="#{saleReturnController.returnPaymentMethod eq 'Credit'}" >
+                                        <div class="my-1" id="creditPayment">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="d-flex gap-2 align-items-end">
+                                                        <div>
+                                                            <p:outputLabel for="creditCompany" value="Company"/>
+                                                            <p:autoComplete
+                                                                id="creditCompany"
+                                                                class="w-100"
+                                                                inputStyleClass="form-control"
+                                                                forceSelection="true"
+                                                                value="#{saleReturnController.paymentMethodData.credit.institution}"
+                                                                completeMethod="#{institutionController.completeCreditCompany}"
+                                                                var="ix"
+                                                                minQueryLength="2"
+                                                                placeholder="Type to search..."
+                                                                itemLabel="#{ix.name}"
+                                                                itemValue="#{ix}"
+                                                                size="10"  >
+                                                            </p:autoComplete>
+                                                        </div>
+
+                                                        <div>
+                                                            <p:outputLabel for="polNo" value="Policy No"/>
+                                                            <p:inputText
+                                                                id="polNo"
+                                                                style="width: 100px;"
+                                                                value="#{saleReturnController.paymentMethodData.credit.referralNo}"
+                                                                placeholder="Policy NO" >
+                                                            </p:inputText>
+                                                        </div>
+
+                                                        <div>
+                                                            <p:outputLabel for="refNo" value="Reference No"/>
+                                                            <p:inputText
+                                                                id="refNo"
+                                                                style="width: 100px;"
+                                                                value="#{saleReturnController.paymentMethodData.credit.referenceNo}"
+                                                                placeholder="Reference NO" >
+                                                            </p:inputText>
+                                                        </div>
+
+                                                        <div>
+                                                            <p:outputLabel for="memo" value="Memo"/>
+                                                            <p:inputText
+                                                                id="memo"
+                                                                style="width: 300px;"
+                                                                value="#{saleReturnController.paymentMethodData.credit.comment}"
+                                                                placeholder="Memo" >
+                                                            </p:inputText>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup
+                                        class="row"
+                                        layout="block"
+                                        rendered="#{saleReturnController.returnPaymentMethod eq 'Staff'}" >
+                                        <div class="my-1" id="staffCredit">
+                                            <div class="row mt-1">
+                                                <div class="col-12">
+                                                    <p:autoComplete
+                                                        minQueryLength="2"
+                                                        forceSelection="true"
+                                                        value="#{saleReturnController.toStaff}"
+                                                        id="creditStaff"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="mys"
+                                                        class="w-100"
+                                                        placeholder="Staff (Type at least 4 letters to search)"
+                                                        inputStyleClass="form-control"
+                                                        itemLabel="#{mys.person.name}"
+                                                        itemValue="#{mys}"
+                                                        size="10">
+                                                        <p:column headerText="Name" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="EPF" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.creditLimitQualified}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.currentCreditValue}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup
+                                        class="row"
+                                        layout="block"
+                                        rendered="#{saleReturnController.returnPaymentMethod eq 'Staff_Welfare'}" >
+                                        <div class="my-1" id="staffWelfate">
+                                            <div class="row mt-1">
+                                                <div class="col-12">
+                                                    <p:autoComplete
+                                                        minQueryLength="1"
+                                                        forceSelection="true"
+                                                        value="#{saleReturnController.toStaff}"
+                                                        id="welfareStaff"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="mys"
+                                                        class="w-100"
+                                                        placeholder="Staff (Type Name, Code or EPF No to search)"
+                                                        inputStyleClass="form-control"
+                                                        itemLabel="#{mys.person.name}"
+                                                        itemValue="#{mys}"
+                                                        size="10">
+                                                        <p:column headerText="Name" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Code" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="EPF" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
                                     <h:panelGroup id="creditCard" rendered="#{saleReturnController.returnPaymentMethod eq 'Card'}">
                                         <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{saleReturnController.paymentMethodData}" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="ptdeposit" rendered="#{saleReturnController.returnPaymentMethod eq 'PatientDeposit'}">
+                                        <pa:patient_deposit paymentMethodData="#{saleReturnController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="ewallet" rendered="#{saleReturnController.returnPaymentMethod eq 'ewallet'}" >
+                                        <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{saleReturnController.paymentMethodData}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup id="cheque" rendered="#{saleReturnController.returnPaymentMethod eq 'Cheque'}">
@@ -162,7 +327,15 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="slip" rendered="#{saleReturnController.returnPaymentMethod eq 'Slip'}">
-                                        <pa:slip paymentMethodData="#{saleReturnController.paymentMethodData}" />
+                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{saleReturnController.paymentMethodData}" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup
+                                        class="row my-1 w-100"
+                                        layout="block"
+                                        id="multiplePaymentMethods"  rendered="#{saleReturnController.returnPaymentMethod eq 'MultiplePaymentMethods'}"
+                                        >
+                                        <pa:multiple_payment_methods class="w-100" controller="#{saleReturnController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
@@ -228,22 +401,22 @@
 
                     <h:panelGroup   id="gpBillPreviewSingle" rendered="true">                   
                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                            <ph:returnBill bill="#{saleReturnController.returnBill}"></ph:returnBill>
+                            <ph:returnBill bill="#{saleReturnController.finalReturnBill}"></ph:returnBill>
                         </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                            <ph:saleBill_five_five bill="#{saleReturnController.returnBill}"></ph:saleBill_five_five>
+                            <ph:saleBill_five_five bill="#{saleReturnController.finalReturnBill}"></ph:saleBill_five_five>
                         </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
-                        <ph:saleBill_Header_Return bill="#{saleReturnController.returnBill}"></ph:saleBill_Header_Return>
+                        <ph:saleBill_Header_Return bill="#{saleReturnController.finalReturnBill}"></ph:saleBill_Header_Return>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
-                        <ph:sale_bill_five_five_custom_3_Return bill="#{saleReturnController.returnBill}"/>
+                        <ph:sale_bill_five_five_custom_3_Return bill="#{saleReturnController.finalReturnBill}"/>
                     </h:panelGroup>
 
                 </h:panelGroup>

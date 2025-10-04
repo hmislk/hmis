@@ -167,7 +167,7 @@ public class StockHistoryController implements Serializable {
     public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i) {
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyBinCardDTO(")
-                .append("s.id, s.createdAt, ")
+                .append("s.id, s.pbItem.billItem.bill.id, s.createdAt, ")
                 .append("s.pbItem.billItem.bill.billType, ")
                 .append("s.pbItem.billItem.bill.billTypeAtomic, ")
                 .append("s.pbItem.billItem.item.name, ")

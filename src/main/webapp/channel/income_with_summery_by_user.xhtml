@@ -1,0 +1,538 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/channel/channel_reports.xhtml" >
+
+            <ui:define name="subContent">
+                <h:form>
+                    <p:panel header="Income By User for Bookings" >
+                        <div class="row">
+                            <div class="col-12">
+                                <h:panelGrid columns="15" class="my-2" styleClass="w-100 form-grid">
+
+                                    <h:outputText class="mx-2" value="&#xf073;"
+                                                  styleClass="fa mr-2"/>
+                                    <h:outputLabel class="mx-2" value="From " />
+                                    <h:outputLabel value=":" />
+
+                                    <p:datePicker 
+                                        class="mx-4 w-100"
+                                        inputStyleClass="form-control"
+                                        showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true"
+                                        value="#{channelReportController.fromDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    <p:spacer width="50"/>
+
+                                    <h:outputText class="mx-2" value="&#xf073;"
+                                                  styleClass="fa mr-2"/>
+                                    <h:outputLabel class="mx-2" value="To" />
+                                    <h:outputLabel value=":" />
+
+                                    <p:datePicker
+                                        class="mx-4 w-100"
+                                        inputStyleClass="form-control"
+                                        showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true"
+                                        value="#{channelReportController.toDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    <p:spacer width="50"/>
+                                    <h:outputText class="mx-2" value="&#xf0e8;"
+                                                  styleClass="fa mr-2"/>
+                                    <h:outputLabel class="mx-2"  value="Institution"  />
+                                    <h:outputLabel value=":" />
+                                    <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.institution}" filter="true" >
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax event="change" process="@this"/>
+                                    </p:selectOneMenu>
+                                    <p:spacer width="50"/>
+
+                                    <i class="fa-solid fa-circle-check"/>
+                                    <h:outputLabel class="mx-2 my-2"  value="Report Status"  />
+                                    <h:outputLabel value=":" />
+                                    <p:selectOneMenu
+                                        id="cmbDept"
+                                        style="width: 350px;"
+                                        class="w-100 mx-4"
+                                        value="#{channelReportController.reportStatus}"
+                                        >
+                                        <f:selectItem itemLabel="Summery View" itemValue="Summery" />
+                                        <f:selectItem itemLabel="Details View" itemValue="Details"/>
+
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50"/>
+                                    <h:outputText class="mx-2" styleClass="fas fa-user mr-2"/>
+                                    <h:outputLabel value="User" class="mx-2"/>
+                                    <h:outputLabel value=":" />
+                                    <p:selectOneMenu
+                                        class="w-100 mx-4"
+                                        filter="true"
+                                        value="#{channelReportController.webUser}" id="acIx">
+                                        <f:selectItem itemLabel="All Users"/>
+                                        <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}"
+                                                       itemValue="#{st}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50"/>
+                                    <h:outputText class="mx-2" value="&#xf0e8;"
+                                                  styleClass="fa mr-2"/>
+                                    <h:outputLabel class="mx-2"  value="Category"  />
+                                    <h:outputLabel value=":" />
+
+                                    <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="Select Categories"
+                                                          id="supplierMenu"
+                                                          filter="true"
+                                                          class="w-100 mx-4"
+                                                          converter="categoryConverter"
+                                                          filterMatchMode="contains">
+                                        <f:selectItems value="#{serviceCategoryController.items}" var="item"
+                                                       itemLabel="#{item.name}" itemValue="#{item}" />
+
+                                    </p:selectCheckboxMenu>
+
+                                </h:panelGrid>
+                            </div>
+                        </div>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
+
+                            <p:commandButton
+                                id="btnPdf"
+                                class="m-2 ui-button-info"
+                                ajax="false"
+                                rendered="true"
+                                icon="fas fa-file-pdf"
+                                value="Export as PDF">
+                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnPrint"
+                                class="m-1 ui-button-danger mx-2"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print Table"
+                                action="income_with_agent_bookings_print?faces-redirect=true">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnExcel"
+                                class="m-1 ui-button-success"
+                                icon="fas fa-file-excel"
+                                ajax="false" value="Export to Excel">
+                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+                        <p:panel >
+
+
+                            <p:dataTable id="tableForReport"  
+                                         value="#{channelReportController.wrapperDto.incomeDtos}" var="row" 
+                                         paginator="true"
+                                         scrollable="true"
+                                         scrollHeight="800px"
+                                         rows="10"
+                                         rowIndexVar="n"
+                                         expandedRow="true"
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
+                                         rowKey="#{row.bsId}">
+                                <!--                                <p:ajax event="page" oncomplete="updateTotals()" />-->
+                                <f:facet name="header">
+
+                                    <h:outputLabel value="#{channelReportController.institution.name}"/>
+                                    <h:outputLabel value="From : " />
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="&emsp;&emsp;Processed By :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processedBy}" >
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="&emsp;&emsp;Processed At :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </f:facet>
+
+                                <p:column  headerText="Serial No" style=" text-align: center;">
+                                    <h:outputText value="#{n+1}"/>
+                                </p:column>
+
+                                <p:column headerText="Bill ID" style=" text-align: center;">
+                                    <h:outputText value="#{row.billId}"/>
+                                </p:column>
+
+                                <p:column headerText="Appoinment Date" style=" text-align: center; font-weight: bold">
+                                    <h:outputText value="#{row.appoinmentDate}">
+                                        <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Created Date" style=" text-align: center;">
+                                    <h:outputText value="#{row.billedDate}">
+                                        <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Billed By" style=" text-align: center;">
+                                    <h:outputText value="#{row.billedBy}"/>
+                                </p:column>
+
+                                <p:column headerText="Patient Name" style=" text-align: center; font-weight: bold">
+                                    <h:outputText value="#{row.patientName}"/>
+                                </p:column>
+
+                                <p:column headerText="Payment Method" style=" text-align: center;">
+                                    <h:outputText value="#{row.paymentMethod}"/>
+                                </p:column>
+
+                                <p:column headerText="Hospital Fee" style=" text-align: center;">
+                                    <h:outputText styleClass="hosFee" value="#{row.hosFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="totalhosFee" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Doctor Fee" style=" text-align: center;">
+                                    <h:outputText styleClass="doctorFee" value="#{row.doctorFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="totalDocFee" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Total Fee" style=" text-align: center; font-weight: bold">
+                                    <h:outputText styleClass="total" value="#{row.totalAppoinmentFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="totalFee" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+
+
+                            </p:dataTable>
+
+                            <hr></hr>
+                            <p:dataTable id="tableForsummery"  
+                                         value="#{channelReportController.wrapperDto.summeryDtos}" var="row" 
+                                         paginator="true"
+                                         scrollable="true"
+                                         scrollHeight="800px"
+                                         rows="10"
+                                         rowIndexVar="n"
+                                         expandedRow="true"
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
+                                         rowKey="#{row.appoimentDate}">
+                                <p:ajax event="page" oncomplete="updateTotals()" />
+                                <f:facet name="header">
+
+                                    <h:outputLabel value="#{channelReportController.institution.name}"/>
+                                    <h:outputLabel value="From : " />
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="&emsp;&emsp;Processed By :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processedBy}" >
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="&emsp;&emsp;Processed At :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </f:facet>
+
+                                <p:column  headerText="Serial No" style=" text-align: center;">
+                                    <h:outputText value="#{n+1}"/>
+                                </p:column>
+
+                                <p:column headerText="Appoinment Date" style=" text-align: center;">
+                                    <h:outputText value="#{row.appoimentDate}">
+                                        <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Total Appoinments" style=" text-align: center; font-weight: bold">
+                                    <h:outputText value="#{row.totalActiveAppoinments}"/>
+                                </p:column>
+
+                                <p:column headerText="Total Amount" style=" text-align: center; font-weight: bold">
+                                    <h:outputText styleClass="summeryTotal" value="#{row.totalAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="summeryAllTotal" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Total Doc Fee" style=" text-align: center; font-weight: bold">
+                                    <h:outputText styleClass="summeryDocFee" value="#{row.totalDocFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="summeryDocFeeTotal" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Total Hospital Fee" style=" text-align: center; font-weight: bold">
+                                    <h:outputText styleClass="summeryHosFee" value="#{row.totalHosFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="summeryHosFeeTotal" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Card Total" style=" text-align: center;">
+                                    <h:outputText styleClass="summeryCardValue" value="#{row.cardTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="summeryCardValueTotal" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Cash Total" style=" text-align: center;">
+                                    <h:outputText styleClass="summeryCashValue" value="#{row.cashTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel styleClass="summeryCashValueTotal" value="0.00">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+
+
+                            </p:dataTable>
+                            <br></br>
+
+                            <table style="width: 100%; border-collapse: collapse; font-weight: bold; font-size: 14px; text-align: left;">
+                                <div style="font-weight: bold" class="text-center">
+                                    <h:outputLabel value="#{sessionController.institution.name}"/>
+                                    <br></br>
+                                    <h:outputLabel value="Channeling Income Summery Report"/>
+                                </div>
+                                <hr></hr>
+                                <div class="d-flex align-item-center justify-content-between" style="font-weight: bold">
+                                    
+                                    <h:outputLabel value="From : " />
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="&emsp;&emsp;Processed By :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processedBy}" >
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="&emsp;&emsp;Processed At :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </div>
+                            
+                                <hr></hr>
+
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Cash Collection" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCashTotal}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Card Collection" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCardTotal}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Credit Collection" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCreditTotal}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Valid Appointments" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.totalValidAppoinments}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Cancel and Refund Collection" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCancelTotal + channelReportController.wrapperDto.allRefundTotal}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Cancel and Refund Appointments" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCancelAppoinments + channelReportController.wrapperDto.allRefundAppoinments}" />
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                            <!--                            <p:dataTable  
+                                                            id="totalSummeryTable"
+                                                            scrollHeight="800px"
+                                                            >
+                                                            <p:ajax event="page" oncomplete="updateTotals()" />
+                                                            <f:facet name="header">
+                            
+                                                                <h:outputLabel value="#{channelReportController.institution.name}"/>
+                                                                <h:outputLabel value="From : " />
+                                                                <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                </h:outputLabel>                          
+                                                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                                                <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                </h:outputLabel>
+                            
+                                                                <h:outputLabel value="&emsp;&emsp;Processed By :"/>
+                                                                <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processedBy}" >
+                                                                </h:outputLabel>
+                            
+                                                                <h:outputLabel value="&emsp;&emsp;Processed At :"/>
+                                                                <h:outputLabel class="ml-2"  value="#{channelReportController.wrapperDto.processDate}" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                </h:outputLabel>
+                                                            </f:facet>
+                            
+                                                            <p:row>
+                                                                <p:column style="font-weight:bold; border:none">
+                                                                    <h:outputText value="Total Cash Collection" />
+                                                                </p:column>
+                                                                <p:column style="border:none">
+                                                                    <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                                                </p:column>
+                                                            </p:row>
+                            
+                                                            <p:row>
+                                                                <p:column style="font-weight:bold; border:none">
+                                                                    <h:outputText value="Total Cash Collection" />
+                                                                </p:column>
+                                                                <p:column style="border:none">
+                                                                    <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
+                                                                </p:column>
+                                                            </p:row>
+                            
+                                                        </p:dataTable>-->
+
+                            <script>
+                                function calculateTotals(selector, targeter) {
+                                    const values = Array.from(document.querySelectorAll(selector));
+                                    const totalValue = values
+                                            .map(value => {
+                                                const cleanValue = value.innerText.replace(/,/g, "");
+                                                return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                            })
+                                            .reduce((total, value) => total + value, 0);
+
+                                    const targetElements = document.querySelectorAll(targeter);
+                                    targetElements.forEach(el => {
+                                        el.innerText = totalValue.toFixed(2);
+                                    });
+
+                                }
+
+                                function updateTotals() {
+                                    calculateTotals('.hosFee', '.totalhosFee');
+                                    calculateTotals('.doctorFee', '.totalDocFee');
+                                    calculateTotals('.total', '.totalFee');
+
+                                    calculateTotals('.summeryTotal', '.summeryAllTotal');
+                                    calculateTotals('.summeryDocFee', '.summeryDocFeeTotal');
+                                    calculateTotals('.summeryHosFee', '.summeryHosFeeTotal');
+                                    calculateTotals('.summeryCardValue', '.summeryCardValueTotal');
+                                    calculateTotals('.summeryCashValue', '.summeryCashValueTotal');
+
+                                }
+
+                                setTimeout(updateTotals, 500);
+                            </script>
+
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

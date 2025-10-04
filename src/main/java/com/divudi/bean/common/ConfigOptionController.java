@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
 import com.divudi.core.util.JsfUtil;
@@ -34,7 +30,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import javax.faces.application.FacesMessage;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -80,6 +75,35 @@ public class ConfigOptionController implements Serializable {
      * Creates a new instance of OptionController
      */
     public ConfigOptionController() {
+    }
+
+    public boolean getBooleanValueByKey(String key) {
+        return getBooleanValueByKey(key, true);
+    }
+
+    public boolean getBooleanValueByKey(String key, boolean defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue=configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKey(deptKey, defaultValue);
+    }
+
+    public void setBooleanValueByKey(String key, boolean value) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+            configOptionApplicationController.setBooleanValueByKey(departmentName + " - " + key, value);
+        } else {
+            configOptionApplicationController.setBooleanValueByKey(key, value);
+        }
     }
 
     public String navigateToDepartmentOptions() {
@@ -210,7 +234,7 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Please select a CSV file to import");
             return null;
         }
-        
+
         try (InputStream in = uploadedFile.getInputStream()) {
             importOptionsFromFile(in);
             return "/admin/institutions/admin_mange_application_options?faces-redirect=true";

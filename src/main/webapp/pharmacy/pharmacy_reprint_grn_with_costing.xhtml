@@ -28,7 +28,7 @@
                                     <p:commandButton 
                                         class="ui-button-primary"
                                         icon="fa fa-list-alt"
-                                        action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"
+                                        action="/pharmacy/pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true"
                                         value="PO List" 
                                         ajax="false">
                                     </p:commandButton>
@@ -47,6 +47,7 @@
                                         <p:fileDownload value="#{pharmacyBillSearch.exportAsJson()}"/>
                                     </p:commandButton>
                                     <p:commandButton 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}"
                                         ajax="false" 
                                         value="To Cancel" 
                                         class="ui-button-danger"
@@ -54,17 +55,126 @@
                                         action="pharmacy_cancel_grn" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}">
                                     </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        onclick="PF('grnReprintConfigDialog').show();" />
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="false" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        action="#" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
                                 </div>
                             </div>              
                         </f:facet>
 
                         <div style="width: 100%;">
-                            <h:panelGroup id="gpBillPreview" >
-                                <ph:grn_with_costing bill="#{pharmacyBillSearch.bill}"/>
+                            <!--                            <h:panelGroup id="gpBillPreview" >
+                                                            <ph:grn_with_costing bill="#{pharmacyBillSearch.bill}"/>
+                                                        </h:panelGroup>-->
+                            <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <ph:grn_with_costing
+                                        rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                        bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                    <ph:grn_with_costing_custom_1
+                                        rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
+                                        bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                    <ph:grn_with_costing_custom_2
+                                        rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 2', true)}"
+                                        bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </h:panelGroup>
                             </h:panelGroup>
                         </div>
                     </p:panel>
                 </h:form>
+
+                <!-- GRN Reprint Configuration Dialog -->
+                <p:dialog id="grnReprintConfigDialog"
+                          header="GRN Reprint Configuration"
+                          widgetVar="grnReprintConfigDialog"
+                          modal="true"
+                          width="600"
+                          height="400"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="grnConfigForm" />
+
+                    <h:form id="grnConfigForm">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"></i> GRN Reprint Receipt Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="grnReceiptA4"
+                                                value="#{pharmacyRetailConfigController.grnReceiptA4}" />
+                                            <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="grnReceiptCustom1"
+                                                value="#{pharmacyRetailConfigController.grnReceiptCustom1}" />
+                                            <p:outputLabel for="grnReceiptCustom1" value="Custom Format 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom GRN receipt format 1</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="grnReceiptCustom2"
+                                                value="#{pharmacyRetailConfigController.grnReceiptCustom2}" />
+                                            <p:outputLabel for="grnReceiptCustom2" value="Custom Format 2" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom GRN receipt format 2</small>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="grnConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('grnReprintConfigDialog').hide(); return false;"
+                                                    type="button" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
             </ui:define>
         </ui:composition>
 

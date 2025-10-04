@@ -99,6 +99,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    @Inject
+    com.divudi.bean.common.PatientController patientController;
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
@@ -391,11 +393,16 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void saveCurrent() {
-        getPatientFacade().edit(getCurrent().getPatient());
-        getPersonFacade().edit(getCurrent().getPatient().getPerson());
-        getPersonFacade().edit(getCurrent().getGuardian());
-        getEjbFacade().edit(current);
+        // Apply patient name capitalization based on configuration settings
+        patientController.applyPatientNameCapitalization(getCurrent().getPatient());
+
+        // Use editAndFlush to ensure changes are immediately committed and cached entities are cleared
+        getPatientFacade().editAndFlush(getCurrent().getPatient());
+        getPersonFacade().editAndFlush(getCurrent().getPatient().getPerson());
+        getPersonFacade().editAndFlush(getCurrent().getGuardian());
+        getEjbFacade().editAndFlush(current);
         savePatientAllergies();
+
         JsfUtil.addSuccessMessage("Detail Updated");
     }
 

@@ -1,191 +1,354 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
-    <ui:define name="content">
-        <h:form>
-            <h:panelGroup rendered="#{!issueReturnController.printPreview}" styleClass="alignTop" >
-                <p:panel>
+    <h:head>
+        <title>Pharmacy Bill Return - Issue</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
 
-                    <f:facet name="header" >     
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!issueReturnController.printPreview}">
+                        <!-- Page Header -->
+                        <p:panel styleClass="mb-3">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-undo text-warning me-2"></i>
+                                        <h:outputText value="Pharmacy Issue Return" styleClass="fw-bold"/>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <p:commandButton
+                                            icon="fas fa-save"
+                                            styleClass="ui-button-secondary"
+                                            value="Save Draft"
+                                            title="Save return bill as draft"
+                                            action="#{issueReturnController.saveDisposalIssueReturnBill()}"
+                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            ajax="false">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            icon="fas fa-check-circle"
+                                            styleClass="ui-button-success"
+                                            value="Finalize"
+                                            title="Finalize return bill"
+                                            action="#{issueReturnController.finalizeDisposalIssueReturnBill()}"
+                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            ajax="false">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            icon="fas fa-money-bill"
+                                            styleClass="ui-button-warning"
+                                            value="Authorize Return"
+                                            title="Authorize and process the return"
+                                            action="#{issueReturnController.settleDisposalIssueReturnBill}"
+                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            ajax="false">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <p:outputLabel  value="Recievable Amount : " class="mt-2"/> 
-                                <p:outputLabel
-                                    class="mx-2 mt-2"
-                                    id="total"  
-                                    value=""
-                                    styleClass="totalAmount"
-                                    >
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </p:outputLabel>
+                        <!-- Messages Panel -->
+                        <p:messages id="messages" showDetail="true" closable="true" globalOnly="false" />
+
+                        <!-- Warning for Fully Returned Bills -->
+                        <p:panel rendered="#{issueReturnController.originalBill.fullReturned}" styleClass="mb-3">
+                            <div class="alert alert-danger d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <div>
+                                    <h:outputText value="This disposal issue bill has been fully returned on " styleClass="fw-bold"/>
+                                    <h:outputText value="#{issueReturnController.originalBill.fullReturnedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value=" by #{issueReturnController.originalBill.fullReturnedBy.person.nameWithTitle}. No further returns are allowed." styleClass="fw-bold"/>
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <p:commandButton 
-                                    icon="fas fa-save"
-                                    class="ui-button-primary"
-                                    value="Save" 
-                                    action="#{issueReturnController.saveIssueBillReturn()}" 
-                                    ajax="false" >
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fas fa-save"
-                                    class="ui-button-success mx-1"
-                                    value="Finalize" 
-                                    action="#{issueReturnController.finalizeIssueBillReturn()}" 
-                                    ajax="false" >
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fa fa-money-bill-wave"
-                                    class="ui-button-warning"
-                                    value="Return" 
-                                    action="#{issueReturnController.settle}" 
-                                    ajax="false"  >
-                                </p:commandButton>
+                        </p:panel>
+
+                        <!-- Return Summary Panel -->
+                        <div class="row mb-3">
+                            <div class="col-lg-6">
+                                <p:panel header="Return Summary" styleClass="shadow-sm">
+                                    <p:panelGrid columns="2" styleClass="w-100">
+                                        <h:outputText value="Receivable Amount:" styleClass="fw-bold"/>
+                                        <h:outputText
+                                            id="total"
+                                            value="#{issueReturnController.returnBill.netTotal}"
+                                            styleClass="text-success fw-bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:panelGrid>
+                                </p:panel>
                             </div>
                         </div>
 
-                    </f:facet>
-                </p:panel>
+                        <!-- Returning Items Data Table -->
+                        <p:panel header="Returning Items" styleClass="shadow-sm">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-list text-primary me-2"></i>
+                                        <h:outputText value="Returning Items" styleClass="fw-bold"/>
+                                    </div>
+                                    <div>
+                                        <p:commandButton
+                                            icon="fas fa-trash"
+                                            value="Delete Selected"
+                                            styleClass="ui-button-danger"
+                                            title="Delete selected items from return"
+                                            action="#{issueReturnController.deleteSelectedItems()}"
+                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            ajax="false">
+                                            <p:confirm header="Confirmation"
+                                                       message="Are you sure you want to delete the selected items?"
+                                                       icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
 
-                <p:dataTable 
-                    var="ph" 
-                    value="#{issueReturnController.billItems}"
-                    scrollable="true"                    
-                    rows="10"
-                    id="itemList" >  
+                            <p:dataTable
+                                var="rbi"
+                                value="#{issueReturnController.returnBillItems}"
+                                styleClass="table-striped"
+                                scrollable="true"
+                                rows="15"
+                                id="itemList"
+                                selectionMode="multiple"
+                                selection="#{issueReturnController.selectedBillItems}"
+                                rowKey="#{rbi.id}"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rowsPerPageTemplate="10,15,25,50">
 
-                    <f:facet name="header">  
-                        Returning Item 
-                    </f:facet>  
+                                <p:column selectionBox="true" width="3em" styleClass="text-center" />
 
+                                <p:column headerText="Item Name" sortBy="#{rbi.item.name}">
+                                    <h:outputText value="#{rbi.item.name}"/>
+                                </p:column>
 
-                    <p:column headerText="Item Name" style="width:50px!important;">  
-                        <h:outputText value=" #{ph.item.name}"  />                     
+                                <p:column headerText="Batch No" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}">
+                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                                </p:column>
 
-                    </p:column>  
-                    <!--                    <p:column headerText="BillItem id" style="width:50px!important;">  
-                                            <h:outputText value=" #{ph.id}"  />                     
-                    
-                                        </p:column> 
-                                        <p:column headerText="Item id" style="width:50px!important;">  
-                                            <h:outputText value=" #{ph.item.id}"  />                     
-                    
-                                        </p:column> -->
+                                <p:column headerText="Expiry Date" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
 
-                    <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText value="#{ph.remainingQty}" />                   
-                    </p:column>  
+                                <p:column headerText="Current Stock" styleClass="text-center" width="6em">
+                                    <div class="badge #{rbi.pharmaceuticalBillItem.stock.stock lt 10 ? 'bg-warning text-dark' : 'bg-info text-white'}">
+                                        <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="small text-muted mt-1"
+                                         rendered="#{rbi.pharmaceuticalBillItem.stock.stock lt 5}">
+                                        Low Stock!
+                                    </div>
+                                </p:column>
 
-                    <p:column headerText="Purchase Rate" style="width:25px!important;"> 
-                        <h:outputText value="#{ph.rate}"  />                        
-                    </p:column>  
+                                <p:column headerText="Issued Qty" styleClass="text-end">
+                                    <h:outputText value="#{rbi.referanceBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
 
-                    <p:column headerText="Retail Rate" style="width:25px!important;"> 
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate}"  />                        
-                    </p:column>  
+                                <p:column headerText="Previously Returned Qty" styleClass="text-end">
+                                    <h:outputText value="#{rbi.referanceBillItem.billItemFinanceDetails.returnQuantity}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
 
+                                <p:column headerText="Unit Rate" styleClass="text-end">
+                                    <h:outputText value="#{rbi.netRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
 
-                    <p:column headerText="Batch No" style="width:25px!important;">                       
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
-                    </p:column>  
+                                <p:column headerText="Return Qty" styleClass="text-center" width="8em">
+                                    <p:inputText
+                                        value="#{rbi.qty}"
+                                        styleClass="text-end w-100"
+                                        autocomplete="off"
+                                        onfocus="this.select()"
+                                        disabled="#{issueReturnController.originalBill.fullReturned}"
+                                        title="Enter quantity to return (max: #{rbi.remainingQty})">
+                                        <p:ajax
+                                            event="blur"
+                                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} lblReturnValue :#{p:resolveFirstComponentWithId('itemList',view).clientId} messages"
+                                            listener="#{issueReturnController.calculateBillItemTotals(rbi)}"/>
+                                    </p:inputText>
+                                </p:column>
 
-                    <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
-                        </h:outputText>
-                    </p:column>
+                                <p:column headerText="Return Value" styleClass="text-end">
+                                    <h:outputText id="lblReturnValue" value="#{rbi.netValue}" styleClass="fw-bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
 
-                    <p:column styleClass="revieveItemPrice" headerText="Recievable Amount" style="width:25px!important;">                       
-                        <h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}" value="#{ph.qty*ph.rate}" >
-                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                        </h:outputText> 
-                        <h:outputText rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}" value="#{ph.qty*ph.pharmaceuticalBillItem.retailRate}" >
-                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                        </h:outputText> 
-                    </p:column> 
+                                <p:column headerText="Action" styleClass="text-center" width="6em" exportable="false">
+                                    <p:commandButton
+                                        icon="fas fa-trash"
+                                        styleClass="ui-button-danger"
+                                        title="Delete this item"
+                                        action="#{issueReturnController.deleteItem(rbi)}"
+                                        disabled="#{issueReturnController.originalBill.fullReturned}"
+                                        update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
+                                        process="@this">
+                                        <p:confirm header="Confirmation"
+                                                   message="Are you sure you want to delete this item?"
+                                                   icon="pi pi-exclamation-triangle"/>
+                                    </p:commandButton>
+                                </p:column>
 
-                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;" >                     
-                        <p:inputText autocomplete="off" value="#{ph.qty}"  >
-                            <p:ajax 
-                                event="change" 
-                                update="@this :#{p:resolveFirstComponentWithId('total',view).clientId} revieveItemPrice itemList" 
-                                process="@this"    
-                                oncomplete="calculateTotalRecievableAmount()"
-                                listener="#{issueReturnController.onEdit(ph)}" >
-                            </p:ajax>
-                        </p:inputText>
-                    </p:column>  
+                            </p:dataTable>
+                        </p:panel>
 
-                </p:dataTable>  
-            </h:panelGroup>
-            <script>
-                function calculateTotalRecievableAmount() {
-                    const allItemAmount = document.querySelectorAll('.revieveItemPrice');
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" />
+                        </p:confirmDialog>
 
-                    const totalAmount = Array.from(allItemAmount).map(td => parseFloat(td.innerText) || 0).reduce((sum, value) => sum + value, 0);
-                    console.log('start');
-                    document.querySelector('.totalAmount').innerText = totalAmount;
+                    </h:panelGroup>
 
-                }
-            </script>
+                    <!-- Print Preview Section -->
+                    <h:panelGroup rendered="#{issueReturnController.printPreview}">
+                        <p:panel styleClass="shadow-sm mb-3">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p:commandButton
+                                            ajax="false"
+                                            styleClass="ui-button-warning"
+                                            icon="fas fa-search"
+                                            value="Search Issue Bills"
+                                            title="Search for pharmacy issue bills"
+                                            action="/pharmacy/pharmacy_search_issue_bill"
+                                            actionListener="#{issueReturnController.makeNull}">
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            styleClass="ui-button-info"
+                                            icon="fas fa-print"
+                                            value="Print Return Bill"
+                                            title="Print the return bill"
+                                            ajax="false">
+                                            <p:printer target="gpBillPreview1"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary"
+                                            type="button"
+                                            onclick="PF('billReturnIssueConfigDialog').show();" />
+                                    </div>
+                                </div>
+                            </f:facet>
 
-            <p:panel rendered="#{issueReturnController.printPreview}">
-                <f:facet name="header">    
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p:commandButton 
-                                ajax="false"
-                                class="ui-button-warning"
-                                icon="fa fa-search"
-                                action="/pharmacy/pharmacy_search_issue_bill" 
-                                value="Search Pharmacy Issue Bill" 
-                                actionListener="#{issueReturnController.makeNull}" 
-                                >
-                            </p:commandButton> 
-                        </div>
-                        <div class="d-flex">
-                            <p:commandButton 
-                                class="ui-button-info mx-2"
-                                icon="fa fa-print"
-                                value="Print Return Bill" 
-                                ajax="false" action="#"  >
-                                <p:printer target="gpBillPreview1" ></p:printer>
-                            </p:commandButton>
+                            <h:panelGroup id="gpBillPreview1">
+                                <ph:diposal_issue_return
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is A4 Paper',true)}"
+                                    bill="#{issueReturnController.returnBill}"/>
+                                <ph:diposal_issue_return_custom_1
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is Custom 1',false)}"
+                                    bill="#{issueReturnController.returnBill}"/>
+                                <ph:diposal_issue_return_custom_2
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is Custom 2',false)}"
+                                    bill="#{issueReturnController.returnBill}"/>
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:panelGroup>
 
-                            <p:commandButton 
-                                class="ui-button-info"
-                                icon="fa fa-print"
-                                value="Print Sale Bill" 
-                                ajax="false" action="#">
-                                <p:printer target="gpBillPreview2" ></p:printer>
-                            </p:commandButton>
-                        </div>
-                    </div>
+                    <!-- Bill Return Issue Configuration Dialog -->
+                    <p:dialog id="billReturnIssueConfigDialog"
+                              header="Bill Return Issue Printer Configuration"
+                              widgetVar="billReturnIssueConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="400"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
 
-                </f:facet>
+                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="billReturnIssueConfigForm" />
 
-                <h:panelGroup id="gpBillPreview1">
-                    <ph:returnBill bill="#{issueReturnController.returnBill}"/>                
-                </h:panelGroup>
+                        <h:form id="billReturnIssueConfigForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Bill Return Issue Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="billReturnIssueA4"
+                                                    value="#{pharmacyRetailConfigController.billReturnIssueA4Paper}" />
+                                                <p:outputLabel for="billReturnIssueA4" value="A4 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard A4 paper format for bill return issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="billReturnIssueCustom1"
+                                                    value="#{pharmacyRetailConfigController.billReturnIssueCustom1}" />
+                                                <p:outputLabel for="billReturnIssueCustom1" value="Custom Format 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 1 for bill return issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="billReturnIssueCustom2"
+                                                    value="#{pharmacyRetailConfigController.billReturnIssueCustom2}" />
+                                                <p:outputLabel for="billReturnIssueCustom2" value="Custom Format 2" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 2 for bill return issue receipts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <p:spacer height="15px"/>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="billReturnIssueConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyRetailConfigController.saveBillReturnIssueConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('billReturnIssueConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
 
-                <h:panelGroup id="gpBillPreview2">
-                    <ph:issueBill  bill="#{issueReturnController.bill}"/>                
-                </h:panelGroup>
-            </p:panel>
-
-        </h:form>
-        <script>
-
-        </script>
-    </ui:define>  
-
-</ui:composition>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

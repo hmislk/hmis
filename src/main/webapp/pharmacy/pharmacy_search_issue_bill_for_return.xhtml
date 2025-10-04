@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/returns_and_cancellations_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <f:metadata>
+        <f:viewAction action="#{searchController.createTableByKeywordForPharmacyDisposalIssue}"
+                      onPostback="false"/>
+    </f:metadata>
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateDisposalReturn')}">
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup id="gpDisposalSearch" rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}">
+            <h:form id="disposalReturnForm">
+                <p:panel styleClass="shadow-sm border-0">
+                    <f:facet name="header">
+                        <h:outputText value="Select Disposal Issue Bill for Return"/>
+                    </f:facet>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-4">
+                            <p:panelGrid columns="1" styleClass="w-100">
+                                <f:facet name="header">
+                                    <h:outputText value="Search Filters"/>
+                                </f:facet>
+                                <p:outputLabel for="fromDate" value="From Date"/>
+                                <p:calendar
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <p:outputLabel for="toDate" value="To Date"/>
+                                <p:calendar
+                                    id="toDate"
+                                    value="#{searchController.toDate}"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <p:commandButton
+                                    id="searchDisposalIssues"
+                                    styleClass="w-100 ui-button-warning"
+                                    icon="fas fa-search"
+                                    value="Search"
+                                    actionListener="#{searchController.createTableByKeywordForPharmacyDisposalIssue()}"
+                                    update="disposalIssuesTable :messages"
+                                    process="@form"/>
+                            </p:panelGrid>
+                        </div>
+                        <div class="col-lg-9 col-md-8">
+                            <p:dataTable
+                                id="disposalIssuesTable"
+                                value="#{searchController.bills}"
+                                var="b"
+                                rows="15"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="w-100 table-striped"
+                                emptyMessage="No disposal issue bills found matching your criteria. Use the search filters to find bills."
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
+                                <p:column headerText="Issue Date" sortBy="#{b.billDate}" styleClass="text-nowrap">
+                                    <h:outputText value="#{b.billDate}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                    <br/>
+                                    <h:outputText value="#{b.createdAt}" styleClass="text-muted small">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="HH:mm"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill No" sortBy="#{b.deptId}">
+                                    <h:outputText value="#{b.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}">
+                                    <h:outputText value="#{b.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="From Department" sortBy="#{b.department.name}">
+                                    <h:outputText value="#{b.department.name}"/>
+                                </p:column>
+                                <p:column headerText="To Department" sortBy="#{b.toDepartment.name}">
+                                    <h:outputText value="#{b.toDepartment.name}"/>
+                                </p:column>
+                                <p:column headerText="Issue Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                    <h:outputText value="#{b.netTotal}" styleClass="fw-bold text-success">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" styleClass="text-center">
+                                    <h:outputText value="#{b.fullReturned ? 'Fully Returned' : (b.refunded ? 'Partially Returned' : 'Available')}"
+                                                  styleClass="#{b.fullReturned ? 'badge bg-danger' : (b.refunded ? 'badge bg-warning text-dark' : 'badge bg-success')}"/>
+                                    <h:panelGroup rendered="#{b.refunded and not b.fullReturned}">
+                                        <h:outputText value="Partial returns exist" styleClass="d-block text-muted small mt-1"/>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Actions" styleClass="text-center" exportable="false" width="140">
+                                    <p:commandButton
+                                        id="createReturn"
+                                        ajax="false"
+                                        rendered="#{!b.fullReturned}"
+                                        value="Create Return"
+                                        icon="fas fa-undo-alt"
+                                        styleClass="ui-button-warning"
+                                        action="#{issueReturnController.navigateToReturnDisposalIssueBill(b)}"/>
+                                    <h:panelGroup rendered="#{b.fullReturned}">
+                                        <h:outputText value="Fully Returned" styleClass="badge bg-secondary"/>
+                                    </h:panelGroup>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

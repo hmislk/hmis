@@ -1,0 +1,308 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/returns_and_cancellations_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveGrnReturn')}">
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup id="gpReturnApprove" rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}">
+        <h:form>
+            <p:panel styleClass="shadow-sm border-0">
+                <f:facet name="header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <h4 class="mb-0 text-success">Approve GRN Return Requests</h4>
+                    </div>
+                </f:facet>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>From Date
+                                </label>
+                                <p:calendar 
+                                    class="w-100" 
+                                    inputStyleClass="form-control" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">      
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>To Date
+                                </label>
+                                <p:calendar 
+                                    class="w-100" 
+                                    inputStyleClass="form-control" 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">                                                                              
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-building me-1"></i>Supplier
+                                </label>
+                                <p:inputText 
+                                    class="form-control" 
+                                    autocomplete="off" 
+                                    value="#{searchController.searchKeyword.toInstitution}" 
+                                    placeholder="Enter supplier name" />
+                            </div>
+                            
+                            <!-- Search Buttons positioned for better visibility -->
+                            <div class="mb-4">
+                                <p:commandButton 
+                                    class="ui-button-info w-100 mb-2" 
+                                    icon="fas fa-search" 
+                                    value="Search All Requests" 
+                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
+                                    ajax="false"
+                                    style="min-height: 40px;">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-success w-100 mb-2" 
+                                    icon="fas fa-check" 
+                                    value="Search Approved Requests" 
+                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
+                                    ajax="false"
+                                    style="min-height: 40px;">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-warning w-100" 
+                                    icon="fas fa-clock" 
+                                    value="Search To Approve Requests" 
+                                    action="#{searchController.fillOnlyFinalizedGrnReturns()}" 
+                                    ajax="false"
+                                    style="min-height: 40px;">
+                                </p:commandButton>
+                            </div>
+
+                            <!-- Collapsible Advanced Filters -->
+                            <p:panel header="Advanced Filters" toggleable="true" collapsed="true" styleClass="mb-3">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-user me-1"></i>Requested User
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.creator}" 
+                                        placeholder="Enter user name" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hospital me-1"></i>Department
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.department}" 
+                                        placeholder="Enter department" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hashtag me-1"></i>Return Number
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.refBillNo}" 
+                                        placeholder="Enter return number" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-coins me-1"></i>Requested Value
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.total}" 
+                                        placeholder="Enter amount" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-coins me-1"></i>Approved Value
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.searchKeyword.netTotal}" 
+                                        placeholder="Enter approved amount" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-list-ol me-1"></i>Max Results
+                                    </label>
+                                    <p:inputText 
+                                        class="form-control" 
+                                        autocomplete="off" 
+                                        value="#{searchController.maxResult}" 
+                                        placeholder="Max number of results" />
+                                </div>
+                            </p:panel>
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <p:panel header="GRN Return Requests for Approval" styleClass="shadow-sm">
+                            <p:dataTable 
+                                id="tbl" 
+                                value="#{grnReturnWorkflowController.grnReturnsToApprove}" 
+                                var="b"
+                                rows="15"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="table-striped"
+                                emptyMessage="No GRN return requests found matching your criteria"
+                                filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToApprove}"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
+                            <p:column headerText="Requested At">
+                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                    <h:outputLabel value="#{b.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
+                                </h:commandLink>
+                                <br/>
+                                <h:panelGroup rendered="#{b.cancelled}">
+                                    <h:outputLabel style="color: red;" value="Cancelled At " />
+                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                   value="#{b.cancelledBill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </h:panelGroup>                       
+                            </p:column> 
+
+                            <p:column headerText="Requested By">
+                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                    <h:outputLabel value="#{b.creater.webUserPerson.name}">                                      
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                                <br/>
+                                <h:panelGroup rendered="#{b.cancelled}">
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                   value="#{b.cancelledBill.creater.webUserPerson.name}">                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+
+                            <p:column headerText="Supplier">
+                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                    #{b.toInstitution.name}
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Return No">
+                                <h:outputText value="#{b.deptId}"></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Original GRN">
+                                <h:outputText value="#{b.referenceBill.deptId}"></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Requested Department">
+                                <h:commandLink action="pharmacy_reprint_grn_return_request">
+                                    #{b.department.name}
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                </h:commandLink>
+                            </p:column> 
+
+                            <p:column headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-success me-2"></i>
+                                    <span class="fw-bold text-success fs-6">
+                                        <h:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Approved Person">
+                                <h:commandLink 
+                                    action="pharmacy_reprint_grn_return_request" 
+                                    value="#{b.completedBy.webUserPerson.nameWithTitle}"
+                                    rendered="#{b.completed eq true}">
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                </h:commandLink>
+                            </p:column> 
+
+                            <p:column headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end" rendered="#{b.completed eq true}">
+                                    <i class="fas fa-coins text-info me-2"></i>
+                                    <span class="fw-bold text-info fs-6">
+                                        <h:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Status" width="8em">
+                                <h:panelGroup rendered="#{b.checkedBy ne null and (b.completed eq false or b.completed eq null)}">
+                                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{b.completed eq true}">
+                                    <span class="badge bg-success">Approved</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{b.checkedBy eq null}">
+                                    <span class="badge bg-secondary">Draft</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="150">
+                                <div class="d-flex justify-content-center align-items-center gap-1">
+                                    <p:commandButton
+                                        id="approve"
+                                        ajax="false"
+                                        icon="fas fa-check-circle"
+                                        class="ui-button-success"
+                                        value="Approve"
+                                        title="To Approve GRN Return"
+                                        action="#{grnReturnWorkflowController.navigateToGrnReturnApproval}"
+                                        disabled="#{b.checkedBy eq null or b.completed eq true or b.cancelled eq true or !webUserController.hasPrivilege('ApproveGrnReturn')}"
+                                        style="min-width: 70px;">
+                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        id="view"
+                                        ajax="false"
+                                        icon="fas fa-eye"
+                                        class="ui-button-info"
+                                        value="View"
+                                        title="To View GRN Return"
+                                        action="#{grnReturnWorkflowController.navigateToViewGrnReturn}" 
+                                        disabled="#{b.referenceBill eq null}"
+                                        style="min-width: 60px;">
+                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                    </p:commandButton>
+                                </div>
+                            </p:column>
+                        </p:dataTable>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>            
+        </h:form>
+        </h:panelGroup>
+    </ui:define>  
+
+</ui:composition>

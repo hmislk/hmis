@@ -45,6 +45,7 @@ public class StockHistory implements Serializable, RetirableEntity {
     double retailRate;
     double wholesaleRate;
     double purchaseRate;
+    double costRate;
     @ManyToOne
     ItemBatch itemBatch;
     @ManyToOne
@@ -81,6 +82,10 @@ public class StockHistory implements Serializable, RetirableEntity {
     private Double itemStockValueAtPurchaseRate;
     private Double institutionItemStockValueAtPurchaseRate;
     private Double totalItemStockValueAtPurchaseRate;
+
+    private Double itemStockValueAtCostRate;
+    private Double institutionItemStockValueAtCostRate;
+    private Double totalItemStockValueAtCostRate;
 
 
     //Created Properties
@@ -144,6 +149,14 @@ public class StockHistory implements Serializable, RetirableEntity {
 
     public void setPurchaseRate(double purchaseRate) {
         this.purchaseRate = purchaseRate;
+    }
+
+    public double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
     }
 
     public ItemBatch getItemBatch() {
@@ -409,6 +422,30 @@ public class StockHistory implements Serializable, RetirableEntity {
 
     public void setTotalItemStockValueAtPurchaseRate(Double totalItemStockValueAtPurchaseRate) {
         this.totalItemStockValueAtPurchaseRate = totalItemStockValueAtPurchaseRate;
+    }
+
+    public Double getItemStockValueAtCostRate() {
+        return itemStockValueAtCostRate;
+    }
+
+    public void setItemStockValueAtCostRate(Double itemStockValueAtCostRate) {
+        this.itemStockValueAtCostRate = itemStockValueAtCostRate;
+    }
+
+    public Double getInstitutionItemStockValueAtCostRate() {
+        return institutionItemStockValueAtCostRate;
+    }
+
+    public void setInstitutionItemStockValueAtCostRate(Double institutionItemStockValueAtCostRate) {
+        this.institutionItemStockValueAtCostRate = institutionItemStockValueAtCostRate;
+    }
+
+    public Double getTotalItemStockValueAtCostRate() {
+        return totalItemStockValueAtCostRate;
+    }
+
+    public void setTotalItemStockValueAtCostRate(Double totalItemStockValueAtCostRate) {
+        this.totalItemStockValueAtCostRate = totalItemStockValueAtCostRate;
     }
 
 }

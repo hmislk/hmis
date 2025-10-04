@@ -21,13 +21,14 @@
                                              class="ui-button-success m-1" 
                                              icon="fas fa-check" 
                                              disabled="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                             onclick="return confirm('Are you sure you want to approve this purchase order? This action cannot be undone.');"
                                              action="#{purchaseOrderController.approve}">
                             </p:commandButton>
                             <p:commandButton ajax="false"  
-                                             value="Back To Po List" 
+                                             value="Back To PO List to Approve" 
                                              class="ui-button-warning" 
                                              icon="fas fa-arrow-left" 
-                                             action="pharmacy_purhcase_order_list_to_approve">
+                                             action="#{searchController.navigateToPurchaseOrderApprove}">
                             </p:commandButton>
                         </div>
                     </f:facet>
@@ -61,6 +62,14 @@
 
                                         <p:column headerText="Item Name" >  
                                             <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                id="btnViewSelectedItemDetails"
+                                                title="View Item Details"
+                                                action="#{purchaseOrderController.displayItemDetails(bi)}"
+                                                update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                process="@this"
+                                                class="ui-button-icon-only mx-3"/>
                                         </p:column>  
 
                                         <p:column headerText="Code" styleClass="shortNumericColumn"  >  
@@ -74,7 +83,7 @@
                                             <p:inputText
                                                 autocomplete="off"
                                                 id="qty"
-                                                value="#{bi.pharmaceuticalBillItem.qty}" 
+                                                value="#{bi.billItemFinanceDetails.quantity}" 
                                                 class="w-100 text-end"
                                                 label="Qty" onfocus="this.select()">
                                                 <f:convertNumber pattern="#,#00"/>
@@ -89,7 +98,7 @@
                                             <p:inputText 
                                                 autocomplete="off"
                                                 id="freeQty" 
-                                                value="#{bi.pharmaceuticalBillItem.freeQty}" 
+                                                value="#{bi.billItemFinanceDetails.freeQuantity}" 
                                                 class="w-100 text-end"
                                                 onfocus="this.select()">
                                                 <f:convertNumber pattern="#,#00"/>
@@ -106,7 +115,7 @@
                                                 class="w-100 text-end"
                                                 style="margin: 0px;"
                                                 autocomplete="off"
-                                                value="#{bi.pharmaceuticalBillItem.purchaseRate}" onfocus="this.select()">   
+                                                value="#{bi.billItemFinanceDetails.lineGrossRate}" onfocus="this.select()">   
                                                 <f:convertNumber pattern="#00.00"/>
                                                 <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                                 <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
@@ -127,7 +136,7 @@
 
 
                                         <p:column headerText="Total" width="6em"  class="text-end px-1"  >  
-                                            <h:outputText id="total" value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
+                                            <h:outputText id="total" value="#{bi.billItemFinanceDetails.lineGrossTotal}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>  
@@ -135,6 +144,10 @@
                                             <p:commandButton  process="itemList" update="itemList :#{p:resolveFirstComponentWithId('po',view).clientId}" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
                                         </p:column>
                                     </p:dataTable> 
+
+                                    <div >
+                                        <ph:history/>
+                                    </div>
                                 </p:panel>
                             </div>
 
@@ -173,13 +186,39 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <p:spacer class="my-4"
+                                    <p:spacer class="my-1"
                                               rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}" />
-                                    <h:panelGroup class="my-4"
-                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
-                                        <p:selectBooleanCheckbox value="#{purchaseOrderController.aprovedBill.consignment}"
-                                                                 itemLabel="Consignment" />
+
+                                    <p:outputLabel 
+                                        class="my-1 w-100"
+                                        value="Consignment"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}" />
+
+                                    <h:panelGroup 
+                                        class="my-1 w-100"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                        <p:selectBooleanButton 
+                                            onLabel="Yes" 
+                                            offLabel="No"
+                                            class="w-100"
+                                            value="#{purchaseOrderController.aprovedBill.consignment}"
+                                            />
                                     </h:panelGroup>
+
+                                    <p:outputLabel 
+                                        value="Request Comments"
+                                        class="form-label mt-1"/>
+                                    <p:outputLabel 
+                                        class="form-control"
+                                        value="#{purchaseOrderController.requestedBill.comments}"/>
+                                    
+                                    <p:outputLabel 
+                                        value="Approve Comments"
+                                        class="form-label mt-1"/>
+                                    <p:inputTextarea 
+                                        class="form-control"
+                                        value="#{purchaseOrderController.aprovedBill.comments}"/>
+
 
                                     <p:outputLabel value="Total Value"
                                                    class="form-label w-100"
@@ -205,12 +244,18 @@
 
 
                     <p:spacer height="50"/>
-                    <ph:history/>
                 </p:panel>
             </h:panelGroup>
             <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
                 <p:panel >
-                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
+                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true" class="ui-button-warning" icon="fas fa-arrow-left"/>
+                    <p:commandButton
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        value="Settings"
+                        icon="fas fa-cog"
+                        class="ui-button-secondary m-1"
+                        type="button"
+                        onclick="PF('purchaseOrderConfigDialog').show();" />
                     <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info m-1" icon="fas fa-print">
                         <p:printer target=":form:gpBillPreview" ></p:printer>
                     </p:commandButton>
@@ -222,12 +267,22 @@
                         oncomplete="PF('emailDialog').show();"
                         update="emailDialogForm"/>
 
-                    <p:panel   id="gpBillPreview" class="my-2">
+                    <h:panelGroup  id="gpBillPreview" class="my-2">
 
-                        <ph:po bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
+                        <ph:po_custom_1
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                            bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
+
+                        <ph:po_custom_2
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', true)}"
+                            bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
+
+                        <ph:po_custom_3_letter
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - Letter Paper Format', true)}"
+                            bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
 
 
-                    </p:panel>
+                    </h:panelGroup>
 
                 </p:panel>
             </h:panelGroup>
@@ -271,6 +326,86 @@
             </h:form>
         </p:dialog>
 
-    </ui:define>  
+        <!-- Purchase Order Configuration Dialog -->
+        <p:dialog id="purchaseOrderConfigDialog"
+                  header="Purchase Order Approving Printer Configuration"
+                  widgetVar="purchaseOrderConfigDialog"
+                  modal="true"
+                  width="800"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{purchaseOrderConfigController.loadCurrentConfig}" update="purchaseOrderConfigForm" />
+
+            <h:form id="purchaseOrderConfigForm">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> Purchase Order Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="custom1Paper"
+                                        value="#{purchaseOrderConfigController.custom1Paper}" />
+                                    <p:outputLabel for="custom1Paper" value="A4 Paper Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 purchase order format - Custom 1</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="custom2Paper"
+                                        value="#{purchaseOrderConfigController.custom2Paper}" />
+                                    <p:outputLabel for="custom2Paper" value="A4 Paper Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="letterPaper"
+                                        value="#{purchaseOrderConfigController.letterPaper}" />
+                                    <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="purchaseOrderConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{purchaseOrderConfigController.saveConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('purchaseOrderConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
 
 </ui:composition>

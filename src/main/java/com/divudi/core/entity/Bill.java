@@ -204,6 +204,8 @@ public class Bill implements Serializable, RetirableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
     @ManyToOne(fetch = FetchType.LAZY)
+    private Institution site;
+    @ManyToOne(fetch = FetchType.LAZY)
     private Institution fromInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution toInstitution;
@@ -266,10 +268,13 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    //Checking Property
+    //Checking Property == Finalized
+    private boolean checked = false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -353,6 +358,12 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser fullyIssuedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fullyIssuedAt;
+
+    private boolean fullReturned;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullReturnedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullReturnedAt;
 
     //Print Information
     private boolean printed;
@@ -820,10 +831,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
@@ -2725,6 +2740,30 @@ public class Bill implements Serializable, RetirableEntity {
         this.fullyIssuedAt = fullyIssuedAt;
     }
 
+    public boolean isFullReturned() {
+        return fullReturned;
+    }
+
+    public void setFullReturned(boolean fullReturned) {
+        this.fullReturned = fullReturned;
+    }
+
+    public WebUser getFullReturnedBy() {
+        return fullReturnedBy;
+    }
+
+    public void setFullReturnedBy(WebUser fullReturnedBy) {
+        this.fullReturnedBy = fullReturnedBy;
+    }
+
+    public Date getFullReturnedAt() {
+        return fullReturnedAt;
+    }
+
+    public void setFullReturnedAt(Date fullReturnedAt) {
+        this.fullReturnedAt = fullReturnedAt;
+    }
+
     public BankAccount getBankAccount() {
         return bankAccount;
     }
@@ -2999,4 +3038,23 @@ public class Bill implements Serializable, RetirableEntity {
         }
         return transientSupplier;
     }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+    
+    
+    
 }

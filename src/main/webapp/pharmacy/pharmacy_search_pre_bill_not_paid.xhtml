@@ -11,60 +11,74 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Pharmacy Bills Not Paid" rendered="#{!searchController.printPreview}">
+                    <p:panel rendered="#{!searchController.printPreview}">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-money-bill text-primary me-2"></i>
+                                <h:outputText value="Pharmacy Bills Not Paid" styleClass="text-primary fw-bold"/>
+                            </div>
+                        </f:facet>
                         <p:poll interval="30"   
                                 listener="#{searchController.createPreBillsNotPaid()}" update="@all" />
-                        <f:facet name="header" >
-                            <h:outputLabel value="From"/>
-                            <p:calendar
-                                class="w-25 mx-5" 
-                                inputStyleClass="w-25" 
-                                id="fromDate" 
-                                value="#{searchController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <p:panel header="Search Filters" styleClass="shadow-sm">
+                                    <div class="d-flex flex-wrap align-items-center gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-calendar-alt text-secondary me-2"></i>
+                                            <h:outputText value="From" styleClass="fw-medium me-2"/>
+                                            <p:calendar
+                                                id="fromDate" 
+                                                value="#{searchController.fromDate}" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                styleClass="me-3" >
+                                            </p:calendar>
+                                        </div>
 
-                            <h:outputLabel value="To"/>                                
-                            <p:calendar 
-                                class="w-25 mx-5" 
-                                inputStyleClass="w-25" 
-                                id="toDate" 
-                                value="#{searchController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                                        <div class="d-flex align-items-center">
+                                            <h:outputText value="To" styleClass="fw-medium me-2"/>
+                                            <p:calendar 
+                                                id="toDate" 
+                                                value="#{searchController.toDate}" 
+                                                navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                styleClass="me-3" >
+                                            </p:calendar>
+                                        </div>
 
-                            <p:commandButton 
-                                ajax="false" 
-                                style="width: 150px"
-                                value="Process" 
-                                icon="fas fa-arrows-rotate"
-                                actionListener="#{searchController.createPreBillsNotPaid()}">
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Add To Stock" 
-                                action="#{searchController.addToStock}" 
-                                icon="fas fa-plus" 
-                                class="ui-button-success mx-5"
-                                disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
-                            </p:commandButton>
-
-
-                            <p:commandButton 
-                                ajax="false" 
-                                value="To Bill List" 
-                                style="float: right"
-                                icon="fa fa-arrow-left"
-                                class="ui-button-warning mx-auto"
-                                actionListener="#{searchController.makeNull()}"
-                                action="#{searchController.navigateToAddToStockBillList()}">
-                            </p:commandButton>
-
-                        </f:facet>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Process" 
+                                            icon="fas fa-arrows-rotate"
+                                            styleClass="ui-button-warning"
+                                            actionListener="#{searchController.createPreBillsNotPaid()}">
+                                        </p:commandButton>
+                                        
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Add To Stock" 
+                                            action="#{searchController.addToStock}" 
+                                            icon="fas fa-plus" 
+                                            styleClass="ui-button-success"
+                                            disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
+                                        </p:commandButton>
+                                        
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Bill List" 
+                                            icon="fas fa-arrow-left"
+                                            styleClass="ui-button-info ms-auto"
+                                            actionListener="#{searchController.makeNull()}"
+                                            action="#{searchController.navigateToAddToStockBillList()}">
+                                        </p:commandButton>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
 
                         <p:dataTable 
-                            id="tblBills" value="#{searchController.bills}"                             
+                            id="tblBills" 
+                            value="#{searchController.bills}"                             
                             var="bill" 
                             rowKey="#{bill.id}"
                             selection="#{searchController.selectedBills}"
@@ -75,80 +89,96 @@
                             rowsPerPageTemplate="5,10,15"
                             selectionPageOnly="false"
                             selectionRowMode="add"
-
-
                             selectionMode="multiple"
-                            >
-                            <p:column selectionBox="true" width="3em" class="mx-3"></p:column>
-                            <p:column selectionMode="multiple" width="4em"></p:column>
-
+                            styleClass="table-striped">
+                            <p:column selectionBox="true" width="3em" styleClass="text-center"></p:column>
 
                             <p:column headerText="Pre Bill No">
-                                <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-hashtag text-secondary me-2"></i>
+                                    <h:outputText value="#{bill.deptId}"/>
+                                </div>
                             </p:column>     
                             <p:column headerText="ID">
-                                #{bill.id}
+                                <h:outputText value="#{bill.id}"/>
                             </p:column>
-                            <p:column headerText="Date" >                              
-                                <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputLabel>                                   
+                            <p:column headerText="Date">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-alt text-secondary me-2"></i>
+                                    <h:outputText value="#{bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputText>
+                                </div>
                             </p:column>
-                            <p:column headerText="Time" >
-
-                                <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                </h:outputLabel>
-
+                            <p:column headerText="Time">
+                                <h:outputText value="#{bill.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </h:outputText>
                             </p:column>                           
-                            <p:column headerText="Billed By"  >
-                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                            <p:column headerText="Billed By">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user text-secondary me-2"></i>
+                                    <h:outputText value="#{bill.creater.webUserPerson.name}"/>
+                                </div>
                             </p:column>                                                      
-                            <p:column headerText="Net Value">
-
-                                <h:outputLabel value="#{bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-
+                            <p:column headerText="Net Value" styleClass="text-end">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-secondary me-2"></i>
+                                    <h:outputText value="#{bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
                             </p:column>
 
                             <p:column headerText="Ins Id">
-                                <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
+                                <h:outputText value="#{bill.deptId}"/>
                             </p:column>  
 
-                            <p:column >
-                                <p:commandButton ajax="false"  value="View Bill" action="pharmacy_reprint_bill_pre" icon="fas fa-file-invoice" class="ui-button-warning" disabled="#{bill.referenceBill ne null}">                                
-                                    <f:setPropertyActionListener  value="#{bill}" target="#{pharmacyBillSearch.bill}" />
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false">
+                                <p:commandButton 
+                                    id="btnViewPreBill"
+                                    title="View Pre-Bill" 
+                                    icon="fas fa-eye" 
+                                    value="View Bill"
+                                    styleClass="ui-button-info"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}"
+                                    ajax="false">
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </p:panel>
 
-                    <p:panel header="Pharmacy Pre Bill Add to Stock Bill Preview" rendered="#{searchController.printPreview}">
+                    <p:panel rendered="#{searchController.printPreview}">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-invoice text-primary me-2"></i>
+                                <h:outputText value="Pharmacy Pre Bill Add to Stock Bill Preview" styleClass="text-primary fw-bold"/>
+                            </div>
+                        </f:facet>
 
                         <div class="d-flex justify-content-between">
                             <p:commandButton 
                                 ajax="false" 
                                 value="Back Add To Stock"                             
                                 action="#{searchController.makeListNull}" 
-                                icon="fa fa-arrow-left"
-                                class="ui-button-warning m-1">
+                                icon="fas fa-arrow-left"
+                                styleClass="ui-button-warning">
                             </p:commandButton>
                             <div class="d-flex justify-content-end">
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
-                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                    <h:outputText value="Paper Type" styleClass="fw-medium me-2"/>
                                     <p:selectOneMenu
                                         value="#{sessionController.departmentPreference.pharmacyBillPaperType}"
-                                        class="m-1"
+                                        styleClass="me-2"
                                         style="width: 13em;">
                                         <f:selectItem itemLabel="Please Select Paper Type" />
                                         <f:selectItems value="#{enumController.paperTypes}" />
                                     </p:selectOneMenu>
                                     <p:commandButton
                                         ajax="false"
-                                        icon="fa fa-sync-alt"
-                                        class="ui-button"
+                                        icon="fas fa-sync-alt"
+                                        styleClass="ui-button-secondary me-2"
                                         title="Redraw Bill">
                                     </p:commandButton>
                                 </h:panelGroup>
@@ -156,9 +186,9 @@
                                 <p:commandButton
                                     value="Print"
                                     ajax="false"
-                                    class="ui-button-info  m-1"
-                                    icon="fa fa-print"
-                                    action="#"  >
+                                    styleClass="ui-button-info"
+                                    icon="fas fa-print"
+                                    action="#">
                                     <p:printer target="gpBillPreviewad1" ></p:printer>
                                 </p:commandButton>
                             </div>

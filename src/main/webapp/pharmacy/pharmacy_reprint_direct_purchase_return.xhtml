@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body style="width: 100%; " >
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel style="width: 100%;" >
+                        <f:facet name="header" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Direct Purchase Return Reprint" class="mt-2"></h:outputLabel>
+                                <div class="d-flex gap-2">
+
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon="fa fa-print"
+                                        value="Reprint" 
+                                        ajax="false">
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-2"
+                                        type="button"
+                                        onclick="PF('directPurchaseReturnReprintConfigDialog').show();" >
+                                    </p:commandButton>
+
+                                </div>
+                            </div>              
+                        </f:facet>
+
+                        <div style="width: 100%;">
+
+                            <h:panelGroup id="gpBillPreview" >
+
+                                <h:panelGroup class="d-flex justify-content-center"
+                                              rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Return Receipt Paper is Custom 1',false)}">
+                                    <ph:direct_purchase_return_receipt_with_costing_custom_1 bill="#{pharmacyBillSearch.bill}" reprint="true"/>
+                                </h:panelGroup>    
+
+                                <h:panelGroup class="d-flex justify-content-center"
+                                              rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Return Receipt Paper is Custom 2',true)}">
+                                    <ph:direct_purchase_return_receipt_with_costing bill="#{pharmacyBillSearch.bill}"/>
+                                </h:panelGroup> 
+
+                            </h:panelGroup>
+
+                        </div>
+                    </p:panel>
+
+                    <!-- Configuration Dialog -->
+                    <p:dialog id="directPurchaseReturnReprintConfigDialog"
+                              header="Direct Purchase Return Receipt Reprint Printer Configuration"
+                              widgetVar="directPurchaseReturnReprintConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="400"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseReturnReprintConfigForm" />
+
+                        <h:form id="directPurchaseReturnReprintConfigForm">
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Direct Purchase Return Receipt Reprint Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="directPurchaseReturnReprintCustom1Paper"
+                                                    value="#{pharmacyRetailConfigController.directPurchaseReturnCustom1}" />
+                                                <p:outputLabel for="directPurchaseReturnReprintCustom1Paper" value="Custom Format 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom Direct Purchase Return receipt reprint template design 1</small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="directPurchaseReturnReprintCustom2Paper"
+                                                    value="#{pharmacyRetailConfigController.directPurchaseReturnCustom2}" />
+                                                <p:outputLabel for="directPurchaseReturnReprintCustom2Paper" value="Custom Format 2" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom Direct Purchase Return receipt reprint template design 2</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="directPurchaseConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('directPurchaseReturnReprintConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </h:form>
+                    </p:dialog>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
+

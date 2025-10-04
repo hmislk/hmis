@@ -44,6 +44,7 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private Map<String, ConfigOption> applicationOptions;
+    private boolean isLoadingApplicationOptions = false;
 
     private ConfigOption findActiveOptionWithLock(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.retired=false AND o.optionKey=:key AND o.scope=:scope");
@@ -73,34 +74,41 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
         ConfigOption option = optionFacade.createOptionIfNotExists(key, OptionScope.APPLICATION, null, null, null, type, value);
-        loadApplicationOptions();
+        if (!isLoadingApplicationOptions) {
+            loadApplicationOptions();
+        }
         return option;
     }
 
     @PostConstruct
     public void init() {
         loadApplicationOptions();
-        loadPharmacyAnalyticsConfigurationDefaults();
-        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
-        applicationOptions = new HashMap<>();
-        List<ConfigOption> options = getApplicationOptions();
-        for (ConfigOption option : options) {
-            applicationOptions.put(option.getOptionKey(), option);
+        isLoadingApplicationOptions = true;
+        try {
+            applicationOptions = new HashMap<>();
+            List<ConfigOption> options = getApplicationOptions();
+            for (ConfigOption option : options) {
+                applicationOptions.put(option.getOptionKey(), option);
+            }
+            loadEmailGatewayConfigurationDefaults();
+            loadPharmacyConfigurationDefaults();
+            loadPharmacyIssueReceiptConfigurationDefaults();
+            loadPharmacyTransferIssueReceiptConfigurationDefaults();
+            loadPharmacyTransferReceiveReceiptConfigurationDefaults();
+            loadPharmacyTransferRequestReceiptConfigurationDefaults();
+            loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
+            loadPharmacyCommonBillConfigurationDefaults();
+            loadPharmacyAdjustmentReceiptConfigurationDefaults();
+            loadPatientNameConfigurationDefaults();
+            loadSecurityConfigurationDefaults();
+            loadPharmacyAnalyticsConfigurationDefaults();
+            loadReportMethodConfigurationDefaults();
+        } finally {
+            isLoadingApplicationOptions = false;
         }
-        loadEmailGatewayConfigurationDefaults();
-        loadPharmacyConfigurationDefaults();
-        loadPharmacyIssueReceiptConfigurationDefaults();
-        loadPharmacyTransferIssueReceiptConfigurationDefaults();
-        loadPharmacyTransferReceiveReceiptConfigurationDefaults();
-        loadPharmacyTransferRequestReceiptConfigurationDefaults();
-        loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
-        loadPharmacyCommonBillConfigurationDefaults();
-        loadPharmacyAdjustmentReceiptConfigurationDefaults();
-        loadPatientNameConfigurationDefaults();
-        loadSecurityConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -144,7 +152,141 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
         getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
         getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
-        
+        getBooleanValueByKey("GRN Returns is only after Approval", true);
+        getBooleanValueByKey("GRN Return can be done without Approval", true);
+
+        // Bill Numbering Configuration Options - Added for improved bill numbering functionality
+        // These options enable configurable bill numbering strategies across different bill types
+        // Future development: Apply these patterns to additional bill types as needed
+
+        getShortTextValueByKey("Bill Number Delimiter", "/");
+
+        // Generic bill numbering strategies (for backward compatibility)
+        getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
+
+        // Bill-type-specific numbering strategies for Purchase Order Requests (POR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Purchase Order Approvals (POA)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Approval - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Approval - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Approval - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for GRN
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Cancelled Purchase Order Requests (C-POR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled Purchase Order Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled Purchase Order Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Cancelled GRN (C-GRN)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled GRN - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled GRN - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Cancelled GRN - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for GRN Return (GRNR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Year + Yearly Number", false);
+
+
+        // Bill-type-specific numbering strategies for Transfer Issue (TI)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Pre Bill (SPB)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Cashier Pre Bill (SCPB)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Refund (SR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Refund Pre Bill (SRP)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
+      
+        // Bill-type-specific numbering strategies for Disposal Issue (DI)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false);
+
+
+        // Bill-type-specific numbering strategies for Transfer Receive (TR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Sale Cancel (SC)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Direct Purchase Refund (DPR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Issue Return (IR)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false);
+
+
+        // Bill-type-specific numbering strategies for Issue Cancelled (IC)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill-type-specific numbering strategies for Transfer Request (TRQ)
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Bill Number Suffix Configuration Options - Default suffixes for different bill types
+        // These provide default values when bill number suffix configurations are empty
+        getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");
+        getShortTextValueByKey("Bill Number Suffix for Purchase Order Approval", "POA");
+        getShortTextValueByKey("Bill Number Suffix for Cancelled Purchase Order Request", "C-POR");
+        getShortTextValueByKey("Bill Number Suffix for Cancelled GRN", "C-GRN");
+        getShortTextValueByKey("Bill Number Suffix for GRN Return", "GRNR");
+        getShortTextValueByKey("Bill Number Suffix for GRN", "GRN");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE", "DP");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_CANCELLED", "C-DP");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE", "TI");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_ISSUE", "DTI");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE", "SPB");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER", "SCPB");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE", "SB");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS", "SR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL", "SRP");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_CANCELLED", "SC");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_REFUND", "DPR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE", "DIS");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_CANCELLED", "SC");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_REFUND", "DPR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_TRANSFER_REQUEST", "PHTRQ");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_TRANSFER_REQUEST_PRE", "PHTRQ-PRE");
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -478,44 +620,44 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "}"
         );
         getLongTextValueByKey("Pharmacy Transfer Request Receipt Header",
-                "<table class=\"receipt-details-table\">\n" +
-                "    <tr>\n" +
-                "        <td>Request From</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>\n" +
-                "            {{from_dept}} ({{from_ins}})\n" +
-                "        </td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Request To</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>\n" +
-                "            {{to_dept}} ({{to_ins}})\n" +
-                "        </td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Req No</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>{{bill_id}}</td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Req By</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>{{user}}</td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Req Date/Time</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>\n" +
-                "           {{bill_date}}\n" +
-                "        </td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "        <td>Document Status</td>\n" +
-                "        <td>:</td>\n" +
-                "        <td>{{bill_status}}</td>\n" +
-                "    </tr>\n" +
-                "</table>\n");
+                "<table class=\"receipt-details-table\">\n"
+                + "    <tr>\n"
+                + "        <td>Request From</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>\n"
+                + "            {{from_dept}} ({{from_ins}})\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Request To</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>\n"
+                + "            {{to_dept}} ({{to_ins}})\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Req No</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>{{bill_id}}</td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Req By</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>{{user}}</td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Req Date/Time</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>\n"
+                + "           {{bill_date}}\n"
+                + "        </td>\n"
+                + "    </tr>\n"
+                + "    <tr>\n"
+                + "        <td>Document Status</td>\n"
+                + "        <td>:</td>\n"
+                + "        <td>{{bill_status}}</td>\n"
+                + "    </tr>\n"
+                + "</table>\n");
         getBooleanValueByKey("Pharmacy Transfer Request - Show Rate and Value", false);
 
     }
@@ -711,6 +853,8 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private void loadSecurityConfigurationDefaults() {
         getBooleanValueByKey("prevent_password_reuse", false);
+        // Admin-triggered JPA L2 cache clear is disabled by default
+        getBooleanValueByKey("Allow manual JPA cache clear", false);
     }
 
     private void loadPharmacyAnalyticsConfigurationDefaults() {

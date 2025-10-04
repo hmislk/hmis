@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Pharmacy Stock Take</h2>
+                        </div>
+                        <div class="card-body">
+                            <h:form>
+                                <p:panel header="Filters" styleClass="mb-3">
+                                    <p:panelGrid columns="2" styleClass="w-100" layout="tabular">
+                                        <h:outputLabel for="ins" value="Institution"/>
+                                        <p:selectOneMenu id="ins" class="w-100 " value="#{pharmacyStockTakeController.institution}" filter="true">
+                                            <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
+                                            <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                            <p:ajax process="@this" update="cmbDept"/>
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Department"/>
+                                        <h:panelGroup id="cmbDept">
+                                            <p:selectOneMenu
+                                                styleClass="w-100 form-control"
+                                                value="#{pharmacyStockTakeController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                <f:selectItems 
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
+                                        <p:spacer ></p:spacer>
+                                        <p:commandButton 
+                                            value="Generate Stock Count Bill" 
+                                            action="#{pharmacyStockTakeController.generateStockCountBill}" 
+                                            ajax="false"
+                                            icon="fa fa-calculator"/>
+
+                                    </p:panelGrid>
+                                </p:panel>
+
+
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

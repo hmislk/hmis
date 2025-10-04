@@ -6,9 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
@@ -20,10 +18,29 @@
                                     <h:outputLabel value="Purchase Order Reprint" ></h:outputLabel>                        
                                 </div>
                                 <div>
-                                    <p:commandButton ajax="false" value="Back To PO List" rendered="#{webUserController.hasPrivilege('Pharmacy')}" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>
-                                    <p:commandButton ajax="false" value="Back To Good Recipt" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}"
-                                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"   class="ui-button-warning mx-2" icon="fas fa-arrow-left"/>
-                                    <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint" ajax="false" >
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To PO List" 
+                                        rendered="#{webUserController.hasPrivilege('Pharmacy')}" 
+                                        action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true" 
+                                        class="ui-button-warning" icon="fas fa-arrow-left"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To Good Recipt" 
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}"
+                                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"   
+                                        class="ui-button-warning mx-2" icon="fas fa-arrow-left"/>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary m-1"
+                                        type="button"
+                                        onclick="PF('purchaseOrderReprintConfigDialog').show();" />
+                                    <p:commandButton 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        value="Reprint" ajax="false" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
                                     <p:commandButton
@@ -33,10 +50,11 @@
                                         styleClass="ui-button-secondary mx-2"
                                         oncomplete="PF('emailDialog').show();"
                                         update="emailDialogForm"/>
-                                    <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" value="Cancel" action="pharmacy_cancel_po"
-                                                     disabled="#{pharmacyBillSearch.bill.cancelled or
-                                                                 !webUserController.hasPrivilege('PharmacyOrderCancellation')}">                           
-
+                                    <p:commandButton 
+                                        class="ui-button-danger mx-2" 
+                                        icon="fas fa-ban" ajax="false" 
+                                        value="Cancel" action="pharmacy_cancel_po"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or !webUserController.hasPrivilege('PharmacyOrderCancellation')}">
                                     </p:commandButton>  
                                 </div>
                             </div>
@@ -44,7 +62,19 @@
 
                         <div class="d-flex justify-content-center border border-light boder-1">
                             <h:panelGroup id="gpBillPreview" style="width: 212mm;">
-                                <ph:po bill="#{pharmacyBillSearch.bill}" reprint="true"/>
+
+                                <ph:po_custom_1
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                                    bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
+
+                                <ph:po_custom_2
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', true)}"
+                                    bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
+
+                                <ph:po_custom_3_letter
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - Letter Paper Format', true)}"
+                                    bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
+
                             </h:panelGroup> 
                         </div>
 
@@ -59,7 +89,7 @@
                                 <p:outputLabel value="Supplier: " style="font-weight: bold;"/>
                                 <p:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name}"/>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <p:outputLabel for="emailRecipient" value="Email Address:" class="form-label"/>
                                 <p:inputText 
@@ -70,7 +100,7 @@
                                     required="true"
                                     requiredMessage="Email address is required"/>
                             </div>
-                            
+
                             <div class="d-flex justify-content-end gap-2">
                                 <p:commandButton 
                                     value="Cancel" 
@@ -86,6 +116,86 @@
                                     oncomplete="PF('emailDialog').hide();"/>
                             </div>
                         </div>
+                    </h:form>
+                </p:dialog>
+
+                <!-- Purchase Order Configuration Dialog -->
+                <p:dialog id="purchaseOrderReprintConfigDialog"
+                          header="Purchase Order Approving Reprint Configuration"
+                          widgetVar="purchaseOrderReprintConfigDialog"
+                          modal="true"
+                          width="800"
+                          height="500"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{purchaseOrderConfigController.loadCurrentConfig}" update="purchaseOrderConfigForm" />
+
+                    <h:form id="purchaseOrderConfigForm">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"></i> Purchase Order Reprint Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="custom1Paper"
+                                                value="#{purchaseOrderConfigController.custom1Paper}" />
+                                            <p:outputLabel for="custom1Paper" value="A4 Paper Custom Format 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">A4 purchase order format - Custom 1</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="custom2Paper"
+                                                value="#{purchaseOrderConfigController.custom2Paper}" />
+                                            <p:outputLabel for="custom2Paper" value="A4 Paper Custom Format 2" class="ms-2" />
+                                            <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="letterPaper"
+                                                value="#{purchaseOrderConfigController.letterPaper}" />
+                                            <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="purchaseOrderConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{purchaseOrderConfigController.saveConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('purchaseOrderReprintConfigDialog').hide(); return false;"
+                                                    type="button" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </h:form>
                 </p:dialog>
 

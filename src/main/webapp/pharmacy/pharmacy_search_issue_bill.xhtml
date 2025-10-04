@@ -73,7 +73,7 @@
                                         <p:commandLink
                                             value="#{row.billDeptId}"
                                             ajax="false"
-                                            action="/pharmacy/pharmacy_reprint_bill_unit_issue">
+                                            action="/pharmacy/pharmacy_reprint_bill_unit_issue?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{row.billId}" target="#{pharmacyBillSearch.billId}"/> 
                                         </p:commandLink>
                                     </p:column>
@@ -84,7 +84,7 @@
                                         <h:outputLabel value="#{row.billDepartmentName}" />                                    
                                     </p:column>   
 
-                                    <p:column headerText="From Institution"  >                                
+                                    <p:column headerText="To Department"  >                                
                                         <h:outputLabel value="#{row.billFromInstitutionName}" />                                    
                                     </p:column>   
 
@@ -115,8 +115,8 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-
-
+                                    
+                                    
                                 </p:dataTable>
                             </div>
                         </div>

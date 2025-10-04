@@ -245,6 +245,25 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("GETTING TOTAL QTY " + value);
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
+    
+    public double getTotalQty(BillItem b, List<BillTypeAtomic> btas) {
+        if (btas == null || btas.isEmpty()) {
+            return 0.0;
+        }
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p "
+                + " where (p.bill.retired is null or p.bill.retired=false)"
+                + " and (p.retired is null or p.retired=false) "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic in :btas";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btas", btas);
+
+        //System.err.println("GETTING TOTAL QTY " + value);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
 
     public double getTotalFreeQty(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
@@ -797,9 +816,11 @@ public class PharmacyCalculation implements Serializable {
         }
 
         // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack)
-        Item amp = inputBillItem.getItem();
+        Item originalItem = inputBillItem.getItem();
+        Item amp = originalItem;
         if (amp instanceof Ampp) {
             amp = ((Ampp) amp).getAmp();
+        } else {
         }
 
         Date expiryDate = inputBillItem.getPharmaceuticalBillItem().getDoe();
@@ -864,6 +885,7 @@ public class PharmacyCalculation implements Serializable {
             itemBatch.setModal(inputBillItem.getPharmaceuticalBillItem().getModel());
 
             getItemBatchFacade().create(itemBatch);
+        } else {
         }
 
         return itemBatch;
@@ -975,13 +997,13 @@ public class PharmacyCalculation implements Serializable {
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Cheque) {
-            if (b.getBank().getId() == null || b.getChequeRefNo() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getChequeRefNo() == null) {
                 msg = "Please select Cheque Number and Bank";
             }
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Slip) {
-            if (b.getBank().getId() == null || b.getComments() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getComments() == null) {
                 msg = "Please Fill Memo and Bank";
             }
         }
@@ -1165,11 +1187,11 @@ public class PharmacyCalculation implements Serializable {
      * Retrieves issued and cancelled quantities for all bill items in a single query.
      * 
      * @param billItems List of bill items to calculate for
-     * @param billType The bill type to filter by (e.g., PharmacyTransferIssue)
+     * @param billTypeAtomic The atomic bill type to filter by (e.g., PHARMACY_ISSUE)
      * @return Map with bill item ID as key and calculation DTO as value
      */
     public java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> getBulkCalculationsForBillItems(
-            java.util.List<com.divudi.core.entity.BillItem> billItems, com.divudi.core.data.BillType billType) {
+            java.util.List<com.divudi.core.entity.BillItem> billItems, com.divudi.core.data.BillTypeAtomic billTypeAtomic) {
         
         if (billItems == null || billItems.isEmpty()) {
             return new java.util.HashMap<>();
@@ -1184,44 +1206,84 @@ public class PharmacyCalculation implements Serializable {
             return new java.util.HashMap<>();
         }
         
-        String sql = "SELECT " +
-            "  bi.id as billItemId, " +
-            "  bi.qty as originalQty, " +
-            "  COALESCE(SUM(CASE WHEN TYPE(issued.bill) = " + com.divudi.core.entity.BilledBill.class.getSimpleName() + " THEN ABS(issued.qty) ELSE 0 END), 0) as billedIssued, " +
-            "  COALESCE(SUM(CASE WHEN TYPE(cancelled.bill) = " + com.divudi.core.entity.CancelledBill.class.getSimpleName() + " THEN ABS(cancelled.qty) ELSE 0 END), 0) as cancelledIssued " +
-            "FROM BillItem bi " +
-            "LEFT JOIN BillItem issued ON issued.referanceBillItem = bi " +
-            "  AND issued.bill.billType = :billType " +
-            "  AND issued.creater IS NOT NULL " +
-            "  AND TYPE(issued.bill) = " + com.divudi.core.entity.BilledBill.class.getSimpleName() + " " +
-            "LEFT JOIN BillItem cancelled ON cancelled.referanceBillItem.referanceBillItem = bi " +
-            "  AND cancelled.bill.billType = :billType " +
-            "  AND cancelled.creater IS NOT NULL " +
-            "  AND TYPE(cancelled.bill) = " + com.divudi.core.entity.CancelledBill.class.getSimpleName() + " " +
-            "WHERE bi.id IN :billItemIds " +
-            "GROUP BY bi.id, bi.qty";
-        
-        java.util.Map<String, Object> params = new java.util.HashMap<>();
-        params.put("billItemIds", billItemIds);
-        params.put("billType", billType);
-        
         try {
-            java.util.List<Object[]> results = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
             
-            return results.stream()
-                .collect(java.util.stream.Collectors.toMap(
-                    row -> ((Number) row[0]).longValue(), // billItemId as key
-                    row -> new com.divudi.core.data.dto.BillItemCalculationDTO(
-                        ((Number) row[0]).longValue(),    // billItemId
-                        ((Number) row[1]).doubleValue(),  // originalQty
-                        ((Number) row[2]).doubleValue(),  // billedIssued
-                        ((Number) row[3]).doubleValue()   // cancelledIssued
-                    )
-                ));
+            // Step 1: Get issued quantities (BilledBill)
+            String issuedSql = "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) " +
+                             "FROM BillItem bi " +
+                             "WHERE bi.referanceBillItem.id IN :billItemIds " +
+                             "  AND bi.bill.billTypeAtomic = :billTypeAtomic " +
+                             "  AND bi.retired = false " +
+                             "  AND bi.creater IS NOT NULL " +
+                             "GROUP BY bi.referanceBillItem.id";
+            
+            java.util.Map<String, Object> issuedParams = new java.util.HashMap<>();
+            issuedParams.put("billItemIds", billItemIds);
+            issuedParams.put("billTypeAtomic", billTypeAtomic);
+            
+            java.util.List<Object[]> issuedResults = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(issuedSql, issuedParams, javax.persistence.TemporalType.TIMESTAMP);
+            java.util.Map<Long, Double> issuedMap = new java.util.HashMap<>();
+            
+            for (Object[] row : issuedResults) {
+                Long billItemId = ((Number) row[0]).longValue();
+                Double issuedQty = ((Number) row[1]).doubleValue();
+                issuedMap.put(billItemId, issuedQty);
+            }
+            
+            // Step 2: Get cancelled quantities (CancelledBill) - cancellations of the issued bills
+            String cancelledSql = "SELECT bi.referanceBillItem.referanceBillItem.id, SUM(ABS(bi.qty)) " +
+                                "FROM BillItem bi " +
+                                "WHERE bi.referanceBillItem.referanceBillItem.id IN :billItemIds " +
+                                "  AND bi.bill.billTypeAtomic = :cancelledBillTypeAtomic " +
+                                "  AND bi.retired = false " +
+                                "  AND bi.creater IS NOT NULL " +
+                                "GROUP BY bi.referanceBillItem.referanceBillItem.id";
+            
+            java.util.Map<String, Object> cancelledParams = new java.util.HashMap<>();
+            cancelledParams.put("billItemIds", billItemIds);
+            cancelledParams.put("cancelledBillTypeAtomic", com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+            
+            java.util.List<Object[]> cancelledResults = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(cancelledSql, cancelledParams, javax.persistence.TemporalType.TIMESTAMP);
+            java.util.Map<Long, Double> cancelledMap = new java.util.HashMap<>();
+            
+            for (Object[] row : cancelledResults) {
+                Long billItemId = ((Number) row[0]).longValue();
+                Double cancelledQty = ((Number) row[1]).doubleValue();
+                cancelledMap.put(billItemId, cancelledQty);
+            }
+            
+            // Step 3: Get original quantities and combine results
+            String originalSql = "SELECT bi.id, bi.qty " +
+                               "FROM BillItem bi " +
+                               "WHERE bi.id IN :billItemIds " +
+                               "  AND bi.retired = false";
+            
+            java.util.Map<String, Object> originalParams = new java.util.HashMap<>();
+            originalParams.put("billItemIds", billItemIds);
+            
+            java.util.List<Object[]> originalResults = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(originalSql, originalParams, javax.persistence.TemporalType.TIMESTAMP);
+            
+            
+            java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> resultMap = new java.util.HashMap<>();
+            
+            for (Object[] row : originalResults) {
+                Long billItemId = ((Number) row[0]).longValue();
+                Double originalQty = ((Number) row[1]).doubleValue();
+                Double issuedQty = issuedMap.getOrDefault(billItemId, 0.0);
+                Double cancelledQty = cancelledMap.getOrDefault(billItemId, 0.0);
+                
+                com.divudi.core.data.dto.BillItemCalculationDTO dto = new com.divudi.core.data.dto.BillItemCalculationDTO(
+                    billItemId, originalQty, issuedQty, cancelledQty);
+                    
+                resultMap.put(billItemId, dto);
+                
+            }
+            
+            return resultMap;
+            
         } catch (Exception e) {
-            // Log error and return empty map as fallback
-            System.err.println("Error in getBulkCalculationsForBillItems: " + e.getMessage());
-            e.printStackTrace();
+// Log error and return empty map as fallback
+                        e.printStackTrace();
             return new java.util.HashMap<>();
         }
     }

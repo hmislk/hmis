@@ -6,13 +6,22 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
-    <ui:composition template="/resources/template/template.xhtml">
+    <ui:composition template="/resources/template/template_without_menu.xhtml">
         <!-- ChatGPT-generated fallback page for uncaught exceptions -->
         <ui:define name="content">
             <div class="container text-center mt-5">
-                <h1 class="text-danger">An Unexpected Error Has Occurred</h1>
-                <p class="mt-3">We’re sorry, but something went wrong while processing your request.</p>
-                <p class="mt-3">Please try again later. If the issue persists, contact your system administrator.</p>
+                <h1 class="text-danger">System Error - Unable to Process Request</h1>
+                <div class="alert alert-warning mt-4 mx-auto" style="max-width: 600px;">
+                    <h4 class="alert-heading">What happened?</h4>
+                    <p class="mb-2">The system encountered an unexpected error while processing your request. This is not caused by anything you did wrong.</p>
+                    <hr/>
+                    <h5>What should you do next?</h5>
+                    <ul class="text-left mb-0">
+                        <li><strong>Try again:</strong> Click the "Go to Home Page" button below and retry your action</li>
+                        <li><strong>If the error persists:</strong> Copy the technical details below and contact your system administrator</li>
+                        <li><strong>Report the time:</strong> Include the error time when reporting this issue</li>
+                    </ul>
+                </div>
 
                 <p:separator/>
                 <h:form>
@@ -24,16 +33,48 @@
                 </h:form>
                 <p:separator/>
 
-                <h3 class="text-info">Error Details for the system administrators</h3>
-                <h:panelGrid columns="1" styleClass="text-left w-100" columnClasses="text-left" >
-                    <h:outputText value="Status Code: #{errorHandler.statusCode}" />
-                    <h:outputText value="Exception Type: #{errorHandler.exceptionType}" />
-                    <h:outputText value="Message: #{errorHandler.message}" />
-                    <h:outputText value="Request URI: #{errorHandler.requestURI}" />
-                    <h:outputText value="Exception: #{errorHandler.exception}" />
-                    <h:outputText value="Stack Trace:" styleClass="mt-2 font-weight-bold" />
-                    <h:outputText value="#{errorHandler.stackTrace}" escape="false" style="white-space: pre-wrap;" />
-                </h:panelGrid>
+                <div class="alert alert-info mt-4">
+                    <h4 class="text-info mb-3">
+                        <i class="fa fa-clipboard"></i> Technical Details for System Administrator
+                    </h4>
+                    <p class="text-info"><strong>Important:</strong> Please copy ALL the information below (not just a screenshot) when reporting this error to technical support.</p>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Error Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <h:panelGrid columns="2" styleClass="table table-sm table-borderless w-100" 
+                                     columnClasses="font-weight-bold text-right pr-3,text-left">
+                            <h:outputText value="Error Time:" />
+                            <h:outputText value="#{errorHandler.errorTimeWithTimezone}" styleClass="text-danger font-weight-bold" />
+                            
+                            <h:outputText value="Request URL:" />
+                            <h:outputText value="#{errorHandler.requestURI}" />
+                            
+                            <h:outputText value="Status Code:" />
+                            <h:outputText value="#{errorHandler.statusCode}" />
+                            
+                            <h:outputText value="Exception Type:" />
+                            <h:outputText value="#{errorHandler.exceptionType}" />
+                            
+                            <h:outputText value="Error Message:" />
+                            <h:outputText value="#{errorHandler.message}" />
+                            
+                            <h:outputText value="Exception Details:" />
+                            <h:outputText value="#{errorHandler.exception}" />
+                        </h:panelGrid>
+                        
+                        <div class="mt-3">
+                            <h6 class="font-weight-bold">Complete Stack Trace:</h6>
+                            <div class="bg-light p-3 border rounded" style="max-height: 300px; overflow-y: auto;">
+                                <h:outputText value="#{errorHandler.stackTrace}" escape="false" 
+                                              style="white-space: pre-wrap; font-family: monospace; font-size: 12px;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 
             </div>

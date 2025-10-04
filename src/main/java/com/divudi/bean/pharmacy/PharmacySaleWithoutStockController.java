@@ -2154,7 +2154,6 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     @Override
     public void listnerForPaymentMethodChange() {
-        System.out.println("listnerForPaymentMethodChange");
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
@@ -2165,19 +2164,15 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
-            System.out.println("this = " + this);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);

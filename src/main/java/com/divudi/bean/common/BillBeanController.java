@@ -18,6 +18,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -145,7 +146,7 @@ public class BillBeanController implements Serializable {
     BillService billService;
     @EJB
     DepartmentResolver departmentResolver;
-    
+
     @Inject
     DepartmentController departmentController;
     @Inject
@@ -158,7 +159,7 @@ public class BillBeanController implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
                 + " where s.retired=false "
@@ -1960,8 +1961,9 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Fetch department-wise financial data using BillFinanceDetails (matching DTO approach)
-     * Returns [toDepartment/fromDepartment, netTotal, totalRetailSaleValue, totalCostValue]
+     * Fetch department-wise financial data using BillFinanceDetails (matching
+     * DTO approach) Returns [toDepartment/fromDepartment, netTotal,
+     * totalRetailSaleValue, totalCostValue]
      */
     public List<Object[]> fetchBilledDepartmentFinanceDetails(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
         String sql;
@@ -2003,11 +2005,12 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Enhanced method to fetch department-wise financial data with flexible filtering
-     * Returns [toDepartment, netTotal, totalPurchaseValue, totalRetailSaleValue, totalCostValue]
-     * Supports filtering by fromDepartment, toDepartment, both, or none
+     * Enhanced method to fetch department-wise financial data with flexible
+     * filtering Returns [toDepartment, netTotal, totalPurchaseValue,
+     * totalRetailSaleValue, totalCostValue] Supports filtering by
+     * fromDepartment, toDepartment, both, or none
      */
-    public List<Object[]> fetchBilledDepartmentFinanceDetailsEnhanced(Date fromDate, Date toDate, 
+    public List<Object[]> fetchBilledDepartmentFinanceDetailsEnhanced(Date fromDate, Date toDate,
             Department fromDepartment, Department toDepartment, BillType bt) {
         String sql;
         Map temMap = new HashMap();
@@ -2043,10 +2046,11 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Method to fetch transfer data with both from and to department information
-     * Returns [fromDepartment, toDepartment, netTotal, totalPurchaseValue, totalRetailSaleValue, totalCostValue]
+     * Method to fetch transfer data with both from and to department
+     * information Returns [fromDepartment, toDepartment, netTotal,
+     * totalPurchaseValue, totalRetailSaleValue, totalCostValue]
      */
-    public List<Object[]> fetchBilledDepartmentFinanceDetailsWithFromAndTo(Date fromDate, Date toDate, 
+    public List<Object[]> fetchBilledDepartmentFinanceDetailsWithFromAndTo(Date fromDate, Date toDate,
             Department fromDepartment, Department toDepartment, BillType bt) {
         String sql;
         Map temMap = new HashMap();
@@ -3682,6 +3686,18 @@ public class BillBeanController implements Serializable {
         m.put("b", b);
         return billItemFacade.findByJpql(j, m);
     }
+    
+    public List<BillItemDTO> fillBillItemDTOs(Long billId) {
+        String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.bill.id, bi.item.id, bi.bill.paymentMethod, bi.item.clazz, bi.netValue, bi.discount, bi.marginValue ) "
+                + " from BillItem bi "
+                + " where bi.bill.id=:billId "
+                + " and bi.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("billId", billId);
+        List<BillItemDTO> dtos = billItemFacade.findLightsByJpql(j, m);
+        return dtos;
+    }
 
     public List<BillFee> fillBillItemFees(BillItem bi) {
         String j = "Select bf "
@@ -4358,9 +4374,13 @@ public class BillBeanController implements Serializable {
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
-        
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addBillingHistory(ptIx,prformingDept);
+
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
+            }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
         }
 
     }
@@ -5181,10 +5201,11 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Generate bill fees for the given bill item limited to the specified institution.
+     * Generate bill fees for the given bill item limited to the specified
+     * institution.
      *
      * @param billItem the bill item to process
-     * @param forIns   the institution for which fees should be calculated
+     * @param forIns the institution for which fees should be calculated
      * @return calculated bill fees
      * @throws IllegalArgumentException if {@code forIns} is {@code null}
      */
@@ -5196,10 +5217,11 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Generate bill fees for the given bill item limited to the specified department.
+     * Generate bill fees for the given bill item limited to the specified
+     * department.
      *
      * @param billItem the bill item to process
-     * @param forDep   the department for which fees should be calculated
+     * @param forDep the department for which fees should be calculated
      * @return calculated bill fees
      * @throws IllegalArgumentException if {@code forDep} is {@code null}
      */
@@ -5211,11 +5233,12 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Core fee calculation logic used by the institution/department specific helpers.
+     * Core fee calculation logic used by the institution/department specific
+     * helpers.
      *
      * @param billItem the bill item to process
-     * @param forIns   institution to limit fees, or {@code null}
-     * @param forDep   department to limit fees, or {@code null}
+     * @param forIns institution to limit fees, or {@code null}
+     * @param forDep department to limit fees, or {@code null}
      * @return list of calculated bill fees
      */
     private List<BillFee> calculateBillFees(BillItem billItem, Institution forIns, Department forDep) {
@@ -5672,6 +5695,5 @@ public class BillBeanController implements Serializable {
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
     }
-
 
 }

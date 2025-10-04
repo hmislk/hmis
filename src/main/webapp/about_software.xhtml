@@ -19,7 +19,7 @@
                         </div>
                         <div class="col-8" >
                             <h:outputLabel class="mx-2 h3" value="Hospital Management Information System" /><br/>
-                            <h:outputLabel class="mx-2 h5" value="Powered by CareCode Solutions (Pvt) Ltd" /><br/>
+                            <h:outputLabel class="mx-2 h5" value="Powered by CareCode (Pvt) Ltd." /><br/>
                             <h:outputLink value="https://carecode.org" target="_blank">
                                 <p:chip label="carecode.org" icon="fas fa-globe" styleClass="mr-3" />
                             </h:outputLink>
@@ -27,7 +27,7 @@
                                 <p:chip label="hmislk" icon="fab fa-github" styleClass="mr-3" />
                             </h:outputLink>
                             <h:outputLink value="https://facebook.com/carecodes" target="_blank">
-                                <p:chip label="CareCode Solutions" icon="fab fa-facebook" styleClass="mr-3" />
+                                <p:chip label="CareCode" icon="fab fa-facebook" styleClass="mr-3" />
                             </h:outputLink>
                             <h:outputLink value="https://youtube.com/@CareCode" target="_blank" class="mx-2">
                                 <p:chip label="CareCode" icon="fab fa-youtube" styleClass="mr-3" />
@@ -39,9 +39,12 @@
                                 <h:outputLabel class="mx-2 h6" value="Current version" />
                                 <h:outputLabel class="mx-2 h6" value=":" />
                                 <h:outputLabel class="mx-2 h6" value="#{versionController.systemVersion}" />
-                                <h:outputLabel class="mx-2 h6" value="Latest version" />
+                                <h:outputLabel class="mx-2 h6" value="Build time" />
                                 <h:outputLabel class="mx-2 h6" value=": " />
-                                <h:outputLabel class="mx-2 h6" value="#{versionController.latestVersion}" />
+                                <h:outputLabel class="mx-2 h6" value="#{versionController.gitBuildTime}" />
+                                <h:outputLabel class="mx-2 h6" value="Last commit" />
+                                <h:outputLabel class="mx-2 h6" value=": " />
+                                <h:outputLabel class="mx-2 h6" value="#{versionController.gitCommitIdAbbrev} (#{versionController.gitBranch})" />
                             </h:panelGrid>
                         </div>
                     </div>

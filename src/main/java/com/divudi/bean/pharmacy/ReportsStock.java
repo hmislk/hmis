@@ -9,6 +9,7 @@ import com.divudi.bean.common.ControllerWithReportFilters;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
+import com.divudi.core.data.dto.StockReportByItemDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -161,6 +162,10 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     public String navigateToPharmacyReportDepartmentStockByItem() {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
+    }
+    public String navigateToPharmacyReportDepartmentStockByItemDTO() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item_DTO?faces-redirect=true";
     }
 
     public String navigateToPharmacyReportDepartmentStockByItemOrderByVmp() {
@@ -650,7 +655,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             }
             Map m = new HashMap();
             String sql;
-            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
+            sql = "select new com.divudi.core.data.dto.StockReportByItemDTO"
                     + "(s.itemBatch.item.code, "
                     + "s.itemBatch.item.name, "
                     + "sum(s.stock), "
@@ -661,16 +666,26 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                     + "order by s.itemBatch.item.name";
             m.put("d", department);
             m.put("z", 0.0);
-            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(sql, m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
-            for (PharmacyStockRow r : lsts) {
+            for (StockReportByItemDTO r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
 
             }
-            pharmacyStockRows = lsts;
+            stockReportByItemDTOS = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    private List<StockReportByItemDTO> stockReportByItemDTOS;
+
+    public List<StockReportByItemDTO> getStockReportByItemDTOS() {
+        return stockReportByItemDTOS;
+    }
+
+    public void setStockReportByItemDTOS(List<StockReportByItemDTO> stockReportByItemDTOS) {
+        this.stockReportByItemDTOS = stockReportByItemDTOS;
     }
 
     public void fillDepartmentZeroItemStocks() {

@@ -124,7 +124,8 @@ public enum BillTypeAtomic {
     PHARMACY_SALE_WITHOUT_STOCK_PRE("Pharmacy Sale Without Stock Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacySaleWithoutStock),
     PHARMACY_SALE_WITHOUT_STOCK_CANCELLED("Pharmacy Sale Without Stock Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySaleWithoutStock),
     PHARMACY_SALE_WITHOUT_STOCK_REFUND("Pharmacy Sale Without Stock Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacySaleWithoutStock),
-    PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK("Pharmacy Retail Sale Pre Bill Add to Stock", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyPre),
+    PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL("Pharmacy Retail Sale Pre Bill Add to Stock - Batch Bill", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
+    PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK("Pharmacy Retail Sale Pre Bill Add to Stock", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
     PHARMACY_WHOLESALE("Pharmacy Wholesale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
     PHARMACY_WHOLESALE_PRE("Pharmacy Wholesale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacySale),
     PHARMACY_WHOLESALE_CANCELLED("Pharmacy Wholesale Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
@@ -136,7 +137,7 @@ public enum BillTypeAtomic {
     PHARMACY_ORDER_APPROVAL_CANCELLED("Pharmacy Order Approval Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyOrder),
     PHARMACY_DIRECT_PURCHASE("Pharmacy Direct Purchase", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
     PHARMACY_DIRECT_PURCHASE_CANCELLED("Pharmacy Direct Purchase Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
-    PHARMACY_DIRECT_PURCHASE_REFUND("Pharmacy Direct Purchase Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
+    PHARMACY_DIRECT_PURCHASE_REFUND("Pharmacy Direct Purchase Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PurchaseReturn),
     PHARMACY_GRN("Pharmacy GRN", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyGrnBill),
     PHARMACY_GRN_PRE("Pharmacy GRN Pre", BillCategory.PREBILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyGrnBill),
     @Deprecated // Use PHARMACY_WHOLESALE_GRN_BILL. Can not Remove this as it is already in the databases.
@@ -144,7 +145,7 @@ public enum BillTypeAtomic {
     PHARMACY_GRN_CANCELLED("Pharmacy GRN Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnBill),
     @Deprecated // Use PHARMACY_GRN_RETURN, Can not remove this as they are already in databases
     PHARMACY_GRN_REFUND("Pharmacy GRN Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnBill),
-    PHARMACY_GRN_RETURN("Pharmacy GRN Return", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnBill),
+    PHARMACY_GRN_RETURN("Pharmacy GRN Return", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnReturn),
     PHARMACY_GRN_RETURN_CANCELLATION("Pharmacy GRN Return Cancellation", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnReturn),
     PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL("Pharmacy Direct Purchase", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
     PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED("Pharmacy Direct Purchase - Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
@@ -164,6 +165,7 @@ public enum BillTypeAtomic {
     PHARMACY_COST_RATE_ADJUSTMENT("Pharmacy Cost Rate Adjustment", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyAdjustment),
     PHARMACY_WHOLESALE_RATE_ADJUSTMENT("Pharmacy Wholesale Rate Adjustment", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyAdjustment),
     PHARMACY_STOCK_ADJUSTMENT("Pharmacy Stock Adjustment", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyAdjustment),
+    PHARMACY_STAFF_STOCK_ADJUSTMENT("Pharmacy Staff Stock Adjustment", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyAdjustment),
     PHARMACY_TRANSFER_REQUEST("Pharmacy Transfer Request", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferRequest),
     PHARMACY_TRANSFER_REQUEST_PRE("Pharmacy Transfer Request Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferRequest),
     PHARMACY_TRANSFER_REQUEST_CANCELLED("Pharmacy Transfer Request Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferRequest),
@@ -181,6 +183,9 @@ public enum BillTypeAtomic {
     MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL("Multiple Pharmacy Purchase Order Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyOrder),
     PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION("Pharmacy Return Items And Payments Cancellation", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacySale),
     PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT("Pharmacy Medicine Expiry Date Ajustment", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyAdjustment),
+    PHARMACY_SNAPSHOT_GENERATION("Pharmacy Snapshot Generation", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacySnapshotBill),
+    PHARMACY_PHYSICAL_COUNT_ENTRY("Pharmacy Physical Count Entry", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPhysicalCountBill),
+    PHARMACY_STOCK_ADJUSTMENT_BILL("Pharmacy Stock Adjustment Bill", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyStockAdjustmentBill),
     PHARMACY_RETURN_WITHOUT_TREASING("Pharmacy Return without a Receipt", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacySale),
     CHANNEL_BOOKING_WITH_PAYMENT("Channel Booking and Payment", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.CASH_IN, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND, BillType.ChannelCash),
     CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT("Channel Booking For Online Payment - Pending Confirmation", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.NO_PAYMENT, BillType.ChannelOnCall),
@@ -391,6 +396,12 @@ public enum BillTypeAtomic {
                         return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
                     case PharmacyPurchaseBill:
                         return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                    case PharmacySnapshotBill:
+                        return BillTypeAtomic.PHARMACY_SNAPSHOT_GENERATION;
+                    case PharmacyPhysicalCountBill:
+                        return BillTypeAtomic.PHARMACY_PHYSICAL_COUNT_ENTRY;
+                    case PharmacyStockAdjustmentBill:
+                        return BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL;
                 }
                 break;
             case BilledBill:
@@ -401,6 +412,12 @@ public enum BillTypeAtomic {
                         return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
                     case PharmacyPurchaseBill:
                         return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                    case PharmacySnapshotBill:
+                        return BillTypeAtomic.PHARMACY_SNAPSHOT_GENERATION;
+                    case PharmacyPhysicalCountBill:
+                        return BillTypeAtomic.PHARMACY_PHYSICAL_COUNT_ENTRY;
+                    case PharmacyStockAdjustmentBill:
+                        return BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL;
                 }
             case CancelledBill:
                 switch (billType) {
