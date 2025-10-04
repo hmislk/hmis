@@ -371,9 +371,57 @@
                                     <h:outputText value="#{b.bill.invoiceNumber}"/>
                                 </p:column>
 
-                                <p:column headerText="Cancel/Refund No" width="5em">
-                                    <h:outputText value="#{b.bill.cancelledBill.deptId}" style="color: red;"/>
-                                    <h:outputText value="#{b.bill.refundedBill.deptId}" style="color: orange;"/>
+                                <p:column headerText="Status/Links" width="10em">
+                                    <!-- Show status if this bill is cancelled or returned -->
+                                    <h:panelGroup rendered="#{b.bill.cancelled}">
+                                        <h:outputText value="CANCELLED" style="color: red; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{b.bill.fullReturned}">
+                                        <h:outputText value="RETURNED" style="color: orange; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
+
+                                    <!-- If this bill has been cancelled, show link to cancellation bill -->
+                                    <h:panelGroup rendered="#{b.bill.cancelledBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Cancel: #{b.bill.cancelledBill.deptId}" style="color: red;"/>
+                                        <p:commandButton
+                                            title="View Cancellation Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.cancelledBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this bill has been returned, show link to return bill -->
+                                    <h:panelGroup rendered="#{b.bill.refundedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Return: #{b.bill.refundedBill.deptId}" style="color: orange;"/>
+                                        <p:commandButton
+                                            title="View Return Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.refundedBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this is a cancellation/return bill, show link to original bill -->
+                                    <h:panelGroup rendered="#{b.bill.billedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Original: #{b.bill.billedBill.deptId}" style="color: blue;"/>
+                                        <p:commandButton
+                                            title="View Original Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm ui-button-info"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.billedBill.id)}" />
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Action" width="5em">
+                                    <p:commandButton
+                                        id="btnViewBill"
+                                        title="View Bill"
+                                        ajax="false"
+                                        styleClass="mx-1 ui-button-sm"
+                                        icon="pi pi-eye"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.id)}" />
                                 </p:column>
 
                                 <p:column
@@ -515,9 +563,57 @@
                                     <p:outputLabel value="#{i.billItem.qty}"/>
                                 </p:column>
 
-                                <p:column headerText="Cancel No" width="5em">
-                                    <h:outputText value="#{i.billItem.bill.cancelledBill.deptId}" style="color: red;"/>
-                                    <h:outputText value="#{i.billItem.bill.refundedBill.deptId}" style="color: orange;"/>
+                                <p:column headerText="Status/Links" width="10em">
+                                    <!-- Show status if this bill is cancelled or returned -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.cancelled}">
+                                        <h:outputText value="CANCELLED" style="color: red; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{i.billItem.bill.fullReturned}">
+                                        <h:outputText value="RETURNED" style="color: orange; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
+
+                                    <!-- If this bill has been cancelled, show link to cancellation bill -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.cancelledBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Cancel: #{i.billItem.bill.cancelledBill.deptId}" style="color: red;"/>
+                                        <p:commandButton
+                                            title="View Cancellation Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(i.billItem.bill.cancelledBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this bill has been returned, show link to return bill -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.refundedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Return: #{i.billItem.bill.refundedBill.deptId}" style="color: orange;"/>
+                                        <p:commandButton
+                                            title="View Return Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(i.billItem.bill.refundedBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this is a cancellation/return bill, show link to original bill -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.billedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Original: #{i.billItem.bill.billedBill.deptId}" style="color: blue;"/>
+                                        <p:commandButton
+                                            title="View Original Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm ui-button-info"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(i.billItem.bill.billedBill.id)}" />
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Action" width="5em">
+                                    <p:commandButton
+                                        id="btnViewBill"
+                                        title="View Bill"
+                                        ajax="false"
+                                        styleClass="mx-1 ui-button-sm"
+                                        icon="pi pi-eye"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillItemId(i.billItem.id)}" />
                                 </p:column>
 
                                 <p:column
