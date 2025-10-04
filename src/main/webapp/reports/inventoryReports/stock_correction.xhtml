@@ -220,6 +220,11 @@
                                 <h:outputText value="#{item.quantity}" >
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalStockCorrectionQty}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Cost Rate">
                                 <h:outputText value="#{item.costRate}" >
@@ -230,6 +235,11 @@
                                 <h:outputText value="#{item.costRate * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalStockCorrectionCostValue}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Old Rate">
                                 <h:outputText value="#{item.beforeAdjustment}" >
@@ -240,6 +250,11 @@
                                 <h:outputText value="#{item.beforeAdjustment * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalStockCorrectionOldValue}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="New Rate">
                                 <h:outputText value="#{item.afterAdjustment }" >
@@ -250,6 +265,11 @@
                                 <h:outputText value="#{item.afterAdjustment * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalStockCorrectionNewValue}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Variance">
                                 <h:outputText value="#{(item.afterAdjustment  - item.beforeAdjustment) * item.quantity}" >
