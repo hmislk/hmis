@@ -95,12 +95,6 @@
                                         ajax="false"
                                         action="#{pharmacyIssueController.settleDisposalIssueBill()}"
                                         onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
-                                    <p:commandButton
-                                        value="Change Department"
-                                        class="ui-button-primary m-1"
-                                        ajax="false"
-                                        icon="pi pi-refresh"
-                                        action="#{pharmacyIssueController.changeDepartment()}" />
                                 </div>
                             </div>
                         </f:facet>
@@ -431,26 +425,15 @@
 
                                     <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel value="Issuing Department"/>
-                                        <p:autoComplete
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{departmentController.completeDept}"
-                                            forceSelection="true"
-                                            var="w"
-                                            maxResults="20"
-                                            itemLabel="#{w.name}"
-                                            itemValue="#{w}"
-                                            value="#{pharmacyIssueController.toDepartment}"
-                                            id="acDept">
-                                            <p:column headerText="Department Name" style="padding: 3px">
-                                                #{w.name}
-                                            </p:column>
-                                            <p:column headerText="Institution Name" style="padding: 3px">
-                                                #{w.institution.name}
-                                            </p:column>
-                                            <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} "
-                                                    event="itemSelect"  listener="#{pharmacyIssueController.calculateAllRates}" />
-                                        </p:autoComplete>
+                                        <h:panelGroup id="acDept" class="d-flex align-items-center justify-content-between">
+                                            <h:outputText value="#{pharmacyIssueController.toDepartment.name}" class="fw-bold"/>
+                                            <p:commandButton
+                                                icon="pi pi-refresh"
+                                                title="Change Department"
+                                                class="ui-button-primary ui-button-sm"
+                                                ajax="false"
+                                                action="#{pharmacyIssueController.changeDepartment()}" />
+                                        </h:panelGroup>
 
                                         <h:outputLabel value="Request Number"/>
                                         <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.invoiceNumber}" id="req"/>
