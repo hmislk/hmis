@@ -241,12 +241,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Old Rate">
+                            <p:column headerText="Old Rate (Cost/ Purchase/ Sale)">
                                 <h:outputText value="#{item.beforeAdjustment}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Old Value">
+                            <p:column headerText="Old Value (Cost/ Purchase/ Sale)">
                                 <h:outputText value="#{item.beforeAdjustment * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -256,12 +256,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="New Rate">
+                            <p:column headerText="New Rate (Cost/ Purchase/ Sale)">
                                 <h:outputText value="#{item.afterAdjustment }" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="New Value">
+                            <p:column headerText="New Value (Cost/ Purchase/ Sale)">
                                 <h:outputText value="#{item.afterAdjustment * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
