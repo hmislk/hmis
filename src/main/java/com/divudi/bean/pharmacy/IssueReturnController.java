@@ -109,6 +109,10 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setCheckeAt(new Date());
         getReturnBill().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getReturnBill());
+
+        // Refresh the bill to ensure bill items collection is loaded for print preview
+        returnBill = getBillFacade().find(getReturnBill().getId());
+
         printPreview=true;
         JsfUtil.addSuccessMessage("Finalized");
     }
@@ -438,7 +442,7 @@ public class IssueReturnController implements Serializable {
 
             getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
-            getReturnBill().getBillItems().add(i);
+            // No need to add to collection - bill relationship already set at line 361 and persisted at line 437
 
         }
         if(fullyReturned){

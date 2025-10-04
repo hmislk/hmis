@@ -105,7 +105,7 @@
                                     <h:outputText value="#{issueReturnController.originalBill.fullReturnedAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                     </h:outputText>
-                                    <h:outputText value=" by #{issueReturnController.originalBill.fullReturnedBy.person.nameWithTitle}. No further returns are allowed." styleClass="fw-bold"/>
+                                    <h:outputText value=" by #{issueReturnController.originalBill.fullReturnedBy.webUserPerson.nameWithTitle}. No further returns are allowed." styleClass="fw-bold"/>
                                 </div>
                             </div>
                         </p:panel>
@@ -183,15 +183,9 @@
                                 </p:column>
 
                                 <p:column headerText="Current Stock" styleClass="text-center" width="6em">
-                                    <div class="badge #{rbi.pharmaceuticalBillItem.stock.stock lt 10 ? 'bg-warning text-dark' : 'bg-info text-white'}">
-                                        <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </div>
-                                    <div class="small text-muted mt-1"
-                                         rendered="#{rbi.pharmaceuticalBillItem.stock.stock lt 5}">
-                                        Low Stock!
-                                    </div>
+                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Issued Qty" styleClass="text-end">
@@ -214,6 +208,7 @@
 
                                 <p:column headerText="Return Qty" styleClass="text-center" width="8em">
                                     <p:inputText
+                                        id="txtReturnQty"
                                         value="#{rbi.qty}"
                                         styleClass="text-end w-100"
                                         autocomplete="off"
@@ -221,8 +216,9 @@
                                         disabled="#{issueReturnController.originalBill.fullReturned}"
                                         title="Enter quantity to return (max: #{rbi.remainingQty})">
                                         <p:ajax
+                                            id="ajexReturnQty"
                                             event="blur"
-                                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} lblReturnValue :#{p:resolveFirstComponentWithId('itemList',view).clientId} messages"
+                                            update="txtReturnQty lblReturnValue :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
                                             listener="#{issueReturnController.calculateBillItemTotals(rbi)}"/>
                                     </p:inputText>
                                 </p:column>
