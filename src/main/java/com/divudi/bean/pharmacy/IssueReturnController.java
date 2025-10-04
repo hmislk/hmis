@@ -360,30 +360,109 @@ public class IssueReturnController implements Serializable {
         boolean fullyReturned = true;
         List<BillItem> itemsToProcess = new ArrayList<>(getReturnBillItems());
         for (BillItem i : itemsToProcess) {
-            i.getPharmaceuticalBillItem().setQty(Math.abs(i.getQty()));
+            // Get return quantity (positive value)
+            double returnQty = Math.abs(i.getQty());
 
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty(Math.abs(i.getPharmaceuticalBillItem().getQty()));
 
-            double value = i.getRate() * i.getQty();
-            i.setGrossValue(0 - value);
-            i.setNetValue(0 - value);
+            // Set BillItem quantities as POSITIVE (returns add stock)
+            i.setQty(returnQty);
 
+            // Get the reference bill item to access rates
             BillItem referenceBillItem = i.getReferanceBillItem();
-            BillItemFinanceDetails financeDetailsOfOriginal = referenceBillItem != null ? referenceBillItem.getBillItemFinanceDetails() : null;
+            if (referenceBillItem == null) {
+                JsfUtil.addErrorMessage("Cannot process return: missing reference bill item for " + (i.getItem() != null ? i.getItem().getName() : "unknown item"));
+                fullyReturned = false;
+                continue;
+            }
+
+            // Validate PharmaceuticalBillItem exists
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                pbi = new PharmaceuticalBillItem();
+                i.setPharmaceuticalBillItem(pbi);
+            }
+
+            // Calculate quantity in units
+            double qtyInUnits;
+            if (i.getItem() instanceof Ampp) {
+                qtyInUnits = returnQty * i.getItem().getDblValue();
+            } else {
+                qtyInUnits = returnQty;
+            }
+
+            // Set PharmaceuticalBillItem quantity in units as POSITIVE
+            pbi.setQty(qtyInUnits);
+
+            // Get rates from reference bill item's pharmaceutical bill item batch - with null checks
+            PharmaceuticalBillItem refPbi = referenceBillItem.getPharmaceuticalBillItem();
+            if (refPbi == null || refPbi.getItemBatch() == null) {
+                JsfUtil.addErrorMessage("Cannot process return: missing batch information for " + (i.getItem() != null ? i.getItem().getName() : "unknown item"));
+                fullyReturned = false;
+                continue;
+            }
+            double purchaseRate = refPbi.getItemBatch().getPurcahseRate();
+            double costRate = refPbi.getItemBatch().getCostRate();
+            double retailRate = refPbi.getItemBatch().getRetailsaleRate();
+
+            // Calculate values as POSITIVE (returns credit the department)
+            double purchaseValue = purchaseRate * qtyInUnits;
+            double costValue = costRate * qtyInUnits;
+            double retailValue = retailRate * qtyInUnits;
+
+            // Set BillItem values as POSITIVE
+            i.setGrossValue(retailValue);
+            i.setNetValue(retailValue);
+
+            // Initialize BillItemFinanceDetails if needed
             BillItemFinanceDetails financeDetailsOfReturn = i.getBillItemFinanceDetails();
+            if (financeDetailsOfReturn == null) {
+                financeDetailsOfReturn = new BillItemFinanceDetails();
+                i.setBillItemFinanceDetails(financeDetailsOfReturn);
+            }
 
-            BigDecimal settledQty = financeDetailsOfReturn == null
-                    ? BigDecimal.ZERO
-                    : BigDecimalUtil.valueOrZero(financeDetailsOfReturn.getQuantity());
+            // Set all finance details as POSITIVE values
+            financeDetailsOfReturn.setQuantity(BigDecimal.valueOf(returnQty));
+            financeDetailsOfReturn.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+            financeDetailsOfReturn.setTotalQuantity(BigDecimal.valueOf(returnQty));
+            financeDetailsOfReturn.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
 
+            financeDetailsOfReturn.setValueAtPurchaseRate(BigDecimal.valueOf(purchaseValue));
+            financeDetailsOfReturn.setValueAtCostRate(BigDecimal.valueOf(costValue));
+            financeDetailsOfReturn.setValueAtRetailRate(BigDecimal.valueOf(retailValue));
+
+            // Set individual rates for audit trail
+            financeDetailsOfReturn.setPurchaseRate(BigDecimal.valueOf(purchaseRate));
+            financeDetailsOfReturn.setCostRate(BigDecimal.valueOf(costRate));
+            financeDetailsOfReturn.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+
+            financeDetailsOfReturn.setLineGrossTotal(BigDecimal.valueOf(retailValue));
+            financeDetailsOfReturn.setLineNetTotal(BigDecimal.valueOf(retailValue));
+            financeDetailsOfReturn.setGrossTotal(BigDecimal.valueOf(retailValue));
+            financeDetailsOfReturn.setNetTotal(BigDecimal.valueOf(retailValue));
+
+            financeDetailsOfReturn.setReturnQuantity(BigDecimal.valueOf(returnQty));
+            financeDetailsOfReturn.setReturnQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+            financeDetailsOfReturn.setTotalReturnQuantity(BigDecimal.valueOf(returnQty));
+            financeDetailsOfReturn.setReturnGrossTotal(BigDecimal.valueOf(retailValue));
+            financeDetailsOfReturn.setReturnNetTotal(BigDecimal.valueOf(retailValue));
+
+            // Set units per pack
+            if (i.getItem() instanceof Ampp && i.getItem().getDblValue() != 0.0) {
+                financeDetailsOfReturn.setUnitsPerPack(BigDecimal.valueOf(i.getItem().getDblValue()));
+            } else {
+                financeDetailsOfReturn.setUnitsPerPack(BigDecimal.ONE);
+            }
+
+            // Update original bill item's finance details
+            BillItemFinanceDetails financeDetailsOfOriginal = referenceBillItem.getBillItemFinanceDetails();
             if (financeDetailsOfOriginal != null) {
                 // Use absolute values for all calculations since disposal issues have negative quantities
                 BigDecimal alreadyReturned = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getReturnQuantity()).abs();
-                BigDecimal settledQtyAbs = settledQty.abs();
-                BigDecimal updatedReturnQty = alreadyReturned.add(settledQtyAbs);
+                BigDecimal currentReturnQty = BigDecimal.valueOf(returnQty);
+                BigDecimal updatedReturnQty = alreadyReturned.add(currentReturnQty);
                 financeDetailsOfOriginal.setReturnQuantity(updatedReturnQty);
 
                 BigDecimal originalQty = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getQuantity()).abs();
@@ -440,9 +519,14 @@ public class IssueReturnController implements Serializable {
 
             getBillItemFacade().edit(i);
 
-            getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            // Validate Stock object exists before adding to stock
+            if (pbi.getStock() == null || pbi.getStock().getId() == null) {
+                JsfUtil.addErrorMessage("Cannot add to stock: missing stock record for " + (i.getItem() != null ? i.getItem().getName() : "unknown item"));
+                fullyReturned = false;
+                continue;
+            }
 
-            // No need to add to collection - bill relationship already set at line 361 and persisted at line 437
+            getPharmacyBean().addToStock(pbi.getStock(), Math.abs(pbi.getQty()), pbi, getSessionController().getDepartment());
 
         }
         if(fullyReturned){
@@ -975,11 +1059,14 @@ public class IssueReturnController implements Serializable {
             bifd.setUnitsPerPack(BigDecimal.ONE);
         }
 
-        // Set pharmaceutical bill item rates for tracking
-        bi.getPharmaceuticalBillItem().setCostRate(costRate);
-        bi.getPharmaceuticalBillItem().setPurchaseRate(purchaseRate);
-        bi.getPharmaceuticalBillItem().setRetailRate(retailRate);
-        bi.getPharmaceuticalBillItem().setWholesaleRate(wholesaleRate);
+        // Set pharmaceutical bill item rates for tracking (with null check)
+        PharmaceuticalBillItem returnPbi = bi.getPharmaceuticalBillItem();
+        if (returnPbi != null) {
+            returnPbi.setCostRate(costRate);
+            returnPbi.setPurchaseRate(purchaseRate);
+            returnPbi.setRetailRate(retailRate);
+            returnPbi.setWholesaleRate(wholesaleRate);
+        }
 
         calculateBillTotal();
     }
