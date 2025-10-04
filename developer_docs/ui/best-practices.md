@@ -135,7 +135,7 @@ Place workflow navigation buttons in the page header using outlined info style:
 ```xhtml
 <p:commandButton
     value="#{item.completed ? 'Approved' : 'Approve'}"
-    icon="fas #{item.completed ? 'fa-check-circle' : 'fa-eye'}"
+    icon="fas #{item.completed ? 'fa-check-double' : 'fa-check-circle'}"
     styleClass="#{item.completed ? 'ui-button-success ui-button-outlined' : 'ui-button-success'}"
     action="#{controller.approveItem(item)}"
     disabled="#{item.completed or item.cancelled}"
