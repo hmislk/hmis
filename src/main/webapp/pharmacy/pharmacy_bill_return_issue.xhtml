@@ -26,12 +26,48 @@
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
+                                            value="List Issues To Create Return"
+                                            action="/pharmacy/pharmacy_search_issue_bill_for_return?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-plus-circle"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
+                                            title="Create a new Disposal Return Request">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="List Returns to Finalize"
+                                            action="/pharmacy/pharmacy_disposal_return_finalize?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-tasks"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
+                                            title="Finalize Disposal Return Requests">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="List Returns To Approve"
+                                            action="/pharmacy/pharmacy_disposal_return_approve?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-check-circle"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
+                                            title="Approve Disposal Return Requests">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Completed Returns"
+                                            action="/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-check-double"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
+                                            title="View Completed Disposal Returns">
+                                        </p:commandButton>
+                                        <p:commandButton
                                             icon="fas fa-save"
                                             styleClass="ui-button-secondary"
-                                            value="Save Draft"
+                                            value="Save"
                                             title="Save return bill as draft"
                                             action="#{issueReturnController.saveDisposalIssueReturnBill()}"
-                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
@@ -40,7 +76,7 @@
                                             value="Finalize"
                                             title="Finalize return bill"
                                             action="#{issueReturnController.finalizeDisposalIssueReturnBill()}"
-                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
@@ -49,7 +85,7 @@
                                             value="Authorize Return"
                                             title="Authorize and process the return"
                                             action="#{issueReturnController.settleDisposalIssueReturnBill}"
-                                            disabled="#{issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
                                         </p:commandButton>
                                     </div>
@@ -69,7 +105,7 @@
                                     <h:outputText value="#{issueReturnController.originalBill.fullReturnedAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                     </h:outputText>
-                                    <h:outputText value=" by #{issueReturnController.originalBill.fullReturnedBy.person.nameWithTitle}. No further returns are allowed." styleClass="fw-bold"/>
+                                    <h:outputText value=" by #{issueReturnController.originalBill.fullReturnedBy.webUserPerson.nameWithTitle}. No further returns are allowed." styleClass="fw-bold"/>
                                 </div>
                             </div>
                         </p:panel>
@@ -147,15 +183,9 @@
                                 </p:column>
 
                                 <p:column headerText="Current Stock" styleClass="text-center" width="6em">
-                                    <div class="badge #{rbi.pharmaceuticalBillItem.stock.stock lt 10 ? 'bg-warning text-dark' : 'bg-info text-white'}">
-                                        <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </div>
-                                    <div class="small text-muted mt-1"
-                                         rendered="#{rbi.pharmaceuticalBillItem.stock.stock lt 5}">
-                                        Low Stock!
-                                    </div>
+                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Issued Qty" styleClass="text-end">
@@ -178,6 +208,7 @@
 
                                 <p:column headerText="Return Qty" styleClass="text-center" width="8em">
                                     <p:inputText
+                                        id="txtReturnQty"
                                         value="#{rbi.qty}"
                                         styleClass="text-end w-100"
                                         autocomplete="off"
@@ -185,8 +216,9 @@
                                         disabled="#{issueReturnController.originalBill.fullReturned}"
                                         title="Enter quantity to return (max: #{rbi.remainingQty})">
                                         <p:ajax
+                                            id="ajexReturnQty"
                                             event="blur"
-                                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} lblReturnValue :#{p:resolveFirstComponentWithId('itemList',view).clientId} messages"
+                                            update="txtReturnQty lblReturnValue :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
                                             listener="#{issueReturnController.calculateBillItemTotals(rbi)}"/>
                                     </p:inputText>
                                 </p:column>
@@ -228,21 +260,49 @@
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <p:commandButton
-                                            ajax="false"
-                                            styleClass="ui-button-warning"
-                                            icon="fas fa-search"
-                                            value="Search Issue Bills"
-                                            title="Search for pharmacy issue bills"
-                                            action="/pharmacy/pharmacy_search_issue_bill"
-                                            actionListener="#{issueReturnController.makeNull}">
-                                        </p:commandButton>
+                                        <h:outputText value="Disposal Issue Return - Print Preview" styleClass="fw-bold"/>
                                     </div>
                                     <div class="d-flex gap-2">
                                         <p:commandButton
+                                            value="List Issues To Create Return"
+                                            action="/pharmacy/pharmacy_search_issue_bill_for_return?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-plus-circle"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
+                                            title="Create a new Disposal Return Request">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="List Returns to Finalize"
+                                            action="/pharmacy/pharmacy_disposal_return_finalize?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-tasks"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
+                                            title="Finalize Disposal Return Requests">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="List Returns To Approve"
+                                            action="/pharmacy/pharmacy_disposal_return_approve?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-check-circle"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
+                                            title="Approve Disposal Return Requests">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Completed Returns"
+                                            action="/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true"
+                                            ajax="false"
+                                            icon="fas fa-check-double"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
+                                            title="View Completed Disposal Returns">
+                                        </p:commandButton>
+                                        <p:commandButton
                                             styleClass="ui-button-info"
                                             icon="fas fa-print"
-                                            value="Print Return Bill"
+                                            value="Print"
                                             title="Print the return bill"
                                             ajax="false">
                                             <p:printer target="gpBillPreview1"/>
@@ -251,7 +311,7 @@
                                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                             value="Settings"
                                             icon="fas fa-cog"
-                                            class="ui-button-secondary"
+                                            styleClass="ui-button-secondary"
                                             type="button"
                                             onclick="PF('billReturnIssueConfigDialog').show();" />
                                     </div>
@@ -335,7 +395,7 @@
                                                     <p:commandButton
                                                         value="Cancel"
                                                         icon="fas fa-times"
-                                                        class="ui-button-secondary"
+                                                        styleClass="ui-button-secondary"
                                                         onclick="PF('billReturnIssueConfigDialog').hide(); return false;"
                                                         type="button" />
                                                 </div>
