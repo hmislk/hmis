@@ -188,7 +188,7 @@ public class PharmacyErrorChecking implements Serializable {
     private PharmacyBean pharmacyBean;
 
     public double getItemStock() {
-        return getPharmacyBean().getStockQty(item, department);
+        return getPharmacyBean().getItemStockQty(item, department);
     }
 
     public void calculateTotals2() {
