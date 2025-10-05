@@ -4031,6 +4031,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ORDER_CANCELLED:
             case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigatePharmacyReprintPo();
+
 //            case PHARMACY_DIRECT_PURCHASE:
 //            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
 //            case PHARMACY_DIRECT_PURCHASE_REFUND:
@@ -4275,6 +4278,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ORDER_CANCELLED:
             case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigatePharmacyReprintPo();
+
 //            case PHARMACY_DIRECT_PURCHASE:
 //            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
 //            case PHARMACY_DIRECT_PURCHASE_REFUND:
