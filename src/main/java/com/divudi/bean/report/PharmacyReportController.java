@@ -3541,8 +3541,17 @@ public class PharmacyReportController implements Serializable {
             params.put("itm", item);
         }
 
-        // Complete subquery with GROUP BY for item-level aggregation (not batch)
-        jpql.append("  GROUP BY sh2.department, sh2.item) ");
+        // Complete subquery with GROUP BY based on scope to prevent duplicate rows
+        // Department filter: GROUP BY (department, item) - one row per department per item
+        // Institution filter: GROUP BY (institution, item) - one row per institution per item
+        // No filter (Total): GROUP BY (item) - one row per item across all institutions
+        if (department != null) {
+            jpql.append("  GROUP BY sh2.department, sh2.item) ");
+        } else if (institution != null) {
+            jpql.append("  GROUP BY sh2.institution, sh2.item) ");
+        } else {
+            jpql.append("  GROUP BY sh2.item) ");
+        }
 
         // Order by item name
         jpql.append("ORDER BY i.name");
@@ -3721,8 +3730,17 @@ public class PharmacyReportController implements Serializable {
             params.put("itm", item);
         }
 
-        // Complete subquery with GROUP BY
-        jpql.append("  GROUP BY sh2.department, sh2.itemBatch) ");
+        // Complete subquery with GROUP BY based on scope to prevent duplicate rows
+        // Department filter: GROUP BY (department, itemBatch) - one row per department per batch
+        // Institution filter: GROUP BY (institution, itemBatch) - one row per institution per batch
+        // No filter (Total): GROUP BY (itemBatch) - one row per batch across all institutions
+        if (department != null) {
+            jpql.append("  GROUP BY sh2.department, sh2.itemBatch) ");
+        } else if (institution != null) {
+            jpql.append("  GROUP BY sh2.institution, sh2.itemBatch) ");
+        } else {
+            jpql.append("  GROUP BY sh2.itemBatch) ");
+        }
 
         // Order by item name
         jpql.append("ORDER BY i.name");

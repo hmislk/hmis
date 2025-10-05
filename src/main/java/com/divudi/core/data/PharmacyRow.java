@@ -551,17 +551,18 @@ public class PharmacyRow implements Serializable {
         this.itemBatch.setBatchNo(batchNo);
         this.itemBatch.setDateOfExpire(dateOfExpire);
 
-        // Set stock quantity and rates
-        this.stockQty = stockQty;
-        this.purchaseRate = purchaseRate;
-        this.retailRate = retailRate;
-        this.costRate = costRate;
+        // Set stock quantity and rates (guard against null for primitive fields)
+        this.stockQty = stockQty != null ? stockQty : 0.0;
+        this.purchaseRate = purchaseRate != null ? purchaseRate : 0.0;
+        this.retailRate = retailRate != null ? retailRate : 0.0;
+        this.costRate = costRate != null ? costRate : 0.0;
 
         // Store department-level values (for when department != null)
-        this.qty = stockQty;  // Department batch qty
-        this.purchaseValue = stockPurchaseValue;
-        this.saleValue = stockSaleValue;
-        this.costValue = stockCostValue;
+        // Guard against null to prevent NullPointerException when auto-unboxing
+        this.qty = stockQty != null ? stockQty : 0.0;  // Department batch qty
+        this.purchaseValue = stockPurchaseValue != null ? stockPurchaseValue : 0.0;
+        this.saleValue = stockSaleValue != null ? stockSaleValue : 0.0;
+        this.costValue = stockCostValue != null ? stockCostValue : 0.0;
 
         // Store institution-level values (for when institution != null && department == null)
         this.grossTotal = instituionBatchQty != null ? instituionBatchQty : 0.0;
@@ -1625,10 +1626,11 @@ public class PharmacyRow implements Serializable {
         this.item.setMeasurementUnit(mu);
 
         // Store department-level item values (for when department != null)
-        this.stockQty = itemStock;  // Department item stock
-        this.purchaseValue = itemStockValueAtPurchaseRate;
-        this.saleValue = itemStockValueAtSaleRate;
-        this.costValue = itemStockValueAtCostRate;
+        // Guard against null to prevent NullPointerException when auto-unboxing
+        this.stockQty = itemStock != null ? itemStock : 0.0;  // Department item stock
+        this.purchaseValue = itemStockValueAtPurchaseRate != null ? itemStockValueAtPurchaseRate : 0.0;
+        this.saleValue = itemStockValueAtSaleRate != null ? itemStockValueAtSaleRate : 0.0;
+        this.costValue = itemStockValueAtCostRate != null ? itemStockValueAtCostRate : 0.0;
 
         // Store institution-level item values (for when institution != null && department == null)
         this.grossTotal = institutionItemStock != null ? institutionItemStock : 0.0;

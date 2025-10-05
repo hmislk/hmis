@@ -544,7 +544,7 @@ public class ReorderController implements Serializable {
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
         for (Reorder r : reordersAvailableForSelection) {
-            double s = pharmacyBean.getStockQty(r.getItem(), department);
+            double s = pharmacyBean.getItemStockQty(r.getItem(), department);
             r.setTransientStock(s);
             selectableItems.add(r.getItem());
         }
@@ -566,7 +566,7 @@ public class ReorderController implements Serializable {
         selectableItems = new ArrayList<>();
         for (Reorder r : lst) {
 
-            double s = pharmacyBean.getStockQty(r.getItem(), department);
+            double s = pharmacyBean.getItemStockQty(r.getItem(), department);
             if (r.getRol() >= s) {
                 r.setTransientStock(s);
                 reordersAvailableForSelection.add(r);
