@@ -1203,6 +1203,7 @@ public class PharmacyBean {
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             Double costRateObj = fetchedStock.getItemBatch().getCostRate();
             double costRate = costRateObj != null ? costRateObj : 0.0;
+            double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
             sh.setItemStockValueAtPurchaseRate(itemStock * purchaseRate);
             sh.setInstitutionItemStockValueAtPurchaseRate(institutionStock * purchaseRate);
@@ -1211,6 +1212,10 @@ public class PharmacyBean {
             sh.setItemStockValueAtCostRate(itemStock * costRate);
             sh.setInstitutionItemStockValueAtCostRate(institutionStock * costRate);
             sh.setTotalItemStockValueAtCostRate(totalStock * costRate);
+
+            sh.setItemStockValueAtSaleRate(itemStock * retailSaleRate);
+            sh.setInstitutionItemStockValueAtSaleRate(institutionStock * retailSaleRate);
+            sh.setTotalItemStockValueAtSaleRate(totalStock * retailSaleRate);
         }
 
         if (sh.getId() == null) {
@@ -1274,6 +1279,7 @@ public class PharmacyBean {
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             Double costRateObj = fetchedStock.getItemBatch().getCostRate();
             double costRate = costRateObj != null ? costRateObj : 0.0;
+            double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
             sh.setItemStockValueAtPurchaseRate(itemStock * purchaseRate);
             sh.setInstitutionItemStockValueAtPurchaseRate(institutionStock * purchaseRate);
@@ -1282,6 +1288,10 @@ public class PharmacyBean {
             sh.setItemStockValueAtCostRate(itemStock * costRate);
             sh.setInstitutionItemStockValueAtCostRate(institutionStock * costRate);
             sh.setTotalItemStockValueAtCostRate(totalStock * costRate);
+
+            sh.setItemStockValueAtSaleRate(itemStock * retailSaleRate);
+            sh.setInstitutionItemStockValueAtSaleRate(institutionStock * retailSaleRate);
+            sh.setTotalItemStockValueAtSaleRate(totalStock * retailSaleRate);
         }
 
         if (sh.getId() == null) {
@@ -1366,6 +1376,7 @@ public class PharmacyBean {
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             Double costRateObj = fetchedStock.getItemBatch().getCostRate();
             double costRate = costRateObj != null ? costRateObj : 0.0;
+            double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
             sh.setItemStockValueAtPurchaseRate(itemStock * purchaseRate);
             sh.setInstitutionItemStockValueAtPurchaseRate(institutionStock * purchaseRate);
@@ -1374,6 +1385,10 @@ public class PharmacyBean {
             sh.setItemStockValueAtCostRate(itemStock * costRate);
             sh.setInstitutionItemStockValueAtCostRate(institutionStock * costRate);
             sh.setTotalItemStockValueAtCostRate(totalStock * costRate);
+
+            sh.setItemStockValueAtSaleRate(itemStock * retailSaleRate);
+            sh.setInstitutionItemStockValueAtSaleRate(institutionStock * retailSaleRate);
+            sh.setTotalItemStockValueAtSaleRate(totalStock * retailSaleRate);
         }
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);

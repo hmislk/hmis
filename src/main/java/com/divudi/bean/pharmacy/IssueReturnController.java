@@ -111,7 +111,7 @@ public class IssueReturnController implements Serializable {
         getBillFacade().edit(getReturnBill());
 
         // Refresh the bill and reload bill items for print preview
-        returnBill = getBillFacade().find(getReturnBill().getId());
+        returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
             returnBillItems = billService.fetchBillItems(returnBill);
         }
@@ -657,6 +657,7 @@ public class IssueReturnController implements Serializable {
         returnBill.setReferenceBill(originalBill);
         returnBill.setBillType(BillType.PharmacyDisposalIssue);
         returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        returnBill.setInvoiceNumber(originalBill.getInvoiceNumber());
         originalBillItems = billService.fetchBillItems(originalBill);
         returnBillItems = new ArrayList<>();
         if (originalBillItems == null || originalBillItems.isEmpty()) {
