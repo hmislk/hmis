@@ -281,6 +281,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE", "DIS");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE_RETURN", "DISR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_CANCELLED", "SC");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_REFUND", "DPR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");

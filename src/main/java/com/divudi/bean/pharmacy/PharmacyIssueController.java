@@ -432,7 +432,6 @@ public class PharmacyIssueController implements Serializable {
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry.toUpperCase() + "%");
-        parameters.put("queryExact", qry.toUpperCase());
 
         boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by item code", true);
@@ -441,6 +440,10 @@ public class PharmacyIssueController implements Serializable {
                         "Enable search medicines by barcode", true)
                 : configOptionApplicationController.getBooleanValueByKey(
                         "Enable search medicines by barcode", false);
+
+        if (searchByBarcode) {
+            parameters.put("queryExact", qry.toUpperCase());
+        }
         boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by generic name(VMP)", false);
         boolean showRatesAndValues = configOptionApplicationController.getBooleanValueByKey(
