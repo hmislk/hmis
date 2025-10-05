@@ -256,6 +256,11 @@
                                 <h:outputText value="#{bi.billItemFinanceDetails.valueAtCostRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="fw-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Purchase Rate" styleClass="text-end" headerStyleClass="text-end" width="10em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate}">
@@ -266,6 +271,11 @@
                                 <h:outputText value="#{bi.billItemFinanceDetails.valueAtPurchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Retail Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.retailSaleRate}">
@@ -276,6 +286,11 @@
                                 <h:outputText value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="fw-bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Net Total" styleClass="text-end" headerStyleClass="text-end" width="11em">
                                 <h:outputText value="#{bi.bill.netTotal}">

@@ -1227,10 +1227,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setValueAtWholesaleRate(BigDecimal.ZERO);
         }
 
-        // Value at purchase rate (lineNetRate × qty) - uses NET rate, not GROSS
-        f.setValueAtPurchaseRate(
-                BigDecimalUtil.multiply(BigDecimalUtil.valueOrZero(f.getLineNetRate()), qty)
-        );
+        // Calculate valueAtPurchaseRate based on configuration
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+            // OLD Method: Gross Rate × Total Quantity (includes free items)
+            f.setValueAtPurchaseRate(
+                    BigDecimalUtil.multiply(totalUnits, BigDecimalUtil.valueOrZero(f.getGrossRate()))
+            );
+        } else {
+            // NEW Method: Net Rate × Paid Quantity (actual money spent)
+            f.setValueAtPurchaseRate(
+                    BigDecimalUtil.multiply(BigDecimalUtil.valueOrZero(f.getLineNetRate()), qty)
+            );
+        }
 
         // Update BillItem values with safe null handling
         billItem.setGrossValue(itemGross != null ? itemGross.doubleValue() : 0.0);
@@ -1366,9 +1374,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 f.setValueAtRetailRate(totalUnits.multiply(retailPerUnit));
             }
             if (f.getValueAtPurchaseRate() == null) {
-                // Use lineNetRate × qty (NET rate, not GROSS rate)
-                BigDecimal lineNetRate = BigDecimalUtil.valueOrZero(f.getLineNetRate());
-                f.setValueAtPurchaseRate(lineNetRate.multiply(qty));
+                if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+                    // OLD Method: Gross Rate × Total Quantity
+                    f.setValueAtPurchaseRate(totalUnits.multiply(grossPerUnit));
+                } else {
+                    // NEW Method: Net Rate × Paid Quantity
+                    BigDecimal lineNetRate = BigDecimalUtil.valueOrZero(f.getLineNetRate());
+                    f.setValueAtPurchaseRate(lineNetRate.multiply(qty));
+                }
             }
             if (f.getValueAtCostRate() == null) {
                 f.setValueAtCostRate(totalUnits.multiply(costPerUnit));

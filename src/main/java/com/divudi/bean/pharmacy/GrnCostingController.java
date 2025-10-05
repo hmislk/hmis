@@ -3295,10 +3295,19 @@ public class GrnCostingController implements Serializable {
                 lineCostRate.multiply(totalQtyInUnits)
         );
 
-        // Calculate valueAtPurchaseRate = lineNetRate × qty
-        billItemFinanceDetails.setValueAtPurchaseRate(
-                billItemFinanceDetails.getLineNetRate().multiply(qty)
-        );
+        // Calculate valueAtPurchaseRate based on configuration
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+            // OLD Method: Gross Rate × Total Quantity (includes free items)
+            BigDecimal purchaseRatePerUnit = BigDecimal.valueOf(prPerUnit);
+            billItemFinanceDetails.setValueAtPurchaseRate(
+                    totalQtyInUnits.multiply(purchaseRatePerUnit)
+            );
+        } else {
+            // NEW Method: Net Rate × Paid Quantity (actual money spent)
+            billItemFinanceDetails.setValueAtPurchaseRate(
+                    billItemFinanceDetails.getLineNetRate().multiply(qty)
+            );
+        }
 
         // CRITICAL FIX: Calculate value fields for all rate types using total quantity by units
         // Following Direct Purchase pattern (lines 1202-1227)
