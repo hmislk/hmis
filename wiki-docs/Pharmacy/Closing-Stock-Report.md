@@ -324,4 +324,4 @@ The report can show stock at three different scopes:
 If you need help with this report:
 - Contact your system administrator
 - Refer to the HMIS User Manual
-- Report issues at: https://github.com/hmislk/hmis/issues
+- Report issues at: <https://github.com/hmislk/hmis/issues>
