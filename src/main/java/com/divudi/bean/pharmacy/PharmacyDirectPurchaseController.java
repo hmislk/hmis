@@ -1198,6 +1198,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setLineCostRate(BigDecimal.ZERO);
         }
 
+        // Set costRate (as user enters - pack rate for AMPP, unit rate for AMP)
+        f.setCostRate(BigDecimalUtil.multiply(BigDecimalUtil.valueOrZero(f.getLineCostRate()), unitsPerPack));
+
+        // Set purchaseRate (line net rate - purchase rate after discount, as user enters)
+        f.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getLineNetRate()));
+
         // 4. Calculate value fields for all rate types using total quantity by units
         BigDecimal totalUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
         if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
