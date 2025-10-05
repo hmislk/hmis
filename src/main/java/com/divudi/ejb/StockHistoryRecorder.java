@@ -86,14 +86,16 @@ public class StockHistoryRecorder {
                         h.setDepartment(d);
                         h.setInstitution(d.getInstitution());
                         h.setItem(amp);
+                        
                         h.setStockQty(getStockQty(amp, d));
                         h.setStockPurchaseValue(getStockPurchaseValue(amp, d));
                         h.setStockSaleValue(getStockRetailSaleValue(amp, d));
-
+                        h.setStockCostValue(getStockCostValue(amp, d));
+                        
                         // Set stock quantities at different levels
                         double itemStock = getStockQty(amp, d);
-                        double institutionStock = pharmacyBean.getStockQty(amp, d.getInstitution());
-                        double totalStock = pharmacyBean.getStockQty(amp);
+                        double institutionStock = pharmacyBean.getItemStockQty(amp, d.getInstitution());
+                        double totalStock = pharmacyBean.getItemStockQty(amp);
 
                         h.setItemStock(itemStock);
                         h.setInstitutionItemStock(institutionStock);
@@ -252,6 +254,18 @@ public class StockHistoryRecorder {
         m.put("d", department);
         m.put("i", item);
         sql = "select sum(s.stock * s.itemBatch.purcahseRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
+        return getStockFacade().findDoubleByJpql(sql, m);
+    }
+    
+    public double getStockCostValue(Item item, Department department) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("d", department);
+        m.put("i", item);
+        sql = "select sum(s.stock * s.itemBatch.costRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
         return getStockFacade().findDoubleByJpql(sql, m);
     }
 
