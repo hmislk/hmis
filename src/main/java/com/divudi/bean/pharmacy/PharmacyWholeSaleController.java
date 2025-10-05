@@ -1348,61 +1348,68 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         }
 
         // Pharmacy Sale Validation - Patient and Patient Details
-        if (configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false)) {
+        boolean patientRequired = configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
+
+        if (patientRequired) {
             if (getPatient() == null || getPatient().getPerson() == null) {
                 JsfUtil.addErrorMessage("Patient is required.");
                 return;
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getName() == null
-                    || getPatient().getPerson().getName().trim().isEmpty()) {
-                JsfUtil.addErrorMessage("Patient name is required.");
-                return;
-            }
-        }
+        // Only validate patient details if patient is required OR if patient exists
+        boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
 
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null) {
-                JsfUtil.addErrorMessage("Patient is required.");
-                return;
+        if (hasPatient || patientRequired) {
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getName() == null
+                        || getPatient().getPerson().getName().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient name is required.");
+                    return;
+                }
             }
-            // Check both phone and mobile - at least one should be present
-            boolean hasPhone = getPatient().getPerson().getPhone() != null
-                    && !getPatient().getPerson().getPhone().trim().isEmpty();
-            boolean hasMobile = getPatient().getPerson().getMobile() != null
-                    && !getPatient().getPerson().getMobile().trim().isEmpty();
 
-            if (!hasPhone && !hasMobile) {
-                JsfUtil.addErrorMessage("Patient phone number is required.");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null) {
+                    JsfUtil.addErrorMessage("Patient is required.");
+                    return;
+                }
+                // Check both phone and mobile - at least one should be present
+                boolean hasPhone = getPatient().getPerson().getPhone() != null
+                        && !getPatient().getPerson().getPhone().trim().isEmpty();
+                boolean hasMobile = getPatient().getPerson().getMobile() != null
+                        && !getPatient().getPerson().getMobile().trim().isEmpty();
+
+                if (!hasPhone && !hasMobile) {
+                    JsfUtil.addErrorMessage("Patient phone number is required.");
+                    return;
+                }
             }
-        }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getSex() == null) {
-                JsfUtil.addErrorMessage("Patient gender is required.");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getSex() == null) {
+                    JsfUtil.addErrorMessage("Patient gender is required.");
+                    return;
+                }
             }
-        }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getAddress() == null
-                    || getPatient().getPerson().getAddress().trim().isEmpty()) {
-                JsfUtil.addErrorMessage("Patient address is required.");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getAddress() == null
+                        || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient address is required.");
+                    return;
+                }
             }
-        }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getArea() == null) {
-                JsfUtil.addErrorMessage("Patient area is required.");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getArea() == null) {
+                    JsfUtil.addErrorMessage("Patient area is required.");
+                    return;
+                }
             }
         }
 

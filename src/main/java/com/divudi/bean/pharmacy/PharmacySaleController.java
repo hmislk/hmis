@@ -2086,8 +2086,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return null;
         }
 
-        // Pharmacy Sale Validation - Patient is required
-        if (configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false)) {
+        // Pharmacy Sale Validation - Patient and Patient Details
+        boolean patientRequired = configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
+        boolean patientRequiredForPharmacySale = patientRequired; // Keep for backward compatibility with code below
+
+        if (patientRequired) {
             if (getPatient() == null || getPatient().getPerson() == null) {
                 billSettlingStarted = false;
                 JsfUtil.addErrorMessage("Patient is required.");
@@ -2095,65 +2098,70 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
         }
 
-        // Patient Name validation
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getName() == null
-                    || getPatient().getPerson().getName().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient name is required.");
-                return null;
-            }
-        }
+        // Only validate patient details if patient is required OR if patient exists
+        boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
 
-        // Patient Phone validation
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient is required.");
-                return null;
+        if (hasPatient || patientRequired) {
+            // Patient Name validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getName() == null
+                        || getPatient().getPerson().getName().trim().isEmpty()) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient name is required.");
+                    return null;
+                }
             }
-            // Check both phone and mobile - at least one should be present
-            boolean hasPhone = getPatient().getPerson().getPhone() != null
-                    && !getPatient().getPerson().getPhone().trim().isEmpty();
-            boolean hasMobile = getPatient().getPerson().getMobile() != null
-                    && !getPatient().getPerson().getMobile().trim().isEmpty();
 
-            if (!hasPhone && !hasMobile) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient phone number is required.");
-                return null;
+            // Patient Phone validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient is required.");
+                    return null;
+                }
+                // Check both phone and mobile - at least one should be present
+                boolean hasPhone = getPatient().getPerson().getPhone() != null
+                        && !getPatient().getPerson().getPhone().trim().isEmpty();
+                boolean hasMobile = getPatient().getPerson().getMobile() != null
+                        && !getPatient().getPerson().getMobile().trim().isEmpty();
+
+                if (!hasPhone && !hasMobile) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient phone number is required.");
+                    return null;
+                }
             }
-        }
 
-        // Patient Gender validation
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getSex() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient gender is required.");
-                return null;
+            // Patient Gender validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getSex() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient gender is required.");
+                    return null;
+                }
             }
-        }
 
-        // Patient Address validation
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getAddress() == null
-                    || getPatient().getPerson().getAddress().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient address is required.");
-                return null;
+            // Patient Address validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getAddress() == null
+                        || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient address is required.");
+                    return null;
+                }
             }
-        }
 
-        // Patient Area validation
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false)) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getArea() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient area is required.");
-                return null;
+            // Patient Area validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getArea() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient area is required.");
+                    return null;
+                }
             }
         }
 
