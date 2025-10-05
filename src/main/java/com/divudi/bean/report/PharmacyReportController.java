@@ -1899,6 +1899,62 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public Double getTotalStockCorrectionQty() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    if (row.getQuantity() == null) {
+                        return 0.0;
+                    }
+                    return row.getQuantity().doubleValue();
+                })
+                .sum();
+    }
+
+    public Double getTotalStockCorrectionCostValue() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
+                    Double costRate = row.getCostRate();
+                    double rate = costRate != null ? costRate : 0.0;
+                    return qty * rate;
+                })
+                .sum();
+    }
+
+    public Double getTotalStockCorrectionOldValue() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
+                    Double beforeAdj = row.getBeforeAdjustment();
+                    double rate = beforeAdj != null ? beforeAdj : 0.0;
+                    return qty * rate;
+                })
+                .sum();
+    }
+
+    public Double getTotalStockCorrectionNewValue() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
+                    Double afterAdj = row.getAfterAdjustment();
+                    double rate = afterAdj != null ? afterAdj : 0.0;
+                    return qty * rate;
+                })
+                .sum();
+    }
+
     public void processGrnCash() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
@@ -5605,20 +5661,21 @@ public class PharmacyReportController implements Serializable {
 
         switch (dateRange) {
             case "within3months":
-                toDate = convertToDate(today.plusMonths(3));
-                fromDate = convertToDate(today);
+                fromDate = convertToDate(today.minusMonths(3));
+                toDate = convertToDate(today);
                 break;
             case "within6months":
-                toDate = convertToDate(today.plusMonths(6));
-                fromDate = convertToDate(today);
+                fromDate = convertToDate(today.minusMonths(6));
+                toDate = convertToDate(today);
                 break;
             case "within12months":
-                toDate = convertToDate(today.plusMonths(12));
-                fromDate = convertToDate(today);
+                fromDate = convertToDate(today.minusMonths(12));
+                toDate = convertToDate(today);
                 break;
             case "shortexpiry":
-                toDate = convertToDate(today);
-                fromDate = convertToDate(today.minusMonths(3));
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(3));
+                break;
         }
         // System.out.println("Updated From Date: " + fromDate);
         // System.out.println("Updated To Date: " + toDate);
