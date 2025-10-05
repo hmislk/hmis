@@ -424,14 +424,18 @@ public class IssueReturnController implements Serializable {
             double costRate = refPbi.getItemBatch().getCostRate();
             double retailRate = refPbi.getItemBatch().getRetailsaleRate();
 
-            // Calculate values as POSITIVE (returns credit the department)
+            // MONEY FLOW vs STOCK FLOW for RETURNS:
+            // - Stock Flow: Disposal issue return brings stock IN (quantity is POSITIVE)
+            // - Money Flow: Disposal issue return takes money OUT (net/gross totals are NEGATIVE - refund/loss)
+            // Calculate values as POSITIVE first, then negate for money flow
             double purchaseValue = purchaseRate * qtyInUnits;
             double costValue = costRate * qtyInUnits;
             double retailValue = retailRate * qtyInUnits;
 
-            // Set BillItem values as POSITIVE
-            i.setGrossValue(retailValue);
-            i.setNetValue(retailValue);
+            // Set BillItem values as NEGATIVE (money going out/refunded)
+            // Use Math.abs() to ensure correct sign regardless of upstream calculations
+            i.setGrossValue(-Math.abs(retailValue));
+            i.setNetValue(-Math.abs(retailValue));
 
             // Initialize BillItemFinanceDetails if needed
             BillItemFinanceDetails financeDetailsOfReturn = i.getBillItemFinanceDetails();
@@ -440,30 +444,38 @@ public class IssueReturnController implements Serializable {
                 i.setBillItemFinanceDetails(financeDetailsOfReturn);
             }
 
-            // Set all finance details as POSITIVE values
+            // QUANTITY vs VALUE TREATMENT:
+            // - Quantities: POSITIVE (stock coming back IN)
+            // - Value at rates: POSITIVE (stock measure - follows quantity sign)
+            // - Totals (Gross/Net): NEGATIVE (money going OUT - this is a refund/expense)
             financeDetailsOfReturn.setQuantity(BigDecimal.valueOf(returnQty));
             financeDetailsOfReturn.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
             financeDetailsOfReturn.setTotalQuantity(BigDecimal.valueOf(returnQty));
             financeDetailsOfReturn.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
 
-            financeDetailsOfReturn.setValueAtPurchaseRate(BigDecimal.valueOf(purchaseValue));
-            financeDetailsOfReturn.setValueAtCostRate(BigDecimal.valueOf(costValue));
-            financeDetailsOfReturn.setValueAtRetailRate(BigDecimal.valueOf(retailValue));
+            // Value at rates follow quantity (positive, as they measure stock not money)
+            // Use Math.abs() to ensure positive values
+            financeDetailsOfReturn.setValueAtPurchaseRate(BigDecimal.valueOf(Math.abs(purchaseValue)));
+            financeDetailsOfReturn.setValueAtCostRate(BigDecimal.valueOf(Math.abs(costValue)));
+            financeDetailsOfReturn.setValueAtRetailRate(BigDecimal.valueOf(Math.abs(retailValue)));
 
-            // Set individual rates for audit trail
-            financeDetailsOfReturn.setPurchaseRate(BigDecimal.valueOf(purchaseRate));
-            financeDetailsOfReturn.setCostRate(BigDecimal.valueOf(costRate));
-            financeDetailsOfReturn.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+            // Set individual rates for audit trail (always positive - they are rates)
+            financeDetailsOfReturn.setPurchaseRate(BigDecimal.valueOf(Math.abs(purchaseRate)));
+            financeDetailsOfReturn.setCostRate(BigDecimal.valueOf(Math.abs(costRate)));
+            financeDetailsOfReturn.setRetailSaleRate(BigDecimal.valueOf(Math.abs(retailRate)));
 
-            financeDetailsOfReturn.setLineGrossTotal(BigDecimal.valueOf(retailValue));
-            financeDetailsOfReturn.setLineNetTotal(BigDecimal.valueOf(retailValue));
-            financeDetailsOfReturn.setGrossTotal(BigDecimal.valueOf(retailValue));
-            financeDetailsOfReturn.setNetTotal(BigDecimal.valueOf(retailValue));
+            // All monetary totals are NEGATIVE (money going out/refunded)
+            // Use Math.abs() to ensure correct sign
+            financeDetailsOfReturn.setLineGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setLineNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
 
-            financeDetailsOfReturn.setReturnQuantity(BigDecimal.valueOf(returnQty));
-            financeDetailsOfReturn.setTotalReturnQuantity(BigDecimal.valueOf(returnQty));
-            financeDetailsOfReturn.setReturnGrossTotal(BigDecimal.valueOf(retailValue));
-            financeDetailsOfReturn.setReturnNetTotal(BigDecimal.valueOf(retailValue));
+            // Return-specific fields: quantity positive, totals negative
+            financeDetailsOfReturn.setReturnQuantity(BigDecimal.valueOf(Math.abs(returnQty)));
+            financeDetailsOfReturn.setTotalReturnQuantity(BigDecimal.valueOf(Math.abs(returnQty)));
+            financeDetailsOfReturn.setReturnGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setReturnNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
 
             // Set units per pack
             if (i.getItem() instanceof Ampp && i.getItem().getDblValue() != 0.0) {

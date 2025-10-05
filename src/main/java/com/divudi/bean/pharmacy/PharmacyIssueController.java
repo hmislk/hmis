@@ -432,6 +432,7 @@ public class PharmacyIssueController implements Serializable {
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry.toUpperCase() + "%");
+        parameters.put("queryExact", qry.toUpperCase());
 
         boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by item code", true);
@@ -470,7 +471,7 @@ public class PharmacyIssueController implements Serializable {
         }
 
         if (searchByBarcode) {
-            sql.append("OR s.itemBatch.item.barcode = :query ");
+            sql.append("OR UPPER(s.itemBatch.item.barcode) = :queryExact ");
         }
 
         if (searchByGeneric) {
@@ -864,8 +865,13 @@ public class PharmacyIssueController implements Serializable {
             }
 
             bi.setSearialNo(serialNo++);
+
+            // MONEY FLOW vs STOCK FLOW:
+            // - Stock Flow: Disposal issue takes stock OUT (quantity is NEGATIVE)
+            // - Money Flow: Disposal issue brings money IN (net/gross totals are POSITIVE)
+            // netValue represents MONEY received, so it should always be POSITIVE for disposal issues
             double netValue = bi.getQty() * bi.getRate();
-            bi.setNetValue(-Math.abs(netValue));
+            bi.setNetValue(Math.abs(netValue));
 
             BigDecimal qty = Optional.ofNullable(bifd.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal grossRate = Optional.ofNullable(bifd.getLineGrossRate()).orElse(BigDecimal.ZERO);
