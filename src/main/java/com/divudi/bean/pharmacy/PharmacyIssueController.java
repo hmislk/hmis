@@ -847,10 +847,8 @@ public class PharmacyIssueController implements Serializable {
         BigDecimal totalExpense = BigDecimal.ZERO;
         BigDecimal totalTax = BigDecimal.ZERO;
 
-        BigDecimal costValue = BigDecimal.ZERO;
-        BigDecimal purchaseValue = BigDecimal.ZERO;
-        BigDecimal retailValue = BigDecimal.ZERO;
-        BigDecimal wholesaleValue = BigDecimal.ZERO;
+        // Removed cumulative variables (costValue, purchaseValue, retailValue, wholesaleValue)
+        // that were causing double-counting. Now using totalCost, totalPurchase, totalRetail, totalWholesale directly.
 
         for (BillItem bi : billItems) {
             if (bi == null) {
@@ -901,20 +899,18 @@ public class PharmacyIssueController implements Serializable {
             BigDecimal retailRate = Optional.ofNullable(bifd.getRetailSaleRate()).orElse(BigDecimal.ZERO);
             BigDecimal wholesaleRate = Optional.ofNullable(bifd.getWholesaleRate()).orElse(BigDecimal.ZERO);
 
-            retailValue = retailValue.add(Optional.ofNullable(bifd.getValueAtRetailRate()).orElse(BigDecimal.ZERO));
-            costValue = costValue.add(Optional.ofNullable(bifd.getValueAtCostRate()).orElse(BigDecimal.ZERO));
-            purchaseValue = purchaseValue.add(Optional.ofNullable(bifd.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
-            wholesaleValue = wholesaleValue.add(Optional.ofNullable(bifd.getValueAtWholesaleRate()).orElse(BigDecimal.ZERO));
-
+            // FIX: Add per-line values directly to totals (not cumulative variables)
+            // This prevents double-counting that would occur if we accumulated into
+            // retailValue/costValue/etc and then added those growing sums to totals
             totalLineDiscounts = totalLineDiscounts.add(Optional.ofNullable(bifd.getLineDiscount()).orElse(BigDecimal.ZERO));
             totalLineExpenses = totalLineExpenses.add(Optional.ofNullable(bifd.getLineExpense()).orElse(BigDecimal.ZERO));
             totalTaxLines = totalTaxLines.add(Optional.ofNullable(bifd.getLineTax()).orElse(BigDecimal.ZERO));
             totalLineCosts = totalLineCosts.add(Optional.ofNullable(bifd.getLineCost()).orElse(BigDecimal.ZERO));
             // No free items in disposal issue, so totalFreeItemValue remains ZERO
             totalPurchase = totalPurchase.add(Optional.ofNullable(bifd.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
-            totalRetail = totalRetail.add(retailValue);
-            totalCost = totalCost.add(costValue);
-            totalWholesale = totalWholesale.add(wholesaleValue);
+            totalRetail = totalRetail.add(Optional.ofNullable(bifd.getValueAtRetailRate()).orElse(BigDecimal.ZERO));
+            totalCost = totalCost.add(Optional.ofNullable(bifd.getValueAtCostRate()).orElse(BigDecimal.ZERO));
+            totalWholesale = totalWholesale.add(Optional.ofNullable(bifd.getValueAtWholesaleRate()).orElse(BigDecimal.ZERO));
             totalQty = totalQty.add(qty);
             totalFreeQty = totalFreeQty.add(freeQty);
             totalQtyAtomic = totalQtyAtomic.add(Optional.ofNullable(bifd.getQuantityByUnits()).orElse(BigDecimal.ZERO));
@@ -950,15 +946,17 @@ public class PharmacyIssueController implements Serializable {
         bfd.setTotalExpense(totalExpense);
         bfd.setTotalTaxValue(totalTax);
 
-        bfd.setTotalCostValue(costValue);
-        bfd.setTotalPurchaseValue(purchaseValue);
-        bfd.setTotalRetailSaleValue(retailValue);
-        bfd.setTotalWholesaleValue(wholesaleValue);
+        // Use the correctly calculated totals (not the removed cumulative variables)
+        bfd.setTotalCostValue(totalCost);
+        bfd.setTotalPurchaseValue(totalPurchase);
+        bfd.setTotalRetailSaleValue(totalRetail);
+        bfd.setTotalWholesaleValue(totalWholesale);
 
-        bfd.setTotalCostValueNonFree(costValue);
-        bfd.setTotalPurchaseValueNonFree(purchaseValue);
-        bfd.setTotalRetailSaleValueNonFree(retailValue);
-        bfd.setTotalWholesaleValueNonFree(wholesaleValue);
+        // No free items in disposal issues, so NonFree values equal total values
+        bfd.setTotalCostValueNonFree(totalCost);
+        bfd.setTotalPurchaseValueNonFree(totalPurchase);
+        bfd.setTotalRetailSaleValueNonFree(totalRetail);
+        bfd.setTotalWholesaleValueNonFree(totalWholesale);
 
         bfd.setTotalCostValueFree(null);
         bfd.setTotalPurchaseValueFree(null);
