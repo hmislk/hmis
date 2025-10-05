@@ -124,9 +124,14 @@
                                                 itemLabel="#{i.itemName}"
                                                 itemValue="#{i}" >
                                                 <p:column style="padding: 3px" headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
-                                                        &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
-                                                    </h:outputText>
+                                                    <h:panelGroup layout="block" style="width: 300px!important;">
+                                                        <h:outputText value="#{i.itemName}" />
+                                                        <p:tag
+                                                            rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}"
+                                                            value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}"
+                                                            severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}"
+                                                            styleClass="ms-1" />
+                                                    </h:panelGroup>
                                                     <h:outputLabel value=" (" ></h:outputLabel>
                                                     <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
                                                     <h:outputLabel value=") - " ></h:outputLabel>
