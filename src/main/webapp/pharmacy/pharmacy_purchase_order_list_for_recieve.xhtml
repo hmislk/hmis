@@ -175,10 +175,8 @@
                                                 title="View and Print Purchase Order"
                                                 class="ui-button-info"
                                                 icon="fas fa-eye"
-                                                action="pharmacy_reprint_po"
-                                                style="min-width: 120px;">
-                                                <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
-                                            </p:commandButton>
+                                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.id)}"
+                                                style="min-width: 120px;" />
                                         </div>
                                     </p:column> 
 
