@@ -602,20 +602,12 @@ public class GrnCostingController implements Serializable {
                 bifd.setNetRate(BigDecimal.ZERO);
             }
 
-            // Safe calculation of value rates with null checks
-            BigDecimal lineGrossRateBD = bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO;
-            BigDecimal retailSaleRateBD = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate() : BigDecimal.ZERO;
-            BigDecimal totalCostRateBD = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate() : BigDecimal.ZERO;
-            BigDecimal wholesaleRateBD = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
-            BigDecimal totalQuantityBD = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPackBD = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
-            BigDecimal retailSaleRatePerUnitBD = bifd.getRetailSaleRatePerUnit() != null ? bifd.getRetailSaleRatePerUnit() : BigDecimal.ZERO;
-            BigDecimal totalQuantityByUnitsBD = bifd.getTotalQuantityByUnits() != null ? bifd.getTotalQuantityByUnits() : BigDecimal.ZERO;
-
-            bifd.setValueAtPurchaseRate(lineGrossRateBD.multiply(totalQuantityBD));
-            bifd.setValueAtRetailRate(retailSaleRatePerUnitBD.multiply(totalQuantityByUnitsBD));
-            bifd.setValueAtCostRate(totalCostRateBD.multiply(totalQuantityBD).multiply(unitsPerPackBD));
-            bifd.setValueAtWholesaleRate(wholesaleRateBD.multiply(totalQuantityBD));
+            // IMPORTANT: Do NOT recalculate valueAt* fields here
+            // These are already calculated correctly in recalculateFinancialsBeforeAddingBillItem()
+            // Previous code here was using INCORRECT formulas that overwrote correct values:
+            // - Used GROSS rate instead of NET rate for valueAtPurchaseRate
+            // - Used incorrect quantity multiplication for valueAtCostRate
+            // These lines were removed to prevent data corruption
 
         }
 
