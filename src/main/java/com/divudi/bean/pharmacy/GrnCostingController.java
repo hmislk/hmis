@@ -602,20 +602,12 @@ public class GrnCostingController implements Serializable {
                 bifd.setNetRate(BigDecimal.ZERO);
             }
 
-            // Safe calculation of value rates with null checks
-            BigDecimal lineGrossRateBD = bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO;
-            BigDecimal retailSaleRateBD = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate() : BigDecimal.ZERO;
-            BigDecimal totalCostRateBD = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate() : BigDecimal.ZERO;
-            BigDecimal wholesaleRateBD = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
-            BigDecimal totalQuantityBD = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPackBD = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
-            BigDecimal retailSaleRatePerUnitBD = bifd.getRetailSaleRatePerUnit() != null ? bifd.getRetailSaleRatePerUnit() : BigDecimal.ZERO;
-            BigDecimal totalQuantityByUnitsBD = bifd.getTotalQuantityByUnits() != null ? bifd.getTotalQuantityByUnits() : BigDecimal.ZERO;
-
-            bifd.setValueAtPurchaseRate(lineGrossRateBD.multiply(totalQuantityBD));
-            bifd.setValueAtRetailRate(retailSaleRatePerUnitBD.multiply(totalQuantityByUnitsBD));
-            bifd.setValueAtCostRate(totalCostRateBD.multiply(totalQuantityBD).multiply(unitsPerPackBD));
-            bifd.setValueAtWholesaleRate(wholesaleRateBD.multiply(totalQuantityBD));
+            // IMPORTANT: Do NOT recalculate valueAt* fields here
+            // These are already calculated correctly in recalculateFinancialsBeforeAddingBillItem()
+            // Previous code here was using INCORRECT formulas that overwrote correct values:
+            // - Used GROSS rate instead of NET rate for valueAtPurchaseRate
+            // - Used incorrect quantity multiplication for valueAtCostRate
+            // These lines were removed to prevent data corruption
 
         }
 
@@ -3288,6 +3280,26 @@ public class GrnCostingController implements Serializable {
         billItemFinanceDetails.setLineCostRate(lineCostRate);
         billItemFinanceDetails.setTotalQuantity(totalQty);
 
+        // Set costRate (as user enters - pack rate for AMPP, unit rate for AMP)
+        billItemFinanceDetails.setCostRate(lineCostRate.multiply(unitsPerPack));
+
+        // Set purchaseRate (line net rate - purchase rate after discount, as user enters)
+        billItemFinanceDetails.setPurchaseRate(
+                BigDecimalUtil.isPositive(qty)
+                        ? lineNetTotal.divide(qty, 4, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO
+        );
+
+        // Calculate valueAtCostRate = lineCostRate × totalQtyInUnits (cost rate is in units)
+        billItemFinanceDetails.setValueAtCostRate(
+                lineCostRate.multiply(totalQtyInUnits)
+        );
+
+        // Calculate valueAtPurchaseRate = lineNetRate × qty
+        billItemFinanceDetails.setValueAtPurchaseRate(
+                billItemFinanceDetails.getLineNetRate().multiply(qty)
+        );
+
         // CRITICAL FIX: Calculate value fields for all rate types using total quantity by units
         // Following Direct Purchase pattern (lines 1202-1227)
         if (BigDecimalUtil.isPositive(totalQtyInUnits)) {
@@ -3295,17 +3307,6 @@ public class GrnCostingController implements Serializable {
             BigDecimal retailRatePerUnit = BigDecimal.valueOf(rrPerUnit);
             billItemFinanceDetails.setValueAtRetailRate(
                     totalQtyInUnits.multiply(retailRatePerUnit)
-            );
-
-            // Value at purchase rate (total units × purchase rate per unit) - GROSS rate
-            BigDecimal purchaseRatePerUnit = BigDecimal.valueOf(prPerUnit);
-            billItemFinanceDetails.setValueAtPurchaseRate(
-                    totalQtyInUnits.multiply(purchaseRatePerUnit)
-            );
-
-            // Value at cost rate (total units × cost rate per unit)
-            billItemFinanceDetails.setValueAtCostRate(
-                    totalQtyInUnits.multiply(lineCostRate)
             );
 
             // Value at wholesale rate (if wholesale rate is set)
@@ -3318,8 +3319,6 @@ public class GrnCostingController implements Serializable {
         } else {
             // Set zero values if no quantity
             billItemFinanceDetails.setValueAtRetailRate(BigDecimal.ZERO);
-            billItemFinanceDetails.setValueAtPurchaseRate(BigDecimal.ZERO);
-            billItemFinanceDetails.setValueAtCostRate(BigDecimal.ZERO);
             billItemFinanceDetails.setValueAtWholesaleRate(BigDecimal.ZERO);
         }
 
