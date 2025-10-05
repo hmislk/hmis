@@ -111,17 +111,25 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalDiscount;
 
-    // Retail and wholesale rates
+    // Retail, Cost rate, purchase rate and wholesale rates. These are used to calculate values of transactions,
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal retailSaleRate;
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal wholesaleRate;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal costRate;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal purchaseRate;
 
     // Retail and wholesale rates per unit (based on unitsPerPack)
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal retailSaleRatePerUnit;
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal wholesaleRatePerUnit;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal costRatePerUnit;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal purchaseRatePerUnit;    
 
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal valueAtRetailRate;
@@ -158,7 +166,6 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal lineCost;
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalCost;
-
 
     // ------------------ QUANTITIES ------------------
     // Quantities as entered (in packs when item is an AMPP or in units if item is AMP)
@@ -857,6 +864,38 @@ public class BillItemFinanceDetails implements Serializable {
         this.valueAtWholesaleRate = valueAtWholesaleRate;
     }
 
+    public BigDecimal getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(BigDecimal costRate) {
+        this.costRate = costRate;
+    }
+
+    public BigDecimal getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(BigDecimal purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public BigDecimal getCostRatePerUnit() {
+        return costRatePerUnit;
+    }
+
+    public void setCostRatePerUnit(BigDecimal costRatePerUnit) {
+        this.costRatePerUnit = costRatePerUnit;
+    }
+
+    public BigDecimal getPurchaseRatePerUnit() {
+        return purchaseRatePerUnit;
+    }
+
+    public void setPurchaseRatePerUnit(BigDecimal purchaseRatePerUnit) {
+        this.purchaseRatePerUnit = purchaseRatePerUnit;
+    }
     
     
+
 }

@@ -63,9 +63,9 @@
                     <div class="col-lg-3 col-md-4">
                         <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>From Date
-                                </label>
+                                <h:outputLabel for="fromDate" value="From Date" styleClass="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                </h:outputLabel>
                                 <p:calendar
                                     class="w-100"
                                     inputStyleClass="form-control"
@@ -77,9 +77,9 @@
                                 </p:calendar>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>To Date
-                                </label>
+                                <h:outputLabel for="toDate" value="To Date" styleClass="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                </h:outputLabel>
                                 <p:calendar
                                     class="w-100"
                                     inputStyleClass="form-control"
@@ -91,10 +91,11 @@
                                 </p:calendar>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-user me-1"></i>Patient Name
-                                </label>
+                                <h:outputLabel for="patientName" value="Patient Name" styleClass="form-label fw-bold text-secondary">
+                                    <i class="fas fa-user me-1"></i>
+                                </h:outputLabel>
                                 <p:inputText
+                                    id="patientName"
                                     class="form-control"
                                     autocomplete="off"
                                     value="#{searchController.searchKeyword.patientName}"
@@ -112,7 +113,7 @@
                                     style="min-height: 45px;">
                                 </p:commandButton>
                             </div>
-                           
+
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">

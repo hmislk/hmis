@@ -101,7 +101,7 @@
                                     rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}" />
                                  <p:commandButton
                                     value="Completed Returns"
-                                    action="/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true"
+                                    action="#{disposalReturnWorkflowController.navigateToCompletedDisposalReturns()}"
                                     ajax="false"
                                     icon="fas fa-check-double"
                                     styleClass="ui-button-secondary  w-100"

@@ -34,7 +34,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="BHT Return Bill"   />    
+                <h:outputLabel value="Disposal Return Bill"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
             </div>
 
@@ -121,26 +121,6 @@
 
                         </tr>
                     </h:panelGroup>
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
-                        <tr>
-                            <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="BHT" ></h:outputLabel>
-                            </td>
-                            <td>:</td>
-                            <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"  >
-                                </h:outputLabel>
-                            </td>
-                            <td style="width: 10%" >
-                            </td>
-                            <td style="width: 15%" >
-                            </td>
-                            <td style="width: 30%" >
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-
 
                 </table>
 
