@@ -288,6 +288,16 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_TRANSFER_REQUEST", "PHTRQ");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_TRANSFER_REQUEST_PRE", "PHTRQ-PRE");
+
+        // Pharmacy Sale Validation Configuration Options
+        // These options control mandatory fields for pharmacy retail sales
+        getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
