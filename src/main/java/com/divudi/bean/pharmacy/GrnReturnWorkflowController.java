@@ -1791,8 +1791,8 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
             // Convert to units if AMPP item
             boolean isAmppItem = bi.getItem() instanceof Ampp;
@@ -1810,8 +1810,8 @@ public class GrnReturnWorkflowController implements Serializable {
         // Add the current item's usage
         if (excludeItem != null && excludeItem.getBillItemFinanceDetails() != null) {
             BillItemFinanceDetails fd = excludeItem.getBillItemFinanceDetails();
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
             boolean isAmppItem = excludeItem.getItem() instanceof Ampp;
             double unitsPerPack = 1.0;
