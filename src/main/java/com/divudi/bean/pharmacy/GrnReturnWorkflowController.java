@@ -2191,11 +2191,12 @@ public class GrnReturnWorkflowController implements Serializable {
             freeQtyByUnits = freeQty;
         }
 
-        // Update BIFD quantities
-        fd.setQuantityByUnits(qtyByUnits);
-        fd.setFreeQuantityByUnits(freeQtyByUnits);
-        fd.setTotalQuantityByUnits(qtyByUnits.add(freeQtyByUnits));
-        fd.setTotalQuantity(qty.add(freeQty)); // Total quantity in packs (for AMPP) or units (for AMP)
+        // Update BIFD quantities - make negative for returns (stock moving out)
+        fd.setQuantity(qty.abs().negate());
+        fd.setQuantityByUnits(qtyByUnits.abs().negate());
+        fd.setFreeQuantityByUnits(freeQtyByUnits.abs().negate());
+        fd.setTotalQuantityByUnits(qtyByUnits.add(freeQtyByUnits).abs().negate());
+        fd.setTotalQuantity(qty.add(freeQty).abs().negate()); // Total quantity in packs (for AMPP) or units (for AMP)
 
         // Set BillItem fields (as user entered)
         bi.setRate(rate.doubleValue());
@@ -2246,10 +2247,10 @@ public class GrnReturnWorkflowController implements Serializable {
                 // Set retail rate from original
                 phi.setRetailRate(retailRatePerUnit);
 
-                // Set in BillItemFinanceDetails for consistency
-                fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit));
-                fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit));
-                fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit));
+                // Set in BillItemFinanceDetails for consistency - make negative for returns (stock moving out)
+                fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit).abs().negate());
+                fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit).abs().negate());
+                fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit).abs().negate());
 
                 // Set rates in BillItemFinanceDetails (in units for AMPs, in packs for AMPPs)
                 if (isAmpp) {

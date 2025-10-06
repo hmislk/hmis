@@ -2130,8 +2130,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         BigDecimal totalQty = qty.add(freeQty);
         BigDecimal lineTotal = totalQty.multiply(rate);
 
-        // Set total quantity (in packs for AMPP, in units for AMP)
-        fd.setTotalQuantity(totalQty);
+        // Set total quantity (in packs for AMPP, in units for AMP) - make negative for returns (stock moving out)
+        fd.setTotalQuantity(totalQty.abs().negate());
 
         // Set the calculated line total
         fd.setLineGrossTotal(lineTotal);
@@ -2156,13 +2156,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 BigDecimal totalReturningQtyByUnits = qtyByUnits.add(freeQtyByUnits);
                 double totalReturningQtyInUnits = totalReturningQtyByUnits.doubleValue();
 
-                // Set total quantity by units
-                fd.setTotalQuantityByUnits(totalReturningQtyByUnits);
+                // Set quantities - make negative for returns (stock moving out)
+                fd.setQuantity(qty.abs().negate());
+                fd.setTotalQuantityByUnits(totalReturningQtyByUnits.abs().negate());
 
-                // Calculate values (quantity in units × rate per unit)
-                fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit));
-                fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit));
-                fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit));
+                // Calculate values (quantity in units × rate per unit) - make negative for returns (stock moving out)
+                fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit).abs().negate());
+                fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit).abs().negate());
+                fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit).abs().negate());
 
                 // Set rates in BillItemFinanceDetails (in units for AMPs, in packs for AMPPs)
                 if (isAmpp) {
