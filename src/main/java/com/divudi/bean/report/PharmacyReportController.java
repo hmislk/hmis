@@ -35,6 +35,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
@@ -87,6 +88,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +177,11 @@ public class PharmacyReportController implements Serializable {
     private ReportTimerController reportTimerController;
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
+    private static final Set<PaymentMethod> CREDIT_PAYMENT_METHODS = EnumSet.of(
+            PaymentMethod.Credit,
+            PaymentMethod.Staff,
+            PaymentMethod.OnCall
+    );
     private int reportIndex;
     private Institution institution;
     private Institution site;
@@ -330,6 +337,7 @@ public class PharmacyReportController implements Serializable {
     private List<CostOfGoodSoldBillDTO> cogsBillDtos;
     private double totalCostValue;
     private double totalPurchaseValue;
+    private double totalRetailValue;
 
     //Constructor
     public PharmacyReportController() {
@@ -1958,7 +1966,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
+        retrieveBillItems("b.billTypeAtomic", billTypes, getNonCreditPaymentMethods());
     }
 
     public void processGrnCredit() {
@@ -1966,7 +1974,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
+        retrieveBillItems("b.billTypeAtomic", billTypes, getCreditPaymentMethods());
     }
 
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
@@ -2001,10 +2009,13 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
+//            computeBillItemFinanceTotals();
+
         } catch (Exception e) {
             e.printStackTrace();
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            resetFinanceTotals();
         }
     }
 
@@ -2012,7 +2023,6 @@ public class PharmacyReportController implements Serializable {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
-            totalCostValue = 0.0;
 
             StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
                     + "LEFT JOIN FETCH bi.item "
@@ -2041,27 +2051,13 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-            totalCostValue = billItems.stream()
-                    .filter(bi -> bi.getPharmaceuticalBillItem() != null
-                    && bi.getPharmaceuticalBillItem().getItemBatch() != null)
-                    .mapToDouble(bi -> {
-                        double costRate = bi.getPharmaceuticalBillItem()
-                                .getItemBatch()
-                                .getCostRate();
-
-                        BigDecimal quantity = (bi.getBillItemFinanceDetails() != null
-                                && bi.getBillItemFinanceDetails().getQuantityByUnits() != null)
-                                ? bi.getBillItemFinanceDetails().getQuantityByUnits()
-                                : BigDecimal.valueOf(bi.getQty() != null ? bi.getQty() : 0.0);
-
-                        return costRate * quantity.doubleValue();
-                    })
-                    .sum();
+//            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            resetFinanceTotals();
         }
     }
 
@@ -2104,11 +2100,134 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
+//            computeBillItemFinanceTotals();
+
         } catch (Exception e) {
             e.printStackTrace();
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            resetFinanceTotals();
         }
+    }
+
+    private List<PaymentMethod> getCreditPaymentMethods() {
+        return new ArrayList<>(CREDIT_PAYMENT_METHODS);
+    }
+
+    private List<PaymentMethod> getNonCreditPaymentMethods() {
+        return PaymentMethod.getActivePaymentMethods().stream()
+                .filter(pm -> !CREDIT_PAYMENT_METHODS.contains(pm))
+                .filter(pm -> pm != PaymentMethod.MultiplePaymentMethods)
+                .collect(Collectors.toList());
+    }
+
+//    private void computeBillItemFinanceTotals() {
+//        resetFinanceTotals();
+//
+//        if (billItems == null || billItems.isEmpty()) {
+//            return;
+//        }
+//
+//        for (BillItem billItem : billItems) {
+//            BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+//
+//            totalCostValue += resolveCostValue(billItem, financeDetails);
+//            totalPurchaseValue += resolvePurchaseValue(billItem, financeDetails);
+//            totalRetailValue += resolveRetailValue(billItem, financeDetails);
+//        }
+//    }
+
+//    private double resolveCostValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
+//        BigDecimal costValue = financeDetails != null ? financeDetails.getValueAtCostRate() : null;
+//        if (costValue != null) {
+//            return costValue.doubleValue();
+//        }
+//
+//        Double costRate = null;
+//        if (financeDetails != null && financeDetails.getCostRate() != null) {
+//            costRate = financeDetails.getCostRate().doubleValue();
+//        } else if (billItem.getPharmaceuticalBillItem() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate() != null) {
+//            costRate = billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+//        }
+//
+//        if (costRate == null) {
+//            return 0.0;
+//        }
+//
+//        return costRate * resolveQuantity(financeDetails, billItem);
+//    }
+
+//    private double resolvePurchaseValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
+//        BigDecimal purchaseValue = financeDetails != null ? financeDetails.getValueAtPurchaseRate() : null;
+//        if (purchaseValue != null) {
+//            return purchaseValue.doubleValue();
+//        }
+//
+//        Double purchaseRate = null;
+//        if (financeDetails != null && financeDetails.getPurchaseRate() != null) {
+//            purchaseRate = financeDetails.getPurchaseRate().doubleValue();
+//        } else if (billItem.getPharmaceuticalBillItem() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
+//            purchaseRate = billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
+//        }
+//
+//        if (purchaseRate == null) {
+//            return 0.0;
+//        }
+//
+//        return purchaseRate * resolveQuantity(financeDetails, billItem);
+//    }
+
+//    private double resolveRetailValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
+//        BigDecimal retailValue = financeDetails != null ? financeDetails.getValueAtRetailRate() : null;
+//        if (retailValue != null) {
+//            return retailValue.doubleValue();
+//        }
+//
+//        Double retailRate = null;
+//        if (financeDetails != null && financeDetails.getRetailSaleRate() != null) {
+//            retailRate = financeDetails.getRetailSaleRate().doubleValue();
+//        } else if (billItem.getPharmaceuticalBillItem() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
+//            retailRate = billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
+//        }
+//
+//        if (retailRate == null) {
+//            return 0.0;
+//        }
+//
+//        return retailRate * resolveQuantity(financeDetails, billItem);
+//    }
+
+//    private double resolveQuantity(BillItemFinanceDetails financeDetails, BillItem billItem) {
+//        if (financeDetails != null) {
+//            if (financeDetails.getQuantity() != null) {
+//                return financeDetails.getQuantity().doubleValue();
+//            }
+//            if (financeDetails.getQuantityByUnits() != null) {
+//                return financeDetails.getQuantityByUnits().doubleValue();
+//            }
+//            if (financeDetails.getTotalQuantity() != null) {
+//                return financeDetails.getTotalQuantity().doubleValue();
+//            }
+//            if (financeDetails.getTotalQuantityByUnits() != null) {
+//                return financeDetails.getTotalQuantityByUnits().doubleValue();
+//            }
+//        }
+//
+//        if (billItem.getQty() != null) {
+//            return billItem.getQty();
+//        }
+//
+//        return 0.0;
+//    }
+
+    private void resetFinanceTotals() {
+        totalCostValue = 0.0;
+        totalPurchaseValue = 0.0;
+        totalRetailValue = 0.0;
     }
 
     private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
@@ -2116,6 +2235,7 @@ public class PharmacyReportController implements Serializable {
             netTotal = 0.0;
             totalCostValue = 0.0;
             totalPurchaseValue = 0.0;
+            totalRetailValue = 0.0;
             // STEP 1: Fetch all parent bills (CostOfGoodSoldBillDTOs) in one query.
             StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
                     .append("b, ")
@@ -2212,6 +2332,13 @@ public class PharmacyReportController implements Serializable {
 
                     // 3. Accumulate the grand total for Purchase
                     totalPurchaseValue += billPurchase;
+
+                    double billRetail = itemsForThisBill.stream()
+                            .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                            .sum();
+
+                    totalRetailValue += billRetail;
                 }
             }
         } catch (Exception e) {
@@ -3234,6 +3361,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setTotalPurchaseValue(double totalPurchaseValue) {
         this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public double getTotalRetailValue() {
+        return totalRetailValue;
+    }
+
+    public void setTotalRetailValue(double totalRetailValue) {
+        this.totalRetailValue = totalRetailValue;
     }
 
     public static class DirectPurchaseReportDto {
