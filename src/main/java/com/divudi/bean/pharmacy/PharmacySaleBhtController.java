@@ -430,6 +430,8 @@ public class PharmacySaleBhtController implements Serializable {
         // Sync with entity for business logic
         if (stockDto != null && stockDto.getId() != null) {
             this.stock = stockFacade.find(stockDto.getId());
+        } else {
+            this.stock = null;
         }
     }
 
@@ -2390,9 +2392,8 @@ public class PharmacySaleBhtController implements Serializable {
                         }
                     }
                 }
-                StockDTO dto = new StockDTO();
-                dto.setId(id);
-                return dto;
+                // Stock not found in cache - return null to indicate conversion failed
+                return null;
             } catch (NumberFormatException e) {
                 return null;
             }
