@@ -11,6 +11,7 @@
     <cc:interface>
         <cc:attribute name="bill" required="true" />
         <cc:attribute name="billItems" required="true" />
+        <cc:attribute name="reprint"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -39,6 +40,8 @@
 
         <div class="headingBill">
             <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
+            <br/>
+            <h:outputLabel value="**Reprint**" rendered="#{cc.attrs.reprint eq true}"/>
         </div>
 
         <div class="purchase-order">
