@@ -2021,6 +2021,10 @@ public class PharmacyReportController implements Serializable {
     }
 
     private void retrieveBillItems(String billTypeField, Object billTypeValue) {
+        retrieveBillItems(billTypeField, billTypeValue, null);
+    }
+
+    private void retrieveBillItems(String billTypeField, Object billTypeValue, Boolean completedOnly) {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
@@ -2053,6 +2057,10 @@ public class PharmacyReportController implements Serializable {
                 } else {
                     addFilter(jpql, params, "bi.item", "itm", item);
                 }
+            }
+
+            if (completedOnly != null) {
+                addFilter(jpql, params, "b.completed", "completed", completedOnly);
             }
 
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -2446,7 +2454,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN_RETURN,
                 BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes);
+        retrieveBillItems("b.billTypeAtomic", billTypes, true);
     }
 
     public void processStockAdjustmentReceive() {
@@ -4635,7 +4643,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    public Map<String, Double> retrieveValuesAtRates(String billTypeField, List<BillTypeAtomic> btas) {
+    public Map<String, Double> retrieveValuesAtRates(String billTypeField, List<BillTypeAtomic> btas, Boolean completed) {
         try {
 
             Map<String, Object> commonParams = new HashMap<>();
@@ -4659,6 +4667,9 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.item", "itm", item);
+            if (completed != null) {
+                addFilter(baseQuery, commonParams, "bi.bill.completed", "completed", completed);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -4963,7 +4974,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
-            Map<String, Double> purchaseReturns = retrieveValuesAtRates(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            Map<String, Double> purchaseReturns = retrieveValuesAtRates(" bi.bill.billTypeAtomic ", billTypeAtomics, true);
 
             cogsRows.put("Purchase Return", purchaseReturns);
 

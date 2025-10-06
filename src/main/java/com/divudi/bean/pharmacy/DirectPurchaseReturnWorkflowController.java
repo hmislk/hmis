@@ -410,18 +410,18 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
             if (returnByTotalQuantity) {
                 // Total quantity mode - check combined qty + free qty
-                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
                 totalReturnQty = qty + freeQty;
             } else {
                 // Separate quantity mode - check individual quantities
-                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
                 totalReturnQty = qty + freeQty;
             }
 
-            // If no return quantity, mark for retirement
-            if (totalReturnQty <= 0.0) {
+            // If no return quantity, mark for retirement (use == 0.0 since we use absolute values)
+            if (totalReturnQty == 0.0) {
                 itemsToRetire.add(bi);
             }
         }
@@ -1574,7 +1574,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
         if (returnByTotalQty) {
             // Total quantity mode - qty + free qty combined
-            double currentTotalQty = (fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0);
+            double currentTotalQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
 
             // Convert pack quantity to units for AMPP items
             double currentTotalQtyInUnits = isAmppItem ? currentTotalQty * unitsPerPack : currentTotalQty;
@@ -1591,8 +1591,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
         } else if (returnByQtyAndFree) {
             // Separate quantity and free quantity mode
-            double currentQty = (fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0);
-            double currentFreeQty = (fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0);
+            double currentQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
+            double currentFreeQty = (fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0);
 
             // Convert pack quantities to units for AMPP items
             double currentQtyInUnits = isAmppItem ? currentQty * unitsPerPack : currentQty;
@@ -1662,8 +1662,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         double currentStock = phi.getStock().getStock();
-        double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-        double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+        double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+        double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
         // Convert to units if AMPP item
         boolean isAmppItem = billItem.getItem() instanceof Ampp;
@@ -1735,8 +1735,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
             // Convert to units if AMPP item
             boolean isAmppItem = bi.getItem() instanceof Ampp;
@@ -1754,8 +1754,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // Add the current item's usage
         if (excludeItem != null && excludeItem.getBillItemFinanceDetails() != null) {
             BillItemFinanceDetails fd = excludeItem.getBillItemFinanceDetails();
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
             boolean isAmppItem = excludeItem.getItem() instanceof Ampp;
             double unitsPerPack = 1.0;
@@ -2325,6 +2325,42 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         directPurchaseReturnsToApprove = billFacade.findByJpql(jpql, p);
         if (directPurchaseReturnsToApprove == null) {
             directPurchaseReturnsToApprove = new ArrayList<>();
+        }
+    }
+
+    public void closeDirectPurchaseReturn(Bill returnBillToClose) {
+        if (returnBillToClose == null) {
+            JsfUtil.addErrorMessage("No direct purchase return selected to close");
+            return;
+        }
+
+        // Verify the bill is not already completed
+        if (returnBillToClose.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot close a completed direct purchase return");
+            return;
+        }
+
+        // Verify the bill is not already cancelled
+        if (returnBillToClose.isCancelled()) {
+            JsfUtil.addErrorMessage("This direct purchase return is already cancelled");
+            return;
+        }
+
+        try {
+            // Mark the bill as cancelled
+            returnBillToClose.setCancelled(true);
+
+            // Save the changes
+            billFacade.edit(returnBillToClose);
+
+            // Refresh the lists
+            fillDirectPurchaseReturnsToFinalize();
+            fillDirectPurchaseReturnsToApprove();
+
+            JsfUtil.addSuccessMessage("Direct purchase return closed successfully. You can now create a new return for this bill.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error closing direct purchase return: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error closing direct purchase return", e);
         }
     }
 

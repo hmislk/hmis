@@ -253,6 +253,8 @@
                             </p:column>
                             <p:column headerText="ID" styleClass="text-wrap" rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <h:outputText value="#{f.id}" />
+                                <br/>
+                                <h:outputText value="#{f.bill.completed?'Completed':'Not Completed'}" />
                             </p:column>
                             <p:column headerText="Item" styleClass="text-wrap">
                                 <h:outputText value="#{f.item.name}" />

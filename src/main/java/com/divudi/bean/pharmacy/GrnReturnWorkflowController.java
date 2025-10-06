@@ -407,18 +407,18 @@ public class GrnReturnWorkflowController implements Serializable {
 
             if (returnByTotalQuantity) {
                 // Total quantity mode - check combined qty + free qty
-                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
                 totalReturnQty = qty + freeQty;
             } else {
                 // Separate quantity mode - check individual quantities
-                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
                 totalReturnQty = qty + freeQty;
             }
 
-            // If no return quantity, mark for retirement
-            if (totalReturnQty <= 0.0) {
+            // If no return quantity, mark for retirement (use == 0.0 since we use absolute values)
+            if (totalReturnQty == 0.0) {
                 itemsToRetire.add(bi);
             }
         }
