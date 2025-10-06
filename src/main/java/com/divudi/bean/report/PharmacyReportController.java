@@ -2136,92 +2136,92 @@ public class PharmacyReportController implements Serializable {
 //        }
 //    }
 
-    private double resolveCostValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
-        BigDecimal costValue = financeDetails != null ? financeDetails.getValueAtCostRate() : null;
-        if (costValue != null) {
-            return costValue.doubleValue();
-        }
+//    private double resolveCostValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
+//        BigDecimal costValue = financeDetails != null ? financeDetails.getValueAtCostRate() : null;
+//        if (costValue != null) {
+//            return costValue.doubleValue();
+//        }
+//
+//        Double costRate = null;
+//        if (financeDetails != null && financeDetails.getCostRate() != null) {
+//            costRate = financeDetails.getCostRate().doubleValue();
+//        } else if (billItem.getPharmaceuticalBillItem() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate() != null) {
+//            costRate = billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+//        }
+//
+//        if (costRate == null) {
+//            return 0.0;
+//        }
+//
+//        return costRate * resolveQuantity(financeDetails, billItem);
+//    }
 
-        Double costRate = null;
-        if (financeDetails != null && financeDetails.getCostRate() != null) {
-            costRate = financeDetails.getCostRate().doubleValue();
-        } else if (billItem.getPharmaceuticalBillItem() != null
-                && billItem.getPharmaceuticalBillItem().getItemBatch() != null
-                && billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate() != null) {
-            costRate = billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate();
-        }
+//    private double resolvePurchaseValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
+//        BigDecimal purchaseValue = financeDetails != null ? financeDetails.getValueAtPurchaseRate() : null;
+//        if (purchaseValue != null) {
+//            return purchaseValue.doubleValue();
+//        }
+//
+//        Double purchaseRate = null;
+//        if (financeDetails != null && financeDetails.getPurchaseRate() != null) {
+//            purchaseRate = financeDetails.getPurchaseRate().doubleValue();
+//        } else if (billItem.getPharmaceuticalBillItem() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
+//            purchaseRate = billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
+//        }
+//
+//        if (purchaseRate == null) {
+//            return 0.0;
+//        }
+//
+//        return purchaseRate * resolveQuantity(financeDetails, billItem);
+//    }
 
-        if (costRate == null) {
-            return 0.0;
-        }
+//    private double resolveRetailValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
+//        BigDecimal retailValue = financeDetails != null ? financeDetails.getValueAtRetailRate() : null;
+//        if (retailValue != null) {
+//            return retailValue.doubleValue();
+//        }
+//
+//        Double retailRate = null;
+//        if (financeDetails != null && financeDetails.getRetailSaleRate() != null) {
+//            retailRate = financeDetails.getRetailSaleRate().doubleValue();
+//        } else if (billItem.getPharmaceuticalBillItem() != null
+//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
+//            retailRate = billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
+//        }
+//
+//        if (retailRate == null) {
+//            return 0.0;
+//        }
+//
+//        return retailRate * resolveQuantity(financeDetails, billItem);
+//    }
 
-        return costRate * resolveQuantity(financeDetails, billItem);
-    }
-
-    private double resolvePurchaseValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
-        BigDecimal purchaseValue = financeDetails != null ? financeDetails.getValueAtPurchaseRate() : null;
-        if (purchaseValue != null) {
-            return purchaseValue.doubleValue();
-        }
-
-        Double purchaseRate = null;
-        if (financeDetails != null && financeDetails.getPurchaseRate() != null) {
-            purchaseRate = financeDetails.getPurchaseRate().doubleValue();
-        } else if (billItem.getPharmaceuticalBillItem() != null
-                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
-            purchaseRate = billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
-        }
-
-        if (purchaseRate == null) {
-            return 0.0;
-        }
-
-        return purchaseRate * resolveQuantity(financeDetails, billItem);
-    }
-
-    private double resolveRetailValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
-        BigDecimal retailValue = financeDetails != null ? financeDetails.getValueAtRetailRate() : null;
-        if (retailValue != null) {
-            return retailValue.doubleValue();
-        }
-
-        Double retailRate = null;
-        if (financeDetails != null && financeDetails.getRetailSaleRate() != null) {
-            retailRate = financeDetails.getRetailSaleRate().doubleValue();
-        } else if (billItem.getPharmaceuticalBillItem() != null
-                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
-            retailRate = billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
-        }
-
-        if (retailRate == null) {
-            return 0.0;
-        }
-
-        return retailRate * resolveQuantity(financeDetails, billItem);
-    }
-
-    private double resolveQuantity(BillItemFinanceDetails financeDetails, BillItem billItem) {
-        if (financeDetails != null) {
-            if (financeDetails.getQuantity() != null) {
-                return financeDetails.getQuantity().doubleValue();
-            }
-            if (financeDetails.getQuantityByUnits() != null) {
-                return financeDetails.getQuantityByUnits().doubleValue();
-            }
-            if (financeDetails.getTotalQuantity() != null) {
-                return financeDetails.getTotalQuantity().doubleValue();
-            }
-            if (financeDetails.getTotalQuantityByUnits() != null) {
-                return financeDetails.getTotalQuantityByUnits().doubleValue();
-            }
-        }
-
-        if (billItem.getQty() != null) {
-            return billItem.getQty();
-        }
-
-        return 0.0;
-    }
+//    private double resolveQuantity(BillItemFinanceDetails financeDetails, BillItem billItem) {
+//        if (financeDetails != null) {
+//            if (financeDetails.getQuantity() != null) {
+//                return financeDetails.getQuantity().doubleValue();
+//            }
+//            if (financeDetails.getQuantityByUnits() != null) {
+//                return financeDetails.getQuantityByUnits().doubleValue();
+//            }
+//            if (financeDetails.getTotalQuantity() != null) {
+//                return financeDetails.getTotalQuantity().doubleValue();
+//            }
+//            if (financeDetails.getTotalQuantityByUnits() != null) {
+//                return financeDetails.getTotalQuantityByUnits().doubleValue();
+//            }
+//        }
+//
+//        if (billItem.getQty() != null) {
+//            return billItem.getQty();
+//        }
+//
+//        return 0.0;
+//    }
 
     private void resetFinanceTotals() {
         totalCostValue = 0.0;

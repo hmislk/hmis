@@ -528,6 +528,9 @@ public class GrnCostingController implements Serializable {
     }
 
     private void fillData(Bill inputBill) {
+        // Read config once before the loop for consistency
+        boolean includeFreeItemsInPurchaseValue = configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true);
+
         double billTotalAtCostRate = 0.0;
 
         double purchaseFree = 0.0;
@@ -561,14 +564,23 @@ public class GrnCostingController implements Serializable {
 
             double freeQty = bifd.getFreeQuantityByUnits() != null ? bifd.getFreeQuantityByUnits().doubleValue() : 0.0;
             double paidQty = bifd.getQuantityByUnits() != null ? bifd.getQuantityByUnits().doubleValue() : 0.0;
+            BigDecimal qty = bifd.getQuantity();
 
             double tmp;
 
-            tmp = freeQty * purchaseRate;
-            purchaseFree += tmp;
+            // Calculate purchase values based on config
+            if (includeFreeItemsInPurchaseValue) {
+                // OLD Method: Use purchase rate for both free and non-free
+                tmp = freeQty * purchaseRate;
+                purchaseFree += tmp;
 
-            tmp = paidQty * purchaseRate;
-            purchaseNonFree += tmp;
+                tmp = paidQty * purchaseRate;
+                purchaseNonFree += tmp;
+            } else {
+                // NEW Method: Use actual paid value (valueAtPurchaseRate) for non-free, zero for free
+                purchaseFree += 0.0;
+                purchaseNonFree += bifd.getLineNetRate().doubleValue() * qty.doubleValue();
+            }
 
             tmp = freeQty * retailRate;
             retailFree += tmp;

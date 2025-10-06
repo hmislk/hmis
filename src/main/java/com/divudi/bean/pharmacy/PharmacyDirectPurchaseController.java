@@ -1300,6 +1300,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
+        // Read config once before the loop for consistency
+        boolean purchaseValueIncludesFreeItems = configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true);
+
         // Initialize aggregates
         BigDecimal totalLineDiscounts = BigDecimal.ZERO;
         BigDecimal totalLineExpenses = BigDecimal.ZERO;
@@ -1387,9 +1390,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 f.setValueAtCostRate(totalUnits.multiply(costPerUnit));
             }
 
-            // Compute free/non-free breakdowns per item
-            purchaseValueNonFree = purchaseValueNonFree.add(grossPerUnit.multiply(qtyUnits));
-            purchaseValueFree = purchaseValueFree.add(grossPerUnit.multiply(freeUnits));
+            // Compute free/non-free breakdowns per item based on config
+            if (purchaseValueIncludesFreeItems) {
+                // OLD Method: Use gross rate for both free and non-free
+                purchaseValueNonFree = purchaseValueNonFree.add(grossPerUnit.multiply(qtyUnits));
+                purchaseValueFree = purchaseValueFree.add(grossPerUnit.multiply(freeUnits));
+            } else {
+                // NEW Method: Use actual paid value (valueAtPurchaseRate) for non-free, zero for free
+                purchaseValueNonFree = purchaseValueNonFree.add(BigDecimalUtil.valueOrZero(f.getValueAtPurchaseRate()));
+                purchaseValueFree = purchaseValueFree.add(BigDecimal.ZERO);
+            }
+
             costValueNonFree = costValueNonFree.add(costPerUnit.multiply(qtyUnits));
             costValueFree = costValueFree.add(costPerUnit.multiply(freeUnits));
             retailValueNonFree = retailValueNonFree.add(retailPerUnit.multiply(qtyUnits));
