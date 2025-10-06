@@ -46,6 +46,7 @@ import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -58,6 +59,7 @@ import com.divudi.core.facade.StockHistoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -65,9 +67,14 @@ import java.util.Map;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
@@ -137,6 +144,8 @@ public class PharmacySaleBhtController implements Serializable {
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    StockDTO stockDto;
+    private List<StockDTO> cachedStockDtos;
     private Item item;
     private PatientEncounter patientEncounter;
     int activeIndex;
@@ -410,6 +419,28 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setStock(Stock stock) {
         this.stock = stock;
+    }
+
+    public StockDTO getStockDto() {
+        return stockDto;
+    }
+
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
+        // Sync with entity for business logic
+        if (stockDto != null && stockDto.getId() != null) {
+            this.stock = stockFacade.find(stockDto.getId());
+        } else {
+            this.stock = null;
+        }
+    }
+
+    public List<StockDTO> getCachedStockDtos() {
+        return cachedStockDtos;
+    }
+
+    public void setCachedStockDtos(List<StockDTO> cachedStockDtos) {
+        this.cachedStockDtos = cachedStockDtos;
     }
 
     public void setReplaceableStocks(List<Stock> replaceableStocks) {
@@ -710,6 +741,58 @@ public class PharmacySaleBhtController implements Serializable {
         //  itemsWithoutStocks = completeRetailSaleItems(qry);
         //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
+    }
+
+    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+        parameters.put("depTp", DepartmentType.Store);
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (i.itemBatch.item.departmentType IS NULL OR i.itemBatch.item.departmentType != :depTp) ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        List<StockDTO> dtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+        cachedStockDtos = dtos;
+        return dtos;
     }
 
     public BillItem getBillItem() {
@@ -2290,4 +2373,42 @@ public class PharmacySaleBhtController implements Serializable {
         this.allergyListOfPatient = allergyListOfPatient;
     }
 
+    @FacesConverter("stockDtoConverterBht")
+    public static class StockDtoConverterBht implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                PharmacySaleBhtController controller = (PharmacySaleBhtController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "pharmacySaleBhtController");
+                if (controller != null && controller.getCachedStockDtos() != null) {
+                    for (StockDTO dto : controller.getCachedStockDtos()) {
+                        if (dto != null && id.equals(dto.getId())) {
+                            return dto;
+                        }
+                    }
+                }
+                // Stock not found in cache - return null to indicate conversion failed
+                return null;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
+            if (value == null) {
+                return "";
+            }
+            if (value instanceof StockDTO) {
+                StockDTO dto = (StockDTO) value;
+                return dto.getId() != null ? dto.getId().toString() : "";
+            }
+            return "";
+        }
+    }
 }
