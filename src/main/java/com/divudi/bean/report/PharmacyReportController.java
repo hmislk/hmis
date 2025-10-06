@@ -88,6 +88,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,11 @@ public class PharmacyReportController implements Serializable {
     private ReportTimerController reportTimerController;
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
+    private static final Set<PaymentMethod> CREDIT_PAYMENT_METHODS = EnumSet.of(
+            PaymentMethod.Credit,
+            PaymentMethod.Staff,
+            PaymentMethod.OnCall
+    );
     private int reportIndex;
     private Institution institution;
     private Institution site;
@@ -1960,7 +1966,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
+        retrieveBillItems("b.billTypeAtomic", billTypes, getNonCreditPaymentMethods());
     }
 
     public void processGrnCredit() {
@@ -1968,7 +1974,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
+        retrieveBillItems("b.billTypeAtomic", billTypes, getCreditPaymentMethods());
     }
 
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
@@ -2003,7 +2009,7 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-            computeBillItemFinanceTotals();
+//            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2045,7 +2051,7 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-            computeBillItemFinanceTotals();
+//            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2094,7 +2100,7 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-            computeBillItemFinanceTotals();
+//            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2104,21 +2110,31 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void computeBillItemFinanceTotals() {
-        resetFinanceTotals();
-
-        if (billItems == null || billItems.isEmpty()) {
-            return;
-        }
-
-        for (BillItem billItem : billItems) {
-            BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
-
-            totalCostValue += resolveCostValue(billItem, financeDetails);
-            totalPurchaseValue += resolvePurchaseValue(billItem, financeDetails);
-            totalRetailValue += resolveRetailValue(billItem, financeDetails);
-        }
+    private List<PaymentMethod> getCreditPaymentMethods() {
+        return new ArrayList<>(CREDIT_PAYMENT_METHODS);
     }
+
+    private List<PaymentMethod> getNonCreditPaymentMethods() {
+        return PaymentMethod.getActivePaymentMethods().stream()
+                .filter(pm -> !CREDIT_PAYMENT_METHODS.contains(pm))
+                .collect(Collectors.toList());
+    }
+
+//    private void computeBillItemFinanceTotals() {
+//        resetFinanceTotals();
+//
+//        if (billItems == null || billItems.isEmpty()) {
+//            return;
+//        }
+//
+//        for (BillItem billItem : billItems) {
+//            BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+//
+//            totalCostValue += resolveCostValue(billItem, financeDetails);
+//            totalPurchaseValue += resolvePurchaseValue(billItem, financeDetails);
+//            totalRetailValue += resolveRetailValue(billItem, financeDetails);
+//        }
+//    }
 
     private double resolveCostValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
         BigDecimal costValue = financeDetails != null ? financeDetails.getValueAtCostRate() : null;

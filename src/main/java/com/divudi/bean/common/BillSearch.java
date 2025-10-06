@@ -4134,8 +4134,22 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
                 return navigateToPharmacyRetailSaleReturnItemOnly();
-            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
-                return "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER: {
+                String redirect = "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
+                if (pharmacySaleController == null) {
+                    JsfUtil.addErrorMessage("Unable to prepare pharmacy cashier print view");
+                    return redirect;
+                }
+                try {
+                    pharmacySaleController.setPrintBill(bill);
+                    pharmacySaleController.setBillPreview(true);
+                    pharmacySaleController.navigateToSaleBillForCashierPrint();
+                } catch (RuntimeException e) {
+                    JsfUtil.addErrorMessage("Unable to prepare pharmacy cashier print view");
+                    throw e;
+                }
+                return redirect;
+            }
             case PHARMACY_GRN:
                 return navigateToPharmacyGrnBillView();
 
