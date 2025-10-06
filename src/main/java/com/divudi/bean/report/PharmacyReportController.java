@@ -2117,6 +2117,7 @@ public class PharmacyReportController implements Serializable {
     private List<PaymentMethod> getNonCreditPaymentMethods() {
         return PaymentMethod.getActivePaymentMethods().stream()
                 .filter(pm -> !CREDIT_PAYMENT_METHODS.contains(pm))
+                .filter(pm -> pm != PaymentMethod.MultiplePaymentMethods)
                 .collect(Collectors.toList());
     }
 
