@@ -1,11 +1,11 @@
 -- Check the latest bill item data for pharmacy transaction verification
 -- This query retrieves the most recent bill item with key financial fields
-SELECT id, `BILL_ID`, `CREATEDAT`, `BILLITEMFINANCEDETAILS_ID`, `NETRATE`, `RATE`, `QTY`, `NETVALUE`, `GROSSVALUE` FROM BILLITEM order by id desc LIMIT 10;
+SELECT id, `BILL_ID`, ITEM_ID,  `CREATEDAT`, `BILLITEMFINANCEDETAILS_ID`, `NETRATE`, `RATE`, `QTY`, `NETVALUE`, `GROSSVALUE`, RETIRED FROM BILLITEM order by id desc LIMIT 10;
 
 -- Check the latest bill item finance details for pharmacy transactions
 -- This query fetches the most recent 2 records to compare financial calculations
 select `ID`,  `CREATEDAT`,  `LINENETRATE`, `LINEGROSSTOTAL`, `GROSSRATE`, `GROSSTOTAL`, `LINEGROSSRATE`, `TOTALCOSTRATE`,  `LINECOST`, `LINECOSTRATE`, `QUANTITY`, `QUANTITYBYUNITS`,
- `LINECOSTRATE`, `VALUEATCOSTRATE`, `VALUEATPURCHASERATE`, `VALUEATRETAILRATE` from BILLITEMFINANCEDETAILS order by id desc limit 10;
+ `LINECOSTRATE`, COSTRATE, PURCHASERATE, `VALUEATCOSTRATE`, `VALUEATPURCHASERATE`, `VALUEATRETAILRATE` from BILLITEMFINANCEDETAILS order by id desc limit 10;
 
 -- Check the latest pharmaceutical bill item data
 -- This query verifies pharmacy-specific item information including rates and stock references

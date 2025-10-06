@@ -268,7 +268,7 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="150">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="230">
                                 <div class="d-flex justify-content-center align-items-center gap-1">
                                     <p:commandButton
                                         id="approve"
@@ -282,17 +282,32 @@
                                         style="min-width: 70px;">
                                         <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         id="view"
                                         ajax="false"
                                         icon="fas fa-eye"
                                         class="ui-button-info"
                                         value="View"
                                         title="To View Direct Purchase Return"
-                                        action="#{directPurchaseReturnWorkflowController.navigateToViewDirectPurchaseReturn}" 
+                                        action="#{directPurchaseReturnWorkflowController.navigateToViewDirectPurchaseReturn}"
                                         disabled="#{b.referenceBill eq null}"
                                         style="min-width: 60px;">
                                         <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="close"
+                                        ajax="false"
+                                        title="Close this direct purchase return"
+                                        icon="fas fa-times"
+                                        class="ui-button-danger ui-button-outlined"
+                                        value="Close"
+                                        action="#{directPurchaseReturnWorkflowController.closeDirectPurchaseReturn(b)}"
+                                        disabled="#{b.cancelled eq true or b.completed eq true}"
+                                        rendered="#{b.cancelled ne true and b.completed ne true}"
+                                        style="min-width: 70px;">
+                                        <p:confirm header="Confirm Close"
+                                                   message="Are you sure you want to close this direct purchase return? This will allow creating a new return for the same bill."
+                                                   icon="pi pi-exclamation-triangle"/>
                                     </p:commandButton>
                                 </div>
                             </p:column>
@@ -300,9 +315,18 @@
                         </p:panel>
                     </div>
                 </div>
-            </p:panel>            
+            </p:panel>
+
+            <!-- Global Messages -->
+            <p:growl id="messages" showDetail="true" />
+
+            <!-- Global Confirmation Dialog -->
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" />
+            </p:confirmDialog>
         </h:form>
         </h:panelGroup>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>
