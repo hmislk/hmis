@@ -130,31 +130,29 @@
 
                         <p:panel header="Purchase Order Reprint">
                             <div class="d-flex justify-content-center border border-light boder-1">
-<!--                                <h:panelGroup id="gpBillPreview" style="width: 212mm;">
-                                    <ph:po bill="#{pharmacyBillSearch.bill}" reprint="true"/>
-                                </h:panelGroup> -->
-                                
+                                <!--                                <h:panelGroup id="gpBillPreview" style="width: 212mm;">
+                                                                    <ph:po bill="#{pharmacyBillSearch.bill}" reprint="true"/>
+                                                                </h:panelGroup> -->
+
                                 <h:panelGroup id="gpBillPreview" style="width: 212mm;">
 
-                                <ph:po_custom_1
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
-                                    bill="#{pharmacyBillSearch.bill.referenceBill}" reprint="true" controller="#{purchaseOrderController}"/>
+                                    <ph:purchase_order_request_custom_1
+                                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                                        bill="#{pharmacyBillSearch.bill}" reprint="true"
+                                        billItems="#{pharmacyBillSearch.billItems}"/>
 
-                                <ph:po_custom_2
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', true)}"
-                                    bill="#{pharmacyBillSearch.bill.referenceBill}" reprint="true" controller="#{purchaseOrderController}"/>
-
-                                <ph:po_custom_3_letter
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - Letter Paper Format', true)}"
-                                    bill="#{pharmacyBillSearch.bill.referenceBill}" reprint="true" controller="#{purchaseOrderController}"/>
-
-                            </h:panelGroup>
+                                    <ph:purchase_order_request_custom_2
+                                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', false)}"
+                                        bill="#{pharmacyBillSearch.bill}" reprint="true"
+                                        billItems="#{pharmacyBillSearch.billItems}"/>     
+                                    
+                                </h:panelGroup>
                             </div>
                         </p:panel>
 
                     </p:panel>
                 </h:form>
-                
+
                 <!-- Purchase Order Configuration Dialog -->
                 <p:dialog id="purchaseOrderReprintConfigDialog"
                           header="Purchase Order Approving Reprint Configuration"
@@ -193,14 +191,6 @@
                                             <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <p:selectBooleanCheckbox
-                                                id="letterPaper"
-                                                value="#{purchaseOrderConfigController.letterPaper}" />
-                                            <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
-                                            <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -234,7 +224,7 @@
 
                     </h:form>
                 </p:dialog>
-                
+
             </ui:define>
 
         </ui:composition>
