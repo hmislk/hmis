@@ -1962,25 +1962,26 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processGrnCash() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
+        List<BillTypeAtomic> btas = Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, getNonCreditPaymentMethods());
+        retrieveBillItems(btas, getNonCreditPaymentMethods());
     }
 
     public void processGrnCredit() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
+        List<BillTypeAtomic> btas = Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
-        retrieveBillItems("b.billTypeAtomic", billTypes, getCreditPaymentMethods());
+        retrieveBillItems(btas, getCreditPaymentMethods());
     }
 
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            resetFinanceTotals();
 
             StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
                     + "LEFT JOIN FETCH bi.item "
@@ -2009,7 +2010,7 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-//            computeBillItemFinanceTotals();
+            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2023,6 +2024,7 @@ public class PharmacyReportController implements Serializable {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            resetFinanceTotals();
 
             StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
                     + "LEFT JOIN FETCH bi.item "
@@ -2043,6 +2045,16 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
 
+            // Filter by item - if AMP is selected, include both AMP and its AMPPs
+            if (item != null) {
+                if (item instanceof Amp) {
+                    jpql.append("AND (bi.item = :itm OR bi.item.amp = :itm) ");
+                    params.put("itm", item);
+                } else {
+                    addFilter(jpql, params, "bi.item", "itm", item);
+                }
+            }
+
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 //            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
             netTotal = billItems.stream()
@@ -2051,7 +2063,7 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-//            computeBillItemFinanceTotals();
+            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2061,10 +2073,70 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void retrieveBillItems(List<BillTypeAtomic> btas, List<PaymentMethod> paymentMethod) {
+        try {
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+            resetFinanceTotals();
+
+            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
+                    + "LEFT JOIN FETCH bi.item "
+                    + "LEFT JOIN FETCH bi.bill b "
+                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN FETCH pbi.itemBatch "
+                    + "WHERE bi.retired = false "
+                    + "AND b.retired = false "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
+            // Filter by item - if AMP is selected, include both AMP and its AMPPs
+            Map<String, Object> params = new HashMap<>();
+            if (item != null) {
+                if (item instanceof Amp) {
+                    jpql.append("AND (bi.item = :itm OR bi.item.amp = :itm) ");
+                    params.put("itm", item);
+                } else {
+                    addFilter(jpql, params, "bi.item", "itm", item);
+                }
+            }
+
+            jpql.append("AND (b.paymentMethod IN :pm ");
+            jpql.append("OR (b.paymentMethod = :multiPm AND EXISTS ("
+                    + "SELECT p FROM Payment p "
+                    + "WHERE p.bill = b AND p.paymentMethod IN :pm)) )");
+
+            params.put("pm", paymentMethod);
+            params.put("multiPm", PaymentMethod.MultiplePaymentMethods);
+            params.put("btas", btas);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
+
+            computeBillItemFinanceTotals();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+            resetFinanceTotals();
+        }
+    }
+
+    @Deprecated
     private void retrieveBillItems(String billTypeField, Object billTypeValue, Object paymentMethod) {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            resetFinanceTotals();
 
             StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
                     + "LEFT JOIN FETCH bi.item "
@@ -2100,7 +2172,7 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-//            computeBillItemFinanceTotals();
+            computeBillItemFinanceTotals();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2121,108 +2193,100 @@ public class PharmacyReportController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-//    private void computeBillItemFinanceTotals() {
-//        resetFinanceTotals();
-//
-//        if (billItems == null || billItems.isEmpty()) {
-//            return;
-//        }
-//
-//        for (BillItem billItem : billItems) {
-//            BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
-//
-//            totalCostValue += resolveCostValue(billItem, financeDetails);
-//            totalPurchaseValue += resolvePurchaseValue(billItem, financeDetails);
-//            totalRetailValue += resolveRetailValue(billItem, financeDetails);
-//        }
-//    }
+    private void computeBillItemFinanceTotals() {
+        resetFinanceTotals();
 
-//    private double resolveCostValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
-//        BigDecimal costValue = financeDetails != null ? financeDetails.getValueAtCostRate() : null;
-//        if (costValue != null) {
-//            return costValue.doubleValue();
-//        }
-//
-//        Double costRate = null;
-//        if (financeDetails != null && financeDetails.getCostRate() != null) {
-//            costRate = financeDetails.getCostRate().doubleValue();
-//        } else if (billItem.getPharmaceuticalBillItem() != null
-//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null
-//                && billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate() != null) {
-//            costRate = billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate();
-//        }
-//
-//        if (costRate == null) {
-//            return 0.0;
-//        }
-//
-//        return costRate * resolveQuantity(financeDetails, billItem);
-//    }
+        if (billItems == null || billItems.isEmpty()) {
+            return;
+        }
 
-//    private double resolvePurchaseValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
-//        BigDecimal purchaseValue = financeDetails != null ? financeDetails.getValueAtPurchaseRate() : null;
-//        if (purchaseValue != null) {
-//            return purchaseValue.doubleValue();
-//        }
-//
-//        Double purchaseRate = null;
-//        if (financeDetails != null && financeDetails.getPurchaseRate() != null) {
-//            purchaseRate = financeDetails.getPurchaseRate().doubleValue();
-//        } else if (billItem.getPharmaceuticalBillItem() != null
-//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
-//            purchaseRate = billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
-//        }
-//
-//        if (purchaseRate == null) {
-//            return 0.0;
-//        }
-//
-//        return purchaseRate * resolveQuantity(financeDetails, billItem);
-//    }
+        for (BillItem billItem : billItems) {
+            totalCostValue += resolveFinanceValue(
+                    billItem,
+                    BillItemFinanceDetails::getValueAtCostRate,
+                    BillItemFinanceDetails::getCostRate,
+                    PharmaceuticalBillItem::getCostRate);
 
-//    private double resolveRetailValue(BillItem billItem, BillItemFinanceDetails financeDetails) {
-//        BigDecimal retailValue = financeDetails != null ? financeDetails.getValueAtRetailRate() : null;
-//        if (retailValue != null) {
-//            return retailValue.doubleValue();
-//        }
-//
-//        Double retailRate = null;
-//        if (financeDetails != null && financeDetails.getRetailSaleRate() != null) {
-//            retailRate = financeDetails.getRetailSaleRate().doubleValue();
-//        } else if (billItem.getPharmaceuticalBillItem() != null
-//                && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
-//            retailRate = billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
-//        }
-//
-//        if (retailRate == null) {
-//            return 0.0;
-//        }
-//
-//        return retailRate * resolveQuantity(financeDetails, billItem);
-//    }
+            totalPurchaseValue += resolveFinanceValue(
+                    billItem,
+                    BillItemFinanceDetails::getValueAtPurchaseRate,
+                    BillItemFinanceDetails::getPurchaseRate,
+                    PharmaceuticalBillItem::getPurchaseRate);
 
-//    private double resolveQuantity(BillItemFinanceDetails financeDetails, BillItem billItem) {
-//        if (financeDetails != null) {
-//            if (financeDetails.getQuantity() != null) {
-//                return financeDetails.getQuantity().doubleValue();
-//            }
-//            if (financeDetails.getQuantityByUnits() != null) {
-//                return financeDetails.getQuantityByUnits().doubleValue();
-//            }
-//            if (financeDetails.getTotalQuantity() != null) {
-//                return financeDetails.getTotalQuantity().doubleValue();
-//            }
-//            if (financeDetails.getTotalQuantityByUnits() != null) {
-//                return financeDetails.getTotalQuantityByUnits().doubleValue();
-//            }
-//        }
-//
-//        if (billItem.getQty() != null) {
-//            return billItem.getQty();
-//        }
-//
-//        return 0.0;
-//    }
+            totalRetailValue += resolveFinanceValue(
+                    billItem,
+                    BillItemFinanceDetails::getValueAtRetailRate,
+                    BillItemFinanceDetails::getRetailSaleRate,
+                    PharmaceuticalBillItem::getRetailRate);
+        }
+    }
+
+    private double resolveFinanceValue(
+            BillItem billItem,
+            Function<BillItemFinanceDetails, BigDecimal> valueExtractor,
+            Function<BillItemFinanceDetails, BigDecimal> rateExtractor,
+            Function<PharmaceuticalBillItem, Double> pharmaRateExtractor) {
+
+        BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+
+        BigDecimal directValue = financeDetails != null ? valueExtractor.apply(financeDetails) : null;
+        if (directValue != null) {
+            return directValue.doubleValue();
+        }
+
+        Double rate = null;
+        if (financeDetails != null) {
+            BigDecimal rateValue = rateExtractor.apply(financeDetails);
+            if (rateValue != null) {
+                rate = rateValue.doubleValue();
+            }
+        }
+
+        if (rate == null) {
+            PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaceuticalBillItem != null) {
+                Double fallbackRate = pharmaRateExtractor.apply(pharmaceuticalBillItem);
+                if (fallbackRate != null) {
+                    rate = fallbackRate;
+                }
+            }
+        }
+
+        if (rate == null) {
+            return 0.0;
+        }
+
+        double quantity = resolveQuantity(financeDetails, billItem);
+        return rate * quantity;
+    }
+
+    private double resolveQuantity(BillItemFinanceDetails financeDetails, BillItem billItem) {
+        if (financeDetails != null) {
+            if (financeDetails.getTotalQuantity() != null) {
+                return financeDetails.getTotalQuantity().doubleValue();
+            }
+            if (financeDetails.getQuantity() != null) {
+                return financeDetails.getQuantity().doubleValue();
+            }
+            if (financeDetails.getTotalQuantityByUnits() != null) {
+                return financeDetails.getTotalQuantityByUnits().doubleValue();
+            }
+            if (financeDetails.getQuantityByUnits() != null) {
+                return financeDetails.getQuantityByUnits().doubleValue();
+            }
+        }
+
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem != null) {
+            return pharmaceuticalBillItem.getQty();
+        }
+
+        if (billItem.getQty() != null) {
+            return billItem.getQty();
+        }
+
+        return 0.0;
+    }
 
     private void resetFinanceTotals() {
         totalCostValue = 0.0;
@@ -3633,27 +3697,26 @@ public class PharmacyReportController implements Serializable {
     /**
      * Process Closing Stock Report - ITEM-WISE
      *
-     * Generates item-level aggregated stock report (all batches of an item combined).
-     * Shows total stock quantities and values per item without batch/expiry details.
+     * Generates item-level aggregated stock report (all batches of an item
+     * combined). Shows total stock quantities and values per item without
+     * batch/expiry details.
      *
-     * ARCHITECTURE:
-     * 1. TEMPORAL QUERY: Gets last StockHistory record before selected date for each (department, item) combination
-     * 2. ITEM-LEVEL DATA: Uses itemStock fields (not batch-level stockQty)
-     * 3. SCOPE-BASED VALUES: Depending on filter selection, displays:
-     *    - Department filter: itemStock, itemStockValueAtPurchaseRate/SaleRate/CostRate
-     *    - Institution filter: institutionItemStock, institutionItemStockValueAt*
-     *    - No filter (Total): totalItemStock, totalItemStockValueAt*
+     * ARCHITECTURE: 1. TEMPORAL QUERY: Gets last StockHistory record before
+     * selected date for each (department, item) combination 2. ITEM-LEVEL DATA:
+     * Uses itemStock fields (not batch-level stockQty) 3. SCOPE-BASED VALUES:
+     * Depending on filter selection, displays: - Department filter: itemStock,
+     * itemStockValueAtPurchaseRate/SaleRate/CostRate - Institution filter:
+     * institutionItemStock, institutionItemStockValueAt* - No filter (Total):
+     * totalItemStock, totalItemStockValueAt*
      *
-     * QUERY LOGIC:
-     * - Subquery: SELECT MAX(sh2.id) ... WHERE sh2.createdAt <= selectedDate GROUP BY (department, item)
-     * - Main query: Fetch item details and stock values using DTO projection
-     * - Filters out items created AFTER selected date (ensures temporal accuracy)
+     * QUERY LOGIC: - Subquery: SELECT MAX(sh2.id) ... WHERE sh2.createdAt <=
+     * selectedDate GROUP BY (department, item) - Main query: Fetch item details
+     * and stock values using DTO projection - Filters out items created AFTER
+     * selected date (ensures temporal accuracy)
      *
-     * VALUES CAPTURED:
-     * - Quantity: Stock quantity in measurement units
-     * - Purchase Value: Quantity × Purchase Rate
-     * - Sale Value: Quantity × Retail/Sale Rate
-     * - Cost Value: Quantity × Cost Rate
+     * VALUES CAPTURED: - Quantity: Stock quantity in measurement units -
+     * Purchase Value: Quantity × Purchase Rate - Sale Value: Quantity ×
+     * Retail/Sale Rate - Cost Value: Quantity × Cost Rate
      */
     public void processClosingStockForItemReport() {
         Map<String, Object> params = new HashMap<>();
@@ -3668,15 +3731,15 @@ public class PharmacyReportController implements Serializable {
                 + "  COALESCE(i.code, ''), "
                 + "  COALESCE(c.name, ''), "
                 + "  COALESCE(mu.name, ''), "
-                + "  COALESCE(sh.itemStock, 0.0), "  // Department item stock
-                + "  COALESCE(sh.itemStockValueAtPurchaseRate, 0.0), "  // Department item purchase value
-                + "  COALESCE(sh.itemStockValueAtSaleRate, 0.0), "  // Department item sale value
-                + "  COALESCE(sh.itemStockValueAtCostRate, 0.0), "  // Department item cost value
-                + "  COALESCE(sh.institutionItemStock, 0.0), "  // Institution item stock
+                + "  COALESCE(sh.itemStock, 0.0), " // Department item stock
+                + "  COALESCE(sh.itemStockValueAtPurchaseRate, 0.0), " // Department item purchase value
+                + "  COALESCE(sh.itemStockValueAtSaleRate, 0.0), " // Department item sale value
+                + "  COALESCE(sh.itemStockValueAtCostRate, 0.0), " // Department item cost value
+                + "  COALESCE(sh.institutionItemStock, 0.0), " // Institution item stock
                 + "  COALESCE(sh.institutionItemStockValueAtPurchaseRate, 0.0), "
                 + "  COALESCE(sh.institutionItemStockValueAtSaleRate, 0.0), "
                 + "  COALESCE(sh.institutionItemStockValueAtCostRate, 0.0), "
-                + "  COALESCE(sh.totalItemStock, 0.0), "  // Total item stock
+                + "  COALESCE(sh.totalItemStock, 0.0), " // Total item stock
                 + "  COALESCE(sh.totalItemStockValueAtPurchaseRate, 0.0), "
                 + "  COALESCE(sh.totalItemStockValueAtSaleRate, 0.0), "
                 + "  COALESCE(sh.totalItemStockValueAtCostRate, 0.0)) "
@@ -3809,34 +3872,32 @@ public class PharmacyReportController implements Serializable {
     /**
      * Process Closing Stock Report - BATCH-WISE
      *
-     * Generates batch-level stock report showing individual batches with expiry dates.
-     * Each row represents a specific batch of an item in a department.
+     * Generates batch-level stock report showing individual batches with expiry
+     * dates. Each row represents a specific batch of an item in a department.
      *
-     * ARCHITECTURE:
-     * 1. TEMPORAL QUERY: Gets last StockHistory record before selected date for each (department, itemBatch) combination
-     * 2. BATCH-LEVEL DATA: Uses stockQty (batch quantity) and batch-specific values
-     * 3. SCOPE-BASED VALUES: Depending on filter selection, displays:
-     *    - Department filter: stockQty, stockPurchaseValue, stockSaleValue, stockCostValue
-     *    - Institution filter: instituionBatchQty, institutionBatchStockValueAt*
-     *    - No filter (Total): totalBatchQty, totalBatchStockValueAt*
+     * ARCHITECTURE: 1. TEMPORAL QUERY: Gets last StockHistory record before
+     * selected date for each (department, itemBatch) combination 2. BATCH-LEVEL
+     * DATA: Uses stockQty (batch quantity) and batch-specific values 3.
+     * SCOPE-BASED VALUES: Depending on filter selection, displays: - Department
+     * filter: stockQty, stockPurchaseValue, stockSaleValue, stockCostValue -
+     * Institution filter: instituionBatchQty, institutionBatchStockValueAt* -
+     * No filter (Total): totalBatchQty, totalBatchStockValueAt*
      *
-     * QUERY LOGIC:
-     * - Subquery: SELECT MAX(sh2.id) ... WHERE sh2.createdAt <= selectedDate GROUP BY (department, itemBatch)
-     * - Main query: Fetch item, batch details (batchNo, expiry) and stock values using DTO projection
-     * - Filters out batches created AFTER selected date (ensures temporal accuracy)
+     * QUERY LOGIC: - Subquery: SELECT MAX(sh2.id) ... WHERE sh2.createdAt <=
+     * selectedDate GROUP BY (department, itemBatch) - Main query: Fetch item,
+     * batch details (batchNo, expiry) and stock values using DTO projection -
+     * Filters out batches created AFTER selected date (ensures temporal
+     * accuracy)
      *
-     * VALUES CAPTURED:
-     * - Quantity: Batch stock quantity in measurement units
-     * - Purchase Rate: Purchase rate per unit for this batch
-     * - Retail Rate: Retail/sale rate per unit for this batch
-     * - Cost Rate: Cost rate per unit for this batch
-     * - Purchase Value: Batch Quantity × Purchase Rate
-     * - Sale Value: Batch Quantity × Retail Rate
-     * - Cost Value: Batch Quantity × Cost Rate
+     * VALUES CAPTURED: - Quantity: Batch stock quantity in measurement units -
+     * Purchase Rate: Purchase rate per unit for this batch - Retail Rate:
+     * Retail/sale rate per unit for this batch - Cost Rate: Cost rate per unit
+     * for this batch - Purchase Value: Batch Quantity × Purchase Rate - Sale
+     * Value: Batch Quantity × Retail Rate - Cost Value: Batch Quantity × Cost
+     * Rate
      *
-     * BATCH DETAILS SHOWN:
-     * - Batch Number: Unique identifier for the batch
-     * - Expiry Date: Date when the batch expires
+     * BATCH DETAILS SHOWN: - Batch Number: Unique identifier for the batch -
+     * Expiry Date: Date when the batch expires
      */
     public void processClosingStockForBatchReport() {
         Map<String, Object> params = new HashMap<>();
@@ -4574,6 +4635,57 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public Map<String, Double> retrieveValuesAtRates(String billTypeField, List<BillTypeAtomic> btas) {
+        try {
+
+            Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.billItemFinanceDetails.valueAtPurchaseRate), ")
+                    .append("SUM(bi.billItemFinanceDetails.valueAtCostRate), ")
+                    .append("SUM(bi.billItemFinanceDetails.valueAtRetailRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :btas ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            commonParams.put("ret", false);
+            commonParams.put("btas", btas);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.item", "itm", item);
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
+            }
+            return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
+    @Deprecated // Use retrieveValuesAtRates
     public Map<String, Double> retrievePurchaseAndCostValues(String billTypeField, Object billTypeValue) {
         try {
 
@@ -4851,7 +4963,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
-            Map<String, Double> purchaseReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypeAtomics);
+            Map<String, Double> purchaseReturns = retrieveValuesAtRates(" bi.bill.billTypeAtomic ", billTypeAtomics);
 
             cogsRows.put("Purchase Return", purchaseReturns);
 

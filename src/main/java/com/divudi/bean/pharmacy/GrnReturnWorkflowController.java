@@ -2191,10 +2191,11 @@ public class GrnReturnWorkflowController implements Serializable {
             freeQtyByUnits = freeQty;
         }
 
-        // Update BIFD unit quantities
+        // Update BIFD quantities
         fd.setQuantityByUnits(qtyByUnits);
         fd.setFreeQuantityByUnits(freeQtyByUnits);
         fd.setTotalQuantityByUnits(qtyByUnits.add(freeQtyByUnits));
+        fd.setTotalQuantity(qty.add(freeQty)); // Total quantity in packs (for AMPP) or units (for AMP)
 
         // Set BillItem fields (as user entered)
         bi.setRate(rate.doubleValue());

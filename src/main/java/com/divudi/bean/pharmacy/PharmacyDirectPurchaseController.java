@@ -1251,6 +1251,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // pbi will never be null as it is created in the getter
         BigDecimal grossRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
         BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        BigDecimal costRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineCostRate());
 
         // Update quantities in units (important for stock calculations)
         pbi.setQty(qtyByUnits.doubleValue()); // Paid quantity in units
@@ -1258,13 +1259,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Update rates per unit
         pbi.setPurchaseRate(grossRatePerUnit.doubleValue()); // Purchase rate per unit
+        pbi.setCostRate(costRatePerUnit.doubleValue()); // Cost rate per unit
         pbi.setRetailRate(retailRatePerUnit.doubleValue()); // Retail rate per unit
 
         // Calculate values (quantity × rate)
         BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, grossRatePerUnit);
+        BigDecimal pbiCostValue = BigDecimalUtil.multiply(qtyByUnits, costRatePerUnit);
         BigDecimal pbiRetailValue = BigDecimalUtil.multiply(qtyByUnits, retailRatePerUnit);
 
         pbi.setPurchaseValue(BigDecimalUtil.valueOrZero(pbiPurchaseValue).doubleValue());
+        pbi.setCostValue(BigDecimalUtil.valueOrZero(pbiCostValue).doubleValue());
         pbi.setRetailValue(BigDecimalUtil.valueOrZero(pbiRetailValue).doubleValue());
 
     }

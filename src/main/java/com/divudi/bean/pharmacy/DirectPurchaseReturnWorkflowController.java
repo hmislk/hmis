@@ -2130,6 +2130,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         BigDecimal totalQty = qty.add(freeQty);
         BigDecimal lineTotal = totalQty.multiply(rate);
 
+        // Set total quantity (in packs for AMPP, in units for AMP)
+        fd.setTotalQuantity(totalQty);
+
         // Set the calculated line total
         fd.setLineGrossTotal(lineTotal);
         fd.setLineNetTotal(lineTotal);
@@ -2150,7 +2153,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 // Calculate total quantity in units for value calculations
                 BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
                 BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
-                double totalReturningQtyInUnits = qtyByUnits.doubleValue() + freeQtyByUnits.doubleValue();
+                BigDecimal totalReturningQtyByUnits = qtyByUnits.add(freeQtyByUnits);
+                double totalReturningQtyInUnits = totalReturningQtyByUnits.doubleValue();
+
+                // Set total quantity by units
+                fd.setTotalQuantityByUnits(totalReturningQtyByUnits);
 
                 // Calculate values (quantity in units × rate per unit)
                 fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit));

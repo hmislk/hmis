@@ -157,10 +157,36 @@
                             </h:panelGroup>
 
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-pills mr-2" />
+                                <p:outputLabel value="Item" for="phmItem" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="phmItem"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{pharmacyReportController.item}"
+                                completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                var="itm"
+                                itemLabel="#{itm.name}"
+                                itemValue="#{itm}"
+                                maxResults="20"
+                                minQueryLength="3"
+                                placeholder="Select an Item">
+                            </p:autoComplete>
+
 
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
+                            <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
                             <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
@@ -217,7 +243,7 @@
                                      styleClass="w-100">
 
 
-                            <p:column headerText="Transaction At" styleClass="text-center" headerStyleClass="text-center" footerStyleClass="fw-semibold">
+                            <p:column headerText="Transaction At" styleClass="text-center"  >
                                 <h:outputText value="#{f.bill.createdAt}" styleClass="text-center">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
@@ -225,21 +251,24 @@
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="ID" styleClass="text-wrap" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:outputText value="#{f.id}" />
+                            </p:column>
                             <p:column headerText="Item" styleClass="text-wrap">
                                 <h:outputText value="#{f.item.name}" />
                             </p:column>
-                            <p:column headerText="Code" styleClass="text-center" headerStyleClass="text-center">
+                            <p:column headerText="Code" styleClass="text-center" >
                                 <h:outputText value="#{f.item.code}" />
                             </p:column>
-                            <p:column headerText="Expiry" headerStyleClass="text-center" styleClass="text-center">
+                            <p:column headerText="Expiry"  styleClass="text-center">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch ne null ? f.pharmaceuticalBillItem.itemBatch.dateOfExpire : null}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Batch" styleClass="text-center" headerStyleClass="text-center">
+                            <p:column headerText="Batch" styleClass="text-center" >
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch ne null ? f.pharmaceuticalBillItem.itemBatch.batchNo : '-'}" />
                             </p:column>
-                            <p:column headerText="Bill No." styleClass="text-center" headerStyleClass="text-center">
+                            <p:column headerText="Bill No." styleClass="text-center" >
                                 <p:commandLink 
                                     value="#{f.bill.deptId}" 
                                     styleClass="ui-button-info ui-button-outlined px-3 py-1"
@@ -249,7 +278,7 @@
                                     <f:setPropertyActionListener value="#{f.bill}" target="#{pharmacyBillSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Ref Bill No." styleClass="text-center" headerStyleClass="text-center">
+                            <p:column headerText="Ref Bill No." styleClass="text-center" >
                                 <p:commandLink 
                                     rendered="#{f.pharmaceuticalBillItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'}"
                                     value="#{f.bill.referenceBill.deptId}" 
@@ -269,18 +298,18 @@
                                     <f:setPropertyActionListener value="#{f.pharmaceuticalBillItem.billItem.bill.billedBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Quantity" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Quantity"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.totalQuantity}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Purchase Rate" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Purchase Rate"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.purchaseRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Purchase Value" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Purchase Value"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.valueAtPurchaseRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -290,12 +319,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Cost Rate" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Cost Rate"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.costRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Value" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Cost Value"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.valueAtCostRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -305,12 +334,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Retail Rate" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Retail Rate"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Retail Value" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Retail Value"  styleClass="text-end" >
                                 <h:outputText value="#{f.billItemFinanceDetails.valueAtRetailRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -320,7 +349,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Total" headerStyleClass="text-end" styleClass="text-end" footerStyleClass="text-end">
+                            <p:column headerText="Net Total"  styleClass="text-end" >
                                 <h:outputText value="#{f.bill.netTotal}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
