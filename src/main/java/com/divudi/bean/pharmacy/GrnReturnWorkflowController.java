@@ -2245,6 +2245,29 @@ public class GrnReturnWorkflowController implements Serializable {
                 fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit));
                 fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit));
                 fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit));
+
+                // Set rates in BillItemFinanceDetails (in units for AMPs, in packs for AMPPs)
+                if (isAmpp) {
+                    // For AMPPs: Calculate rates per pack
+                    BigDecimal purchaseRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(purchaseRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+                    BigDecimal costRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(costRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+                    BigDecimal retailRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(retailRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+
+                    fd.setPurchaseRate(purchaseRatePerPack);
+                    fd.setCostRate(costRatePerPack);
+                    fd.setRetailSaleRate(retailRatePerPack);
+                } else {
+                    // For AMPs: Rates are already per unit
+                    fd.setPurchaseRate(BigDecimal.valueOf(purchaseRatePerUnit));
+                    fd.setCostRate(BigDecimal.valueOf(costRatePerUnit));
+                    fd.setRetailSaleRate(BigDecimal.valueOf(retailRatePerUnit));
+                }
             }
         }
     }
