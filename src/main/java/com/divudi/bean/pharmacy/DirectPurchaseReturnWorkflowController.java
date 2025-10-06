@@ -1839,8 +1839,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             // Check if at least one item has some return quantity
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             if (fd != null) {
-                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
                 // Accept any positive return quantities (including exact remaining quantities)
                 if (qty > 0 || freeQty > 0) {

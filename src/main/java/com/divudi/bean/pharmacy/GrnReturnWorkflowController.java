@@ -1642,7 +1642,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
         if (returnByTotalQty) {
             // Total quantity mode - qty + free qty combined
-            double currentTotalQty = (fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0);
+            double currentTotalQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
 
             // Convert pack quantity to units for AMPP items
             double currentTotalQtyInUnits = isAmppItem ? currentTotalQty * unitsPerPack : currentTotalQty;
@@ -1659,8 +1659,8 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         } else if (returnByQtyAndFree) {
             // Separate quantity and free quantity mode
-            double currentQty = (fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0);
-            double currentFreeQty = (fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0);
+            double currentQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
+            double currentFreeQty = (fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0);
 
             // Convert pack quantities to units for AMPP items
             double currentQtyInUnits = isAmppItem ? currentQty * unitsPerPack : currentQty;
@@ -1718,8 +1718,8 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         double currentStock = phi.getStock().getStock();
-        double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-        double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+        double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+        double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
         // Convert to units if AMPP item
         boolean isAmppItem = billItem.getItem() instanceof Ampp;
@@ -1895,8 +1895,8 @@ public class GrnReturnWorkflowController implements Serializable {
             // Check if at least one item has some return quantity
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             if (fd != null) {
-                double qty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
                 // Accept any positive return quantities (including exact remaining quantities)
                 if (qty > 0 || freeQty > 0) {
