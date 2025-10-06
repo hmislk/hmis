@@ -2135,6 +2135,53 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         fd.setLineNetTotal(lineTotal);
         bi.setNetValue(lineTotal.doubleValue());
 
+        // Set rates and values from original Direct Purchase item
+        if (bi.getReferanceBillItem() != null) {
+            PharmaceuticalBillItem originalPhi = bi.getReferanceBillItem().getPharmaceuticalBillItem();
+            if (originalPhi != null) {
+                // Get the original rates (ALWAYS per unit per HMIS standard)
+                double purchaseRatePerUnit = originalPhi.getPurchaseRate();
+                double costRatePerUnit = originalPhi.getCostRate();
+                double retailRatePerUnit = originalPhi.getRetailRate();
+
+                // Get units per pack for calculations
+                BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+
+                // Calculate total quantity in units for value calculations
+                BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
+                BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
+                double totalReturningQtyInUnits = qtyByUnits.doubleValue() + freeQtyByUnits.doubleValue();
+
+                // Calculate values (quantity in units × rate per unit)
+                fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit));
+                fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit));
+                fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit));
+
+                // Set rates in BillItemFinanceDetails (in units for AMPs, in packs for AMPPs)
+                if (isAmpp) {
+                    // For AMPPs: Convert per-unit rates to per-pack rates
+                    BigDecimal purchaseRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(purchaseRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+                    BigDecimal costRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(costRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+                    BigDecimal retailRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(retailRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+
+                    fd.setPurchaseRate(purchaseRatePerPack);
+                    fd.setCostRate(costRatePerPack);
+                    fd.setRetailSaleRate(retailRatePerPack);
+                } else {
+                    // For AMPs: Rates are already per unit
+                    fd.setPurchaseRate(BigDecimal.valueOf(purchaseRatePerUnit));
+                    fd.setCostRate(BigDecimal.valueOf(costRatePerUnit));
+                    fd.setRetailSaleRate(BigDecimal.valueOf(retailRatePerUnit));
+                }
+            }
+        }
+
     }
 
     // Utility methods
