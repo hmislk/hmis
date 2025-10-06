@@ -4337,7 +4337,8 @@ public class PharmacyReportController implements Serializable {
             // Direct aggregation query
             jpql.append("SELECT ")
                     .append("SUM(sh.stockQty * sh.itemBatch.purcahseRate), ")
-                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.costRate, 0.0)) ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.costRate, 0.0)), ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.retailsaleRate, 0.0)) ")
                     .append("FROM StockHistory sh ")
                     .append("WHERE sh.retired = :ret ")
                     .append("AND sh.id IN (")
@@ -4352,6 +4353,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh2.institution", "ins", institution);
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
+            addFilter(jpql, params, "sh2.item", "itm", item);
 
             jpql.append("GROUP BY sh2.department, sh2.itemBatch ")
                     .append("HAVING MAX(sh2.id) IN (")
@@ -4362,6 +4364,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh3.institution", "ins2", institution);
             addFilter(jpql, params, "sh3.department.site", "sit2", site);
             addFilter(jpql, params, "sh3.department", "dep2", department);
+            addFilter(jpql, params, "sh3.item", "itm2", item);
 
             jpql.append("AND sh3.createdAt < :et2)) ");
             params.put("et2", date);
@@ -4370,6 +4373,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh.institution", "ins3", institution);
             addFilter(jpql, params, "sh.department.site", "sit3", site);
             addFilter(jpql, params, "sh.department", "dep3", department);
+            addFilter(jpql, params, "sh.item", "itm3", item);
 
             // Group by item and filter positive quantities
             jpql.append("AND sh.itemBatch.item.id IN (")
@@ -4386,12 +4390,14 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh5.institution", "ins4", institution);
             addFilter(jpql, params, "sh5.department.site", "sit4", site);
             addFilter(jpql, params, "sh5.department", "dep4", department);
+            addFilter(jpql, params, "sh5.item", "itm4", item);
 
             jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
 
             addFilter(jpql, params, "sh4.institution", "ins5", institution);
             addFilter(jpql, params, "sh4.department.site", "sit5", site);
             addFilter(jpql, params, "sh4.department", "dep5", department);
+            addFilter(jpql, params, "sh4.item", "itm5", item);
 
             jpql.append("GROUP BY sh4.itemBatch.item.id ")
                     .append("HAVING SUM(sh4.stockQty) > 0");
@@ -4412,9 +4418,11 @@ public class PharmacyReportController implements Serializable {
                 Object[] totals = results.get(0);
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
             }
 
             return result;
@@ -4424,6 +4432,7 @@ public class PharmacyReportController implements Serializable {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
             return errorResult;
         }
     }
@@ -4441,7 +4450,8 @@ public class PharmacyReportController implements Serializable {
             // Direct aggregation query
             jpql.append("SELECT ")
                     .append("SUM(bi.bill.billFinanceDetails.totalPurchaseValue), ")
-                    .append("SUM(bi.bill.billFinanceDetails.totalCostValue) ")
+                    .append("SUM(bi.bill.billFinanceDetails.totalCostValue), ")
+                    .append("SUM(bi.bill.billFinanceDetails.totalRetailSaleValue) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billTypeAtomic IN :btas ")
@@ -4455,6 +4465,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.institution", "ins", institution);
             addFilter(jpql, params, "bi.bill.department.site", "sit", site);
             addFilter(jpql, params, "bi.bill.department", "dep", department);
+            addFilter(jpql, params, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
 
             List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -4464,9 +4475,11 @@ public class PharmacyReportController implements Serializable {
                 Object[] totals = results.get(0);
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
             }
 
             return result;
@@ -4475,6 +4488,7 @@ public class PharmacyReportController implements Serializable {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
             return errorResult;
         }
     }
@@ -4484,8 +4498,10 @@ public class PharmacyReportController implements Serializable {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
 
-            StringBuilder jpql = new StringBuilder("SELECT bi.bill.paymentMethod, SUM(bi.billItemFinanceDetails.quantityByUnits * bi.pharmaceuticalBillItem.purchaseRate), SUM(bi.billItemFinanceDetails.quantityByUnits * bi.pharmaceuticalBillItem.itemBatch.costRate) FROM BillItem bi ")
+            StringBuilder jpql = new StringBuilder("SELECT bi.bill.paymentMethod, SUM(bi.billItemFinanceDetails.valueAtPurchaseRate), SUM(bi.billItemFinanceDetails.valueAtCostRate), SUM(bi.billItemFinanceDetails.valueAtRetailRate) FROM BillItem bi ")
                     .append("WHERE bi.retired = false ")
                     .append("AND bi.bill.billTypeAtomic IN :bType ")
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ")
@@ -4501,6 +4517,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.institution", "ins", institution);
             addFilter(jpql, params, "bi.bill.department.site", "sit", site);
             addFilter(jpql, params, "bi.bill.department", "dep", department);
+            addFilter(jpql, params, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
             jpql.append(" GROUP BY bi.bill.paymentMethod");
 
             List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -4512,21 +4529,26 @@ public class PharmacyReportController implements Serializable {
             // Initialize with default values.
             cashRow.put("purchaseValue", 0.0);
             cashRow.put("costValue", 0.0);
+            cashRow.put("retailValue", 0.0);
             creditRow.put("purchaseValue", 0.0);
             creditRow.put("costValue", 0.0);
+            creditRow.put("retailValue", 0.0);
 
             if (results != null && !results.isEmpty()) {
                 for (Object[] row : results) {
                     PaymentMethod paymentMethod = (PaymentMethod) row[0];
                     double purchaseValue = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
                     double costValue = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                    double retailValue = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
 
                     if (paymentMethod == PaymentMethod.Cash) {
                         cashRow.put("purchaseValue", purchaseValue);
                         cashRow.put("costValue", costValue);
+                        cashRow.put("retailValue", retailValue);
                     } else if (paymentMethod == PaymentMethod.Credit) {
                         creditRow.put("purchaseValue", purchaseValue);
                         creditRow.put("costValue", costValue);
+                        creditRow.put("retailValue", retailValue);
                     }
                 }
             }
@@ -4545,6 +4567,7 @@ public class PharmacyReportController implements Serializable {
                 Map<String, Double> errorResult = new HashMap<>();
                 errorResult.put("purchaseValue", 0.0);
                 errorResult.put("costValue", 0.0);
+                errorResult.put("retailValue", 0.0);
                 cogsRows.put("GRN Cash Total", errorResult);
                 cogsRows.put("GRN Credit Total", errorResult);
             }
@@ -4559,7 +4582,8 @@ public class PharmacyReportController implements Serializable {
 
             baseQuery.append("SELECT ")
                     .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND " + billTypeField + " IN :billTypes ")
@@ -4573,6 +4597,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -4582,9 +4607,11 @@ public class PharmacyReportController implements Serializable {
                 Object[] totals = results.get(0);
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
             }
             return result;
 
@@ -4592,6 +4619,7 @@ public class PharmacyReportController implements Serializable {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
             return errorResult;
         }
     }
@@ -4604,7 +4632,8 @@ public class PharmacyReportController implements Serializable {
 
             baseQuery.append("SELECT ")
                     .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND " + billTypeField + " IN :billTypes ")
@@ -4625,6 +4654,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -4634,9 +4664,11 @@ public class PharmacyReportController implements Serializable {
                 Object[] totals = results.get(0);
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
             }
             return result;
 
@@ -4644,6 +4676,7 @@ public class PharmacyReportController implements Serializable {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
             return errorResult;
         }
     }
@@ -4766,36 +4799,43 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
 
             List<BillItem> billItems = billItemFacade.findByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
             double purchaseValue = 0.0;
             double costValue = 0.0;
+            double retailValue = 0.0;
 
             for (BillItem item : billItems) {
                 double itemPurchaseValue = item.getQty() * item.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
                 double itemCostValue = item.getQty() * item.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+                double itemRetailValue = item.getQty() * item.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
 
                 if (item.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE) {
                     // Disposal Issue - stock reduces - negative values
                     purchaseValue -= itemPurchaseValue;
                     costValue -= itemCostValue;
+                    retailValue -= itemRetailValue;
                 } else {
                     // Disposal Return - stock increases - positive values
                     purchaseValue += itemPurchaseValue;
                     costValue += itemCostValue;
+                    retailValue += itemRetailValue;
                 }
             }
 
             Map<String, Double> result = new HashMap<>();
             result.put("purchaseValue", purchaseValue);
             result.put("costValue", costValue);
+            result.put("retailValue", retailValue);
             return result;
 
         } catch (Exception e) {
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
             return errorResult;
         }
     }
@@ -4831,7 +4871,8 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpqlIssue = new StringBuilder();
             jpqlIssue.append("SELECT ")
                     .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billType IN :btas ")
@@ -4845,13 +4886,15 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpqlIssue, paramsIssue, "bi.bill.institution", "ins", institution);
             addFilter(jpqlIssue, paramsIssue, "bi.bill.department.site", "sit", site);
             addFilter(jpqlIssue, paramsIssue, "bi.bill.department", "dep", department);
+            addFilter(jpqlIssue, paramsIssue, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
 
             // Query for Stock Adjustment Receives (positive quantities)
             Map<String, Object> paramsReceive = new HashMap<>();
             StringBuilder jpqlReceive = new StringBuilder();
             jpqlReceive.append("SELECT ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate) ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billType IN :btas ")
@@ -4865,6 +4908,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpqlReceive, paramsReceive, "bi.bill.institution", "ins", institution);
             addFilter(jpqlReceive, paramsReceive, "bi.bill.department.site", "sit", site);
             addFilter(jpqlReceive, paramsReceive, "bi.bill.department", "dep", department);
+            addFilter(jpqlReceive, paramsReceive, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
 
             // Execute queries
             List<Object[]> resultsStockAdjustmentReceives = facade.findRawResultsByJpql(jpqlReceive.toString(), paramsReceive, TemporalType.TIMESTAMP);
@@ -4875,9 +4919,11 @@ public class PharmacyReportController implements Serializable {
                 Object[] totals = resultsStockAdjustmentIssue.get(0);
                 resultIssue.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 resultIssue.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                resultIssue.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
             } else {
                 resultIssue.put("purchaseValue", 0.0);
                 resultIssue.put("costValue", 0.0);
+                resultIssue.put("retailValue", 0.0);
             }
 
             Map<String, Double> resultReceive = new HashMap<>();
@@ -4885,9 +4931,11 @@ public class PharmacyReportController implements Serializable {
                 Object[] totals = resultsStockAdjustmentReceives.get(0);
                 resultReceive.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 resultReceive.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                resultReceive.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
             } else {
                 resultReceive.put("purchaseValue", 0.0);
                 resultReceive.put("costValue", 0.0);
+                resultReceive.put("retailValue", 0.0);
             }
 
             cogsRows.put("Stock Adjustment Receive", resultReceive);
@@ -4972,6 +5020,7 @@ public class PharmacyReportController implements Serializable {
 
     double totalCalculatedClosingStockPurchaseValue = 0.0;
     double totalCalculatedClosingStockCostValue = 0.0;
+    double totalCalculatedClosingStockRetailValue = 0.0;
 
     private Map<String, Double> calculateClosingStockValueByCalculatedRows() {
         try {
@@ -5009,8 +5058,25 @@ public class PharmacyReportController implements Serializable {
                     })
                     .sum();
 
+            totalCalculatedClosingStockRetailValue = this.cogsRows.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals("Calculated Closing Stock Value"))
+                    .filter(entry -> entry.getValue() instanceof Number || entry.getValue() instanceof Map)
+                    .mapToDouble(entry -> {
+                        Object value = entry.getValue();
+                        if (value instanceof Number) {
+                            return ((Number) value).doubleValue();
+                        } else if (value instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) value;
+                            Object retailValue = map.get("retailValue");
+                            return retailValue instanceof Number ? ((Number) retailValue).doubleValue() : 0.0;
+                        }
+                        return 0.0;
+                    })
+                    .sum();
+
             calculatedClosingStockByCogsRows.put("purchaseValue", totalCalculatedClosingStockPurchaseValue);
             calculatedClosingStockByCogsRows.put("costValue", totalCalculatedClosingStockCostValue);
+            calculatedClosingStockByCogsRows.put("retailValue", totalCalculatedClosingStockRetailValue);
 
             cogsRows.put("Calculated Closing Stock Value", calculatedClosingStockByCogsRows);
             return calculatedClosingStockByCogsRows;
@@ -5036,8 +5102,13 @@ public class PharmacyReportController implements Serializable {
             double dbCostValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("costValue", 0.0) : 0.0;
             double costVariance = calculatedCostValue - dbCostValue;
 
+            double calculatedRetailValue = calculatedClosingStockByCogsRowValues.getOrDefault("retailValue", 0.0);
+            double dbRetailValue = closingStockFromDB != null ? closingStockFromDB.getOrDefault("retailValue", 0.0) : 0.0;
+            double retailVariance = calculatedRetailValue - dbRetailValue;
+
             varianceMap.put("purchaseValue", purchaseVariance);
             varianceMap.put("costValue", costVariance);
+            varianceMap.put("retailValue", retailVariance);
 
             cogsRows.put("Variance", varianceMap);
 
