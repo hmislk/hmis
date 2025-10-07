@@ -116,7 +116,7 @@ public class IssueReturnController implements Serializable {
             returnBillItems = billService.fetchBillItems(returnBill);
         }
 
-        printPreview=true;
+        printPreview = true;
         JsfUtil.addSuccessMessage("Finalized");
     }
 
@@ -162,7 +162,9 @@ public class IssueReturnController implements Serializable {
 
     /**
      * Validates that no item is being returned more than the available quantity
-     * Checks against original issued quantity and previously returned quantities
+     * Checks against original issued quantity and previously returned
+     * quantities
+     *
      * @return true if all return quantities are valid, false otherwise
      */
     public boolean validateReturnQuantities() {
@@ -387,6 +389,15 @@ public class IssueReturnController implements Serializable {
             // Set BillItem quantities as POSITIVE (returns add stock)
             i.setQty(returnQty);
 
+            if (Math.abs(i.getQty()) == 0.0) {
+                i.setBill(null);
+                i.setRetired(true);
+                billItemFacade.edit(i);
+                getReturnBill().getBillItems().remove(i);
+                billFacade.edit(returnBill);
+                continue;
+            }
+
             // Get the reference bill item to access rates
             BillItem referenceBillItem = i.getReferanceBillItem();
             if (referenceBillItem == null) {
@@ -512,8 +523,8 @@ public class IssueReturnController implements Serializable {
 
                     // Calculate total returned quantity in units by using units per pack
                     BigDecimal returnedQtyInUnits;
-                    if (financeDetailsOfOriginal.getUnitsPerPack() != null &&
-                        financeDetailsOfOriginal.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+                    if (financeDetailsOfOriginal.getUnitsPerPack() != null
+                            && financeDetailsOfOriginal.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
                         // For AMPP items: convert returned packs to units
                         returnedQtyInUnits = updatedReturnQty.multiply(financeDetailsOfOriginal.getUnitsPerPack());
                     } else {
@@ -527,12 +538,12 @@ public class IssueReturnController implements Serializable {
                     // Calculate remaining quantity in packs
                     // For AMPP items: convert units back to packs
                     // For non-AMPP items: same as units
-                    if (financeDetailsOfOriginal.getUnitsPerPack() != null &&
-                        financeDetailsOfOriginal.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+                    if (financeDetailsOfOriginal.getUnitsPerPack() != null
+                            && financeDetailsOfOriginal.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
                         BigDecimal remainingQtyPack = remainingQtyInUnits.divide(
-                            financeDetailsOfOriginal.getUnitsPerPack(),
-                            2,
-                            java.math.RoundingMode.HALF_UP
+                                financeDetailsOfOriginal.getUnitsPerPack(),
+                                2,
+                                java.math.RoundingMode.HALF_UP
                         );
                         originalPbi.setRemainingQtyPack(remainingQtyPack.doubleValue());
                     } else {
@@ -557,7 +568,7 @@ public class IssueReturnController implements Serializable {
             getPharmacyBean().addToStock(pbi.getStock(), Math.abs(pbi.getQty()), pbi, getSessionController().getDepartment());
 
         }
-        if(fullyReturned){
+        if (fullyReturned) {
             getOriginalBill().setFullReturned(true);
             getOriginalBill().setFullReturnedAt(new Date());
             getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
@@ -880,8 +891,10 @@ public class IssueReturnController implements Serializable {
     }
 
     /**
-     * Validates return quantity for a specific item against both remaining quantity and stock availability
-     * This version is for finalization - does NOT auto-correct, only shows errors
+     * Validates return quantity for a specific item against both remaining
+     * quantity and stock availability This version is for finalization - does
+     * NOT auto-correct, only shows errors
+     *
      * @param bi The bill item to validate
      * @return true if validation passes, false if validation fails
      */
@@ -890,10 +903,13 @@ public class IssueReturnController implements Serializable {
     }
 
     /**
-     * Validates return quantity for a specific item against both remaining quantity and stock availability
-     * Similar to GRN return validation logic but adapted for issue returns
+     * Validates return quantity for a specific item against both remaining
+     * quantity and stock availability Similar to GRN return validation logic
+     * but adapted for issue returns
+     *
      * @param bi The bill item to validate
-     * @param autoCorrect If true, automatically corrects invalid quantities; if false, only shows error
+     * @param autoCorrect If true, automatically corrects invalid quantities; if
+     * false, only shows error
      * @return true if validation passes, false if validation fails
      */
     public boolean validateItemReturnQuantity(BillItem bi, boolean autoCorrect) {
@@ -912,8 +928,8 @@ public class IssueReturnController implements Serializable {
 
             // Get already returned quantity from finance details (always stored as positive)
             double alreadyReturnedQty = 0.0;
-            if (originalItem.getBillItemFinanceDetails() != null &&
-                originalItem.getBillItemFinanceDetails().getReturnQuantity() != null) {
+            if (originalItem.getBillItemFinanceDetails() != null
+                    && originalItem.getBillItemFinanceDetails().getReturnQuantity() != null) {
                 alreadyReturnedQty = Math.abs(originalItem.getBillItemFinanceDetails().getReturnQuantity().doubleValue());
             }
 
@@ -924,19 +940,19 @@ public class IssueReturnController implements Serializable {
             if (requestedQty > maxReturnableQty) {
                 if (autoCorrect) {
                     JsfUtil.addErrorMessage(String.format(
-                        "Return quantity %.2f for '%s' exceeds available quantity. " +
-                        "Original issued: %.2f, Already returned: %.2f, Maximum returnable: %.2f. " +
-                        "Corrected to maximum available.",
-                        requestedQty, itemName, originalIssuedQty, alreadyReturnedQty, maxReturnableQty
+                            "Return quantity %.2f for '%s' exceeds available quantity. "
+                            + "Original issued: %.2f, Already returned: %.2f, Maximum returnable: %.2f. "
+                            + "Corrected to maximum available.",
+                            requestedQty, itemName, originalIssuedQty, alreadyReturnedQty, maxReturnableQty
                     ));
                     bi.setQty(maxReturnableQty);
                     bi.setRemainingQty(maxReturnableQty);
                 } else {
                     JsfUtil.addErrorMessage(String.format(
-                        "Return quantity %.2f for '%s' exceeds available quantity. " +
-                        "Original issued: %.2f, Already returned: %.2f, Maximum returnable: %.2f. " +
-                        "Please correct the quantity before finalizing.",
-                        requestedQty, itemName, originalIssuedQty, alreadyReturnedQty, maxReturnableQty
+                            "Return quantity %.2f for '%s' exceeds available quantity. "
+                            + "Original issued: %.2f, Already returned: %.2f, Maximum returnable: %.2f. "
+                            + "Please correct the quantity before finalizing.",
+                            requestedQty, itemName, originalIssuedQty, alreadyReturnedQty, maxReturnableQty
                     ));
                 }
                 return false;
@@ -947,14 +963,14 @@ public class IssueReturnController implements Serializable {
         if (requestedQty > 0 && bi.getRemainingQty() > 0 && requestedQty > bi.getRemainingQty()) {
             if (autoCorrect) {
                 JsfUtil.addErrorMessage(String.format(
-                    "Return quantity %.2f for '%s' exceeds available quantity %.2f. Corrected to maximum available.",
-                    requestedQty, itemName, bi.getRemainingQty()
+                        "Return quantity %.2f for '%s' exceeds available quantity %.2f. Corrected to maximum available.",
+                        requestedQty, itemName, bi.getRemainingQty()
                 ));
                 bi.setQty(bi.getRemainingQty());
             } else {
                 JsfUtil.addErrorMessage(String.format(
-                    "Return quantity %.2f for '%s' exceeds available quantity %.2f. Please correct the quantity before finalizing.",
-                    requestedQty, itemName, bi.getRemainingQty()
+                        "Return quantity %.2f for '%s' exceeds available quantity %.2f. Please correct the quantity before finalizing.",
+                        requestedQty, itemName, bi.getRemainingQty()
                 ));
             }
             return false;
@@ -963,7 +979,6 @@ public class IssueReturnController implements Serializable {
         // NOTE: We do NOT check stock levels for disposal issue returns
         // Because returns ADD to stock, not subtract from it
         // Stock can be zero or negative, and returns will increase it
-
         return true; // All validations passed
     }
 
@@ -1082,7 +1097,7 @@ public class IssueReturnController implements Serializable {
         bifd.setReturnNetTotal(BigDecimal.valueOf(grossValue));
 
         // Set units per pack (for AMPP items)
-        if (bi.getItem() instanceof Ampp && bi.getItem().getDblValue() !=  0.0) {
+        if (bi.getItem() instanceof Ampp && bi.getItem().getDblValue() != 0.0) {
             bifd.setUnitsPerPack(BigDecimal.valueOf(bi.getItem().getDblValue()));
         } else {
             bifd.setUnitsPerPack(BigDecimal.ONE);
@@ -1193,7 +1208,6 @@ public class IssueReturnController implements Serializable {
 
             // NO discount, tax, and expense from bill items
             // For return bills, these are typically zero but we sum them anyway
-
         }
 
         // Update Bill entity fields
