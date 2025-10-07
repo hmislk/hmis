@@ -1198,16 +1198,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setLineCostRate(BigDecimal.ZERO);
         }
 
+        // Set costRate (as user enters - pack rate for AMPP, unit rate for AMP)
+        f.setCostRate(BigDecimalUtil.multiply(BigDecimalUtil.valueOrZero(f.getLineCostRate()), unitsPerPack));
+
+        // Set purchaseRate (line net rate - purchase rate after discount, as user enters)
+        f.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getLineNetRate()));
+
         // 4. Calculate value fields for all rate types using total quantity by units
         BigDecimal totalUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
         if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
             // Value at retail rate
             f.setValueAtRetailRate(BigDecimalUtil.multiply(totalUnits,
                     BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())));
-
-            // Value at purchase rate (using gross rate)
-            f.setValueAtPurchaseRate(BigDecimalUtil.multiply(totalUnits,
-                    BigDecimalUtil.valueOrZero(f.getGrossRate())));
 
             // Value at cost rate (using the calculated line cost rate)
             f.setValueAtCostRate(BigDecimalUtil.multiply(totalUnits,
@@ -1221,9 +1223,21 @@ public class PharmacyDirectPurchaseController implements Serializable {
         } else {
             // Set zero values if no quantity
             f.setValueAtRetailRate(BigDecimal.ZERO);
-            f.setValueAtPurchaseRate(BigDecimal.ZERO);
             f.setValueAtCostRate(BigDecimal.ZERO);
             f.setValueAtWholesaleRate(BigDecimal.ZERO);
+        }
+
+        // Calculate valueAtPurchaseRate based on configuration
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+            // OLD Method: Gross Rate × Total Quantity (includes free items)
+            f.setValueAtPurchaseRate(
+                    BigDecimalUtil.multiply(totalUnits, BigDecimalUtil.valueOrZero(f.getGrossRate()))
+            );
+        } else {
+            // NEW Method: Net Rate × Paid Quantity (actual money spent)
+            f.setValueAtPurchaseRate(
+                    BigDecimalUtil.multiply(BigDecimalUtil.valueOrZero(f.getLineNetRate()), qty)
+            );
         }
 
         // Update BillItem values with safe null handling
@@ -1285,6 +1299,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (getBill() == null || getBillItems() == null || getBillItems().isEmpty()) {
             return;
         }
+
+        // Read config once before the loop for consistency
+        boolean purchaseValueIncludesFreeItems = configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true);
 
         // Initialize aggregates
         BigDecimal totalLineDiscounts = BigDecimal.ZERO;
@@ -1360,15 +1377,30 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 f.setValueAtRetailRate(totalUnits.multiply(retailPerUnit));
             }
             if (f.getValueAtPurchaseRate() == null) {
-                f.setValueAtPurchaseRate(totalUnits.multiply(grossPerUnit));
+                if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+                    // OLD Method: Gross Rate × Total Quantity
+                    f.setValueAtPurchaseRate(totalUnits.multiply(grossPerUnit));
+                } else {
+                    // NEW Method: Net Rate × Paid Quantity
+                    BigDecimal lineNetRate = BigDecimalUtil.valueOrZero(f.getLineNetRate());
+                    f.setValueAtPurchaseRate(lineNetRate.multiply(qty));
+                }
             }
             if (f.getValueAtCostRate() == null) {
                 f.setValueAtCostRate(totalUnits.multiply(costPerUnit));
             }
 
-            // Compute free/non-free breakdowns per item
-            purchaseValueNonFree = purchaseValueNonFree.add(grossPerUnit.multiply(qtyUnits));
-            purchaseValueFree = purchaseValueFree.add(grossPerUnit.multiply(freeUnits));
+            // Compute free/non-free breakdowns per item based on config
+            if (purchaseValueIncludesFreeItems) {
+                // OLD Method: Use gross rate for both free and non-free
+                purchaseValueNonFree = purchaseValueNonFree.add(grossPerUnit.multiply(qtyUnits));
+                purchaseValueFree = purchaseValueFree.add(grossPerUnit.multiply(freeUnits));
+            } else {
+                // NEW Method: Use actual paid value (valueAtPurchaseRate) for non-free, zero for free
+                purchaseValueNonFree = purchaseValueNonFree.add(BigDecimalUtil.valueOrZero(f.getValueAtPurchaseRate()));
+                purchaseValueFree = purchaseValueFree.add(BigDecimal.ZERO);
+            }
+
             costValueNonFree = costValueNonFree.add(costPerUnit.multiply(qtyUnits));
             costValueFree = costValueFree.add(costPerUnit.multiply(freeUnits));
             retailValueNonFree = retailValueNonFree.add(retailPerUnit.multiply(qtyUnits));

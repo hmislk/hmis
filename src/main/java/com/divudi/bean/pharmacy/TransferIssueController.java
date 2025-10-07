@@ -1298,7 +1298,7 @@ public class TransferIssueController implements Serializable {
     }
 
     public void onEditDepartmentTransfer(BillItem billItem) {
-        double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
+        double availableStock = pharmacyBean.getBatchStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
 
         if (availableStock < billItem.getPharmaceuticalBillItem().getQtyInUnit()) {
             billItem.setTmpQty(0.0);

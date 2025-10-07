@@ -49,7 +49,7 @@
                 <f:facet name="header">
                     <h:outputLabel value="Return Note No" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" value="#{bill.deptId}">
+                <h:commandLink action="pharmacy_reprint_direct_purchase_return?faces-redirect=true" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
@@ -58,30 +58,24 @@
                 <f:facet name="header">
                     <h:outputLabel value="Purchase NO" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" value="#{bill.referenceBill.deptId}">
+                <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column> 
             <p:column headerText="Delaor Name" >
                 <f:facet name="header">
-                    <h:outputLabel value="Delaor Name" />
+                    <h:outputLabel value="Supplier Name" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" value="#{bill.toInstitution.name}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                    <h:outputLabel value="#{bill.toInstitution.name}" ></h:outputLabel>
             </p:column>
             <p:column headerText="Billed At"  >
                 <f:facet name="header">
                     <h:outputLabel value="Billed at" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled at " />
                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
@@ -99,11 +93,8 @@
                 <f:facet name="header">
                     <h:outputLabel value="Billed by" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled By " />
                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
@@ -120,33 +111,24 @@
                 <f:facet name="header">
                     <h:outputLabel value="Paymentmethod" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
             </p:column>                               
             <p:column headerText="Net Value" style="text-align: right;"  >
                 <f:facet name="header">
                     <h:outputLabel value="Net Value" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
             </p:column>
             
             <p:column headerText="Sale Value" style="text-align: right;"  >
                 <f:facet name="header">
                     <h:outputLabel value="Sale Value" />
                 </f:facet>
-                <h:commandLink action="pharmacy_reprint_purchase_return" >
                     <h:outputLabel value="#{bill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
             </p:column>
             
             <p:column headerText="Comments" >

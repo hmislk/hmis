@@ -378,5 +378,89 @@
 4. **Flexibility**: Easy to style with CSS classes without semantic HTML overhead
 5. **Performance**: Lighter rendering than semantic HTML headers
 
+## Date and Time Formatting
+
+### ❌ Do NOT Combine Separate Format Properties
+```xhtml
+<!-- Wrong: Don't concatenate date and time format properties -->
+<f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat} #{sessionController.applicationPreference.shortTimeFormat}"/>
+```
+
+### ✅ Use Combined Format Properties
+```xhtml
+<!-- Correct: Use the combined format properties -->
+
+<!-- For short date and time -->
+<f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+
+<!-- For long date and time -->
+<f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+<!-- For date only (short) -->
+<f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+
+<!-- For date only (long) -->
+<f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+
+<!-- For time only -->
+<f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+```
+
+### Available Date/Time Format Properties
+- `shortDateTimeFormat` - Short date with time (e.g., "dd/MM/yyyy HH:mm")
+- `longDateTimeFormat` - Long date with time (e.g., "dd MMMM yyyy HH:mm:ss")
+- `shortDateFormat` - Short date only (e.g., "dd/MM/yyyy")
+- `longDateFormat` - Long date only (e.g., "dd MMMM yyyy")
+- `shortTimeFormat` - Time only (e.g., "HH:mm")
+
+### Reason
+- Application preferences already provide combined format patterns
+- Combining separate properties manually can cause formatting issues
+- Using the predefined combined formats ensures consistency across the application
+- Format patterns are centrally managed and can be changed application-wide
+
+## Data Table Alignment
+
+### ❌ Do NOT Use Old Bootstrap Classes
+```xhtml
+<!-- Wrong: Old Bootstrap alignment classes -->
+<p:column styleClass="text-right">
+    <h:outputText value="#{item.amount}">
+        <f:convertNumber pattern="#,##0.00"/>
+    </h:outputText>
+</p:column>
+```
+
+### ✅ Use Modern Bootstrap Classes
+```xhtml
+<!-- Correct: Use text-end for right alignment -->
+<p:column headerText="Amount" styleClass="text-end" width="10em">
+    <h:outputText value="#{item.amount}">
+        <f:convertNumber pattern="#,##0.00"/>
+    </h:outputText>
+</p:column>
+
+<!-- Other alignment classes -->
+<p:column headerText="Status" styleClass="text-center" width="8em">
+    <!-- Centered content -->
+</p:column>
+
+<p:column headerText="Name" styleClass="text-start" width="15em">
+    <!-- Left aligned (default, usually not needed) -->
+</p:column>
+```
+
+### Modern Bootstrap Alignment Classes
+- `text-start` - Left align (default for LTR languages)
+- `text-end` - Right align (use for numbers, amounts, quantities)
+- `text-center` - Center align (use for status badges, icons)
+
+### Best Practices for Data Tables
+1. **Numeric columns**: Always use `text-end` for amounts, quantities, rates, totals
+2. **Status columns**: Use `text-center` for badges, icons, status indicators
+3. **Column widths**: Always specify width in `em` to prevent text wrapping (e.g., `width="10em"`)
+4. **Number formatting**: Use `<f:convertNumber pattern="#,##0.00"/>` for consistent decimal display
+5. **Date formatting**: Use application preference format patterns for consistency
+
 ---
 This behavior should persist across all Claude Code sessions for this project.

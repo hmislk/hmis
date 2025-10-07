@@ -576,6 +576,7 @@ public enum Privileges {
     CreateDisposalReturn("Create Disposal Return"),
     FinalizeDisposalReturn("Finalize Disposal Return"),
     ApproveDisposalReturn("Approve Disposal Return"),
+    ViewDisposalReturn("View Disposal Return"),
     CreateDirectPurchaseReturn("Create Direct Purchase Return"),
     FinalizeDirectPurchaseReturn("Finalize Direct Purchase Return"),
     ApproveDirectPurchaseReturn("Approve Direct Purchase Return"),
@@ -851,6 +852,7 @@ public enum Privileges {
             case CreateDisposalReturn:
             case FinalizeDisposalReturn:
             case ApproveDisposalReturn:
+            case ViewDisposalReturn:
             case CreateDirectPurchaseReturn:
             case FinalizeDirectPurchaseReturn:
             case ApproveDirectPurchaseReturn:

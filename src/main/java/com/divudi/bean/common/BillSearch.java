@@ -4031,6 +4031,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ORDER_CANCELLED:
             case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigatePharmacyReprintPo();
+
 //            case PHARMACY_DIRECT_PURCHASE:
 //            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
 //            case PHARMACY_DIRECT_PURCHASE_REFUND:
@@ -4131,8 +4134,22 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
                 return navigateToPharmacyRetailSaleReturnItemOnly();
-            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
-                return "/pharmacy/printing/settle_retail_sale_for_cashier";
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER: {
+                String redirect = "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
+                if (pharmacySaleController == null) {
+                    JsfUtil.addErrorMessage("Unable to prepare pharmacy cashier print view");
+                    return redirect;
+                }
+                try {
+                    pharmacySaleController.setPrintBill(bill);
+                    pharmacySaleController.setBillPreview(true);
+                    pharmacySaleController.navigateToSaleBillForCashierPrint();
+                } catch (RuntimeException e) {
+                    JsfUtil.addErrorMessage("Unable to prepare pharmacy cashier print view");
+                    throw e;
+                }
+                return redirect;
+            }
             case PHARMACY_GRN:
                 return navigateToPharmacyGrnBillView();
 
@@ -4275,6 +4292,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ORDER_CANCELLED:
             case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigatePharmacyReprintPo();
+
 //            case PHARMACY_DIRECT_PURCHASE:
 //            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
 //            case PHARMACY_DIRECT_PURCHASE_REFUND:
@@ -4409,15 +4429,15 @@ public class BillSearch implements Serializable {
 
     public String navigateToViewPharmacyDirectIssueCancellationForInpatientBill() {
         prepareToPharmacyCancellationBill();
-        return "/inward/pharmacy_cancel_bill_retail_bht";
+        return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
     public String navigateToPharmacyIssueCancelled() {
         prepareToPharmacyCancellationBill();
         if (bill.getBillType() == BillType.PharmacyTransferIssue) {
-            return "/pharmacy/pharmacy_cancel_transfer_issue";
+            return "/pharmacy/pharmacy_cancel_transfer_issue?faces-redirect=true";
         } else {
-            return "/pharmacy/pharmacy_cancel_bill_unit_issue";
+            return "/pharmacy/pharmacy_cancel_bill_unit_issue?faces-redirect=true";
         }
     }
 
@@ -4455,12 +4475,12 @@ public class BillSearch implements Serializable {
 
     public String navigateToPharmacyGrnCancellationBillView() {
         prepareToPharmacyCancellationBill();
-        return "/pharmacy/pharmacy_cancel_grn";
+        return "/pharmacy/pharmacy_cancel_grn?faces-redirect=true";
     }
 
     public String navigateToPharmacyBhtIssueCancellationBillView() {
         prepareToPharmacyCancellationBill();
-        return "/inward/bht_bill_cancel";
+        return "/inward/bht_bill_cancel?faces-redirect=true";
     }
 
     public String navigateToPharmacyGrnReturnBillView() {
@@ -4498,11 +4518,11 @@ public class BillSearch implements Serializable {
         if (bill.getBillType() == BillType.PharmacyTransferIssue) {
             transferIssueController.setPrintPreview(true);
             transferIssueController.setIssuedBill(bill);
-            return "/pharmacy/pharmacy_transfer_issue";
+            return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
         } else {
             pharmacyIssueController.setBillPreview(true);
             pharmacyIssueController.setPrintBill(bill);
-            return "/pharmacy/pharmacy_issue";
+            return "/pharmacy/pharmacy_issue?faces-redirect=true";
         }
 
     }
@@ -4517,7 +4537,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bb);
         pharmacyPurchaseController.setPrintPreview(true);
         pharmacyPurchaseController.setBill(bb);
-        return "/pharmacy/pharmacy_purchase";
+        return "/pharmacy/pharmacy_purchase?faces-redirect=true";
     }
     public String navigateToPharmacyGrnBillView() {
         if (bill == null) {
@@ -4527,9 +4547,8 @@ public class BillSearch implements Serializable {
         BilledBill bb = (BilledBill) bill;
         viewingBill = billBean.fetchBill(bb.getId());
         loadBillDetails(bb);
-        grnCostingController.setPrintPreview(true);
-        grnCostingController.setCurrentGrnBillPre(bb);
-        return "/pharmacy/pharmacy_grn_costing_with_save_approve";
+        pharmacyBillSearch.setBill(bb);
+        return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
     }
 
     public String navigateToDonationBillView() {
@@ -4542,12 +4561,12 @@ public class BillSearch implements Serializable {
         loadBillDetails(bb);
         pharmacyPurchaseController.setPrintPreview(true);
         pharmacyPurchaseController.setBill(bb);
-        return "/pharmacy/pharmacy_donation_bill";
+        return "/pharmacy/pharmacy_donation_bill?faces-redirect=true";
     }
 
     public String navigateToDonationBillCancellationView() {
         prepareToPharmacyCancellationBill();
-        return "/pharmacy/pharmacy_donation_bill_cancelled";
+        return "/pharmacy/pharmacy_donation_bill_cancelled?faces-redirect=true";
     }
 
     public String navigateToDonationBillRefundView() {
@@ -4566,7 +4585,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Original donation bill not found for this refund");
             return null;
         }
-        return "/pharmacy/pharmacy_donation_bill_refund";
+        return "/pharmacy/pharmacy_donation_bill_refund?faces-redirect=true";
     }
 
     public String navigateToPharmacyTransferRequestBillView() {
@@ -4579,7 +4598,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bb);
         transferRequestController.setPrintPreview(true);
         transferRequestController.setBill(bb);
-        return "/pharmacy/pharmacy_transfer_request";
+        return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
 
     public String navigateToDirectPurchaseCancellationBillView() {
@@ -4634,7 +4653,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         pharmacyReturnwithouttresing.setBillPreview(true);
         pharmacyReturnwithouttresing.setPrintBill(bill);
-        return "/pharmacy/pharmacy_return_withouttresing";
+        return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
     }
 
     public String navigateToPharmacyAddToStockBillPreview() {
@@ -4645,7 +4664,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         searchController.setPrintPreview(true);
         searchController.setBill(bill);
-        return "/pharmacy/pharmacy_search_pre_bill_not_paid";
+        return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
     public String navigateToPharmacyRetailSaleReturnBillPreview() {
@@ -4656,7 +4675,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         saleReturnController.setPrintPreview(true);
         saleReturnController.setReturnBill(bill);
-        return "/pharmacy/pharmacy_bill_return_retail";
+        return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
     }
 
     public String navigateToPharmacyBhtIssueBillPreview() {
@@ -4668,7 +4687,7 @@ public class BillSearch implements Serializable {
         pharmacySaleBhtController.setBillPreview(true);
         pharmacySaleBhtController.setPrintBill(bill);
         pharmacySaleBhtController.setPatientEncounter(bill.getPatientEncounter());
-        return "/ward/ward_pharmacy_bht_issue";
+        return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
 
     public String navigateToPharmacyBhtRequestBillPreview() {
@@ -4680,7 +4699,7 @@ public class BillSearch implements Serializable {
         pharmacyRequestForBhtController.setBillPreview(true);
         pharmacyRequestForBhtController.setPrintBill(bill);
         pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
-        return "/ward/ward_pharmacy_bht_issue_request_bill";
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
 
     public String navigateToViewPharmacyDirectIssueForInpatientBill() {
@@ -4692,7 +4711,7 @@ public class BillSearch implements Serializable {
         pharmacySaleBhtController.setBillPreview(true);
         pharmacySaleBhtController.setPrintBill(bill);
         pharmacySaleBhtController.setPatientEncounter(bill.getPatientEncounter());
-        return "/inward/pharmacy_bill_issue_bht";
+        return "/inward/pharmacy_bill_issue_bht?faces-redirect=true";
     }
 
     public String navigateToViewPharmacyDirectIssueReturnForInpatientBill() {
@@ -4705,7 +4724,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         bhtIssueReturnController.setReturnBill(bill);
         bhtIssueReturnController.setPrintPreview(true);
-        return "/inward/pharmacy_bill_return_bht_issue";
+        return "/inward/pharmacy_bill_return_bht_issue?faces-redirect=true";
     }
 
     public String navigateToPharmayReceive() {
@@ -4716,7 +4735,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         transferReceiveController.setPrintPreview(true);
         transferReceiveController.setReceivedBill(bill);
-        return "/pharmacy/pharmacy_transfer_receive";
+        return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
     public String navigateToPharmacyIssueReturn() {
@@ -4727,7 +4746,7 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         issueReturnController.setPrintPreview(true);
         issueReturnController.setReturnBill(bill);
-        return "/pharmacy/pharmacy_bill_return_issue";
+        return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
     }
 
     public String navigateToAdminBillByAtomicBillType() {

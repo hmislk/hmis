@@ -253,27 +253,28 @@
 
                         <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('btnReplace',view).clientId}"/>
 
-                        <p:column headerText="Item Name">
+                        <p:column headerText="Item Name" width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Name Column width', '15em')}">
                             <h:outputText value="#{sStock.itemBatch.item.name}"/>
                         </p:column>
 
-                        <p:column headerText="Batch No">
+                        <p:column headerText="Batch No"  width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Batch Column width', '5em')}">
                             <h:outputText value="#{sStock.itemBatch.batchNo}"/>
                         </p:column>
 
-                        <p:column headerText="Expiry Date">
+                        <p:column headerText="Expiry Date"  width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Expiary Column width', '5em')}">
                             <h:outputText value="#{sStock.itemBatch.dateOfExpire}">
                                 <f:convertDateTime pattern="MM/yyyy"/>
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Available Qty">
+                        <p:column headerText="Available Qty"  width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Quentity Column width', '6em')}">
                             <h:outputText value="#{sStock.stock}">
                                 <f:convertNumber pattern="#,###.#"/>
                             </h:outputText>
                         </p:column>
 
                         <p:column 
+                            width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Quentity Column width', '6em')}"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
                             headerText="Purchase Rate">
                             <h:outputText value="#{sStock.itemBatch.purcahseRate}">
@@ -282,6 +283,7 @@
                         </p:column>
 
                         <p:column 
+                            width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Quentity Column width', '6em')}"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
                             headerText="Retail Rate">
                             <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
@@ -289,7 +291,9 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Action">
+                        <p:column
+                            width="10"
+                            headerText="Action">
                             <p:commandButton
                                 id="btnReplace"
                                 value="Replace"
