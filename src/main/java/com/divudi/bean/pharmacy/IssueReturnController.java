@@ -394,7 +394,7 @@ public class IssueReturnController implements Serializable {
                 i.setRetired(true);
                 billItemFacade.edit(i);
                 getReturnBill().getBillItems().remove(i);
-                billFacade.edit(returnBill);
+                returnBill = billService.reloadBill(returnBill);
                 continue;
             }
 
