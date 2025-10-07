@@ -528,6 +528,9 @@ public class GrnCostingController implements Serializable {
     }
 
     private void fillData(Bill inputBill) {
+        // Read config once before the loop for consistency
+        boolean includeFreeItemsInPurchaseValue = configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true);
+
         double billTotalAtCostRate = 0.0;
 
         double purchaseFree = 0.0;
@@ -561,14 +564,23 @@ public class GrnCostingController implements Serializable {
 
             double freeQty = bifd.getFreeQuantityByUnits() != null ? bifd.getFreeQuantityByUnits().doubleValue() : 0.0;
             double paidQty = bifd.getQuantityByUnits() != null ? bifd.getQuantityByUnits().doubleValue() : 0.0;
+            BigDecimal qty = bifd.getQuantity();
 
             double tmp;
 
-            tmp = freeQty * purchaseRate;
-            purchaseFree += tmp;
+            // Calculate purchase values based on config
+            if (includeFreeItemsInPurchaseValue) {
+                // OLD Method: Use purchase rate for both free and non-free
+                tmp = freeQty * purchaseRate;
+                purchaseFree += tmp;
 
-            tmp = paidQty * purchaseRate;
-            purchaseNonFree += tmp;
+                tmp = paidQty * purchaseRate;
+                purchaseNonFree += tmp;
+            } else {
+                // NEW Method: Use actual paid value (valueAtPurchaseRate) for non-free, zero for free
+                purchaseFree += 0.0;
+                purchaseNonFree += BigDecimalUtil.valueOrZero(bifd.getLineNetRate()).doubleValue() * BigDecimalUtil.valueOrZero(qty).doubleValue();
+            }
 
             tmp = freeQty * retailRate;
             retailFree += tmp;
@@ -3295,10 +3307,19 @@ public class GrnCostingController implements Serializable {
                 lineCostRate.multiply(totalQtyInUnits)
         );
 
-        // Calculate valueAtPurchaseRate = lineNetRate × qty
-        billItemFinanceDetails.setValueAtPurchaseRate(
-                billItemFinanceDetails.getLineNetRate().multiply(qty)
-        );
+        // Calculate valueAtPurchaseRate based on configuration
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+            // OLD Method: Gross Rate × Total Quantity (includes free items)
+            BigDecimal purchaseRatePerUnit = BigDecimal.valueOf(prPerUnit);
+            billItemFinanceDetails.setValueAtPurchaseRate(
+                    totalQtyInUnits.multiply(purchaseRatePerUnit)
+            );
+        } else {
+            // NEW Method: Net Rate × Paid Quantity (actual money spent)
+            billItemFinanceDetails.setValueAtPurchaseRate(
+                    billItemFinanceDetails.getLineNetRate().multiply(qty)
+            );
+        }
 
         // CRITICAL FIX: Calculate value fields for all rate types using total quantity by units
         // Following Direct Purchase pattern (lines 1202-1227)
@@ -3435,6 +3456,9 @@ public class GrnCostingController implements Serializable {
 
     public void calculateBillTotalsFromItemsForPurchases(Bill bill, List<BillItem> billItems) {
 
+        // Read config once before the loop for consistency
+        boolean includeFreeItemsInPurchaseValue = configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true);
+
         // First, ensure expenses are properly calculated
         recalculateExpenseTotals();
 
@@ -3482,6 +3506,7 @@ public class GrnCostingController implements Serializable {
 
         // Initialize free item value totals
         BigDecimal totalPurchaseValueFree = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValueNonFree = BigDecimal.ZERO;
         BigDecimal totalCostValueFree = BigDecimal.ZERO;
         BigDecimal totalRetailSaleValueFree = BigDecimal.ZERO;
 
@@ -3543,7 +3568,6 @@ public class GrnCostingController implements Serializable {
                 BigDecimal freeItemValue = costRate.multiply(freeQty);
 
                 // Calculate free item values
-                BigDecimal freeItemPurchaseValue = purchaseRate.multiply(freeQty);
                 BigDecimal freeItemCostValue = costRate.multiply(freeQty);
                 BigDecimal freeItemRetailValue = retailRate.multiply(freeQty);
 
@@ -3557,8 +3581,19 @@ public class GrnCostingController implements Serializable {
                 totalRetail = totalRetail.add(retailValue);
                 totalWholesale = totalWholesale.add(wholesaleValue);
 
-                // Accumulate free item values
-                totalPurchaseValueFree = totalPurchaseValueFree.add(freeItemPurchaseValue);
+                // Accumulate free/non-free purchase values based on config
+                if (includeFreeItemsInPurchaseValue) {
+                    // OLD Method: Use gross rate for both free and non-free
+                    BigDecimal freeItemPurchaseValue = purchaseRate.multiply(freeQty);
+                    BigDecimal paidItemPurchaseValue = purchaseRate.multiply(qty);
+                    totalPurchaseValueFree = totalPurchaseValueFree.add(freeItemPurchaseValue);
+                    totalPurchaseValueNonFree = totalPurchaseValueNonFree.add(paidItemPurchaseValue);
+                } else {
+                    // NEW Method: Use actual paid value (valueAtPurchaseRate) for non-free, zero for free
+                    totalPurchaseValueFree = totalPurchaseValueFree.add(BigDecimal.ZERO);
+                    totalPurchaseValueNonFree = totalPurchaseValueNonFree.add(Optional.ofNullable(f.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
+                }
+
                 totalCostValueFree = totalCostValueFree.add(freeItemCostValue);
                 totalRetailSaleValueFree = totalRetailSaleValueFree.add(freeItemRetailValue);
 
@@ -3631,6 +3666,7 @@ public class GrnCostingController implements Serializable {
 
         // Set free item values
         bfd.setTotalPurchaseValueFree(totalPurchaseValueFree);
+        bfd.setTotalPurchaseValueNonFree(totalPurchaseValueNonFree);
         bfd.setTotalCostValueFree(totalCostValueFree);
         bfd.setTotalRetailSaleValueFree(totalRetailSaleValueFree);
 

@@ -9,7 +9,6 @@
             <property name="eclipselink.logging.level" value="SEVERE"/>
         </properties>
     </persistence-unit>
-
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
