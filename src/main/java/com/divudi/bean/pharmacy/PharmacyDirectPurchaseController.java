@@ -1205,6 +1205,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         f.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getLineNetRate()));
 
         // Normalize purchase rate to per-unit; AMPP items enter pack rate so we divide by pack size
+        // Regression note: prevents AMPP purchases from multiplying pack size twice (Oct 2025 change)
         BigDecimal grossRateAtEntry = BigDecimalUtil.valueOrZero(f.getGrossRate());
         BigDecimal purchaseRatePerUnit = grossRateAtEntry;
         if (billItem.getItem() instanceof Ampp) {
