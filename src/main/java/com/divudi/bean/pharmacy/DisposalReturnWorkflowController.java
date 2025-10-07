@@ -294,7 +294,7 @@ public class DisposalReturnWorkflowController implements Serializable {
 
         // Reset print preview flag to ensure editing UI is shown
         issueReturnController.setPrintPreview(false);
-
+        issueReturnController.calculateBillTotal();
         // Navigate to the unified return processing page
         return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
     }

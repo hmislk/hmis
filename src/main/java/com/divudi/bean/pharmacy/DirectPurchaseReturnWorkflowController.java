@@ -1797,7 +1797,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
             double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
 
-            if (returnQty <= 0 && returnFreeQty <= 0) {
+            if (returnQty == 0 && returnFreeQty == 0) {
                 continue;
             }
 
