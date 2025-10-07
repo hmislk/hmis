@@ -71,12 +71,10 @@ public class StockHistory implements Serializable, RetirableEntity {
     private double totalBatchQty;
 
     double retailRate;
-
     double wholesaleRate;
-
     double purchaseRate;
-
     double costRate;
+    
     @ManyToOne
     ItemBatch itemBatch;
     @ManyToOne

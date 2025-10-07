@@ -1249,22 +1249,33 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Update PharmaceuticalBillItem with calculated values in units
         PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
         // pbi will never be null as it is created in the getter
-        BigDecimal grossRatePerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal grossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
         BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
+        BigDecimal costRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineCostRate());
+        BigDecimal purchaseRatePerUnit = grossRate;
+
+        if (billItem.getItem() instanceof Ampp) {
+            // AMPP gross rate is per pack; convert to unit rate to keep unit calculations consistent
+            BigDecimal safeUnitsPerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0 ? unitsPerPack : BigDecimal.ONE;
+            purchaseRatePerUnit = grossRate.divide(safeUnitsPerPack, 6, RoundingMode.HALF_UP);
+        }
 
         // Update quantities in units (important for stock calculations)
         pbi.setQty(qtyByUnits.doubleValue()); // Paid quantity in units
         pbi.setFreeQty(freeQtyByUnits.doubleValue()); // Free quantity in units
 
         // Update rates per unit
-        pbi.setPurchaseRate(grossRatePerUnit.doubleValue()); // Purchase rate per unit
+        pbi.setPurchaseRate(purchaseRatePerUnit.doubleValue()); // Purchase rate per unit
+        pbi.setCostRate(costRatePerUnit.doubleValue()); // Cost rate per unit
         pbi.setRetailRate(retailRatePerUnit.doubleValue()); // Retail rate per unit
 
         // Calculate values (quantity × rate)
-        BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, grossRatePerUnit);
+        BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, purchaseRatePerUnit);
+        BigDecimal pbiCostValue = BigDecimalUtil.multiply(qtyByUnits, costRatePerUnit);
         BigDecimal pbiRetailValue = BigDecimalUtil.multiply(qtyByUnits, retailRatePerUnit);
 
         pbi.setPurchaseValue(BigDecimalUtil.valueOrZero(pbiPurchaseValue).doubleValue());
+        pbi.setCostValue(BigDecimalUtil.valueOrZero(pbiCostValue).doubleValue());
         pbi.setRetailValue(BigDecimalUtil.valueOrZero(pbiRetailValue).doubleValue());
 
     }

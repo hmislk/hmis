@@ -157,10 +157,36 @@
                             </h:panelGroup>
 
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-pills mr-2" />
+                                <p:outputLabel value="Item" for="phmItem" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="phmItem"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{pharmacyReportController.item}"
+                                completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                var="itm"
+                                itemLabel="#{itm.name}"
+                                itemValue="#{itm}"
+                                maxResults="20"
+                                minQueryLength="3"
+                                placeholder="Select an Item">
+                            </p:autoComplete>
+
 
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
+                            <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
                             <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
