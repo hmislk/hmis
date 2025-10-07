@@ -390,6 +390,21 @@ public class IssueReturnController implements Serializable {
             i.setQty(returnQty);
 
             if (Math.abs(i.getQty()) == 0.0) {
+                BillItem referenceBillItem = i.getReferanceBillItem();
+                if (referenceBillItem != null) {
+                    BillItemFinanceDetails originalFinance = referenceBillItem.getBillItemFinanceDetails();
+                    if (originalFinance != null) {
+                        BigDecimal originalQty = BigDecimalUtil.valueOrZero(originalFinance.getQuantity()).abs();
+                        BigDecimal alreadyReturned = BigDecimalUtil.valueOrZero(originalFinance.getReturnQuantity()).abs();
+                        if (originalQty.compareTo(alreadyReturned) > 0) {
+                            fullyReturned = false;
+                        }
+                    } else {
+                        fullyReturned = false;
+                    }
+                } else {
+                    fullyReturned = false;
+                }
                 i.setBill(null);
                 i.setRetired(true);
                 billItemFacade.edit(i);
