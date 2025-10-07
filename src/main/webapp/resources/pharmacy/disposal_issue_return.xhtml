@@ -121,6 +121,21 @@
 
                         </tr>
                     </h:panelGroup>
+                    
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.comments ne null}">
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Comments" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td colspan="4" >
+                                <h:outputLabel value="#{cc.attrs.bill.comments}"  >
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    
                 </table>
 
 
