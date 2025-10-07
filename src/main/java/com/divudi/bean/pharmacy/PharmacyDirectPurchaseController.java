@@ -1204,6 +1204,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Set purchaseRate (line net rate - purchase rate after discount, as user enters)
         f.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getLineNetRate()));
 
+        // Normalize purchase rate to per-unit; AMPP items enter pack rate so we divide by pack size
+        BigDecimal grossRateAtEntry = BigDecimalUtil.valueOrZero(f.getGrossRate());
+        BigDecimal purchaseRatePerUnit = grossRateAtEntry;
+        if (billItem.getItem() instanceof Ampp) {
+            // Guard against null/zero pack sizes to avoid divide-by-zero
+            BigDecimal safeUnitsPerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0 ? unitsPerPack : BigDecimal.ONE;
+            // Convert the pack-level gross rate to a unit-level rate for downstream value calculations
+            purchaseRatePerUnit = grossRateAtEntry.divide(safeUnitsPerPack, 6, RoundingMode.HALF_UP);
+        }
+
         // 4. Calculate value fields for all rate types using total quantity by units
         BigDecimal totalUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
         if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
@@ -1230,8 +1240,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Calculate valueAtPurchaseRate based on configuration
         if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
             // OLD Method: Gross Rate × Total Quantity (includes free items)
+            // Value at purchase becomes unit rate × total units, keeping AMPP aligned with AMP
             f.setValueAtPurchaseRate(
-                    BigDecimalUtil.multiply(totalUnits, BigDecimalUtil.valueOrZero(f.getGrossRate()))
+                    BigDecimalUtil.multiply(totalUnits, purchaseRatePerUnit)
             );
         } else {
             // NEW Method: Net Rate × Paid Quantity (actual money spent)
@@ -1249,27 +1260,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Update PharmaceuticalBillItem with calculated values in units
         PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
         // pbi will never be null as it is created in the getter
-        BigDecimal grossRate = BigDecimalUtil.valueOrZero(f.getGrossRate());
         BigDecimal retailRatePerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
         BigDecimal costRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineCostRate());
-        BigDecimal purchaseRatePerUnit = grossRate;
-
-        if (billItem.getItem() instanceof Ampp) {
-            // AMPP gross rate is per pack; convert to unit rate to keep unit calculations consistent
-            BigDecimal safeUnitsPerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0 ? unitsPerPack : BigDecimal.ONE;
-            purchaseRatePerUnit = grossRate.divide(safeUnitsPerPack, 6, RoundingMode.HALF_UP);
-        }
-
         // Update quantities in units (important for stock calculations)
         pbi.setQty(qtyByUnits.doubleValue()); // Paid quantity in units
         pbi.setFreeQty(freeQtyByUnits.doubleValue()); // Free quantity in units
 
-        // Update rates per unit
+        // Update rates per unit using normalized purchase rate (AMPP-aware)
         pbi.setPurchaseRate(purchaseRatePerUnit.doubleValue()); // Purchase rate per unit
         pbi.setCostRate(costRatePerUnit.doubleValue()); // Cost rate per unit
         pbi.setRetailRate(retailRatePerUnit.doubleValue()); // Retail rate per unit
 
-        // Calculate values (quantity × rate)
+        // Calculate values (quantity × rate) so unit-level totals remain consistent
         BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, purchaseRatePerUnit);
         BigDecimal pbiCostValue = BigDecimalUtil.multiply(qtyByUnits, costRatePerUnit);
         BigDecimal pbiRetailValue = BigDecimalUtil.multiply(qtyByUnits, retailRatePerUnit);
@@ -1375,7 +1377,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
             BigDecimal freeUnits = BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits());
             BigDecimal totalUnits = BigDecimalUtil.add(qtyUnits, freeUnits);
             BigDecimal retailPerUnit = BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit());
-            BigDecimal grossPerUnit = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            BigDecimal grossRateAtEntry = BigDecimalUtil.valueOrZero(f.getGrossRate());
+            BigDecimal unitsPerPackForEntry = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            BigDecimal grossPerUnit = grossRateAtEntry;
+            if (bi != null && bi.getItem() instanceof Ampp) {
+                // Bill items store AMPP gross rate per pack; convert to per unit so aggregations stay consistent
+                BigDecimal safeUnitsPerPack = unitsPerPackForEntry.compareTo(BigDecimal.ZERO) > 0 ? unitsPerPackForEntry : BigDecimal.ONE;
+                // Division uses HALF_UP to retain accuracy without extra rounding drift across the bill
+                grossPerUnit = grossRateAtEntry.divide(safeUnitsPerPack, 6, RoundingMode.HALF_UP);
+            }
             BigDecimal costPerUnit = BigDecimalUtil.valueOrZero(f.getLineCostRate());
             if (BigDecimalUtil.isNullOrZero(costPerUnit) && totalUnits.compareTo(BigDecimal.ZERO) > 0 && f.getValueAtCostRate() != null) {
                 // Derive if not set
