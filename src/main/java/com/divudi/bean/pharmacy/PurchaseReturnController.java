@@ -267,7 +267,7 @@ public class PurchaseReturnController implements Serializable {
     }
 
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
+        double stockQty = getPharmacyBean().getBatchStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
 
         if (pharmaceuticalBillItem.getQtyInUnit() > stockQty) {
             return true;

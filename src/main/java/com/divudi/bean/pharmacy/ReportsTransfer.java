@@ -283,7 +283,7 @@ public class ReportsTransfer implements Serializable {
             int ds = daysBetween.getDays();
             r.setPurchaseValue(r.getQty() / ds);
 //            r.setRetailsaleValue((Double) obj[2]);
-            r.setStockQty(getPharmacyBean().getStockQty(r.getItem(), institution));
+            r.setStockQty(getPharmacyBean().getItemStockQty(r.getItem(), institution));
             movementRecordsQty.add(r);
         }
     }
