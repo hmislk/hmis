@@ -277,39 +277,45 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 2px solid #007bff;">
+                                    <p:column style="text-align: right; border-left: 2px solid #007bff;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Rate', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="Cost:" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{reportsTransfer.costValue}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;">
+                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Rate', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="Retail:" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{reportsTransfer.retailValue}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;">
+                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="Purchase:" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{reportsTransfer.purchaseValue}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -317,7 +323,7 @@
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
-                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', true)}">
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Rate', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="Transfer:" styleClass="text-muted small">
                                             </h:outputLabel>
