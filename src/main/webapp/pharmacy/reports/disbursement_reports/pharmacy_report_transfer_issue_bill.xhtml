@@ -63,7 +63,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_Entity"   />
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_Entity" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -290,7 +290,7 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;" >
+                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;" footerText="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
@@ -303,7 +303,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;"  >
+                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;" footerText="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}"  >
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>

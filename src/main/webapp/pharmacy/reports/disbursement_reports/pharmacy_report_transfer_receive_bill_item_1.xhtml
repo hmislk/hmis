@@ -48,7 +48,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Transfer_Receive_by_Bill_Item"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Transfer_Receive_by_Bill_Item" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -153,7 +153,7 @@
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column colspan="7"/>
-                                        <p:column style="text-align: right;" >
+                                        <p:column style="text-align: right;" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -163,7 +163,7 @@
                                         
                                         <p:column colspan="1"/>
                                         
-                                        <p:column style="text-align: right;" >
+                                        <p:column style="text-align: right;" footerText="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

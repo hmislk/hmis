@@ -73,7 +73,7 @@
                                 icon="pi pi-file-excel"
                                 class="ui-button-success"
                                 title="Export current data to Excel file">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_#{reportsTransfer.fromDate}_#{reportsTransfer.toDate}"  />
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_#{reportsTransfer.fromDate}_#{reportsTransfer.toDate}" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print Report" 
@@ -283,7 +283,7 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -296,7 +296,7 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.retailValue ? null : commonFunctionsProxy.abs(reportsTransfer.retailValue)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.retailValue ? null : commonFunctionsProxy.abs(reportsTransfer.retailValue)}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -309,7 +309,7 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;">
+                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -323,7 +323,7 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;"
+                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}"
                                               rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" styleClass="text-primary font-weight-bold">

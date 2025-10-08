@@ -69,7 +69,7 @@
                                 icon="pi pi-file-excel"
                                 class="ui-button-success"
                                 title="Export current data to Excel file">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Receive_Listing_DTO"   />
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Receive_Listing_DTO" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton
                                 value="Print Report"
@@ -184,7 +184,7 @@
                                 </p:column>
 
 
-                                <p:column headerText="Purchase Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
+                                <p:column headerText="Purchase Value" styleClass="text-end" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" styleClass="text-end" />
                                     </f:facet>
@@ -197,7 +197,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
+                                <p:column headerText="Sale Value" styleClass="text-end" footerText="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" styleClass="text-end" />
                                     </f:facet>
@@ -211,7 +211,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Cost Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
+                                <p:column headerText="Cost Value" styleClass="text-end" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost Value" styleClass="text-end" />
                                     </f:facet>
@@ -225,7 +225,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Transfer Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
+                                <p:column headerText="Transfer Value" styleClass="text-end" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Transfer Value" styleClass="text-end" />
                                     </f:facet>
