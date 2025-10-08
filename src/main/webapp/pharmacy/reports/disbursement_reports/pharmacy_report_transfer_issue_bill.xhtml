@@ -294,11 +294,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.netTotal}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{empty i.netTotal ? null : commonFunctionsProxy.abs(i.netTotal)}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.netTotalValues}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
@@ -307,11 +307,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.saleValue}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.totalsValue}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
