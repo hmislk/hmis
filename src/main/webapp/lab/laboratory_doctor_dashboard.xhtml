@@ -10,11 +10,12 @@
     <ui:composition template="/resources/template/template.xhtml">
         <ui:define name="content">
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('DashBoardMenu') or !configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}" >
+<!--            <h:panelGroup rendered="#{!webUserController.hasPrivilege('DashBoardMenu') or !configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}" >
                 <na:not_authorize />
-            </h:panelGroup>
+            </h:panelGroup>-->
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('DashBoardMenu') and configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}" >
+<!--            rendered="#{webUserController.hasPrivilege('DashBoardMenu') and configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}"-->
+            <h:panelGroup  >
                 <div style="font-size: 36px; font-weight: 700;" class="d-flex justify-content-center mb-2">Laboratory Doctor Dashboard</div>
 
                 <h:form>
@@ -643,39 +644,9 @@
 
                             </p:column>
                         </p:dataTable>
+                        
                     </div>
 
-
-
-
-
-
-
-                    <!--     <div class="mx-3">
-                            <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'BILLS'}" >
-                                <dashboard:bills/>
-                            </h:panelGroup>
-    
-                            <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
-                                <dashboard:patient_investigation/>
-                            </h:panelGroup>
-    
-                            <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'VIEW_BARCODE'}">
-                                <dashboard:view_barcode/>
-                            </h:panelGroup>
-    
-                            <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'PATIENT_SAMPLES'}">
-                                <dashboard:patient_sample/>
-                            </h:panelGroup>
-    
-                            <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'PATIENT_REPORTS'}">
-                                <dashboard:patient_report/>
-                            </h:panelGroup>
-    
-                            <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'REPORT_PRINT'}">
-                                <dashboard:print_report/>
-                            </h:panelGroup>
-                        </div>-->
                 </h:form>
             </h:panelGroup>
         </ui:define>
