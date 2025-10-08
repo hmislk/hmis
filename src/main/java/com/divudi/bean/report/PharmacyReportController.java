@@ -3606,19 +3606,18 @@ public class PharmacyReportController implements Serializable {
 //            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
             } else if ("returnWithoutReceiptDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
-            } else if ("adjustmentDoc".equals(documentType)) {
+            } else if ("stockAdjustmentDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
-
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
 
+            } else if ("rateAdjustmentDoc".equals(documentType)) {
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
             } else {
                 billTypes.add(BillType.PharmacyBhtPre);
