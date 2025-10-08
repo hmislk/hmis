@@ -49,7 +49,7 @@
                                 <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="50"/>
                             <i class="fa-solid fa-circle-check"></i>
                             <h:outputLabel class="mx-2"  value="Status"  ></h:outputLabel>
@@ -62,17 +62,17 @@
                                 >
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
                                 <f:selectItem itemLabel="Summery View" itemValue="Summery" />
-                                
+
 
                             </p:selectOneMenu>
-                             <p:spacer width="50"/>
-                             
-                             <h:outputText class="mx-2" value="&#xf073;"
+                            <p:spacer width="50"/>
+
+                            <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="Select Specific Dr. " />
                             <h:outputLabel value=":" />
-                             
-                             <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
+
+                            <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
                                                   id="supplierMenu"
                                                   filter="true"
                                                   class="w-100"
@@ -83,13 +83,13 @@
 
                             </p:selectCheckboxMenu>
                             <p:spacer width="50"/>
-                            
+
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="Select Specific Dr. " />
                             <h:outputLabel value=":" />
-                             
-                             <p:selectCheckboxMenu value="#{channelReportController.sessionInstanceList}" label="Select Suppliers"
+
+                            <p:selectCheckboxMenu value="#{channelReportController.sessionInstanceList}" label="Select Suppliers"
                                                   id="supplierMenu"
                                                   filter="true"
                                                   class="w-100"
@@ -97,15 +97,16 @@
                                                   filterMatchMode="contains">
                                 <f:selectItems value="#{channelReportController.getSessionInstanceFromDoctor}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
-                                
-                                 <p:spacer width="50"/>
-                            
+                            </p:selectCheckboxMenu>
+
+                            <p:spacer width="50"/>
+
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="Select Specific Dr. " />
                             <h:outputLabel value=":" />
-                             
-                             <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
+
+                            <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
                                                   id="supplierMenu"
                                                   filter="true"
                                                   class="w-100"
@@ -113,8 +114,10 @@
                                                   filterMatchMode="contains">
                                 <f:selectItems value="#{doctorController.selectedItems}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
-                            
-                            
+
+                            </p:selectCheckboxMenu>
+
+
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.fetchScanningSessionForIncome()}" ajax="false" ></p:commandButton>
@@ -165,9 +168,9 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
                                      rowKey="#{row.bill.id}"
-                                     
+
                                      >
-                            
+
                             <p:ajax event="page" oncomplete="updateTotals()" />
                             <f:facet name="header">
 
@@ -262,8 +265,8 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
-                                
-                               
+
+
                             </p:column>
 
                             <p:column headerText="Gross Total" style=" text-align: center;">
@@ -448,31 +451,31 @@
 
                         </p:dataTable>
 
-<!--                        <script>
-                            function calculateTotals(selector, targeter) {
-                                const values = Array.from(document.querySelectorAll(selector));
-                                const totalValue = values
-                                        .map(value => {
-                                            const cleanValue = value.innerText.replace(/,/g, "");
-                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                        })
-                                        .reduce((total, value) => total + value, 0);
-
-                                const targetElement = document.querySelector(targeter);
-                                if (targetElement) {
-                                    targetElement.innerText = totalValue.toFixed(2);
-                                }
-
-                            }
-
-                            function updateTotals() {
-                                calculateTotals('.grossFee', '.grossTotal');
-                                calculateTotals('.staffFee', '.staffFeeTotal');
-                                calculateTotals('.hosFee', '.hosFeeTotal');
-                            }
-
-                            setTimeout(updateTotals, 500);
-                        </script>-->
+                        <!--                        <script>
+                                                    function calculateTotals(selector, targeter) {
+                                                        const values = Array.from(document.querySelectorAll(selector));
+                                                        const totalValue = values
+                                                                .map(value => {
+                                                                    const cleanValue = value.innerText.replace(/,/g, "");
+                                                                    return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                                                })
+                                                                .reduce((total, value) => total + value, 0);
+                        
+                                                        const targetElement = document.querySelector(targeter);
+                                                        if (targetElement) {
+                                                            targetElement.innerText = totalValue.toFixed(2);
+                                                        }
+                        
+                                                    }
+                        
+                                                    function updateTotals() {
+                                                        calculateTotals('.grossFee', '.grossTotal');
+                                                        calculateTotals('.staffFee', '.staffFeeTotal');
+                                                        calculateTotals('.hosFee', '.hosFeeTotal');
+                                                    }
+                        
+                                                    setTimeout(updateTotals, 500);
+                                                </script>-->
 
                     </p:panel>
                 </h:form>
