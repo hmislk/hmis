@@ -114,7 +114,16 @@
                         <div class="row mb-3">
                             <div class="col-lg-6">
                                 <p:panel header="Return Summary" styleClass="shadow-sm">
-                                    <p:panelGrid columns="2" styleClass="w-100">
+                                    <p:panelGrid 
+                                        layout="tabular"
+                                        columns="2" 
+                                        styleClass="w-100">
+                                        <h:outputText value="Receivable Amount:" styleClass="fw-bold"/>
+                                        <p:inputTextarea
+                                            id="comments"
+                                            class="w-100"
+                                            value="#{issueReturnController.returnBill.comments}">
+                                        </p:inputTextarea>
                                         <h:outputText value="Receivable Amount:" styleClass="fw-bold"/>
                                         <h:outputText
                                             id="total"

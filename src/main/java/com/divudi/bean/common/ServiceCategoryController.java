@@ -185,7 +185,7 @@ public class ServiceCategoryController implements Serializable {
         }
     }
     
-    @FacesConverter(forClass = Category.class, value = "categoryConverter")
+    @FacesConverter(value = "categoryConverter")
     public static class categoryControllerConverter implements Converter {
 
         @Override

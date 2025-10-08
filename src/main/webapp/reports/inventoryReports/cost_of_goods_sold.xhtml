@@ -141,7 +141,24 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-pills ml-5" />
+                                <p:outputLabel value="Item" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="phmItem"
+                                class="w-100"
+                                value="#{pharmacyReportController.item}"
+                                completeMethod="#{itemController.completeItem}"
+                                var="itm"
+                                itemLabel="#{itm.name}"
+                                itemValue="#{itm}"
+                                forceSelection="true">
+                                <p:column>
+                                    <h:outputText value="#{itm.name}" />
+                                </p:column>
+                            </p:autoComplete>
 
                         </p:panelGrid>
 
@@ -219,6 +236,12 @@
 
                             <p:column headerText="Cost Value" style="text-align: right; padding-right: 200px !important;">
                                 <h:outputText value="#{f.value['costValue']}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Retail Value" style="text-align: right; padding-right: 200px !important;">
+                                <h:outputText value="#{f.value['retailValue']}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>

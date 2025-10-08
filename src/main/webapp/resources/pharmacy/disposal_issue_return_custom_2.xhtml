@@ -121,6 +121,18 @@
 
                         </tr>
                     </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.bill.comments ne null}">
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Comments" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td colspan="4" >
+                                <h:outputLabel value="#{cc.attrs.bill.comments}"  >
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
 
                 </table>
@@ -130,7 +142,7 @@
 
 
             <div class="billline">
-               <h:outputLabel value="----------------------------------------------------------"   />                       
+                <h:outputLabel value="----------------------------------------------------------"   />                       
             </div>
 
 
@@ -258,9 +270,9 @@
                 function calculateTotal() {
                     const itemValuesTotal = Array.from(document.querySelectorAll('.itemValueReturnBill'))
                             .map(td => {
-                                const rawText = td.innerText; 
+                                const rawText = td.innerText;
                                 const cleanedText = rawText.replace(/[^\d.]/g, '');
-                                const numericValue = parseFloat(cleanedText) || 0;                               
+                                const numericValue = parseFloat(cleanedText) || 0;
                                 return numericValue;
                             })
                             .reduce((sum, value) => sum + value, 0);
