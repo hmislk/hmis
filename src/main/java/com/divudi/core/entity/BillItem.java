@@ -66,6 +66,7 @@ public class BillItem implements Serializable, RetirableEntity {
     @OneToOne(cascade = CascadeType.ALL)
     private Prescription prescription;
 
+    //Kown Typo, can not correct because of backword compatability issues
     double Rate;
     double discountRate;
     double marginRate;

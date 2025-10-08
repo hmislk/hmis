@@ -206,6 +206,25 @@
                                     </td>
                                 </tr>
 
+                                <tr>
+                                    <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills</strong></td>
+                                    <td>
+                                        Corrects negative/positive signs for Bill totals, BillItem values, BillFinanceDetails and BillItemFinanceDetails, and Pharmaceutical Bill Item values according to the Bill Type. Uses absolute values and applies only the sign without changing magnitudes or other attributes. Applies to Pharmacy Issue/Direct Issue/Disposal Issue and corresponding Returns/Cancellations, and Receive/Receive Pre/Receive Cancelled.
+                                    </td>
+                                    <td>
+                                        <p:commandButton 
+                                            action="#{dataAdministrationController.correctPharmacyDisbursementSigns()}"
+                                            ajax="false"
+                                            value="Correct Signs for Disposal/Transfer"
+                                            styleClass="ui-button-warning m-1"
+                                            icon="pi pi-wrench"
+                                            rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                    </td>
+                                    <td>
+                                        #{dataAdministrationController.executionFeedback}
+                                    </td>
+                                </tr>
+
 
 
                             </tbody>

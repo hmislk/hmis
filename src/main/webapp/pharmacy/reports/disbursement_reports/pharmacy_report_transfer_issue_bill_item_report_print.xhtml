@@ -213,47 +213,47 @@
                                                         <h:outputText value="#{i.itemCode}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.qty ? null : commonFunctionsProxy.abs(i.qty)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.costRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.costRate ? null : commonFunctionsProxy.abs(i.costRate)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.costValue}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.costValue ? null : commonFunctionsProxy.abs(i.costValue)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.retailRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.retailRate ? null : commonFunctionsProxy.abs(i.retailRate)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.retailValue}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.retailValue ? null : commonFunctionsProxy.abs(i.retailValue)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.purchaseRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.purchaseRate ? null : commonFunctionsProxy.abs(i.purchaseRate)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.purchaseValue}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.purchaseValue ? null : commonFunctionsProxy.abs(i.purchaseValue)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.transferRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.transferRate ? null : commonFunctionsProxy.abs(i.transferRate)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.transferValue}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{empty i.transferValue ? null : commonFunctionsProxy.abs(i.transferValue)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -269,25 +269,25 @@
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{reportsTransfer.costValue}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{reportsTransfer.retailValue}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{empty reportsTransfer.retailValue ? null : commonFunctionsProxy.abs(reportsTransfer.retailValue)}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{reportsTransfer.purchaseValue}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{reportsTransfer.transferValue}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
