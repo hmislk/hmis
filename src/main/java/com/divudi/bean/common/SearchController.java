@@ -2338,14 +2338,17 @@ public class SearchController implements Serializable {
     }
 
     public List<PaymentMethod> getAllCashierCollectionIncludedMethods() {
+        ensureCollectionMethodLists();
         return Collections.unmodifiableList(allCashierCollectionIncludedMethods);
     }
 
     public List<PaymentMethod> getAllCashierCollectionExcludedMethods() {
+        ensureCollectionMethodLists();
         return Collections.unmodifiableList(allCashierCollectionExcludedMethods);
     }
 
     public String getAllCashierCollectionIncludedLabels() {
+        ensureCollectionMethodLists();
         if (allCashierCollectionIncludedMethods.isEmpty()) {
             return "None";
         }
@@ -2355,6 +2358,7 @@ public class SearchController implements Serializable {
     }
 
     public String getAllCashierCollectionExcludedLabels() {
+        ensureCollectionMethodLists();
         if (allCashierCollectionExcludedMethods.isEmpty()) {
             return "None";
         }
@@ -19241,17 +19245,7 @@ public class SearchController implements Serializable {
         if (row == null) {
             return 0.0;
         }
-        if (allCashierCollectionIncludedMethods == null || allCashierCollectionIncludedMethods.isEmpty()) {
-            Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
-            allCashierCollectionIncludedMethods = configuration.entrySet().stream()
-                    .filter(Map.Entry::getValue)
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-            allCashierCollectionExcludedMethods = configuration.entrySet().stream()
-                    .filter(e -> !e.getValue())
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-        }
+        ensureCollectionMethodLists();
         double total = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
         row.setCashierCollectionTotal(total);
         return total;
@@ -19264,6 +19258,59 @@ public class SearchController implements Serializable {
         double excluded = rowCashierGrandTotal(row) - rowCashierCollectionTotal(row);
         row.setCashierExcludedTotal(excluded);
         return excluded;
+    }
+
+    public double getAllCashierSummaryGrandTotal() {
+        double total = 0.0;
+        if (bundle != null && bundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                total += rowCashierGrandTotal(row);
+            }
+        }
+        allCashierSummaryGrandTotal = total;
+        if (bundle != null) {
+            bundle.setCashierGrandTotal(total);
+        }
+        return total;
+    }
+
+    public double getAllCashierSummaryCollectionTotal() {
+        ensureCollectionMethodLists();
+        double total = 0.0;
+        if (bundle != null && bundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                total += rowCashierCollectionTotal(row);
+            }
+        }
+        allCashierSummaryCollectionTotal = total;
+        if (bundle != null) {
+            bundle.setCashierCollectionTotal(total);
+        }
+        return total;
+    }
+
+    public double getAllCashierSummaryExcludedTotal() {
+        double excluded = getAllCashierSummaryGrandTotal() - getAllCashierSummaryCollectionTotal();
+        allCashierSummaryExcludedTotal = excluded;
+        if (bundle != null) {
+            bundle.setCashierExcludedTotal(excluded);
+        }
+        return excluded;
+    }
+
+    private void ensureCollectionMethodLists() {
+        if (allCashierCollectionIncludedMethods != null && !allCashierCollectionIncludedMethods.isEmpty()) {
+            return;
+        }
+        Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
+        allCashierCollectionIncludedMethods = configuration.entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        allCashierCollectionExcludedMethods = configuration.entrySet().stream()
+                .filter(e -> !e.getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     public void generateTotalCashierSummary() {
