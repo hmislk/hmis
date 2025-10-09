@@ -166,13 +166,25 @@ public class ChannelReportController implements Serializable {
         this.doctorList = doctorList;
     }
     
-    public List<SessionInstance> getSessionInstanceFromDoctor(){
+    private List<SessionInstance> sessionListFilterByDoctors;
+
+    public List<SessionInstance> getSessionListFilterByDoctors() {
+        return sessionListFilterByDoctors;
+    }
+
+    public void setSessionListFilterByDoctors(List<SessionInstance> sessionListFilterByDoctors) {
+        this.sessionListFilterByDoctors = sessionListFilterByDoctors;
+    }
+    
+    
+    
+    public void getSessionInstanceFromDoctor(){
         if(doctorList == null || doctorList.isEmpty()){
             JsfUtil.addErrorMessage("Please Select Doctor to proceed. ");
-            return null;
+            return;
         }
         
-        return channelService.getSessionsFromDoctor(fromDate, toDate, doctorList, institution);
+        sessionListFilterByDoctors = channelService.getSessionsFromDoctor(fromDate, toDate, doctorList, institution);
     }
     
 

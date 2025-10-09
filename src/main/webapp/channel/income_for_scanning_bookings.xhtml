@@ -69,33 +69,37 @@
 
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
-                            <h:outputLabel class="mx-2" value="Select Specific Dr. " />
+                            <h:outputLabel class="mx-2" value="Doctor " />
                             <h:outputLabel value=":" />
 
                             <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
-                                                  id="supplierMenu"
+                                                  id="doctorMenu"
                                                   filter="true"
-                                                  class="w-100"
+                                                  class="w-100 mx-4"
                                                   converter="deal"
                                                   filterMatchMode="contains">
                                 <f:selectItems value="#{doctorController.selectedItems}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
+
+                                <p:ajax event="change" 
+                                        listener="#{channelReportController.getSessionInstanceFromDoctor}" 
+                                        update="sessionsMenu" />
 
                             </p:selectCheckboxMenu>
                             <p:spacer width="50"/>
 
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
-                            <h:outputLabel class="mx-2" value="Select Specific Dr. " />
+                            <h:outputLabel class="mx-2" value="Session " />
                             <h:outputLabel value=":" />
 
                             <p:selectCheckboxMenu value="#{channelReportController.sessionInstanceList}" label="Select Suppliers"
-                                                  id="supplierMenu"
+                                                  id="sessionsMenu"
                                                   filter="true"
-                                                  class="w-100"
+                                                  class="w-100 mx-4"
                                                   converter="deal"
                                                   filterMatchMode="contains">
-                                <f:selectItems value="#{channelReportController.getSessionInstanceFromDoctor}" var="item"
+                                <f:selectItems value="#{channelReportController.sessionListFilterByDoctors}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
                             </p:selectCheckboxMenu>
 
@@ -103,19 +107,20 @@
 
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
-                            <h:outputLabel class="mx-2" value="Select Specific Dr. " />
+                            <h:outputLabel class="mx-2" value="Item " />
                             <h:outputLabel value=":" />
 
                             <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
                                                   id="supplierMenu"
                                                   filter="true"
-                                                  class="w-100"
+                                                  class="w-100 mx-4"
                                                   converter="deal"
                                                   filterMatchMode="contains">
                                 <f:selectItems value="#{doctorController.selectedItems}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
 
                             </p:selectCheckboxMenu>
+                            <p:spacer width="50"/>
 
 
                         </h:panelGrid>
