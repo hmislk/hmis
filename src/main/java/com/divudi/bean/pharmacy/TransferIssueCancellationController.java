@@ -22,6 +22,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -398,8 +399,8 @@ public class TransferIssueCancellationController implements Serializable {
         cancellationBifd.setTotalQuantity(BigDecimal.valueOf(qtyInPacks)); // POSITIVE
         cancellationBifd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits)); // POSITIVE
 
-        // Rates - always positive (intrinsic properties)
-        BigDecimal rate = BigDecimal.valueOf(cancellationItem.getRate());
+        // Rates - always positive (intrinsic properties) - get from original item
+        BigDecimal rate = BigDecimal.valueOf(originalItem.getRate());
         cancellationBifd.setLineGrossRate(rate);
         cancellationBifd.setLineNetRate(rate);
         cancellationBifd.setGrossRate(rate);
@@ -452,6 +453,61 @@ public class TransferIssueCancellationController implements Serializable {
 
         cancellationBill.setNetTotal(netTotal); // Negative for refund
         cancellationBill.setTotal(netTotal);
+
+        // Create and aggregate Bill-level finance details
+        createBillFinanceDetails();
+    }
+
+    /**
+     * Creates Bill-level BillFinanceDetails by aggregating from BillItemFinanceDetails.
+     * This is critical for disbursement reports to show cancellations correctly.
+     */
+    private void createBillFinanceDetails() {
+        BillFinanceDetails bfd = new BillFinanceDetails();
+
+        // Initialize aggregated values
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+
+        // Aggregate from all bill item finance details
+        if (cancellationBillItems != null) {
+            for (BillItem item : cancellationBillItems) {
+                BillItemFinanceDetails itemFd = item.getBillItemFinanceDetails();
+                if (itemFd != null) {
+                    // Aggregate cost values (POSITIVE for cancellation)
+                    if (itemFd.getTotalCost() != null) {
+                        totalCostValue = totalCostValue.add(itemFd.getTotalCost());
+                    }
+
+                    // Aggregate purchase values (POSITIVE for cancellation)
+                    if (itemFd.getValueAtPurchaseRate() != null) {
+                        totalPurchaseValue = totalPurchaseValue.add(itemFd.getValueAtPurchaseRate());
+                    }
+
+                    // Aggregate retail sale values (POSITIVE for cancellation)
+                    if (itemFd.getValueAtRetailRate() != null) {
+                        totalRetailSaleValue = totalRetailSaleValue.add(itemFd.getValueAtRetailRate());
+                    }
+
+                    // Aggregate line net totals (NEGATIVE for cancellation - revenue reversal)
+                    if (itemFd.getLineNetTotal() != null) {
+                        lineNetTotal = lineNetTotal.add(itemFd.getLineNetTotal());
+                    }
+                }
+            }
+        }
+
+        // Set aggregated values
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setLineNetTotal(lineNetTotal);
+
+        // Link to cancellation bill (bi-directional)
+        bfd.setBill(cancellationBill);
+        cancellationBill.setBillFinanceDetails(bfd);
     }
 
     /**
