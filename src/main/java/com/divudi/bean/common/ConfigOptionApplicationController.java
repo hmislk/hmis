@@ -1075,7 +1075,7 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private String buildAllCashierCollectionOptionKey(PaymentMethod paymentMethod) {
         String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
-        return "All Cashier Summary - Include " + label + " in Collection Total";
+        return "Include " + label + " in Collection Total";
     }
 
     public ConfigOption getApplicationOption(String key) {

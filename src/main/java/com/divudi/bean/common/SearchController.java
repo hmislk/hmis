@@ -19159,7 +19159,7 @@ public class SearchController implements Serializable {
 
     private String buildCollectionConfigurationKey(PaymentMethod paymentMethod) {
         String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
-        return "All Cashier Summary - Include " + label + " in Collection Total";
+        return "Include " + label + " in Collection Total";
     }
 
     private double getPaymentMethodValue(ReportTemplateRow row, PaymentMethod paymentMethod) {
