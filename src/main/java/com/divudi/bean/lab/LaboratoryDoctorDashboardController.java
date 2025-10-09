@@ -171,7 +171,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        patientInvestigationsDtos = new ArrayList<>();
+        items = new ArrayList<>();
 
         //use this DTO Class com.divudi.core.data.dto.LaboratoryDashboardDTO
         // Query PatientSampleComponent to get PatientInvestigations
@@ -344,7 +344,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         params.put("td", getToDate());
 
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("patientInvestigationsDtos = " + items);
 
     }
 
