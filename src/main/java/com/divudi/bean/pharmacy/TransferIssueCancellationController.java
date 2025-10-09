@@ -679,11 +679,7 @@ public class TransferIssueCancellationController implements Serializable {
         }
         Item item = billItem.getItem();
         pharmacyController.setPharmacyItem(item);
-        pharmacyController.fillItemStocks();
-        pharmacyController.fillDistributorAndPurchaseOrdersOfItem();
-        pharmacyController.fillTransferAndIssueDetailsOfItem();
-        pharmacyController.fillSaleDetailsOfItem();
-        pharmacyController.fillStockHistory();
+        pharmacyController.fillDetails();
     }
 
     // Getters and Setters
