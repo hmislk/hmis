@@ -486,27 +486,34 @@
                             </p:column>
 
                             <p:column headerText="Grand Total" class="text-end">
-                                <h:outputText value="#{summary.cashValue + 
-                                                       summary.cardValue + 
-                                                       summary.voucherValue + 
-                                                       summary.iouValue + 
-                                                       summary.chequeValue + 
-                                                       summary.creditValue + 
-                                                       summary.slipValue + 
-                                                       summary.ewalletValue }" 
-                                              style="text-align: right;">
+                                <h:outputText value="#{summary.cashierGrandTotal}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cashValue + 
-                                                           searchController.bundle.cardValue + 
-                                                           searchController.bundle.creditValue + 
-                                                           searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + 
-                                                           searchController.bundle.chequeValue + 
-                                                           searchController.bundle.slipValue + 
-                                                           searchController.bundle.ewalletValue }" 
-                                                  style="text-align: right;">
+                                    <h:outputText value="#{searchController.bundle.cashierGrandTotal}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+
+                            <p:column headerText="Collection Total" class="text-end">
+                                <h:outputText value="#{summary.cashierCollectionTotal}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.cashierCollectionTotal}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total NOT included in Collection Total" class="text-end">
+                                <h:outputText value="#{summary.cashierExcludedTotal}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.cashierExcludedTotal}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -514,6 +521,10 @@
 
 
                         </p:dataTable>
+                        <h:panelGrid columns="1" styleClass="mt-3 w-100">
+                            <h:outputText value="Collection Total includes: #{searchController.allCashierCollectionIncludedLabels}" />
+                            <h:outputText value="Total NOT included in Collection Total: #{searchController.allCashierCollectionExcludedLabels}" />
+                        </h:panelGrid>
                     </p:panel>
 
 

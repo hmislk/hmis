@@ -152,6 +152,12 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean patientDepositsAreConsideredInHandingover = true;
 
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
+    private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
+    private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }
@@ -2850,6 +2856,50 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setOnlineSettlementHandoverValue(double onlineSettlementHandoverValue) {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
+    }
+
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
+    }
+
+    public List<PaymentMethod> getCashierCollectionPaymentMethods() {
+        return cashierCollectionPaymentMethods;
+    }
+
+    public void setCashierCollectionPaymentMethods(List<PaymentMethod> cashierCollectionPaymentMethods) {
+        this.cashierCollectionPaymentMethods = cashierCollectionPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierCollectionPaymentMethods);
+    }
+
+    public List<PaymentMethod> getCashierExcludedPaymentMethods() {
+        return cashierExcludedPaymentMethods;
+    }
+
+    public void setCashierExcludedPaymentMethods(List<PaymentMethod> cashierExcludedPaymentMethods) {
+        this.cashierExcludedPaymentMethods = cashierExcludedPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierExcludedPaymentMethods);
     }
 
     //    public SessionController getSessionController() {
