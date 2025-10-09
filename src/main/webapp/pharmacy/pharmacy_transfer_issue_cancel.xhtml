@@ -85,6 +85,14 @@
 
                                         <p:column headerText="Item Name" style="min-width: 15em">
                                             <h:outputText value="#{item.item.name}" />
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                id="btnViewSelectedItemDetails"
+                                                title="View Item Details"
+                                                action="#{transferIssueCancellationController.displayItemDetails(item)}"
+                                                update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                process="@this"
+                                                class="ui-button-icon-only mx-3"/>
                                         </p:column>
 
                                         <p:column headerText="Batch No" width="8em">

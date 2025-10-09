@@ -101,6 +101,8 @@ public class TransferIssueCancellationController implements Serializable {
     private BillController billController;
     @Inject
     private UserStockController userStockController;
+    @Inject
+    private PharmacyController pharmacyController;
 
     // Properties
     private Bill originalBill;
@@ -668,6 +670,20 @@ public class TransferIssueCancellationController implements Serializable {
         cancellationBillItems = null;
         cancellationReason = null;
         printPreview = false;
+    }
+
+    public void displayItemDetails(BillItem billItem) {
+        if (billItem == null || billItem.getItem() == null) {
+            JsfUtil.addErrorMessage("No item selected");
+            return;
+        }
+        Item item = billItem.getItem();
+        pharmacyController.setPharmacyItem(item);
+        pharmacyController.fillItemStocks();
+        pharmacyController.fillDistributorAndPurchaseOrdersOfItem();
+        pharmacyController.fillTransferAndIssueDetailsOfItem();
+        pharmacyController.fillSaleDetailsOfItem();
+        pharmacyController.fillStockHistory();
     }
 
     // Getters and Setters
