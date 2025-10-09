@@ -202,8 +202,6 @@
                         </div>
                     </div>
                     
-                    #{laboratoryDoctorDashboardController.patientInvestigationsDtos}
-
                     <div class="row m-2">
                         <p:dataTable  
                             rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
@@ -321,17 +319,7 @@
 
                                 <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true and patientInvestigation.billItem.refunded ne true}">
                                     <div class="d-flex gap-2">
-                                        <p:commandButton 
-                                            icon="fa fa-file-text"
-                                            value="Worksheet" 
-                                            class="ui-button-info"
-                                            ajax="false" 
-                                            id="btnPrintWorksheets" 
-                                            disabled="#{patientInvestigation.sampleAccepted ne true}" 
-                                            action="/lab/single_worksheet?faces-redirect=true"
-                                            >
-                                            <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
+                                        
                                         <p:commandButton 
                                             icon="fa fa-file-text"
                                             value="New Report" 
@@ -344,18 +332,7 @@
                                                         return false;"
                                             ajax="false">
                                         </p:commandButton>
-                                        <p:commandButton 
-                                            icon="fa fa-file-text"
-                                            value="Upload Report" 
-                                            id="btnNewUpload"
-                                            rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
-                                            disabled="#{patientInvestigation.sampleSentAt eq null}"
-                                            action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
-                                            class="ui-button-warning"
-                                            onclick="if (!confirm('Are you sure you want to upload a new patient report ?'))
-                                                        return false;"
-                                            ajax="false">
-                                        </p:commandButton>
+                                        
                                         <p:commandButton 
                                             icon="fa fa-file-text"
                                             value="Reports" 
@@ -381,17 +358,7 @@
                                 <h:panelGroup rendered="#{patientInvestigation.billItem.refunded}">
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
                                         <div class="d-flex gap-2">
-                                            <p:commandButton 
-                                                icon="fa fa-file-text"
-                                                value="Worksheet" 
-                                                class="ui-button-info"
-                                                ajax="false" 
-                                                id="btnPrintWorksheetsForRefund" 
-                                                disabled="#{patientInvestigation.sampleAccepted ne true}" 
-                                                action="/lab/single_worksheet?faces-redirect=true"
-                                                >
-                                                <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 icon="fa fa-file-text"
                                                 value="New Report" 
@@ -404,18 +371,7 @@
                                                             return false;"
                                                 ajax="false">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                icon="fa fa-file-text"
-                                                value="Report Upload" 
-                                                id="btnNewUploadForRefund"
-                                                rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
-                                                disabled="#{patientInvestigation.sampleSentAt eq null}"
-                                                action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
-                                                class="ui-button-warning"
-                                                onclick="if (!confirm('Are you sure you want to upload a new patient report?'))
-                                                            return false;"
-                                                ajax="false">
-                                            </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 icon="fa fa-file-text"
                                                 value="Reports" 

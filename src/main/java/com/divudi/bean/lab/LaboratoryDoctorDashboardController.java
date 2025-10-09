@@ -50,7 +50,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public LaboratoryDoctorDashboardController() {
-        
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -102,31 +102,21 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     private Department performingDepartment;
     private String billNo;
     private String bhtNo;
-    private List<PatientInvestigationStatus> availableStatus;
-    private boolean selectAll = false;
     private String sampleId;
-    private String sampleRejectionComment;
-    private List<PatientSample> patientSamples;
-    private List<PatientSample> selectedPatientSamples;
-    private Staff sampleTransportedToLabByStaff;
-    private List<BillBarcode> billBarcodes;
-    private List<BillBarcode> selectedBillBarcodes;
     private Bill currentBill;
-    private boolean printIndividualBarcodes;
-    private List<Bill> bills = null;
     private List<PatientInvestigation> items;
     private String investigationName;
     private String filteringStatus;
     private String comment;
-    private Department sampleSendingDepartment;
-    private Department sampleReceiveFromDepartment;
-    // </editor-fold>
+    private List<LaboratoryDashboardDTO> patientInvestigationsDtos;
 
+    // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToDoctorDashboard() {
         return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
     }
-    
+
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
         items = new ArrayList<>();
         if (patientInvestigation == null || patientInvestigation.getId() == null) {
@@ -142,17 +132,11 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
-        this.bills = null;
         this.items = null;
         this.investigationName = null;
         this.filteringStatus = null;
-        this.selectedBillBarcodes = null;
         this.currentBill = null;
-        this.availableStatus = null;
-        this.selectAll = false;
         this.sampleId = null;
-        this.sampleRejectionComment = null;
-        this.patientSamples = null;
         this.route = null;
         this.collectionCenter = null;
         this.orderedInstitution = null;
@@ -162,57 +146,37 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         this.billNo = null;
         this.bhtNo = null;
         this.patientName = null;
-        this.selectedPatientSamples = null;
-        this.sampleTransportedToLabByStaff = null;
-        this.billBarcodes = null;
         this.type = null;
         this.referringDoctor = null;
-        this.sampleSendingDepartment = null;
     }
 
     public void searchPatientInvestigations() {
-        System.out.println("searchPatientInvestigations = " );
         items = new ArrayList();
-
-        if (sampleId != null) {
+        
+        if (sampleId == null) {
+            searchPatientInvestigationsWithoutSampleId();
+        }else{
             try {
-                System.out.println("try");
                 Long id = Long.valueOf(sampleId);
                 searchPatientInvestigationsWithSampleId(id);
             } catch (NumberFormatException e) {
-                System.out.println("catch = ");
                 searchPatientInvestigationsWithoutSampleId();
             }
         }
-        
+
     }
-    
-    private List<LaboratoryDashboardDTO> patientInvestigationsDtos;
 
     public void searchPatientInvestigationsWithSampleId(Long sampleID) {
-        System.out.println("searchPatientInvestigationsWithSampleId");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
         patientInvestigationsDtos = new ArrayList<>();
-        
+
+        //use this DTO Class com.divudi.core.data.dto.LaboratoryDashboardDTO
         // Query PatientSampleComponent to get PatientInvestigations
-        jpql = "SELECT new com.divudi.core.data.dto.LaboratoryDashboardDTO( "
-                + " psc.patientInvestigation.id, "
-                + " psc.patientInvestigation.billItem.bill.id, "
-                + " psc.patientInvestigation.billItem.bill.deptId, "
-                + " psc.patientInvestigation.billItem.bill.patientEncounter.bhtNo, "
-                + " psc.patientInvestigation.billItem.bill.createdAt, "
-                + " psc.patientInvestigation.billItem.bill.institution.name, "
-                + " psc.patientInvestigation.billItem.bill.department.name, "
-                + " psc.patientInvestigation.billItem.bill.collectingCentre.name, "
-                + " psc.patientInvestigation.investigation.name, "
-                + " psc.patientInvestigation.status, "
-                + " psc.patientInvestigation.billItem.bill.patient.id "
-                + " ) "
-                
-                + "FROM PatientSampleComponant psc "
+        jpql = "SELECT psc.patientInvestigation "
+                + " FROM PatientSampleComponant psc "
                 + " join psc.patientInvestigation i "
                 + " WHERE psc.retired = :ret "
                 + " AND psc.patientSample.id LIKE :sampleId "
@@ -293,35 +257,20 @@ public class LaboratoryDoctorDashboardController implements Serializable {
 
         params.put("ret", false);
 
-        patientInvestigationsDtos = (List<LaboratoryDashboardDTO>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("patientInvestigationsDtos = " + patientInvestigationsDtos);
+        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("items = " + items);
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {
-        System.out.println("searchPatientInvestigationsWithoutSampleId");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        jpql = "SELECT new com.divudi.core.data.dto.LaboratoryDashboardDTO( "
-                + " i.id, "
-                + " i.billItem.bill.id, "
-                + " i.billItem.bill.deptId, "
-                + " i.billItem.bill.patientEncounter.bhtNo, "
-                + " i.billItem.bill.createdAt, "
-                + " i.billItem.bill.institution.name, "
-                + " i.billItem.bill.department.name, "
-                + " i.billItem.bill.collectingCentre.name, "
-                + " i.investigation.name, "
-                + " i.status, "
-                + " i.billItem.bill.patient.id "
-                + " ) "
-                
+        //use this DTO Class com.divudi.core.data.dto.LaboratoryDashboardDTO
+        jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
                 + " WHERE i.retired = :ret "
                 + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
-        params.put("fd", getFromDate());
-        params.put("td", getToDate());
 
         if (billNo != null && !billNo.trim().isEmpty()) {
             jpql += " AND i.billItem.bill.deptId LIKE :billNo";
@@ -391,10 +340,12 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         jpql += " ORDER BY i.id DESC";
 
         params.put("ret", false);
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
 
-        patientInvestigationsDtos = (List<LaboratoryDashboardDTO>) patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("patientInvestigationsDtos = " + patientInvestigationsDtos);
-        
+        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("patientInvestigationsDtos = " + items);
+
     }
 
     public List<Long> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
@@ -441,7 +392,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     }
 
     public void removePatientReport(Long patientReportID) {
-        reportTimerController.trackReportExecution(() -> {
+
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
 
         if (currentPatientReport == null) {
@@ -473,11 +424,10 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         comment = null;
         JsfUtil.addSuccessMessage("Successfully Removed");
         searchPatientReports();
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.removePatientReport", sessionController.getLoggedUser());
+
     }
 
     public void searchPatientReports() {
-        reportTimerController.trackReportExecution(() -> {
         if (filteringStatus == null) {
             searchPatientInvestigations();
         } else if (filteringStatus.equalsIgnoreCase("Processing")) {
@@ -486,12 +436,10 @@ public class LaboratoryDoctorDashboardController implements Serializable {
             searchPendingAndApprovedPatientReports();
         }
         listingEntity = ListingEntity.PATIENT_REPORTS;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReports", sessionController.getLoggedUser());
 
     }
 
     public void searchProcessingPatientReports() {
-        reportTimerController.trackReportExecution(() -> {
         searchPatientInvestigations();
 
         List<PatientInvestigation> processingList = new ArrayList<>();
@@ -503,24 +451,9 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         }
         setItems(processingList);
         listingEntity = ListingEntity.PATIENT_REPORTS;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReports", sessionController.getLoggedUser());
-    }
-
-    public void searchPatientReportPrint() {
-        reportTimerController.trackReportExecution(() -> {
-        if (filteringStatus == null) {
-            searchPatientInvestigations();
-        } else if (filteringStatus.equalsIgnoreCase("Processing")) {
-            searchProcessingPatientReports();
-        } else {
-            searchPendingAndApprovedPatientReports();
-        }
-        listingEntity = ListingEntity.REPORT_PRINT;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrint", sessionController.getLoggedUser());
     }
 
     public void searchPendingAndApprovedPatientReports() {
-        reportTimerController.trackReportExecution(() -> {
         listingEntity = ListingEntity.PATIENT_REPORTS;
         List<PatientReport> patientReports = new ArrayList<>();
         String jpql;
@@ -613,21 +546,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
             }
         }
 
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReports", sessionController.getLoggedUser());
     }
-
-    public Department getDefaultSampleSendingDepartment() {
-        if (configOptionApplicationController.getBooleanValueByKey("Set the default sample department as the parent department (Super Department) of the current department.", false)) {
-            if (sessionController.getDepartment().getSuperDepartment() != null) {
-                return sessionController.getDepartment().getSuperDepartment();
-            } else {
-                return sessionController.getDepartment();
-            }
-        }
-        return sampleSendingDepartment;
-    }
-    
-    
 
     // </editor-fold>
     
@@ -742,14 +661,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         this.performingDepartment = performingDepartment;
     }
 
-    public List<Bill> getBills() {
-        return bills;
-    }
-
-    public void setBills(List<Bill> bills) {
-        this.bills = bills;
-    }
-
     public String getBillNo() {
         return billNo;
     }
@@ -774,22 +685,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         this.activeIndex = activeIndex;
     }
 
-    public List<BillBarcode> getBillBarcodes() {
-        return billBarcodes;
-    }
-
-    public void setBillBarcodes(List<BillBarcode> billBarcodes) {
-        this.billBarcodes = billBarcodes;
-    }
-
-    public List<BillBarcode> getSelectedBillBarcodes() {
-        return selectedBillBarcodes;
-    }
-
-    public void setSelectedBillBarcodes(List<BillBarcode> selectedBillBarcodes) {
-        this.selectedBillBarcodes = selectedBillBarcodes;
-    }
-
     public Bill getCurrentBill() {
         return currentBill;
     }
@@ -798,68 +693,12 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         this.currentBill = currentBill;
     }
 
-    public boolean isPrintIndividualBarcodes() {
-        return printIndividualBarcodes;
-    }
-
-    public void setPrintIndividualBarcodes(boolean printIndividualBarcodes) {
-        this.printIndividualBarcodes = printIndividualBarcodes;
-    }
-
     public String getSampleId() {
         return sampleId;
     }
 
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
-    }
-
-    public List<PatientSample> getPatientSamples() {
-        return patientSamples;
-    }
-
-    public void setPatientSamples(List<PatientSample> patientSamples) {
-        this.patientSamples = patientSamples;
-    }
-
-    public List<PatientInvestigationStatus> getAvailableStatus() {
-        return availableStatus;
-    }
-
-    public void setAvailableStatus(List<PatientInvestigationStatus> availableStatus) {
-        this.availableStatus = availableStatus;
-    }
-
-    public List<PatientSample> getSelectedPatientSamples() {
-        return selectedPatientSamples;
-    }
-
-    public void setSelectedPatientSamples(List<PatientSample> selectedPatientSamples) {
-        this.selectedPatientSamples = selectedPatientSamples;
-    }
-
-    public boolean isSelectAll() {
-        return selectAll;
-    }
-
-    public void setSelectAll(boolean selectAll) {
-        this.selectAll = selectAll;
-    }
-
-    public String getSampleRejectionComment() {
-        return sampleRejectionComment;
-    }
-
-    public void setSampleRejectionComment(String sampleRejectionComment) {
-        this.sampleRejectionComment = sampleRejectionComment;
-    }
-
-    public Staff getSampleTransportedToLabByStaff() {
-        return sampleTransportedToLabByStaff;
-    }
-
-    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
-        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
     }
 
     public List<PatientInvestigation> getItems() {
@@ -894,24 +733,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         this.filteringStatus = filteringStatus;
     }
 
-    public Department getSampleSendingDepartment() {
-        return getDefaultSampleSendingDepartment();
-    }
-
-    public void setSampleSendingDepartment(Department sampleSendingDepartment) {
-        this.sampleSendingDepartment = sampleSendingDepartment;
-    }
-
-// </editor-fold>
-    
-    public Department getSampleReceiveFromDepartment() {
-        return sampleReceiveFromDepartment;
-    }
-
-    public void setSampleReceiveFromDepartment(Department sampleReceiveFromDepartment) {
-        this.sampleReceiveFromDepartment = sampleReceiveFromDepartment;
-    }
-
     public List<LaboratoryDashboardDTO> getPatientInvestigationsDtos() {
         return patientInvestigationsDtos;
     }
@@ -919,4 +740,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     public void setPatientInvestigationsDtos(List<LaboratoryDashboardDTO> patientInvestigationsDtos) {
         this.patientInvestigationsDtos = patientInvestigationsDtos;
     }
+
+// </editor-fold>
+    
 }
