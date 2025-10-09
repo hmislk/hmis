@@ -15,13 +15,26 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="m-1" >
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="mb-2" layout="block">
+                <p:outputLabel value="Total Value:" class="form-label"/>
+                <p:inputText
+                    autocomplete="off"
+                    value="#{cc.attrs.paymentMethodData.staffCredit.totalValue}"
+                    id="txtVal"
+                    class="form-control"
+                    style="width: 10em;">
+                    <p:ajax process="@this" />
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </h:panelGroup>
+
             <p:outputLabel
                 value="Select Staff"
                 class="form-label"></p:outputLabel>
             <p:autoComplete
                 minQueryLength="3"
                 forceSelection="true"
-                value="#{opdBillController.toStaff}"
+                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}"
                 id="welfareStaff"
                 completeMethod="#{staffController.completeStaff}"
                 var="mys"
@@ -47,10 +60,7 @@
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </p:column>
-                <p:ajax process="@this"
-                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                        event="itemSelect"
-                        listener="#{opdBillController.calTotals()}" />
+                <p:ajax event="itemSelect" process="@this" />
             </p:autoComplete>
 
         </div>
