@@ -19084,17 +19084,8 @@ public class SearchController implements Serializable {
                 if (row == null) {
                     continue;
                 }
-                double rowGrand = 0.0;
-                double rowCollection = 0.0;
-
-                for (Map.Entry<PaymentMethod, Boolean> entry : configuration.entrySet()) {
-                    PaymentMethod method = entry.getKey();
-                    double value = getPaymentMethodValue(row, method);
-                    rowGrand += value;
-                    if (Boolean.TRUE.equals(entry.getValue())) {
-                        rowCollection += value;
-                    }
-                }
+                double rowGrand = computeGrandTotal(row);
+                double rowCollection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
 
                 double rowExcluded = rowGrand - rowCollection;
                 row.setCashierGrandTotal(rowGrand);
@@ -19202,6 +19193,77 @@ public class SearchController implements Serializable {
             default:
                 return 0.0;
         }
+    }
+
+    private double calculateCollectionTotal(ReportTemplateRow row, List<PaymentMethod> includedMethods) {
+        if (row == null || includedMethods == null || includedMethods.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (PaymentMethod pm : includedMethods) {
+            total += getPaymentMethodValue(row, pm);
+        }
+        return total;
+    }
+
+    private double computeGrandTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        return row.getOnCallValue()
+                + row.getCashValue()
+                + row.getCardValue()
+                + row.getMultiplePaymentMethodsValue()
+                + row.getStaffValue()
+                + row.getCreditValue()
+                + row.getStaffWelfareValue()
+                + row.getVoucherValue()
+                + row.getIouValue()
+                + row.getAgentValue()
+                + row.getChequeValue()
+                + row.getSlipValue()
+                + row.getEwalletValue()
+                + row.getPatientDepositValue()
+                + row.getPatientPointsValue()
+                + row.getOnlineSettlementValue();
+    }
+
+    public double rowCashierGrandTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        double total = computeGrandTotal(row);
+        row.setCashierGrandTotal(total);
+        return total;
+    }
+
+    public double rowCashierCollectionTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        if (allCashierCollectionIncludedMethods == null || allCashierCollectionIncludedMethods.isEmpty()) {
+            Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
+            allCashierCollectionIncludedMethods = configuration.entrySet().stream()
+                    .filter(Map.Entry::getValue)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+            allCashierCollectionExcludedMethods = configuration.entrySet().stream()
+                    .filter(e -> !e.getValue())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+        }
+        double total = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+        row.setCashierCollectionTotal(total);
+        return total;
+    }
+
+    public double rowCashierExcludedTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        double excluded = rowCashierGrandTotal(row) - rowCashierCollectionTotal(row);
+        row.setCashierExcludedTotal(excluded);
+        return excluded;
     }
 
     public void generateTotalCashierSummary() {

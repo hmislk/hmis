@@ -486,7 +486,7 @@
                             </p:column>
 
                             <p:column headerText="Grand Total" class="text-end">
-                                <h:outputText value="#{summary.cashierGrandTotal}" style="text-align: right;">
+                                <h:outputText value="#{searchController.rowCashierGrandTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -498,7 +498,7 @@
 
 
                             <p:column headerText="Collection Total" class="text-end">
-                                <h:outputText value="#{summary.cashierCollectionTotal}" style="text-align: right;">
+                                <h:outputText value="#{searchController.rowCashierCollectionTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -509,7 +509,7 @@
                             </p:column>
 
                             <p:column headerText="Total NOT included in Collection Total" class="text-end">
-                                <h:outputText value="#{summary.cashierExcludedTotal}" style="text-align: right;">
+                                <h:outputText value="#{searchController.rowCashierExcludedTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">

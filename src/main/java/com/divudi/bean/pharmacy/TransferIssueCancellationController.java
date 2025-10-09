@@ -23,6 +23,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BillFinanceDetails;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -237,7 +238,7 @@ public class TransferIssueCancellationController implements Serializable {
      * Creates the cancellation bill structure with metadata.
      */
     private void createCancellationBillStructure() {
-        cancellationBill = new BilledBill();
+        cancellationBill = new CancelledBill();
         cancellationBill.setBillType(BillType.PharmacyTransferIssue);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
         cancellationBill.setBillClassType(BillClassType.CancelledBill);
