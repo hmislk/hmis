@@ -315,7 +315,7 @@
                             </p:column>
 
                             <!-- Actions Column -->
-                            <p:column headerText="Actions" style="width: 390px; vertical-align: top;">
+                            <p:column headerText="Actions" style="width: 250px; vertical-align: top;">
 
                                 <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true and patientInvestigation.billItem.refunded ne true}">
                                     <div class="d-flex gap-2">
@@ -324,7 +324,6 @@
                                             icon="fa fa-file-text"
                                             value="New Report" 
                                             id="btnNewReport"
-                                            rendered="#{webUserController.hasPrivilege('LabDataentry')}"
                                             disabled="#{!patientInvestigation.sampleAccepted}" 
                                             action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                             class="ui-button-danger"
@@ -337,8 +336,7 @@
                                             icon="fa fa-file-text"
                                             value="Reports" 
                                             class="ui-button-success"
-                                            ajax="false" 
-                                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
+                                            ajax="false"
                                             action="#{laboratoryDoctorDashboardController.laboratoryDoctorDashboardController(patientInvestigation)}" >
                                         </p:commandButton>
                                     </div>
@@ -374,8 +372,7 @@
                                             
                                             <p:commandButton 
                                                 icon="fa fa-file-text"
-                                                value="Reports" 
-                                                rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
+                                                value="Reports"
                                                 class="ui-button-success"
                                                 ajax="false" 
                                                 action="#{laboratoryDoctorDashboardController.laboratoryDoctorDashboardController(patientInvestigation)}">
@@ -493,7 +490,7 @@
                             </p:column>
 
                             <!-- Actions Column -->
-                            <p:column headerText="Actions" style="width: 420px; vertical-align: top;">
+                            <p:column headerText="Actions" style="width: 250px; vertical-align: top;">
                                 <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class=" d-flex justify-content-center">
                                     <p:badge 
                                         value="Bill Cancel" 
@@ -530,7 +527,6 @@
                                                         id="cmdReportEdit" 
                                                         ajax="false" 
                                                         class="ui-button-warning"
-                                                        rendered="#{webUserController.hasPrivilege('LabDataentry') or webUserController.hasPrivilege('LabAutherizing')}"
                                                         icon="fa-solid fa-file-pen"
                                                         value="Edit"
                                                         action="#{laboratoryManagementController.navigateToEditReport(dpr.id)}">
@@ -560,11 +556,8 @@
                                                         rendered="#{!dpr.approved}">
                                                     </p:badge>
 
-                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers') and dpr.approved}" >
-                                                        <a target="_blank" href="#{dpr.qrCodeContentsLink}" class="fa fa-link fa-xl mt-3"  title="SMS Link"></a>
-                                                    </h:panelGroup>
-
                                                 </div>
+                                                
                                                 <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
                                                     <div class="d-flex gap-2">
                                                         <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
@@ -582,6 +575,7 @@
                                                         </p:commandButton>
                                                     </div>
                                                 </p:dialog>
+                                                
                                                 <p:commandButton 
                                                     title="To Remove Report" 
                                                     id="btnRemove" 

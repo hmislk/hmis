@@ -151,6 +151,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     }
 
     public void searchPatientInvestigations() {
+        System.out.println("this = " + sessionController.getLoggedUser().getStaff());
         items = new ArrayList();
         
         if (sampleId == null) {
