@@ -188,7 +188,7 @@ public class TransferIssueCancellationController implements Serializable {
     private boolean validateNotAlreadyReturned() {
         if (originalBill.getForwardReferenceBills() != null && !originalBill.getForwardReferenceBills().isEmpty()) {
             for (Bill refBill : originalBill.getForwardReferenceBills()) {
-                if (refBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_TRANSFER_RETURN
+                if (refBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_ISSUE_RETURN
                     && !refBill.isRetired() && !refBill.isCancelled()) {
                     JsfUtil.addErrorMessage("This transfer issue has been returned and cannot be cancelled. Return Bill: " + refBill.getInsId());
                     return false;
@@ -207,7 +207,7 @@ public class TransferIssueCancellationController implements Serializable {
     private boolean validateNotAcceptedAtReceivingEnd() {
         if (originalBill.getForwardReferenceBills() != null && !originalBill.getForwardReferenceBills().isEmpty()) {
             for (Bill refBill : originalBill.getForwardReferenceBills()) {
-                if (refBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_TRANSFER_RECEIVE
+                if (refBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RECEIVE
                     && !refBill.isRetired() && !refBill.isCancelled()) {
                     JsfUtil.addErrorMessage("This transfer issue has been received at the destination and cannot be cancelled. Receive Bill: " + refBill.getInsId());
                     return false;
@@ -452,7 +452,6 @@ public class TransferIssueCancellationController implements Serializable {
 
         cancellationBill.setNetTotal(netTotal); // Negative for refund
         cancellationBill.setTotal(netTotal);
-        cancellationBill.setGrossTotal(netTotal);
     }
 
     /**
