@@ -181,12 +181,14 @@ public class LaboratoryDoctorDashboardController implements Serializable {
                 + " WHERE psc.retired = :ret "
                 + " AND psc.patientSample.id LIKE :sampleId "
                 + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td "
-                + " AND i.retired = :ret ";
+                + " AND i.retired = :ret "
+                + " AND i.investigation.staff = :staff";
 
         params.put("ret", false);
         params.put("sampleId", "%" + sampleID + "%");
         params.put("fd", getFromDate());
         params.put("td", getToDate());
+        params.put("staff", sessionController.getLoggedUser().getStaff());
 
         if (billNo != null && !billNo.trim().isEmpty()) {
             jpql += " AND i.billItem.bill.deptId LIKE :billNo";
@@ -270,7 +272,8 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
                 + " WHERE i.retired = :ret "
-                + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+                + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td "
+                + " AND i.investigation.staff = :staff";
 
         if (billNo != null && !billNo.trim().isEmpty()) {
             jpql += " AND i.billItem.bill.deptId LIKE :billNo";
@@ -342,6 +345,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         params.put("ret", false);
         params.put("fd", getFromDate());
         params.put("td", getToDate());
+        params.put("staff", sessionController.getLoggedUser().getStaff());
 
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -461,10 +465,12 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         jpql = "SELECT r "
                 + " FROM PatientReport r "
                 + " WHERE r.retired = :ret "
-                + " AND r.patientInvestigation.billItem.bill.createdAt BETWEEN :fd AND :td ";
+                + " AND r.patientInvestigation.billItem.bill.createdAt BETWEEN :fd AND :td "
+                + " AND r.patientInvestigation.investigation.staff = :staff";
 
         params.put("fd", getFromDate());
         params.put("td", getToDate());
+        params.put("staff", sessionController.getLoggedUser().getStaff());
 
         if (orderedInstitution != null) {
             jpql += " AND r.patientInvestigation.billItem.bill.institution = :orderedInstitution ";
