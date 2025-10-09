@@ -547,18 +547,12 @@ public class TransferIssueCancellationController implements Serializable {
             cancellationBill.setComments(cancellationReason);
             billFacade.create(cancellationBill);
 
-            // Save all bill items and their related entities
+            // Save all bill items (cascade will handle PharmaceuticalBillItem and BillItemFinanceDetails)
             for (BillItem item : cancellationBill.getBillItems()) {
-                // Save pharmaceutical bill item first
-                pharmaceuticalBillItemFacade.create(item.getPharmaceuticalBillItem());
-
-                // Link it to bill item
-                item.setPharmaceuticalBillItem(item.getPharmaceuticalBillItem());
-
-                // Save bill item
+                // Save bill item - cascade will persist PharmaceuticalBillItem
                 billItemFacade.create(item);
 
-                // Update finance details with bill item reference
+                // Update finance details with bill item reference (for bi-directional link)
                 item.getBillItemFinanceDetails().setBillItem(item);
             }
 
@@ -591,7 +585,13 @@ public class TransferIssueCancellationController implements Serializable {
             // Update original bill as cancelled
             freshOriginalBill.setCancelled(true);
             freshOriginalBill.setCancelledBill(cancellationBill);
+
+            // Initialize forwardReferenceBills if null to avoid NPE
+            if (freshOriginalBill.getForwardReferenceBills() == null) {
+                freshOriginalBill.setForwardReferenceBills(new ArrayList<>());
+            }
             freshOriginalBill.getForwardReferenceBills().add(cancellationBill);
+
             billFacade.edit(freshOriginalBill);
 
             // Reload the cancellation bill to get all persisted data
