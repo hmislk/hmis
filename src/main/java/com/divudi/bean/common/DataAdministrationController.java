@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -86,6 +87,7 @@ import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.LogFileService;
+import com.divudi.service.BillService;
 import java.sql.SQLSyntaxErrorException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -259,6 +261,8 @@ public class DataAdministrationController implements Serializable {
 
     @EJB
     private LogFileService logService;
+    @EJB
+    private BillService billService;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -441,6 +445,193 @@ public class DataAdministrationController implements Serializable {
             billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void correctPharmacyDisbursementSigns() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> billsToFix = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            int updatedBills = 0;
+            int updatedItems = 0;
+
+            for (Bill b : billsToFix) {
+                Bill bill = billService.reloadBill(b);
+                if (bill == null) {
+                    continue;
+                }
+                BillTypeAtomic bta = bill.getBillTypeAtomic();
+                if (bta == null) {
+                    continue;
+                }
+
+                // Fix BillFinanceDetails totals for purchase/retail/wholesale values
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null) {
+                    boolean financeValueShouldBeNegative = isFinanceValueNegative(bta);
+                    // Purchase values
+                    bfd.setTotalPurchaseValue(applySign(bfd.getTotalPurchaseValue(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueFree(applySign(bfd.getTotalPurchaseValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueNonFree(applySign(bfd.getTotalPurchaseValueNonFree(), financeValueShouldBeNegative));
+                    // Free item values
+                    bfd.setTotalOfFreeItemValues(applySign(bfd.getTotalOfFreeItemValues(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesFree(applySign(bfd.getTotalOfFreeItemValuesFree(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesNonFree(applySign(bfd.getTotalOfFreeItemValuesNonFree(), financeValueShouldBeNegative));
+                    // Retail values
+                    bfd.setTotalRetailSaleValue(applySign(bfd.getTotalRetailSaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueFree(applySign(bfd.getTotalRetailSaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueNonFree(applySign(bfd.getTotalRetailSaleValueNonFree(), financeValueShouldBeNegative));
+                    // Wholesale values
+                    bfd.setTotalWholesaleValue(applySign(bfd.getTotalWholesaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueFree(applySign(bfd.getTotalWholesaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueNonFree(applySign(bfd.getTotalWholesaleValueNonFree(), financeValueShouldBeNegative));
+
+                    // Keep all gross/net totals positive
+                    bfd.setLineGrossTotal(applySign(bfd.getLineGrossTotal(), false));
+                    bfd.setBillGrossTotal(applySign(bfd.getBillGrossTotal(), false));
+                    bfd.setGrossTotal(applySign(bfd.getGrossTotal(), false));
+                    bfd.setLineNetTotal(applySign(bfd.getLineNetTotal(), false));
+                    bfd.setBillNetTotal(applySign(bfd.getBillNetTotal(), false));
+                    bfd.setNetTotal(applySign(bfd.getNetTotal(), false));
+                }
+
+                // Fix Bill totals
+                boolean billTotalsPositive = isBillAndItemTotalsPositive(bta);
+                bill.setTotal(applySign(bill.getTotal(), !billTotalsPositive));
+                bill.setNetTotal(applySign(bill.getNetTotal(), !billTotalsPositive));
+                bill.setBillTotal(applySign(bill.getBillTotal(), !billTotalsPositive));
+                bill.setGrantTotal(applySign(bill.getGrantTotal(), !billTotalsPositive));
+                bill.setGrnNetTotal(applySign(bill.getGrnNetTotal(), !billTotalsPositive));
+
+                // Fix items and related finance details/pharmaceutical values
+                List<BillItem> items = billService.fetchBillItems(bill);
+                if (items != null) {
+                    for (BillItem bi : items) {
+                        // BillItem values
+                        boolean itemTotalsPositive = isBillAndItemTotalsPositive(bta);
+                        bi.setNetRate(applySign(bi.getNetRate(), !itemTotalsPositive));
+                        bi.setGrossValue(applySign(bi.getGrossValue(), !itemTotalsPositive));
+                        bi.setNetValue(applySign(bi.getNetValue(), !itemTotalsPositive));
+
+                        // BillItemFinanceDetails totals
+                        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                        if (bifd != null) {
+                            bifd.setLineGrossTotal(applySign(bifd.getLineGrossTotal(), !itemTotalsPositive));
+                            bifd.setBillGrossTotal(applySign(bifd.getBillGrossTotal(), !itemTotalsPositive));
+                            bifd.setGrossTotal(applySign(bifd.getGrossTotal(), !itemTotalsPositive));
+                            bifd.setLineNetTotal(applySign(bifd.getLineNetTotal(), !itemTotalsPositive));
+                            bifd.setBillNetTotal(applySign(bifd.getBillNetTotal(), !itemTotalsPositive));
+                            bifd.setNetTotal(applySign(bifd.getNetTotal(), !itemTotalsPositive));
+                        }
+
+                        // Pharmaceutical Bill Item values
+                        com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                        if (pbi != null) {
+                            boolean financeValueNegative = isFinanceValueNegative(bta);
+                            pbi.setPurchaseValue(applySign(pbi.getPurchaseValue(), financeValueNegative));
+                            pbi.setRetailValue(applySign(pbi.getRetailValue(), financeValueNegative));
+                            pbi.setCostValue(applySign(pbi.getCostValue(), financeValueNegative));
+                            pharmaceuticalBillItemFacade.edit(pbi);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    }
+                }
+
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("Processed Bills: ").append(billsToFix.size()).append("\n");
+            out.append("Updated Bills: ").append(updatedBills).append("\n");
+            out.append("Updated Bill Items: ").append(updatedItems).append("\n");
+        } catch (Exception e) {
+            out.append("Error: ").append(e.getMessage());
+        }
+        executionFeedback = out.toString();
+    }
+
+    private boolean isFinanceValueNegative(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Stock out flows negative for finance values
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Positive
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Cancel receive => negative
+            default:
+                return false;
+        }
+    }
+
+    private boolean isBillAndItemTotalsPositive(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Positive totals on issues
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Negative for returns/receives
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Positive on cancel receive
+            default:
+                return true;
+        }
+    }
+
+    private BigDecimal applySign(BigDecimal v, boolean negative) {
+        if (v == null) {
+            return null;
+        }
+        BigDecimal abs = v.abs();
+        return negative ? abs.negate() : abs;
+    }
+
+    private double applySign(double v, boolean negative) {
+        double abs = Math.abs(v);
+        return negative ? -abs : abs;
     }
 
     /**

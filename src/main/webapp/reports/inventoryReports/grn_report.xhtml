@@ -644,7 +644,8 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Sale Value" width="6em" style="text-align: right;">
+                            <p:column headerText="Sale Value***" width="6em" style="text-align: right;">
+                                #{r.billFinanceDetails.id}
                                 <h:outputText
                                         value="#{r.billFinanceDetails.totalRetailSaleValue gt 0 ? -1 * r.billFinanceDetails.totalRetailSaleValue : r.billFinanceDetails.totalRetailSaleValue}">
                                     <f:convertNumber pattern="#,##0.00"/>

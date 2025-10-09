@@ -95,6 +95,10 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean directPurchaseCustom1;
     private boolean directPurchaseCustom2;
     private boolean directPurchaseCustomLetter;
+    
+    // Direct Purchase Return Settings
+    private boolean directPurchaseReturnCustom1;
+    private boolean directPurchaseReturnCustom2;
 
     // Disposal Issue Settings
     private boolean disposalIssueA4Paper;
@@ -105,6 +109,13 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean billReturnIssueA4Paper;
     private boolean billReturnIssueCustom1;
     private boolean billReturnIssueCustom2;
+
+    // Cancel Bill Settings
+    private boolean cancelBillPosPaper;
+    private boolean cancelBillPosPaperCustom1;
+    private boolean cancelBillFiveFivePaper;
+    private boolean cancelBillPosHeaderPaper;
+    private boolean cancelBillCustom3;
 
     public PharmacyRetailConfigController() {
     }
@@ -185,6 +196,10 @@ public class PharmacyRetailConfigController implements Serializable {
         directPurchaseCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 2", false);
         directPurchaseCustomLetter = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", false);
 
+        // Direct Purchase Return Settings
+        directPurchaseReturnCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 1", false);
+        directPurchaseReturnCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 2", true);
+        
         // Disposal Issue Settings
         disposalIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is A4 Paper", true);
         disposalIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 1", false);
@@ -194,6 +209,13 @@ public class PharmacyRetailConfigController implements Serializable {
         billReturnIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Bill Return Issue Receipt is A4 Paper", true);
         billReturnIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 1", false);
         billReturnIssueCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 2", false);
+
+        // Cancel Bill Settings
+        cancelBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper", true);
+        cancelBillPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper Custom 1", false);
+        cancelBillFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", true);
+        cancelBillPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", true);
+        cancelBillCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", true);
     }
 
     /**
@@ -272,6 +294,10 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom Letter Format", directPurchaseCustomLetter);
 
+            // Direct Purchase Return Settings
+            configOptionController.setBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 1", directPurchaseReturnCustom1);
+            configOptionController.setBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 2", directPurchaseReturnCustom2);
+            
             // Disposal Issue Settings
             configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is A4 Paper", disposalIssueA4Paper);
             configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 1", disposalIssueCustom1);
@@ -281,6 +307,13 @@ public class PharmacyRetailConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Bill Return Issue Receipt is A4 Paper", billReturnIssueA4Paper);
             configOptionController.setBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 1", billReturnIssueCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 2", billReturnIssueCustom2);
+
+            // Cancel Bill Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper", cancelBillPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper Custom 1", cancelBillPosPaperCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", cancelBillFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", cancelBillPosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", cancelBillCustom3);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -374,6 +407,53 @@ public class PharmacyRetailConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Bill Return Issue configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Pharmacy Retail Sale configuration changes specifically
+     */
+    public void saveRetailSaleConfig() {
+        try {
+            // Pharmacy Retail Sale Paper Type Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", posPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", posPaperCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", fiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", posHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 1", custom1Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 2", custom2Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is Custom 3", custom3Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", posHeaderPaperGeneral);
+
+            JsfUtil.addSuccessMessage("Pharmacy Retail Sale configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Pharmacy Retail Sale configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Pharmacy Cancel Bill configuration changes specifically
+     */
+    public void saveCancelBillConfig() {
+        try {
+            // Cancel Bill Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper", cancelBillPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper Custom 1", cancelBillPosPaperCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", cancelBillFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", cancelBillPosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", cancelBillCustom3);
+
+            JsfUtil.addSuccessMessage("Pharmacy Cancel Bill configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Pharmacy Cancel Bill configuration: " + e.getMessage());
         }
     }
 
@@ -821,6 +901,63 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setGrnReturnReceiptCustom2(boolean grnReturnReceiptCustom2) {
         this.grnReturnReceiptCustom2 = grnReturnReceiptCustom2;
+    }
+
+    // Cancel Bill Getters and Setters
+    public boolean isCancelBillPosPaper() {
+        return cancelBillPosPaper;
+    }
+
+    public void setCancelBillPosPaper(boolean cancelBillPosPaper) {
+        this.cancelBillPosPaper = cancelBillPosPaper;
+    }
+
+    public boolean isCancelBillPosPaperCustom1() {
+        return cancelBillPosPaperCustom1;
+    }
+
+    public void setCancelBillPosPaperCustom1(boolean cancelBillPosPaperCustom1) {
+        this.cancelBillPosPaperCustom1 = cancelBillPosPaperCustom1;
+    }
+
+    public boolean isCancelBillFiveFivePaper() {
+        return cancelBillFiveFivePaper;
+    }
+
+    public void setCancelBillFiveFivePaper(boolean cancelBillFiveFivePaper) {
+        this.cancelBillFiveFivePaper = cancelBillFiveFivePaper;
+    }
+
+    public boolean isCancelBillPosHeaderPaper() {
+        return cancelBillPosHeaderPaper;
+    }
+
+    public void setCancelBillPosHeaderPaper(boolean cancelBillPosHeaderPaper) {
+        this.cancelBillPosHeaderPaper = cancelBillPosHeaderPaper;
+    }
+
+    public boolean isCancelBillCustom3() {
+        return cancelBillCustom3;
+    }
+
+    public void setCancelBillCustom3(boolean cancelBillCustom3) {
+        this.cancelBillCustom3 = cancelBillCustom3;
+    }
+
+    public boolean isDirectPurchaseReturnCustom1() {
+        return directPurchaseReturnCustom1;
+    }
+
+    public void setDirectPurchaseReturnCustom1(boolean directPurchaseReturnCustom1) {
+        this.directPurchaseReturnCustom1 = directPurchaseReturnCustom1;
+    }
+
+    public boolean isDirectPurchaseReturnCustom2() {
+        return directPurchaseReturnCustom2;
+    }
+
+    public void setDirectPurchaseReturnCustom2(boolean directPurchaseReturnCustom2) {
+        this.directPurchaseReturnCustom2 = directPurchaseReturnCustom2;
     }
 
 }

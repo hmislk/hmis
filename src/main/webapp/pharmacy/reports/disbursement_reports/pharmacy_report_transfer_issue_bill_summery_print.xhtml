@@ -193,21 +193,21 @@
                                                     </td>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Value', true)}">
                                                         <td style="font-weight: 500; text-align: right; padding: 4px;">
-                                                            <h:outputLabel value="#{i.costValue}">
+                                                            <h:outputLabel value="#{empty i.costValue ? null : commonFunctionsProxy.abs(i.costValue)}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </td>
                                                     </h:panelGroup>
 
                                                     <td style="font-weight: 500; text-align: right; padding: 4px;">
-                                                        <h:outputLabel value="#{i.retailValue}">
+                                                        <h:outputLabel value="#{empty i.retailValue ? null : commonFunctionsProxy.abs(i.retailValue)}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
 
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', true)}">
                                                         <td style="font-weight: 500; text-align: right; padding: 4px;">
-                                                            <h:outputLabel value="#{i.transferValue}">
+                                                            <h:outputLabel value="#{empty i.transferValue ? null : commonFunctionsProxy.abs(i.transferValue)}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </td>
@@ -223,27 +223,27 @@
                                                     <h:outputText value="TOTALS" />
                                                 </td>
                                                 <td style="text-align: right; font-weight: 700; padding: 4px;">
-                                                    <h:outputLabel value="#{reportsTransfer.netTotalPurchaseValues}">
+                                                    <h:outputLabel value="#{empty reportsTransfer.netTotalPurchaseValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalPurchaseValues)}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </td>
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Value', true)}">
                                                     <td style="text-align: right; font-weight: 700; padding: 4px;">
-                                                        <h:outputLabel value="#{reportsTransfer.netTotalCostValues}">
+                                                        <h:outputLabel value="#{empty reportsTransfer.netTotalCostValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalCostValues)}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
                                                 </h:panelGroup>
 
                                                 <td style="text-align: right; font-weight: 700; padding: 4px;">
-                                                    <h:outputLabel value="#{reportsTransfer.netTotalSaleValues}">
+                                                    <h:outputLabel value="#{empty reportsTransfer.netTotalSaleValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalSaleValues)}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </td>
 
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', true)}">
                                                     <td style="text-align: right; font-weight: 700; padding: 4px;">
-                                                        <h:outputLabel value="#{reportsTransfer.netTotalValues}">
+                                                        <h:outputLabel value="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
