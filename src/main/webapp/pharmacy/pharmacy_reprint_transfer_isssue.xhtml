@@ -35,14 +35,17 @@
                                     class="ui-button-secondary mx-1"></p:commandButton>
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issues can be Cancelled', true)}" >
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="To Cancel" 
-                                        icon="fas fa-cancel"
+                                    <p:commandButton
+                                        id="btnToCancel"
+                                        ajax="false"
+                                        value="To Cancel"
+                                        icon="fas fa-ban"
                                         class="ui-button-danger mx-1"
-                                        action="pharmacy_cancel_transfer_issue?faces-redirect=true" 
-                                        rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                                    </p:commandButton>  
+                                        action="#{transferIssueCancellationController.navigateToCancellationPreviewById()}"
+                                        rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">
+                                        <f:setPropertyActionListener target="#{transferIssueCancellationController.originalBillId}" value="#{pharmacyBillSearch.bill.id}" />
+                                    </p:commandButton>
                                 </h:panelGroup>
 
                             </div>
