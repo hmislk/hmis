@@ -605,12 +605,17 @@ public class ReportsTransfer implements Serializable {
         fillDepartmentTransfersReceiveByBillItemDto();
     }
 
+    /**
+     * CRITICAL FIX for Issue #15797: Added TYPE(b) to distinguish cancelled receive items
+     * for proper item-level reporting.
+     */
     private void fillDepartmentTransfersReceiveByBillItemDto() {
 
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO(")
+                .append("TYPE(b), ")  // ADDED: Bill class discriminator to identify CancelledBill
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
@@ -2615,12 +2620,16 @@ public class ReportsTransfer implements Serializable {
      * Direct DTO query with aggregated financial data - follows DTO
      * implementation guidelines This is the primary method that should be used
      * for report display
+     *
+     * CRITICAL FIX for Issue #15797: Added TYPE(b) and billedBill join to distinguish
+     * cancelled receive bills and link them to original issue bills for proper reporting.
      */
     private void fillTransferReceiveBillsDtoDirectly() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferReceiveDTO(")
+                .append("TYPE(b), ")  // ADDED: Bill class discriminator to identify CancelledBill
                 .append("b.id, ")
                 .append("COALESCE(b.deptId, ''), ")
                 .append("b.createdAt, ")
@@ -2633,12 +2642,15 @@ public class ReportsTransfer implements Serializable {
                 .append("COALESCE(bfd.totalCostValue, 0.0), ")
                 .append("COALESCE(bfd.totalPurchaseValue, 0.0), ")
                 .append("COALESCE(bfd.lineNetTotal, 0.0), ")
-                .append("COALESCE(bfd.totalRetailSaleValue, 0.0)")
+                .append("COALESCE(bfd.totalRetailSaleValue, 0.0), ")
+                .append("COALESCE(bb.deptId, ''), ")  // ADDED: Original bill deptId for cancellations
+                .append("bb.id")  // ADDED: Original bill id for cancellations
                 .append(") ")
                 .append("FROM Bill b ")
                 .append("LEFT JOIN b.billFinanceDetails bfd ")
                 .append("LEFT JOIN b.fromStaff fs ")
                 .append("LEFT JOIN fs.person p ")
+                .append("LEFT JOIN b.billedBill bb ")  // ADDED: Join to original issue bill for traceability
                 .append("WHERE b.billType = :bt ")
                 .append("AND b.retired = false ")
                 .append("AND b.createdAt BETWEEN :fd AND :td ");

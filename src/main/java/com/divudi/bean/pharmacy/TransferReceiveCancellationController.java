@@ -200,29 +200,9 @@ public class TransferReceiveCancellationController implements Serializable {
             return false;
         }
 
-        // Check each item for sufficient stock
-        for (BillItem item : originalReceiveBill.getBillItems()) {
-            if (item.isRetired() || item.getPharmaceuticalBillItem() == null) {
-                continue;
-            }
-
-            PharmaceuticalBillItem phItem = item.getPharmaceuticalBillItem();
-            ItemBatch batch = phItem.getItemBatch();
-
-            if (batch == null || batch.getStock() == null) {
-                continue;
-            }
-
-            Stock stock = batch.getStock();
-            double receivedQty = Math.abs(phItem.getQty());
-
-            // Check department stock
-            if (stock.getStock() < receivedQty) {
-                JsfUtil.addErrorMessage("Insufficient stock for item: " + item.getItem().getName() +
-                    ". Available: " + stock.getStock() + ", Required: " + receivedQty);
-                return false;
-            }
-        }
+        // Note: Stock validation is performed during actual deduction in reverseStockMovements()
+        // If stock is insufficient, the transaction will rollback with clear error message
+        // This is the safest approach to prevent race conditions
 
         return true;
     }
