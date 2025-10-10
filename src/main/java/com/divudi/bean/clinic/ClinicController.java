@@ -6160,6 +6160,10 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                     bill.setBillType(BillType.ChannelStaff);
                     bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                     break;
+                case Staff_Welfare:
+                    bill.setBillType(BillType.ChannelStaff);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
                 case Credit:
                     bill.setBillType(BillType.ChannelCredit);
                     bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
