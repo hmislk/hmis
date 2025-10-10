@@ -5,8 +5,12 @@ import java.util.Date;
 
 /**
  * DTO for Pharmacy Transfer Receive Bill Items
+ *
+ * CRITICAL FIX for Issue #15797: Added billClassSimpleName to distinguish
+ * cancelled receive bill items in reports.
  */
 public class PharmacyTransferReceiveBillItemDTO implements Serializable {
+    private String billClassSimpleName; // ADDED for Issue #15797: Simple class name (e.g., "Bill", "CancelledBill")
     private String deptId;
     private Date createdAt;
     private String itemName;
@@ -63,6 +67,52 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
         this.purchaseValue = purchaseValue != null ? purchaseValue.doubleValue() : null;
         this.transferRate = transferRate != null ? transferRate.doubleValue() : null;
         this.transferValue = transferValue != null ? transferValue.doubleValue() : null;
+    }
+
+    /**
+     * NEW Constructor for Issue #15797: Includes TYPE(b) to distinguish cancelled receive items.
+     */
+    public PharmacyTransferReceiveBillItemDTO(Object billClass, String deptId, Date createdAt, String itemName, String itemCode,
+                                            Double qty, Double costRate, java.math.BigDecimal costValue,
+                                            Double retailRate, java.math.BigDecimal retailValue,
+                                            Double purchaseRate, java.math.BigDecimal purchaseValue,
+                                            java.math.BigDecimal transferRate, java.math.BigDecimal transferValue) {
+        // Extract simple class name from TYPE(b)
+        this.billClassSimpleName = extractSimpleClassName(billClass);
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.itemName = itemName;
+        this.itemCode = itemCode;
+        this.qty = qty;
+        this.costRate = costRate;
+        this.costValue = costValue != null ? costValue.doubleValue() : null;
+        this.retailRate = retailRate;
+        this.retailValue = retailValue != null ? retailValue.doubleValue() : null;
+        this.purchaseRate = purchaseRate;
+        this.purchaseValue = purchaseValue != null ? purchaseValue.doubleValue() : null;
+        this.transferRate = transferRate != null ? transferRate.doubleValue() : null;
+        this.transferValue = transferValue != null ? transferValue.doubleValue() : null;
+    }
+
+    /**
+     * Helper method to extract simple class name from TYPE(b) result.
+     */
+    private String extractSimpleClassName(Object billClass) {
+        if (billClass == null) {
+            return "Bill";
+        }
+
+        String fullClassName;
+        if (billClass instanceof Class) {
+            fullClassName = ((Class<?>) billClass).getSimpleName();
+        } else {
+            fullClassName = billClass.toString();
+            if (fullClassName.contains(".")) {
+                fullClassName = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+            }
+        }
+
+        return fullClassName;
     }
 
     public String getDeptId() {
@@ -167,5 +217,22 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
 
     public void setTransferValue(Double transferValue) {
         this.transferValue = transferValue;
+    }
+
+    // NEW Getters/Setters for Issue #15797
+    public String getBillClassSimpleName() {
+        return billClassSimpleName;
+    }
+
+    public void setBillClassSimpleName(String billClassSimpleName) {
+        this.billClassSimpleName = billClassSimpleName;
+    }
+
+    /**
+     * Helper method to check if this is a cancelled receive item.
+     * Used in XHTML for conditional styling.
+     */
+    public boolean isCancelledReceiveItem() {
+        return "CancelledBill".equals(billClassSimpleName);
     }
 }
