@@ -255,7 +255,6 @@ public class TransferReceiveCancellationController implements Serializable {
 
         // Set cancellation flag
         cancellationBill.setCancelled(false); // The cancellation bill itself is not cancelled
-        cancellationBill.setCancelledBill(originalReceiveBill); // Points to the receive bill being cancelled
 
         // Initialize collections
         cancellationBill.setBillItems(new ArrayList<>());

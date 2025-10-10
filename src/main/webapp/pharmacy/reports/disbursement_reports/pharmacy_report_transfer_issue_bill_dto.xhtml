@@ -187,11 +187,10 @@
                                         <span class="badge bg-warning">Returned</span>
                                     </h:panelGroup>
                                     
-                                    <h:panelGroup 
-                                        id="lblOriginalBillIdOfCancelledBill" 
+                                    <h:panelGroup
+                                        id="lblOriginalBillIdOfCancelledBill"
                                         rendered="#{i.billClassSimpleName eq 'CancelledBill'}">
                                         Original Bill - #{i.billedBillDeptId}
-                                        <h1>fdfg-#{i.billedBillDeptId}-dfg</h1>
                                         <p:commandButton
                                             ajax="false"
                                             value="View"
