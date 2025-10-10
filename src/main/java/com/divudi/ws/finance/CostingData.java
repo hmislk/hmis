@@ -270,11 +270,9 @@ public class CostingData {
             dto.setBillFinanceDetails(convertBillFinanceDetailsToDTO(bill.getBillFinanceDetails()));
         }
 
-        // Convert Bill Items
-        List<BillItem> billItems = bill.getBillItems();
-        if (billItems == null || billItems.isEmpty()) {
-            billItems = findBillItemsFromBill(bill);
-        }
+        // Convert Bill Items - always use explicit query to avoid LazyInitializationException
+        // Bill entities returned by BillFacade are detached, so accessing lazy collections will fail
+        List<BillItem> billItems = findBillItemsFromBill(bill);
 
         if (billItems != null && !billItems.isEmpty()) {
             List<BillItemDetailsDTO> billItemDTOs = new ArrayList<>();
