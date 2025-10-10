@@ -702,8 +702,9 @@ public class PharmacyCostingService {
             }
 
             bi.setSearialNo(serialNo++);
-            double netValue = bi.getQty() * bi.getRate();
-            bi.setNetValue(-netValue);
+            // For transfer out, item net value represents revenue for issuing department and should be positive
+            double netValue = Math.abs(bi.getQty()) * bi.getRate();
+            bi.setNetValue(netValue);
 
             if (f != null) {
                 BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
@@ -1143,10 +1144,32 @@ public class PharmacyCostingService {
         bfd.setTotalDiscount(totalDiscount);
         bfd.setTotalExpense(totalExpense);
         bfd.setTotalTaxValue(totalTax);
-        bfd.setTotalCostValue(totalCost);
+        // Override bill-level valuation totals by summing item valuation fields directly (correct signs for ISSUE)
+        BigDecimal sumCostFromItems = BigDecimal.ZERO;
+        BigDecimal sumPurchaseFromItems = BigDecimal.ZERO;
+        BigDecimal sumRetailFromItems = BigDecimal.ZERO;
+        for (BillItem it : billItems) {
+            if (it == null || it.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+            BillItemFinanceDetails fd = it.getBillItemFinanceDetails();
+            sumCostFromItems = sumCostFromItems.add(Optional.ofNullable(fd.getValueAtCostRate()).orElse(BigDecimal.ZERO));
+            sumPurchaseFromItems = sumPurchaseFromItems.add(Optional.ofNullable(fd.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
+            sumRetailFromItems = sumRetailFromItems.add(Optional.ofNullable(fd.getValueAtRetailRate()).orElse(BigDecimal.ZERO));
+            // Ensure PBI valuations match finance details (negative for issue)
+            if (it.getPharmaceuticalBillItem() != null) {
+                if (fd.getValueAtPurchaseRate() != null) {
+                    it.getPharmaceuticalBillItem().setPurchaseValue(fd.getValueAtPurchaseRate().doubleValue());
+                }
+                if (fd.getValueAtRetailRate() != null) {
+                    it.getPharmaceuticalBillItem().setRetailValue(fd.getValueAtRetailRate().doubleValue());
+                }
+            }
+        }
+        bfd.setTotalCostValue(sumCostFromItems);
         bfd.setTotalOfFreeItemValues(totalFreeItemValue);
-        bfd.setTotalPurchaseValue(totalPurchase);
-        bfd.setTotalRetailSaleValue(totalRetail);
+        bfd.setTotalPurchaseValue(sumPurchaseFromItems);
+        bfd.setTotalRetailSaleValue(sumRetailFromItems);
         bfd.setTotalWholesaleValue(totalWholesale);
         bfd.setTotalQuantity(totalQty);
         bfd.setTotalFreeQuantity(totalFreeQty);
@@ -1307,8 +1330,8 @@ public class PharmacyCostingService {
             BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO);
             BigDecimal wholesaleRate = Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO);
 
-            BigDecimal retailValue = retailRate.multiply(qtyTotal);
-            BigDecimal costValue = costRate.multiply(qtyTotal);
+            BigDecimal retailValue = Optional.ofNullable(f.getValueAtRetailRate()).orElse(BigDecimal.ZERO);
+            BigDecimal costValue = Optional.ofNullable(f.getValueAtCostRate()).orElse(BigDecimal.ZERO);
             BigDecimal wholesaleValue = wholesaleRate.multiply(qtyTotal);
             BigDecimal freeItemValue = costRate.multiply(freeQty);
 
@@ -1320,6 +1343,25 @@ public class PharmacyCostingService {
             totalPurchase = totalPurchase.add(Optional.ofNullable(f.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
             totalRetail = totalRetail.add(retailValue);
             totalCost = totalCost.add(costValue);
+
+            // Ensure pharmaceutical item valuations reflect finance details (negative for transfer out)
+            if (pbi != null) {
+                if (f.getValueAtPurchaseRate() != null) {
+                    pbi.setPurchaseValue(f.getValueAtPurchaseRate().doubleValue());
+                }
+                if (f.getValueAtRetailRate() != null) {
+                    pbi.setRetailValue(f.getValueAtRetailRate().doubleValue());
+                }
+            }
+
+            // Ensure purchaseRate is present in finance details if missing
+            if (f.getPurchaseRate() == null) {
+                if (pbi != null && pbi.getItemBatch() != null) {
+                    f.setPurchaseRate(BigDecimal.valueOf(pbi.getItemBatch().getPurcahseRate()));
+                } else if (pbi != null) {
+                    f.setPurchaseRate(BigDecimal.valueOf(pbi.getPurchaseRate()));
+                }
+            }
             totalWholesale = totalWholesale.add(wholesaleValue);
             totalQty = totalQty.add(qty);
             totalFreeQty = totalFreeQty.add(freeQty);

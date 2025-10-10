@@ -95,11 +95,11 @@
                                     class="mx-1 ui-button-warning"
                                     />
                                 <p:commandButton
-                                    value="New Bill"
+                                    value="Create New Transfer Request Bill"
                                     action="#{transferRequestController.recreate}"
                                     ajax="false"
                                     icon="pi pi-plus"
-                                    class="ui-button-danger"/>
+                                    class="ui-button-success"/>
 
                                 <p:commandButton 
                                     value="Change Department" 
@@ -313,28 +313,29 @@
             <p:panel id="printPanel" rendered="#{transferRequestController.printPreview}" >
                 <div class="d-flex justify-content-between mb-2">
                     <p:commandButton
-                        value="New Bill"
-                        icon="fas fa-plus"
-                        class="ui-button-warning"
-                        ajax="false"
-                        action="#{transferRequestController.recreate}" >
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        value="Settings"
+                        icon="fas fa-cog"
+                        class="ui-button-secondary mx-1"
+                        type="button"
+                        onclick="PF('transferRequestConfigDialog').show();" >
                     </p:commandButton>
 
+
                     <div class="d-flex">
-                        <p:commandButton
-                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                            value="Settings"
-                            icon="fas fa-cog"
-                            class="ui-button-secondary mx-1"
-                            type="button"
-                            onclick="PF('transferRequestConfigDialog').show();" >
-                        </p:commandButton>
                         <p:commandButton
                             value="Print"
                             icon="fas fa-print"
                             class="ui-button-info mx-2"
                             ajax="false" >
                             <p:printer target="gpBillPreview"></p:printer>
+                        </p:commandButton>
+                        <p:commandButton
+                            value="To Create New Transfer Request"
+                            icon="fas fa-plus"
+                            class="ui-button-success"
+                            ajax="false"
+                            action="#{transferRequestController.recreate}" >
                         </p:commandButton>
                     </div>
                 </div>
