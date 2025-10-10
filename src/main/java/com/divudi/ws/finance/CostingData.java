@@ -33,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("costing_data")
 @RequestScoped
@@ -86,7 +87,7 @@ public class CostingData {
     @GET
     @Path("/last_bill")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getLastBill() {
+    public Response getLastBill() {
         try {
             // Validate API key
             String key = requestContext.getHeader("Finance");
@@ -108,7 +109,6 @@ public class CostingData {
 
             return successResponse(billDTO);
         } catch (Exception e) {
-            e.printStackTrace();
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -121,7 +121,7 @@ public class CostingData {
     @GET
     @Path("/bill")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getBillByNumberQuery(@QueryParam("number") String billNumber) {
+    public Response getBillByNumberQuery(@QueryParam("number") String billNumber) {
         try {
             // Validate API key
             String key = requestContext.getHeader("Finance");
@@ -151,7 +151,6 @@ public class CostingData {
 
             return successResponse(billDTOs);
         } catch (Exception e) {
-            e.printStackTrace();
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -166,7 +165,7 @@ public class CostingData {
     @GET
     @Path("/by_bill_number/{bill_number}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getBillByNumber(@PathParam("bill_number") String billNumber) {
+    public Response getBillByNumber(@PathParam("bill_number") String billNumber) {
         try {
             // Validate API key
             String key = requestContext.getHeader("Finance");
@@ -196,7 +195,6 @@ public class CostingData {
 
             return successResponse(billDTOs);
         } catch (Exception e) {
-            e.printStackTrace();
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -208,7 +206,7 @@ public class CostingData {
     @GET
     @Path("/by_bill_id/{bill_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getBillById(@PathParam("bill_id") String billIdStr) {
+    public Response getBillById(@PathParam("bill_id") String billIdStr) {
         try {
             // Validate API key
             String key = requestContext.getHeader("Finance");
@@ -238,7 +236,6 @@ public class CostingData {
 
             return successResponse(billDTO);
         } catch (Exception e) {
-            e.printStackTrace();
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -430,31 +427,32 @@ public class CostingData {
         if (!k.getWebUser().isActivated()) {
             return false;
         }
-        if (k.getDateOfExpiary().before(new Date())) {
+        // Treat null expiry date as expired
+        if (k.getDateOfExpiary() == null || k.getDateOfExpiary().before(new Date())) {
             return false;
         }
         return true;
     }
 
     /**
-     * Create error response JSON
+     * Create error response with proper HTTP status code
      */
-    private String errorResponse(String message, int code) {
+    private Response errorResponse(String message, int code) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "error");
         response.put("code", code);
         response.put("message", message);
-        return gson.toJson(response);
+        return Response.status(code).entity(gson.toJson(response)).build();
     }
 
     /**
-     * Create success response JSON
+     * Create success response with HTTP 200 status code
      */
-    private String successResponse(Object data) {
+    private Response successResponse(Object data) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("code", 200);
         response.put("data", data);
-        return gson.toJson(response);
+        return Response.status(200).entity(gson.toJson(response)).build();
     }
 }
