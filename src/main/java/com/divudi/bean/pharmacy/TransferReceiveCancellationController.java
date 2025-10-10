@@ -57,22 +57,24 @@ import javax.transaction.Transactional;
  *
  * <h3>Original Transfer Receive:</h3>
  * <pre>
- * - Quantity: POSITIVE (stock in)
- * - Cost: POSITIVE (cost burden added)
- * - Revenue: Usually ZERO (internal transfer)
+ * - Quantity: POSITIVE (stock comes in)
+ * - Cost values (totalCostValue, etc.): POSITIVE (cost burden added)
+ * - Inventory values (valueAtCostRate, etc.): POSITIVE (follow quantity)
+ * - Revenue/Gross Total/Net Total: NEGATIVE (money goes out to pay issuing dept)
  * </pre>
  *
  * <h3>Cancellation Bill (Reversal):</h3>
  * <pre>
- * - Quantity: NEGATIVE (stock reversal)
- * - Cost: NEGATIVE (cost burden removed)
- * - Revenue: ZERO (internal transfer)
+ * - Quantity: NEGATIVE (stock goes out)
+ * - Cost values (totalCostValue, etc.): NEGATIVE (cost burden removed)
+ * - Inventory values (valueAtCostRate, etc.): NEGATIVE (follow quantity)
+ * - Revenue/Gross Total/Net Total: POSITIVE (money comes back in)
  * </pre>
  *
  * <h3>Stock Reversal Logic:</h3>
  * <pre>
  * Original Receive: Staff Stock += qty, Dept Stock += qty
- * Cancellation:     Staff Stock -= qty, Dept Stock -= qty
+ * Cancellation:     Dept Stock -= qty, Staff Stock += qty (reversal)
  * </pre>
  *
  * <h3>Issue #15797 Fix:</h3>
@@ -301,13 +303,13 @@ public class TransferReceiveCancellationController implements Serializable {
             // Create reversed finance details (CRITICAL for Issue #15797)
             createReversedFinanceDetails(cancellationItem, originalItem);
 
-            // Set revenue values (typically zero for internal transfers)
+            // Set revenue values - POSITIVE for cancellation (money comes back in)
             double rate = originalItem.getRate();
             cancellationItem.setRate(rate);
             cancellationItem.setNetRate(rate);
-            // Zero or negative revenue for cancellation
-            cancellationItem.setNetValue(-1 * rate * Math.abs(originalQty));
-            cancellationItem.setGrossValue(-1 * rate * Math.abs(originalQty));
+            // POSITIVE revenue for cancellation (money comes back in)
+            cancellationItem.setNetValue(rate * Math.abs(originalQty)); // POSITIVE
+            cancellationItem.setGrossValue(rate * Math.abs(originalQty)); // POSITIVE
 
             cancellationBillItems.add(cancellationItem);
         }
@@ -356,12 +358,12 @@ public class TransferReceiveCancellationController implements Serializable {
      * Creates reversed finance details for cancellation bill item.
      *
      * <h3>CRITICAL FIX for Issue #15797: Reversed Sign Convention</h3>
-     * <p>Since the original receive had positive quantities/costs,
-     * the cancellation must reverse all signs:</p>
+     * <p>Transfer Receive Cancellation reverses the original receive:</p>
      * <ul>
-     *   <li>Quantity: NEGATIVE (stock removed from receiving dept)</li>
+     *   <li>Quantity: NEGATIVE (stock goes out from receiving dept)</li>
      *   <li>Cost: NEGATIVE (cost burden removed)</li>
-     *   <li>Revenue: ZERO or NEGATIVE (internal transfer)</li>
+     *   <li>Revenue/Gross Total: POSITIVE (money comes back in)</li>
+     *   <li>Inventory valuations: NEGATIVE (follow quantity sign)</li>
      * </ul>
      *
      * <h3>Example:</h3>
@@ -371,6 +373,8 @@ public class TransferReceiveCancellationController implements Serializable {
      * - lineCost: +27.273            - lineCost: -27.273
      * - totalCost: +27.273           - totalCost: -27.273
      * - valueAtCostRate: +27.273     - valueAtCostRate: -27.273
+     * - lineGrossTotal: -50.0        - lineGrossTotal: +50.0 (money comes in)
+     * - lineNetTotal: -50.0          - lineNetTotal: +50.0 (money comes in)
      * </pre>
      *
      * @param cancellationItem The cancellation bill item
@@ -389,7 +393,7 @@ public class TransferReceiveCancellationController implements Serializable {
         // Set units per pack
         cancellationBifd.setUnitsPerPack(BigDecimal.valueOf(unitsPerPack));
 
-        // Quantities - NEGATIVE for cancellation (stock reversal)
+        // Quantities - NEGATIVE for cancellation (stock goes out)
         double qtyInPacks = Math.abs(cancellationItem.getQty());
         double qtyInUnits = Math.abs(cancellationItem.getPharmaceuticalBillItem().getQty());
 
@@ -403,10 +407,10 @@ public class TransferReceiveCancellationController implements Serializable {
         cancellationBifd.setLineNetRate(rate);
         cancellationBifd.setGrossRate(rate);
 
-        // Gross totals - negative or zero for cancellation
-        cancellationBifd.setLineGrossTotal(rate.multiply(BigDecimal.valueOf(-1 * qtyInPacks)));
-        cancellationBifd.setLineNetTotal(rate.multiply(BigDecimal.valueOf(-1 * qtyInPacks)));
-        cancellationBifd.setGrossTotal(rate.multiply(BigDecimal.valueOf(-1 * qtyInPacks)));
+        // Gross totals - POSITIVE for cancellation (money comes back in)
+        cancellationBifd.setLineGrossTotal(rate.multiply(BigDecimal.valueOf(qtyInPacks))); // POSITIVE
+        cancellationBifd.setLineNetTotal(rate.multiply(BigDecimal.valueOf(qtyInPacks))); // POSITIVE
+        cancellationBifd.setGrossTotal(rate.multiply(BigDecimal.valueOf(qtyInPacks))); // POSITIVE
 
         if (batch != null) {
             // Cost rates - always positive (intrinsic properties)
@@ -427,7 +431,7 @@ public class TransferReceiveCancellationController implements Serializable {
             cancellationBifd.setBillCost(BigDecimal.ZERO);
             cancellationBifd.setTotalCost(costRate.multiply(qtyInUnitsBD).negate()); // NEGATIVE
 
-            // Inventory valuations - NEGATIVE for cancellation (inventory value removed)
+            // Inventory valuations - NEGATIVE for cancellation (stock goes out, values decrease)
             cancellationBifd.setValueAtCostRate(costRate.multiply(qtyInUnitsBD).negate()); // NEGATIVE
             cancellationBifd.setValueAtPurchaseRate(purchaseRate.multiply(qtyInUnitsBD).negate()); // NEGATIVE
             cancellationBifd.setValueAtRetailRate(retailRate.multiply(qtyInUnitsBD).negate()); // NEGATIVE
@@ -438,18 +442,18 @@ public class TransferReceiveCancellationController implements Serializable {
 
     /**
      * Calculates totals for the cancellation bill.
-     * Values will be negative (reversal).
+     * Revenue values will be POSITIVE (money comes back in).
      */
     private void calculateCancellationTotals() {
         double netTotal = 0.0;
 
         if (cancellationBillItems != null) {
             for (BillItem item : cancellationBillItems) {
-                netTotal += item.getNetValue(); // This will be negative for cancellation
+                netTotal += item.getNetValue(); // This will be POSITIVE for cancellation (money in)
             }
         }
 
-        cancellationBill.setNetTotal(netTotal); // Negative for reversal
+        cancellationBill.setNetTotal(netTotal); // POSITIVE (money comes back in)
         cancellationBill.setTotal(netTotal);
 
         // Create and aggregate Bill-level finance details (CRITICAL for Issue #15797)
@@ -460,6 +464,14 @@ public class TransferReceiveCancellationController implements Serializable {
      * Creates Bill-level BillFinanceDetails by aggregating from BillItemFinanceDetails.
      * This is CRITICAL for Issue #15797 - ensures cancelled receive amounts appear correctly
      * in transfer receive summary reports with proper TYPE(b) discrimination.
+     *
+     * <h3>Sign Convention for Transfer Receive Cancellation:</h3>
+     * <ul>
+     *   <li>totalCostValue: NEGATIVE (cost burden removed)</li>
+     *   <li>totalPurchaseValue: NEGATIVE (purchase value removed)</li>
+     *   <li>totalRetailSaleValue: NEGATIVE (retail value removed)</li>
+     *   <li>lineNetTotal: POSITIVE (money comes back in)</li>
+     * </ul>
      */
     private void createBillFinanceDetails() {
         BillFinanceDetails bfd = new BillFinanceDetails();
@@ -475,22 +487,22 @@ public class TransferReceiveCancellationController implements Serializable {
             for (BillItem item : cancellationBillItems) {
                 BillItemFinanceDetails itemFd = item.getBillItemFinanceDetails();
                 if (itemFd != null) {
-                    // Aggregate cost values (NEGATIVE for cancellation)
+                    // Aggregate cost values (NEGATIVE for cancellation - cost removed)
                     if (itemFd.getTotalCost() != null) {
                         totalCostValue = totalCostValue.add(itemFd.getTotalCost());
                     }
 
-                    // Aggregate purchase values (NEGATIVE for cancellation)
+                    // Aggregate purchase values (NEGATIVE for cancellation - inventory value removed)
                     if (itemFd.getValueAtPurchaseRate() != null) {
                         totalPurchaseValue = totalPurchaseValue.add(itemFd.getValueAtPurchaseRate());
                     }
 
-                    // Aggregate retail sale values (NEGATIVE for cancellation)
+                    // Aggregate retail sale values (NEGATIVE for cancellation - inventory value removed)
                     if (itemFd.getValueAtRetailRate() != null) {
                         totalRetailSaleValue = totalRetailSaleValue.add(itemFd.getValueAtRetailRate());
                     }
 
-                    // Aggregate line net totals (NEGATIVE or ZERO for cancellation)
+                    // Aggregate line net totals (POSITIVE for cancellation - money comes back in)
                     if (itemFd.getLineNetTotal() != null) {
                         lineNetTotal = lineNetTotal.add(itemFd.getLineNetTotal());
                     }
@@ -499,10 +511,10 @@ public class TransferReceiveCancellationController implements Serializable {
         }
 
         // Set aggregated values
-        bfd.setTotalCostValue(totalCostValue);
-        bfd.setTotalPurchaseValue(totalPurchaseValue);
-        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
-        bfd.setLineNetTotal(lineNetTotal);
+        bfd.setTotalCostValue(totalCostValue); // NEGATIVE
+        bfd.setTotalPurchaseValue(totalPurchaseValue); // NEGATIVE
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue); // NEGATIVE
+        bfd.setLineNetTotal(lineNetTotal); // POSITIVE
 
         // Link to cancellation bill (bi-directional)
         bfd.setBill(cancellationBill);
