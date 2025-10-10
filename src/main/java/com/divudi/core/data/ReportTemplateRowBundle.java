@@ -249,6 +249,10 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
 
+        resetCashierTotalsAndFlags();
+    }
+
+    private void resetCashierTotalsAndFlags() {
         cashierGrandTotal = 0.0;
         cashierCollectionTotal = 0.0;
         cashierExcludedTotal = 0.0;
@@ -1887,6 +1891,8 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     private void resetTotalsAndFlags() {
+        resetCashierTotalsAndFlags();
+
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
