@@ -209,28 +209,28 @@ public class DepartmentController implements Serializable {
         }
         return deps;
     }
-    
+
     public List<Department> getInstitutionAllLabTypesDepartments(Institution ins) {
-    List<Department> deps;
-    if (ins == null) {
-        deps = new ArrayList<>();
-    } else {
-        List<DepartmentType> dtypes = Arrays.asList(DepartmentType.Lab, DepartmentType.External_Lab);
-        Map<String, Object> m = new HashMap<>();
-        m.put("ins", ins);
-        m.put("types", dtypes);
-        
-        String jpql = "Select d From Department d "
-                + " where d.retired=false "
-                + " and d.institution=:ins "
-                + " and d.departmentType in :types "
-                + " and TYPE(d) <> (Route)" // Adjust based on your entity structure
-                + " order by d.name";
-        
-        deps = getFacade().findByJpql(jpql, m);
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            List<DepartmentType> dtypes = Arrays.asList(DepartmentType.Lab, DepartmentType.External_Lab);
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("types", dtypes);
+
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType in :types "
+                    + " and TYPE(d) <> (Route)" // Adjust based on your entity structure
+                    + " order by d.name";
+
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
     }
-    return deps;
-}
 
     public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
         List<Department> deps;
@@ -362,15 +362,24 @@ public class DepartmentController implements Serializable {
         List<Department> departments = getFacade().findByJpql(jpql.toString(), parameters);
         return departments != null ? departments : new ArrayList<>();
     }
-    
-    public DepartmentType findDepaermentTypeFromDeoaermnrt(Department department){
-        Department d = getFacade().find(department.getId());
-        
-        DepartmentType type = d.getDepartmentType();
-        
-        if(type == null){
+
+    public DepartmentType findDepaermentTypeFromDeoaermnrt(Department department) {
+        if (department == null || department.getId() == null) {
             return DepartmentType.Other;
         }
+        
+        Department d = getFacade().find(department.getId());
+
+        if (d == null) {
+            return DepartmentType.Other;
+        }
+
+        DepartmentType type = d.getDepartmentType();
+
+        if (type == null) {
+            return DepartmentType.Other;
+        }
+        
         return type;
     }
 

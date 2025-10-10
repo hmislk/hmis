@@ -31,31 +31,31 @@
 
             <div >
                 <table class="table table-borderless">
-                    <tr style="">
+                    <tr style="line-height: 12px">
                         <td>Request From</td>
                         <td>:</td>
                         <td>
                             <h:outputText value="#{cc.attrs.bill.fromDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.fromDepartment.institution.name}" />)
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="line-height: 12px">
                         <td>Request To</td>
                         <td>:</td>
                         <td>
                             <h:outputText value="#{cc.attrs.bill.toDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.toDepartment.institution.name}" />)
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="line-height: 12px">
                         <td>Req No</td>
                         <td>:</td>
                         <td><h:outputText value="#{cc.attrs.bill.deptId}" /></td>
                     </tr>
-                    <tr>
+                    <tr style="line-height: 12px">
                         <td>Req By</td>
                         <td>:</td>
                         <td><h:outputText value="#{cc.attrs.bill.creater.name}" /></td>
                     </tr>
-                    <tr>
+                    <tr style="line-height: 12px">
                         <td>Req Date/Time</td>
                         <td>:</td>
                         <td>
@@ -79,7 +79,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" varStatus="status">
                             <tr>
                                 <td>
                                     <h:outputText value="#{status.index + 1}" />

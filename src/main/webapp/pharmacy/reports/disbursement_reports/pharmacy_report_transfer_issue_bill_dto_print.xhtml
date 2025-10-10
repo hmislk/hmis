@@ -183,7 +183,7 @@
                                         </thead>
                                         <tbody>
                                             <ui:repeat value="#{reportsTransfer.transferIssueDtos}" var="i">
-                                                <tr>
+                                                <tr class="#{i.billClassSimpleName eq 'CancelledBill' ? 'ui-button-warning' : ''}">
                                                     <td><h:outputText value="#{i.deptId}"/></td>
                                                     <td>
                                                         <h:outputText value="#{i.createdAt}">

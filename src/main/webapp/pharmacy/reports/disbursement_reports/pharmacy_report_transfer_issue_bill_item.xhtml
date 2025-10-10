@@ -90,6 +90,7 @@
                                      styleClass="noBorder normalFont table-responsive"
                                      value="#{reportsTransfer.transferIssueBillItemDtos}" 
                                      var="i"
+                                     rowStyleClass="#{i.billClassSimpleName eq 'CancelledBill' ? 'bg-danger text-white' : ''}"
                                      paginator="true" 
                                      rows="25" 
                                      paginatorPosition="both"
@@ -141,7 +142,6 @@
                                       sortBy="#{i.deptId}"
                                       filterBy="#{i.deptId}"
                                       filterMatchMode="contains"
-
                                       >
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
@@ -277,53 +277,59 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 2px solid #007bff;">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Rate', true)}">
                                         <f:facet name="footer">
-                                            <h:outputLabel value="Cost:" styleClass="text-muted small">
+                                            <h:outputLabel value="" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}">
+                                    <p:column style="text-align: right; border-left: 2px solid #007bff;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Rate', true)}">
                                         <f:facet name="footer">
-                                            <h:outputLabel value="Retail:" styleClass="text-muted small">
+                                            <h:outputLabel value="" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.retailValue ? null : commonFunctionsProxy.abs(reportsTransfer.retailValue)}">
+                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.retailValue ? null : commonFunctionsProxy.abs(reportsTransfer.retailValue)}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', true)}">
                                         <f:facet name="footer">
-                                            <h:outputLabel value="Purchase:" styleClass="text-muted small">
+                                            <h:outputLabel value="" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}">
+                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" styleClass="text-success font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
-                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', true)}">
+                                    <p:column style="text-align: right;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Rate', true)}">
                                         <f:facet name="footer">
-                                            <h:outputLabel value="Transfer:" styleClass="text-muted small">
+                                            <h:outputLabel value="" styleClass="text-muted small">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column style="text-align: right;" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}"
+                                    <p:column style="text-align: right; border-left: 1px solid #dee2e6;"
                                               rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', true)}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" styleClass="text-primary font-weight-bold">

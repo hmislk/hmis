@@ -13,6 +13,7 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.StockQty;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
@@ -32,6 +33,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.CommonFunctionsProxy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
@@ -50,6 +52,10 @@ import java.util.Optional;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
@@ -68,6 +74,8 @@ public class TransferIssueController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private StockFacade stockFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @Inject
@@ -109,6 +117,7 @@ public class TransferIssueController implements Serializable {
     private BillItem selectedBillItem;
     private Double qty;
     private Stock tmpStock;
+    private StockDTO stockDto;
     UserStockContainer userStockContainer;
     private List<Stock> substituteStocks;
     private Stock selectedSubstituteStock;
@@ -179,7 +188,7 @@ public class TransferIssueController implements Serializable {
                 return false; // Still has remaining quantity to issue
             }
         }
-        
+
         return true; // All items are fully issued
     }
 
@@ -315,14 +324,14 @@ public class TransferIssueController implements Serializable {
     }
 
     /**
-     * PERFORMANCE OPTIMIZED: Generates bill components using bulk DTO queries 
+     * PERFORMANCE OPTIMIZED: Generates bill components using bulk DTO queries
      * instead of individual N+1 queries for each bill item.
-     * 
-     * This method replaces individual calls to:
-     * - getBilledIssuedByRequestedItem() for each item (N queries)
-     * - getCancelledIssuedByRequestedItem() for each item (N queries)  
-     * - getStockByQty() for each item (N queries)
-     * 
+     *
+     * This method replaces individual calls to: -
+     * getBilledIssuedByRequestedItem() for each item (N queries) -
+     * getCancelledIssuedByRequestedItem() for each item (N queries) -
+     * getStockByQty() for each item (N queries)
+     *
      * With just 2 bulk queries total, regardless of item count.
      */
     public void generateBillComponent() {
@@ -337,31 +346,29 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setToDepartment(requestedBill.getDepartment());
 
         // OPTIMIZATION 1: Bulk fetch all calculations for all bill items (replaces 2N individual queries)
-        java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> calculationsMap = 
-            getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillTypeAtomic.PHARMACY_ISSUE);
-        
+        java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> calculationsMap
+                = getPharmacyCalculation().getBulkCalculationsForBillItems(billItemsOfRequest, BillTypeAtomic.PHARMACY_ISSUE);
 
         // OPTIMIZATION 2: Extract unique items and bulk fetch stock availability (replaces N individual queries)
         java.util.List<Item> uniqueItems = billItemsOfRequest.stream()
-            .map(BillItem::getItem)
-            .map(item -> {
-                if (item instanceof Ampp) {
-                    Ampp ampp = (Ampp) item;
-                    return ampp.getAmp() != null ? ampp.getAmp() : item;
-                } else {
-                    return item;
-                }
-            })
-            .distinct()
-            .collect(java.util.stream.Collectors.toList());
+                .map(BillItem::getItem)
+                .map(item -> {
+                    if (item instanceof Ampp) {
+                        Ampp ampp = (Ampp) item;
+                        return ampp.getAmp() != null ? ampp.getAmp() : item;
+                    } else {
+                        return item;
+                    }
+                })
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
 
-        java.util.Map<Long, java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO>> stockAvailabilityMap = 
-            pharmacyBean.getBulkStockAvailability(uniqueItems, getSessionController().getDepartment());
+        java.util.Map<Long, java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO>> stockAvailabilityMap
+                = pharmacyBean.getBulkStockAvailability(uniqueItems, getSessionController().getDepartment());
 
         // Process each bill item using pre-fetched data (no additional database queries)
         for (BillItem billItemInRequest : billItemsOfRequest) {
             boolean flagStockFound = false;
-
 
             // Get calculations from pre-fetched data instead of individual queries
             com.divudi.core.data.dto.BillItemCalculationDTO calculations = calculationsMap.get(billItemInRequest.getId());
@@ -371,7 +378,7 @@ public class TransferIssueController implements Serializable {
                 Double issuedQtyFromDb = billItemInRequest.getIssuedPhamaceuticalItemQty();
                 double alreadyIssuedFromDb = (issuedQtyFromDb != null) ? issuedQtyFromDb : 0.0;
                 calculations = new com.divudi.core.data.dto.BillItemCalculationDTO(
-                    billItemInRequest.getId(), billItemInRequest.getQty(), alreadyIssuedFromDb, 0.0);
+                        billItemInRequest.getId(), billItemInRequest.getQty(), alreadyIssuedFromDb, 0.0);
             } else {
             }
 
@@ -379,7 +386,6 @@ public class TransferIssueController implements Serializable {
             // Update remaining quantity for consistency
             billItemInRequest.setRemainingQty(calculations.getRemainingQty());
             double quantityToIssue = getRemainingQuantityForItem(billItemInRequest);
-            
 
             if (quantityToIssue <= 0.001) { // Use small tolerance for floating point precision
                 continue; // Skip if nothing left to issue
@@ -404,9 +410,9 @@ public class TransferIssueController implements Serializable {
             Double quantityToIssueInUnits = quantityToIssue * packSize;
 
             // Get stock availability from pre-fetched data instead of individual query
-            java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO> availableStocks = 
-                stockAvailabilityMap.get(stockItem.getId());
-            
+            java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO> availableStocks
+                    = stockAvailabilityMap.get(stockItem.getId());
+
             if (availableStocks == null || availableStocks.isEmpty()) {
                 // Create empty bill item if no stock available
                 createEmptyBillItem(billItemInRequest);
@@ -440,7 +446,7 @@ public class TransferIssueController implements Serializable {
                     // Round down to the nearest complete pack
                     double completePacksOnly = Math.floor(thisTimeIssuingQtyInUnits / packSize) * packSize;
                     thisTimeIssuingQtyInUnits = completePacksOnly;
-                    
+
                     // Check if after rounding we still have something to issue
                     if (thisTimeIssuingQtyInUnits <= 0) {
                         continue;
@@ -458,7 +464,7 @@ public class TransferIssueController implements Serializable {
 
                 // Create bill item using DTO data instead of entity traversal
                 BillItem newBillItem = createBillItemFromStockDTO(
-                    stockDTO, billItemInRequest, thisTimeIssuingQtyInUnits, packSize, getBillItems().size()
+                        stockDTO, billItemInRequest, thisTimeIssuingQtyInUnits, packSize, getBillItems().size()
                 );
 
                 // Link user stock
@@ -557,6 +563,9 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
         }
+        if (getIssuedBill().getFromDepartment() == null) {
+            getIssuedBill().setFromDepartment(sessionController.getDepartment());
+        }
         if (Objects.equals(getIssuedBill().getFromDepartment().getId(),
                 getIssuedBill().getToDepartment().getId())) {
             JsfUtil.addErrorMessage("You can't issue to the same department");
@@ -568,6 +577,10 @@ public class TransferIssueController implements Serializable {
         }
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items");
+            return;
+        }
+        if (getIssuedBill().getComments() == null || getIssuedBill().getComments().isBlank()) {
+            JsfUtil.addErrorMessage("Please add a comment");
             return;
         }
         boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
@@ -790,15 +803,13 @@ public class TransferIssueController implements Serializable {
                 billItemsInIssue.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
                 originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
-                
-                
+
                 originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
                 originalOrderItem.setRemainingQty(currentRemaining - billItemsInIssue.getQty());
-                
-                
+
                 billItemFacade.editAndCommit(originalOrderItem);
 
                 getBillItemFacade().edit(billItemsInIssue);
@@ -970,14 +981,120 @@ public class TransferIssueController implements Serializable {
         getBillItemFacade().edit(b);
     }
 
+    /**
+     * Updates bill item rates and values for direct pharmacy transfer issue
+     * transactions.
+     *
+     * <h2>CRITICAL SIGN CONVENTION - PHARMACY TRANSFER ISSUE</h2>
+     *
+     * <p>
+     * This method implements a THREE-TIER accounting model for transfer
+     * issues:</p>
+     *
+     * <h3>TIER 1: INVENTORY ACCOUNTING (Stock Movement)</h3>
+     * <ul>
+     * <li><b>Quantity</b>: NEGATIVE (stock goes out from issuing
+     * department)</li>
+     * <li><b>Example</b>: -10 packs</li>
+     * <li><b>Rationale</b>: Physical inventory decreases in issuing
+     * department</li>
+     * </ul>
+     *
+     * <h3>TIER 2: COST ACCOUNTING (Cost Burden Movement)</h3>
+     * <ul>
+     * <li><b>Cost Rates</b>: POSITIVE (rates are intrinsic properties, never
+     * signed)</li>
+     * <li><b>Cost Values</b>: NEGATIVE (cost burden relieved)</li>
+     * <li><b>Examples</b>:</li>
+     * <ul>
+     * <li>lineCostRate: 2.7273 (positive)</li>
+     * <li>lineCost: -27.273 (negative = lineCostRate × quantity)</li>
+     * <li>totalCost: -27.273 (negative)</li>
+     * <li>valueAtCostRate: -27.273 (negative)</li>
+     * </ul>
+     * <li><b>Rationale</b>: When stock leaves, the cost investment also leaves
+     * (negative cost = cost relieved)</li>
+     * </ul>
+     *
+     * <h3>TIER 3: REVENUE ACCOUNTING (Financial Settlement)</h3>
+     * <ul>
+     * <li><b>Bill.netTotal</b>: POSITIVE (money received)</li>
+     * <li><b>BillItem.netValue</b>: POSITIVE (revenue per item)</li>
+     * <li><b>Example</b>: 50.0 (positive)</li>
+     * <li><b>Rationale</b>: Issuing department receives payment for transferred
+     * items</li>
+     * </ul>
+     *
+     * <h3>TIER 4: MARGIN ANALYSIS (Derived)</h3>
+     * <ul>
+     * <li><b>Formula</b>: Margin = Revenue - Cost</li>
+     * <li><b>Example</b>: 50.0 - (-27.273) = 77.273</li>
+     * <li><b>Interpretation</b>: Transfer pricing generates positive margin for
+     * issuing department</li>
+     * </ul>
+     *
+     * <h3>Why This Sign Convention?</h3>
+     * <ol>
+     * <li><b>Accounting Symmetry</b>: Cost flows in same direction as stock
+     * (both negative for issue)</li>
+     * <li><b>Mathematical Consistency</b>: totalCost = totalCostRate × quantity
+     * holds true</li>
+     * <li><b>Inventory Valuation</b>: SUM(quantity × costRate) = inventory
+     * value at cost</li>
+     * <li><b>Departmental P&L</b>: Enables accurate profit/loss calculation per
+     * department</li>
+     * <li><b>Audit Trail</b>: Maintains clear traceability of cost burden
+     * movement</li>
+     * <li><b>Standards Compliance</b>: Aligns with IFRS (IAS 2) and GAAP
+     * inventory accounting</li>
+     * </ol>
+     *
+     * <h3>IMPORTANT: Data Integrity Rules</h3>
+     * <pre>
+     * // Rule 1: Cost-Quantity Relationship
+     * lineCost = lineCostRate × quantity
+     * Example: -27.273 = 2.7273 × (-10) ✓
+     *
+     * // Rule 2: Inventory Valuation Consistency
+     * valueAtCostRate = costRate × quantityInUnits
+     * Example: -27.273 = 2.7273 × (-10) ✓
+     *
+     * // Rule 3: Department Cost Balance
+     * SUM(lineCost) across all transactions = Current Cost Burden
+     * Issue: -27.273, Receive: +27.273, Net: 0 ✓
+     * </pre>
+     *
+     * <h3>Related Documentation</h3>
+     * <ul>
+     * <li>See: developer_docs/pharmacy/cost-accounting-sign-conventions.md</li>
+     * <li>See: {@link #calculateBillNetTotal()} for Bill.netTotal
+     * calculation</li>
+     * <li>See: {@link #updateBillItemRateAndValue(BillItem)} for regular
+     * transfer issue (via request)</li>
+     * </ul>
+     *
+     * @param b The BillItem to update (must have BillItemFinanceDetails and
+     * PharmaceuticalBillItem)
+     * @throws NullPointerException if BillItemFinanceDetails or
+     * PharmaceuticalBillItem is null
+     *
+     * @see BillItemFinanceDetails
+     * @see PharmaceuticalBillItem
+     * @see ItemBatch
+     *
+     * @author HMIS Development Team
+     * @since 2025-10-09 Issue #15696 - Transfer issue cost accounting
+     * corrections
+     */
     private void updateBillItemRateAndValueForDirectIssue(BillItem b) {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
 
         b.setRate(rate);
         b.setNetRate(rate); // Fix: Set NETRATE
-        b.setNetValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
-        b.setGrossValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
+        // BillItem values should be positive (revenue) - use absolute quantity
+        b.setNetValue(rate * Math.abs(b.getQty())); // Positive for revenue
+        b.setGrossValue(rate * Math.abs(b.getQty())); // Positive for revenue
 
         BigDecimal qtyInUnits = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
         BigDecimal qtyInPacks = BigDecimal.valueOf(b.getQty());
@@ -992,9 +1109,10 @@ public class TransferIssueController implements Serializable {
             }
         }
 
-        // BillItemFinanceDetails quantities should be in packs, not units
-        f.setQuantity(qtyInPacks);
-        f.setTotalQuantity(qtyInPacks);
+        // BillItemFinanceDetails quantities should be in packs, not units - make negative for stock-out
+        BigDecimal absQtyInPacks = qtyInPacks.abs();
+        f.setQuantity(BigDecimal.ZERO.subtract(absQtyInPacks)); // Negative for stock-out
+        f.setTotalQuantity(BigDecimal.ZERO.subtract(absQtyInPacks)); // Negative for stock-out
         f.setLineGrossRate(rateBig);
         f.setLineNetRate(rateBig);
         // Calculate totals using pack quantities and pack rates
@@ -1003,9 +1121,21 @@ public class TransferIssueController implements Serializable {
 
         // Fix: Set LINECOSTRATE to actual cost rate from ItemBatch
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
-            BigDecimal costRate = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+            ItemBatch batch = b.getPharmaceuticalBillItem().getItemBatch();
+            BigDecimal costRate = BigDecimal.valueOf(batch.getCostRate());
+            f.setCostRate(costRate); // Set COSTRATE field
             f.setLineCostRate(costRate);
             f.setLineCost(costRate.multiply(qtyInUnits));
+
+            // Add missing cost rate fields for transfer issue
+            f.setBillCostRate(BigDecimal.ZERO); // No bill-level cost adjustment for transfers
+            f.setTotalCostRate(costRate); // Total cost rate = line cost rate for simple transfers
+            f.setBillCost(BigDecimal.ZERO); // No bill-level cost for transfers
+            f.setTotalCost(costRate.multiply(qtyInUnits)); // Total cost = line cost for transfers
+
+            // Add purchase rate to BillItemFinanceDetails
+            BigDecimal purchaseRatePerUnit = BigDecimal.valueOf(batch.getPurcahseRate());
+            f.setPurchaseRate(purchaseRatePerUnit);
         } else {
             f.setLineCost(rateBig.multiply(qtyInPacks));
             f.setLineCostRate(rateBig);
@@ -1022,9 +1152,16 @@ public class TransferIssueController implements Serializable {
             ItemBatch batch = b.getPharmaceuticalBillItem().getItemBatch();
             PharmaceuticalBillItem phItem = b.getPharmaceuticalBillItem();
 
-            f.setValueAtCostRate(BigDecimal.valueOf(batch.getCostRate()).multiply(qtyInUnits)); // VALUEATCOSTRATE
-            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits)); // VALUEATPURCHASERATE
-            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits)); // VALUEATRETAILRATE
+            // Use absolute value for calculations, then explicitly make negative for stock-out
+            BigDecimal absQtyInUnits = qtyInUnits.abs();
+
+            f.setValueAtCostRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getCostRate()).multiply(absQtyInUnits))); // VALUEATCOSTRATE - negative for stock-out
+            f.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(absQtyInUnits))); // VALUEATPURCHASERATE - negative for stock-out
+            f.setValueAtRetailRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(absQtyInUnits))); // VALUEATRETAILRATE - negative for stock-out
+
+            // Make lineCost and totalCost negative for stock-out (cost reduced)
+            f.setLineCost(BigDecimal.ZERO.subtract(f.getLineCostRate().multiply(absQtyInUnits)));
+            f.setTotalCost(BigDecimal.ZERO.subtract(f.getTotalCostRate().multiply(absQtyInUnits)));
 
             // Fix: Add missing PharmaceuticalBillItem fields
             BigDecimal packQty = BigDecimal.valueOf(b.getQty()); // Quantity in packs
@@ -1050,12 +1187,61 @@ public class TransferIssueController implements Serializable {
         getBillItemFacade().edit(b);
     }
 
+    /**
+     * Calculates the Bill net total for transfer issue transactions.
+     *
+     * <p>
+     * <b>CRITICAL</b>: For transfer ISSUE, Bill.netTotal must be POSITIVE
+     * because the issuing department receives money/revenue.</p>
+     *
+     * <h3>Sign Convention Explanation:</h3>
+     * <ul>
+     * <li><b>PharmaceuticalBillItem.qty</b>: NEGATIVE (stock goes out)</li>
+     * <li><b>Bill.netTotal</b>: POSITIVE (money comes in)</li>
+     * <li><b>Calculation</b>: Uses absolute value of quantity to ensure
+     * positive revenue</li>
+     * </ul>
+     *
+     * <h3>Example Calculation:</h3>
+     * <pre>
+     * Given:
+     *   - PharmaceuticalBillItem.qty = -10 units (stock out)
+     *   - Transfer rate = 5.0 per unit
+     *   - Calculation: 5.0 × | -10 | = 5.0 × 10 = 50.0
+     *   - Result: Bill.netTotal = 50.0 (positive revenue)
+     * </pre>
+     *
+     * <h3>Why Absolute Value?</h3>
+     * <p>
+     * The quantity is already negative (representing stock outflow), but
+     * revenue must be positive (representing money inflow). Using Math.abs()
+     * ensures the revenue calculation is always positive regardless of the
+     * quantity sign.</p>
+     *
+     * <h3>Related Accounting:</h3>
+     * <ul>
+     * <li>Stock: -10 packs (inventory decreases)</li>
+     * <li>Cost: -27.273 (cost burden relieved)</li>
+     * <li>Revenue: +50.0 (money received)</li>
+     * <li>Margin: 50.0 - (-27.273) = 77.273</li>
+     * </ul>
+     *
+     * @return The positive Bill net total (sum of all item revenues)
+     *
+     * @see #updateBillItemRateAndValueForDirectIssue(BillItem) for item-level
+     * calculations
+     * @see BillItemFinanceDetails for cost accounting (negative values)
+     *
+     * @author HMIS Development Team
+     * @since 2025-10-09 Issue #15696 - Transfer issue revenue accounting fix
+     */
     private double calculateBillNetTotal() {
         double value = 0;
         int serialNo = 0;
         for (BillItem b : getIssuedBill().getBillItems()) {
             double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
-            value += rate * b.getPharmaceuticalBillItem().getQty();
+            // Use absolute value for revenue calculation - money comes in (positive)
+            value += rate * Math.abs(b.getPharmaceuticalBillItem().getQty());
             b.setSearialNo(serialNo++);
         }
         return value;
@@ -1134,7 +1320,7 @@ public class TransferIssueController implements Serializable {
         billItem.getPharmaceuticalBillItem().setCostValue(billItem.getPharmaceuticalBillItem().getCostRate() * billItem.getPharmaceuticalBillItem().getQty());
         billItem.getPharmaceuticalBillItem().setRetailValue(billItem.getPharmaceuticalBillItem().getRetailRate() * billItem.getPharmaceuticalBillItem().getQty());
         billItem.getPharmaceuticalBillItem().setPurchaseValue(billItem.getPharmaceuticalBillItem().getPurchaseRate() * billItem.getPharmaceuticalBillItem().getQty());
-        
+
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
 
@@ -1185,7 +1371,7 @@ public class TransferIssueController implements Serializable {
         if (itemBatch == null) {
             return BigDecimal.ZERO;
         }
-        
+
         boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
         boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
@@ -1213,7 +1399,7 @@ public class TransferIssueController implements Serializable {
         // Validate quantity doesn't exceed remaining requested quantity
         if (bi.getReferanceBillItem() != null) {
             double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
-            
+
             if (qty.doubleValue() > remainingQty) {
                 // Cap the quantity to the maximum allowed
                 qty = BigDecimal.valueOf(remainingQty);
@@ -1272,19 +1458,19 @@ public class TransferIssueController implements Serializable {
         if (bi == null) {
             return;
         }
-        
+
         // Validate quantity doesn't exceed remaining requested quantity
         if (bi.getReferanceBillItem() != null) {
             double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
             double currentIssuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
-            
+
             if (currentIssuingQty > remainingQty) {
                 JsfUtil.addErrorMessage("Cannot issue " + currentIssuingQty + " units of " + bi.getItem().getName() + ". Only " + remainingQty + " units remaining to be issued.");
                 // Reset to maximum allowed quantity
                 bi.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(remainingQty));
             }
         }
-        
+
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
@@ -1357,51 +1543,51 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please select a substitute stock.");
             return;
         }
-        
+
         // Update the bill item with selected stock details
         itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
-        
+
         PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
         if (phItem == null) {
             phItem = new PharmaceuticalBillItem();
             phItem.setBillItem(itemForSubstitution);
             itemForSubstitution.setPharmaceuticalBillItem(phItem);
         }
-        
+
         // Set stock and batch details
         phItem.setStock(selectedSubstituteStock);
         phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
         phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
         phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
         phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
-        
+
         // Update rates in pharmaceutical bill item
         phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
         phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
         phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
         phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
-        
+
         // Update financials
         BillItemFinanceDetails financeDetails = itemForSubstitution.getBillItemFinanceDetails();
         if (financeDetails != null) {
             BigDecimal transferRate = determineTransferRate(selectedSubstituteStock.getItemBatch());
             financeDetails.setLineGrossRate(transferRate);
             financeDetails.setLineNetRate(transferRate);
-            
+
             // Update cost and retail rates
             financeDetails.setLineCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()));
             financeDetails.setRetailSaleRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()));
-            
+
             // Update values at different rates
             BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
             financeDetails.setValueAtCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty));
             financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty));
             financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
         }
-        
+
         updateFinancialsForTransferIssue(itemForSubstitution.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
-        
+
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
 
@@ -1421,7 +1607,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setReferenceBill(getRequestedBill());
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());
-        }else{
+        } else {
             getBillFacade().edit(getIssuedBill());
         }
     }
@@ -1540,6 +1726,27 @@ public class TransferIssueController implements Serializable {
         this.tmpStock = tmpStock;
     }
 
+    public Stock convertStockDtoToEntity(StockDTO stockDto) {
+        if (stockDto == null || stockDto.getId() == null) {
+            return null;
+        }
+        return stockFacade.find(stockDto.getId());
+    }
+
+    public StockDTO getStockDto() {
+        return stockDto;
+    }
+
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
+        // Automatically convert DTO to entity
+        if (stockDto != null) {
+            this.tmpStock = convertStockDtoToEntity(stockDto);
+        } else {
+            this.tmpStock = null;
+        }
+    }
+
     public BillItem getSelectedBillItem() {
         return selectedBillItem;
     }
@@ -1609,7 +1816,9 @@ public class TransferIssueController implements Serializable {
     }
 
     /**
-     * Gets the remaining quantity that can still be issued for a given requested item.
+     * Gets the remaining quantity that can still be issued for a given
+     * requested item.
+     *
      * @param referenceItem The original requested bill item
      * @return The remaining quantity that can be issued
      */
@@ -1625,7 +1834,6 @@ public class TransferIssueController implements Serializable {
     // ------------------------------------------------------------------
     // Helper Methods for DTO-based Optimization
     // ------------------------------------------------------------------
-
     /**
      * Creates a minimal Stock entity from DTO data for user stock validation.
      * Only populates fields needed for isStockAvailable() check.
@@ -1634,7 +1842,7 @@ public class TransferIssueController implements Serializable {
         Stock stock = new Stock();
         stock.setId(dto.getStockId());
         stock.setStock(dto.getAvailableStock());
-        
+
         ItemBatch batch = new ItemBatch();
         batch.setId(dto.getItemBatchId());
         batch.setBatchNo(dto.getBatchNo());
@@ -1642,23 +1850,24 @@ public class TransferIssueController implements Serializable {
         batch.setPurcahseRate(dto.getPurchaseRate());
         batch.setRetailsaleRate(dto.getRetailRate());
         batch.setCostRate(dto.getCostRate());
-        
+
         stock.setItemBatch(batch);
         return stock;
     }
 
     /**
-     * Creates a complete BillItem from stock DTO data, avoiding entity traversals.
+     * Creates a complete BillItem from stock DTO data, avoiding entity
+     * traversals.
      */
-    private BillItem createBillItemFromStockDTO(com.divudi.core.data.dto.StockAvailabilityDTO stockDTO, 
-                                               BillItem referenceItem, Double qtyInUnits, 
-                                               double packSize, int serialNo) {
+    private BillItem createBillItemFromStockDTO(com.divudi.core.data.dto.StockAvailabilityDTO stockDTO,
+            BillItem referenceItem, Double qtyInUnits,
+            double packSize, int serialNo) {
         BillItem newBillItem = new BillItem();
         newBillItem.setSearialNo(serialNo);
         newBillItem.setItem(referenceItem.getItem());
         newBillItem.setReferanceBillItem(referenceItem);
         newBillItem.setQty(qtyInUnits / packSize);
-        
+
         // Create pharmaceutical bill item using DTO data
         PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
         phItem.setBillItem(newBillItem);
@@ -1666,7 +1875,7 @@ public class TransferIssueController implements Serializable {
         phItem.setPurchaseRate(stockDTO.getPurchaseRate());
         phItem.setRetailRateInUnit(stockDTO.getRetailRate());
         phItem.setDoe(stockDTO.getDateOfExpire());
-        
+
         // Create minimal entities for required relationships using DTO data
         ItemBatch batch = new ItemBatch();
         batch.setId(stockDTO.getItemBatchId());
@@ -1676,22 +1885,22 @@ public class TransferIssueController implements Serializable {
         batch.setCostRate(stockDTO.getCostRate());
         batch.setDateOfExpire(stockDTO.getDateOfExpire());
         phItem.setItemBatch(batch);
-        
+
         Stock stock = new Stock();
         stock.setId(stockDTO.getStockId());
         stock.setStock(stockDTO.getAvailableStock());
         stock.setItemBatch(batch);
         phItem.setStock(stock);
-        
+
         if (packSize != 1.0) {
             phItem.setQtyPacks(qtyInUnits / packSize);
         }
-        
+
         newBillItem.setPharmaceuticalBillItem(phItem);
-        
+
         // Set financial details using DTO data
         setFinancialDetailsFromDTO(newBillItem, stockDTO, packSize);
-        
+
         return newBillItem;
     }
 
@@ -1710,7 +1919,7 @@ public class TransferIssueController implements Serializable {
         if (billItem.getBillItemFinanceDetails() == null) {
             billItem.setBillItemFinanceDetails(new BillItemFinanceDetails());
         }
-        
+
         BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
 
         // Set unitsPerPack from the packSize parameter before computing pack rates
@@ -1757,6 +1966,36 @@ public class TransferIssueController implements Serializable {
         bItem.setItem(referenceItem.getItem());
         bItem.setReferanceBillItem(referenceItem);
         getBillItems().add(bItem);
+    }
+
+    /**
+     * Converter for StockDTO to handle autocomplete with DTOs
+     */
+    @FacesConverter("stockDtoConverter")
+    public static class StockDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            // Return a StockDTO with just the ID set - the setter will handle entity conversion
+            StockDTO dto = new StockDTO();
+            dto.setId(Long.valueOf(value));
+            return dto;
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            if (value == null) {
+                return "";
+            }
+            if (value instanceof StockDTO) {
+                StockDTO stockDto = (StockDTO) value;
+                return stockDto.getId() != null ? stockDto.getId().toString() : "";
+            }
+            return "";
+        }
     }
 
 }

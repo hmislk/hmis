@@ -197,7 +197,7 @@
                                         </thead>
                                         <tbody>
                                             <ui:repeat value="#{reportsTransfer.transferIssueBillItemDtos}" var="i">
-                                                <tr>
+                                                <tr class="#{i.billClassSimpleName eq 'CancelledBill' ? 'table-warning' : ''}">
                                                     <td style="width: 8mm;" >
                                                         <h:outputText value="#{i.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
