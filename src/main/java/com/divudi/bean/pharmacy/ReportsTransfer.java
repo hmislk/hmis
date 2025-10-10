@@ -534,6 +534,7 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
+                .append("TYPE(b), ")
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
@@ -722,12 +723,15 @@ public class ReportsTransfer implements Serializable {
                 .append("COALESCE(bfd.totalCostValue, 0.0), ")
                 .append("COALESCE(bfd.totalPurchaseValue, 0.0), ")
                 .append("COALESCE(bfd.lineNetTotal, 0.0), ")
-                .append("COALESCE(bfd.totalRetailSaleValue, 0.0)")
+                .append("COALESCE(bfd.totalRetailSaleValue, 0.0), ")
+                .append("COALESCE(bb.deptId, ''), ")
+                .append("bb.id")
                 .append(") ")
                 .append("FROM Bill b ")
                 .append("LEFT JOIN b.billFinanceDetails bfd ")
                 .append("LEFT JOIN b.toStaff ts ")
                 .append("LEFT JOIN ts.person p ")
+                .append("LEFT JOIN b.billedBill bb ")
                 .append("WHERE b.billType = :bt ")
                 .append("AND b.retired = false ")
                 .append("AND b.createdAt BETWEEN :fd AND :td ");

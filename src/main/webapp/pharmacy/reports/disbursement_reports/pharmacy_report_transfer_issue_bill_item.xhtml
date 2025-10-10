@@ -90,6 +90,7 @@
                                      styleClass="noBorder normalFont table-responsive"
                                      value="#{reportsTransfer.transferIssueBillItemDtos}" 
                                      var="i"
+                                     rowStyleClass="#{i.billClassSimpleName eq 'CancelledBill' ? 'bg-danger text-white' : ''}"
                                      paginator="true" 
                                      rows="25" 
                                      paginatorPosition="both"
@@ -141,7 +142,6 @@
                                       sortBy="#{i.deptId}"
                                       filterBy="#{i.deptId}"
                                       filterMatchMode="contains"
-
                                       >
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>

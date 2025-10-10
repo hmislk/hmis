@@ -181,10 +181,23 @@
                                         <h:outputLabel value="Remarks" />
                                     </f:facet>
                                     <h:panelGroup rendered="#{i.cancelled}">
-                                        <span class="badge bg-danger">Cancelled</span>                                   
+                                        <span class="badge bg-danger">Cancelled</span> 
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{i.refunded}">
                                         <span class="badge bg-warning">Returned</span>
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup 
+                                        id="lblOriginalBillIdOfCancelledBill" 
+                                        rendered="#{i.billClassSimpleName eq 'CancelledBill'}">
+                                        Original Bill - #{i.billedBillDeptId}
+                                        <h1>fdfg-#{i.billedBillDeptId}-dfg</h1>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="View"
+                                            icon="pi pi-eye"
+                                            styleClass="ui-button-secondary"
+                                            action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueByIdWithParam(i.billedBillId)}" />
                                     </h:panelGroup>
                                 </p:column>
 

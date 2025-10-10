@@ -267,6 +267,7 @@ public class TransferIssueCancellationController implements Serializable {
 
         // Initialize collections
         cancellationBill.setBillItems(new ArrayList<>());
+        cancellationBill.setBilledBill(originalBill);
     }
 
     /**

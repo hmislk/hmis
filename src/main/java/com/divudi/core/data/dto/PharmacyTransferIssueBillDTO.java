@@ -32,6 +32,9 @@ public class PharmacyTransferIssueBillDTO implements Serializable {
     private Double margin;
     private Double discount;
     private Double netValue;
+    // New fields for original bill details of cancelled bills
+    private Long billedBillId;
+    private String billedBillDeptId;
 
     // Default constructor
     public PharmacyTransferIssueBillDTO() {
@@ -195,6 +198,34 @@ public class PharmacyTransferIssueBillDTO implements Serializable {
             this.saleValue = BigDecimal.valueOf((Double) saleValue);
         } else {
             this.saleValue = BigDecimal.ZERO;
+        }
+    }
+
+    // New constructor including original bill id and deptId for cancelled bills navigation
+    // Parameters order should match JPQL in ReportsTransfer.fillTransferIssueBillsDtoDirectly():
+    // TYPE(b), b.id, COALESCE(b.deptId,''), b.createdAt, COALESCE(b.department.name,''), COALESCE(b.toDepartment.name,''),
+    // COALESCE(p.name,''), COALESCE(b.cancelled,false), COALESCE(b.refunded,false), COALESCE(b.comments,''),
+    // COALESCE(bfd.totalCostValue,0.0), COALESCE(bfd.totalPurchaseValue,0.0), COALESCE(bfd.lineNetTotal,0.0), COALESCE(bfd.totalRetailSaleValue,0.0),
+    // COALESCE(bb.deptId,''), bb.id
+    public PharmacyTransferIssueBillDTO(Object billClass,
+                                        Long billId, Object deptId, Date createdAt,
+                                        Object fromDepartmentName, Object toDepartmentName,
+                                        Object transporterName, Object cancelled, Object refunded,
+                                        Object comments, Object costValue, Object purchaseValue,
+                                        Object transferValue, Object saleValue,
+                                        Object billedBillDeptId, Object billedBillId) {
+        this(billClass, billId, deptId, createdAt,
+                fromDepartmentName, toDepartmentName,
+                transporterName, cancelled, refunded,
+                comments, costValue, purchaseValue,
+                transferValue, saleValue);
+
+        // Map original bill details
+        this.billedBillDeptId = billedBillDeptId != null ? billedBillDeptId.toString() : null;
+        if (billedBillId instanceof Number) {
+            this.billedBillId = ((Number) billedBillId).longValue();
+        } else {
+            this.billedBillId = null;
         }
     }
     
@@ -393,6 +424,14 @@ public class PharmacyTransferIssueBillDTO implements Serializable {
 
     public String getBillClassSimpleName() {
         return billClassSimpleName;
+    }
+
+    public Long getBilledBillId() {
+        return billedBillId;
+    }
+
+    public String getBilledBillDeptId() {
+        return billedBillDeptId;
     }
 
     private String extractSimpleClassName(Object billClass) {
