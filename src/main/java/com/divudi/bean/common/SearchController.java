@@ -2355,6 +2355,15 @@ public class SearchController implements Serializable {
                 .collect(Collectors.joining(", "));
     }
 
+    public String formatPaymentMethodLabels(List<PaymentMethod> methods) {
+        if (methods == null || methods.isEmpty()) {
+            return "None";
+        }
+        return methods.stream()
+                .map(PaymentMethod::getLabel)
+                .collect(Collectors.joining(", "));
+    }
+
     public WebUser getWebUser() {
         return webUser;
     }
@@ -15554,6 +15563,107 @@ public class SearchController implements Serializable {
         return b;
     }
 
+    private ReportTemplateRowBundle generatePharmacyCollectionWithPaymentBreakdown(List<BillTypeAtomic> billTypes, List<PaymentMethod> paymentMethodsForQuery) {
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(" 
+                + "bill.department, MIN(p.createdAt), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr "
+                + "AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpql += "AND bill.billTypeAtomic in :bts ";
+            parameters.put("bts", billTypes);
+        }
+
+        if (paymentMethodsForQuery != null && !paymentMethodsForQuery.isEmpty()) {
+            jpql += "AND p.paymentMethod in :pms ";
+            parameters.put("pms", paymentMethodsForQuery);
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department";
+
+        List<ReportTemplateRow> rows = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        pb.setReportTemplateRows(rows);
+        pb.calculateTotalsWithCredit();
+
+        ensureCollectionMethodLists();
+        double bundleGrand = 0.0;
+        double bundleCollection = 0.0;
+        if (rows != null) {
+            for (ReportTemplateRow row : rows) {
+                double grand = computeGrandTotal(row);
+                double collection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                double excluded = grand - collection;
+                row.setCashierGrandTotal(grand);
+                row.setCashierCollectionTotal(collection);
+                row.setCashierExcludedTotal(excluded);
+                bundleGrand += grand;
+                bundleCollection += collection;
+            }
+        }
+        double bundleExcluded = bundleGrand - bundleCollection;
+
+        pb.setCashierGrandTotal(bundleGrand);
+        pb.setCashierCollectionTotal(bundleCollection);
+        pb.setCashierExcludedTotal(bundleExcluded);
+        pb.setCashierCollectionPaymentMethods(new ArrayList<>(allCashierCollectionIncludedMethods));
+        pb.setCashierExcludedPaymentMethods(new ArrayList<>(allCashierCollectionExcludedMethods));
+        pb.setTotal(bundleGrand);
+
+        pb.setBundleType("pharmacyCollection");
+        pb.setName("Pharmacy Collection");
+        return pb;
+    }
+
     public void generateMyCashierSummary() {
         institution = null;
         department = null;
@@ -15662,7 +15772,7 @@ public class SearchController implements Serializable {
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
-            ReportTemplateRowBundle pharmacyCollection = generateTotalPaymentColumnByDepartment(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollectionWithPaymentBreakdown(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyCollection");
             pharmacyCollection.setName("Pharmacy Collection");
             bundle.getBundles().add(pharmacyCollection);
@@ -19245,6 +19355,58 @@ public class SearchController implements Serializable {
         }
         double excluded = rowCashierGrandTotal(row) - rowCashierCollectionTotal(row);
         row.setCashierExcludedTotal(excluded);
+        return excluded;
+    }
+
+    public double bundleCashierGrandTotal(ReportTemplateRowBundle targetBundle) {
+        if (targetBundle == null) {
+            return 0.0;
+        }
+        double cached = targetBundle.getCashierGrandTotal();
+        if (cached > 0) {
+            return cached;
+        }
+        double total = 0.0;
+        List<ReportTemplateRow> rows = targetBundle.getReportTemplateRows();
+        if (rows != null) {
+            for (ReportTemplateRow row : rows) {
+                total += rowCashierGrandTotal(row);
+            }
+        }
+        targetBundle.setCashierGrandTotal(total);
+        return total;
+    }
+
+    public double bundleCashierCollectionTotal(ReportTemplateRowBundle targetBundle) {
+        if (targetBundle == null) {
+            return 0.0;
+        }
+        double cached = targetBundle.getCashierCollectionTotal();
+        if (cached > 0) {
+            return cached;
+        }
+        ensureCollectionMethodLists();
+        double total = 0.0;
+        List<ReportTemplateRow> rows = targetBundle.getReportTemplateRows();
+        if (rows != null) {
+            for (ReportTemplateRow row : rows) {
+                total += calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+            }
+        }
+        targetBundle.setCashierCollectionTotal(total);
+        return total;
+    }
+
+    public double bundleCashierExcludedTotal(ReportTemplateRowBundle targetBundle) {
+        if (targetBundle == null) {
+            return 0.0;
+        }
+        double cached = targetBundle.getCashierExcludedTotal();
+        if (cached > 0) {
+            return cached;
+        }
+        double excluded = bundleCashierGrandTotal(targetBundle) - bundleCashierCollectionTotal(targetBundle);
+        targetBundle.setCashierExcludedTotal(excluded);
         return excluded;
     }
 
