@@ -74,7 +74,7 @@
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="billDetailsFiveFive"/>
                     <h:outputLabel value="Consignment" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" class="billDetailsFiveFive"/>
-                    
+
                     <h:outputLabel value="Payment Method" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive"/>
 
@@ -82,178 +82,193 @@
             </div>
 
             <div>
-                <p:dataTable 
-                    rowIndexVar="rowIndex"
-                    value="#{cc.attrs.bill.billItems}" 
-                    var="bip"
-                    style="font-size: 15px; margin-left: 3%; margin-right: 3%; border-collapse: collapse;">
-                    <p:column style="padding: 4px; border: 1px solid black; width: 9em;">
-                        <f:facet name="header">Item</f:facet>
-                        <h:outputText value="#{bip.item.name}" ></h:outputText>
-                        <h:outputText value=" (#{bip.item.code})" ></h:outputText>
-                    </p:column>
+                <h:panelGroup rendered="#{not empty cc.attrs.bill.billItems}">
+                    <table style="width: 94%; margin: 0 auto; border-collapse: collapse; font-size: 15px;" >
+                        <!-- Table Header -->
+                        <thead >
+                            <tr>
+                                <th style="padding: 4px; border: 1px solid black; width: 9em; text-align: left;">Item</th>
+                                <th style="padding: 4px; border: 1px solid black; width: 3em; text-align: right;">Expiry</th>
+                                <th style="padding: 4px; border: 1px solid black; width: 2.5em; text-align: right;">QTY</th>
+                                <th style="padding: 4px; border: 1px solid black; width: 2.5em; text-align: right;">Free</th>
+                                <th style="padding: 4px; border: 1px solid black; width: 3em; text-align: right;">P. Rate</th>
+                                <th style="padding: 4px; border: 1px solid black; width: 2em; text-align: right;">Dis. Rate</th>
+                                <th style="padding: 4px; border: 1px solid black; width: 4.5em; text-align: right;">P. Value</th>
 
-                    <p:column  style="padding: 4px; border: 1px solid black; width: 3em;" class="text-end">
-                        <f:facet name="header">Expiry</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                        </h:outputLabel>
-                    </p:column>                                 
+                                <h:panelGroup rendered="#{cc.attrs.ShowRetailValue}">
+                                    <th style="padding: 4px; border: 1px solid black; width: 4.5em; text-align: right;"
+                                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue'}">
+                                        Re. Rate
+                                    </th>
+                                </h:panelGroup>
 
-                    <p:column style="padding: 4px; border: 1px solid black; width: 2.5em;" class="text-end">
-                        <f:facet name="header">QTY</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity}">
-                            <f:convertNumber pattern="#,##0" />
-                        </h:outputLabel>
-                    </p:column>
+                                <h:panelGroup rendered="#{cc.attrs.ShowProfit}">
+                                    <th style="padding: 4px; border: 1px solid black; width: 2.5em; text-align: right;"
+                                        class="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit'}">
+                                        Profit %
+                                    </th>
+                                </h:panelGroup>
+                            </tr>
+                        </thead>
 
-                    <p:column style="padding: 4px; border: 1px solid black; width: 2.5em;" class="text-end">
-                        <f:facet name="header">Free</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity}">
-                            <f:convertNumber pattern="#,##0" />
-                        </h:outputLabel>
+                        <!-- Table Body -->
+                        <tbody>
+                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                <tr>
+                                    <td style="padding: 4px; border: 1px solid black;">
+                                        <h:outputText value="#{bip.item.name}" />
+                                        <h:outputText value=" (#{bip.item.code})" />
+                                    </td>
 
-                    </p:column>
+                                    <td style="padding: 4px; border: 1px solid black; text-align: right;">
+                                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                                            <f:convertDateTime pattern="dd/MM/yy" />
+                                        </h:outputLabel>
+                                    </td>
 
-                    <p:column style="padding: 4px; border: 1px solid black; width: 3em;" class="text-end">
-                        <f:facet name="header">P. Rate</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
+                                    <td style="padding: 4px; border: 1px solid black; text-align: right;">
+                                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </td>
 
-                    <p:column style="padding: 4px; border: 1px solid black; width: 2em;" class="text-end">
-                        <f:facet name="header">Dis. Rate</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineDiscountRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
+                                    <td style="padding: 4px; border: 1px solid black; text-align: right;">
+                                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </td>
 
-                    <p:column style="padding: 4px; border: 1px solid black; width: 4.5em;" class="text-end">
-                        <f:facet name="header">P. Value</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineNetTotal}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column  
-                        style="padding: 4px; border: 1px solid black; width: 4.5em;" 
-                        class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }"
-                        rendered="#{cc.attrs.ShowRetailValue}">
-                        <f:facet name="header">Re. Rate</f:facet>
-                        <h:outputLabel value="#{bip.item.class.simpleName eq 'Ampp' 
-                                                ? ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
-                                                    ? bip.billItemFinanceDetails.retailSaleRate
-                                                    : (bip.billItemFinanceDetails.retailSaleRatePerUnit * ((empty bip.billItemFinanceDetails.unitsPerPack or bip.billItemFinanceDetails.unitsPerPack == 0)
-                                                        ? (empty bip.item.dblValue ? 1 : bip.item.dblValue)
-                                                        : bip.billItemFinanceDetails.unitsPerPack)))
-                                                : ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
-                                                    ? bip.billItemFinanceDetails.retailSaleRate
-                                                    : bip.billItemFinanceDetails.retailSaleRatePerUnit)}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
+                                    <td style="padding: 4px; border: 1px solid black; text-align: right;">
+                                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
 
-                    <p:column  
-                        rendered="#{cc.attrs.ShowProfit}"
-                        style="padding: 4px; border: 1px solid black; width: 2.5em;" 
-                        class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
-                        <f:facet name="header">Profit%</f:facet>
-                        <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
-                            <f:convertNumber pattern="0.0" ></f:convertNumber>
-                        </h:outputText>
-                    </p:column>
+                                    <td style="padding: 4px; border: 1px solid black; text-align: right;">
+                                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineDiscountRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
 
-                    <p:columnGroup type="footer">
-                        <p:row style="padding: 4px; width: 8em;">
-                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Gross Total"/>
-                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.total}"  class="text-end">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.total}">
+                                    <td style="padding: 4px; border: 1px solid black; text-align: right;">
+                                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineNetTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+
+                                    <h:panelGroup rendered="#{cc.attrs.ShowRetailValue}">
+                                        <td style="padding: 4px; border: 1px solid black; text-align: right;"
+                                            class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue'}">
+                                            <h:outputLabel value="#{bip.item.class.simpleName eq 'Ampp'
+                                                                    ? ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
+                                                                    ? bip.billItemFinanceDetails.retailSaleRate
+                                                                    : (bip.billItemFinanceDetails.retailSaleRatePerUnit * 
+                                                                    ((empty bip.billItemFinanceDetails.unitsPerPack or bip.billItemFinanceDetails.unitsPerPack == 0)
+                                                                    ? (empty bip.item.dblValue ? 1 : bip.item.dblValue)
+                                                                    : bip.billItemFinanceDetails.unitsPerPack)))
+                                                                    : ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
+                                                                    ? bip.billItemFinanceDetails.retailSaleRate
+                                                                    : bip.billItemFinanceDetails.retailSaleRatePerUnit)}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{cc.attrs.ShowProfit}">
+                                        <td style="padding: 4px; border: 1px solid black; text-align: right;"
+                                            class="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit'}">
+                                            <h:outputText value="#{bip.billItemFinanceDetails.profitMargin}">
+                                                <f:convertNumber pattern="0.0" />
+                                            </h:outputText>
+                                        </td>
+                                    </h:panelGroup>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+
+                        <!-- Table Footer -->
+                        <tfoot style="font-weight: bold;">
+                            <!-- Gross Total -->
+                            <tr>
+                                <td colspan="6" style="padding: 4px;">Gross Total</td>
+                                <td style="padding: 4px; text-align: right;">
+                                    <h:outputLabel value="#{0 - cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}"  class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}">
+                                </td>
+                                <h:panelGroup rendered="#{cc.attrs.ShowRetailValue}">
+                                    <td style="padding: 4px; text-align: right;"
+                                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue'}">
+                                        <h:outputLabel value="#{cc.attrs.bill.saleValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </h:panelGroup>
+                            </tr>
+
+                            <!-- Expense Total -->
+                            <tr rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
+                                <td colspan="6" style="padding: 4px;">Expense Total</td>
+                                <td style="padding: 4px; text-align: right;">
+                                    <h:outputLabel value="#{0 - cc.attrs.bill.expenseTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:row>
-                        
-                        <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
-                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Expense Total"/>
-                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.total}" class="text-end">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                </td>
+                            </tr>
 
-                        </p:row>
-
-                        <!-- Expense Total considered for costing -->
-                        <p:row>
-                            <p:column style="padding: 10px; width: 6em;" colspan="6" footerText="Expense Total considered for costing"/>
-                            <p:column style="padding: 4px; width: 6em;" class="text-end">
-                                <f:facet name="footer">
+                            <!-- Expense Total considered for costing -->
+                            <tr>
+                                <td colspan="6" style="padding: 4px;">Expense Total considered for costing</td>
+                                <td style="padding: 4px; text-align: right;">
                                     <h:outputLabel value="#{cc.attrs.bill.expensesTotalConsideredForCosting}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:row>
+                                </td>
+                            </tr>
 
-                        <!-- Expense Total Not considered for Costing -->
-                        <p:row>
-                            <p:column style="padding: 10px; width: 6em;" colspan="6" footerText="Expense Total Not considered for Costing"/>
-                            <p:column style="padding: 4px; width: 6em;" class="text-end">
-                                <f:facet name="footer">
+                            <!-- Expense Total not considered for costing -->
+                            <tr>
+                                <td colspan="6" style="padding: 4px;">Expense Total not considered for costing</td>
+                                <td style="padding: 4px; text-align: right;">
                                     <h:outputLabel value="#{cc.attrs.bill.expensesTotalNotConsideredForCosting}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:row>
+                                </td>
+                            </tr>
 
-                        <p:row>
-                            <p:column  style="padding: 4px; width: 6em;" colspan="6" footerText="Tax"/>
-                            <p:column style="padding: 4px; width: 6em;" footerText="#{cc.attrs.bill.tax}" class="text-end">
-                                <f:facet name="footer">
+                            <!-- Tax -->
+                            <tr>
+                                <td colspan="6" style="padding: 4px;">Tax</td>
+                                <td style="padding: 4px; text-align: right;">
                                     <h:outputLabel value="#{cc.attrs.bill.tax}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                </td>
+                            </tr>
 
-                        </p:row>
-                        <p:row>
-                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Discount"/>
-                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.discount}" class="text-end">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.discount}">
+                            <!-- Discount -->
+                            <tr>
+                                <td colspan="6" style="padding: 4px;">Discount</td>
+                                <td style="padding: 4px; text-align: right;">
+                                    <h:outputLabel value="#{0 - cc.attrs.bill.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                </td>
+                            </tr>
 
-                        </p:row>
-                        <p:row>
-                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Net Total"/>
-                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.netTotal}" class="text-end">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.netTotal}">
+                            <!-- Net Total -->
+                            <tr>
+                                <td colspan="6" style="padding: 4px;">Net Total</td>
+                                <td style="padding: 4px; text-align: right;">
+                                    <h:outputLabel value="#{0 - cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:row>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </h:panelGroup>
 
-
-                    </p:columnGroup>
-                </p:dataTable>
             </div>
 
             <!-- Bill Expenses Table -->
