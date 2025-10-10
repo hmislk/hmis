@@ -245,12 +245,12 @@ public class TransferReceiveCancellationController implements Serializable {
         cancellationBill.setCreater(sessionController.getLoggedUser());
         cancellationBill.setCreatedAt(Calendar.getInstance().getTime());
 
-        // Link to original receive bill
-        cancellationBill.setBackwardReferenceBill(originalReceiveBill);
+        // Reference the original receive bill as the billed bill (the bill being cancelled)
+        cancellationBill.setBilledBill(originalReceiveBill);
 
-        // Link to the original issue bill (for traceability)
+        // Trace to the original issue bill via backwardReferenceBill (if available)
         if (originalReceiveBill.getBackwardReferenceBill() != null) {
-            cancellationBill.setBilledBill(originalReceiveBill.getBackwardReferenceBill());
+            cancellationBill.setBackwardReferenceBill(originalReceiveBill.getBackwardReferenceBill());
         }
 
         // Set cancellation flag
