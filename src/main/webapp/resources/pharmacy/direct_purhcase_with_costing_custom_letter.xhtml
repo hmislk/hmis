@@ -82,9 +82,9 @@
             </div>
 
             <div>
+                
                 <h:panelGroup rendered="#{not empty cc.attrs.bill.billItems}">
                     <table style="width: 94%; margin: 0 auto; border-collapse: collapse; font-size: 15px;" >
-                        <!-- Table Header -->
                         <thead >
                             <tr>
                                 <th style="padding: 4px; border: 1px solid black; width: 9em; text-align: left;">Item</th>
@@ -96,22 +96,19 @@
                                 <th style="padding: 4px; border: 1px solid black; width: 4.5em; text-align: right;">P. Value</th>
 
                                 <h:panelGroup rendered="#{cc.attrs.ShowRetailValue}">
-                                    <th style="padding: 4px; border: 1px solid black; width: 4.5em; text-align: right;"
-                                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue'}">
+                                    <th style="padding: 4px; border: 1px solid black; width: 4.5em; text-align: right;">
                                         Re. Rate
                                     </th>
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{cc.attrs.ShowProfit}">
-                                    <th style="padding: 4px; border: 1px solid black; width: 2.5em; text-align: right;"
-                                        class="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit'}">
+                                    <th style="padding: 4px; border: 1px solid black; width: 2.5em; text-align: right;">
                                         Profit %
                                     </th>
                                 </h:panelGroup>
                             </tr>
                         </thead>
 
-                        <!-- Table Body -->
                         <tbody>
                             <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                 <tr>
@@ -157,8 +154,7 @@
                                     </td>
 
                                     <h:panelGroup rendered="#{cc.attrs.ShowRetailValue}">
-                                        <td style="padding: 4px; border: 1px solid black; text-align: right;"
-                                            class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue'}">
+                                        <td style="padding: 4px; border: 1px solid black; text-align: right;">
                                             <h:outputLabel value="#{bip.item.class.simpleName eq 'Ampp'
                                                                     ? ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
                                                                     ? bip.billItemFinanceDetails.retailSaleRate
@@ -175,8 +171,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{cc.attrs.ShowProfit}">
-                                        <td style="padding: 4px; border: 1px solid black; text-align: right;"
-                                            class="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit'}">
+                                        <td style="padding: 4px; border: 1px solid black; text-align: right;">
                                             <h:outputText value="#{bip.billItemFinanceDetails.profitMargin}">
                                                 <f:convertNumber pattern="0.0" />
                                             </h:outputText>
@@ -186,9 +181,7 @@
                             </ui:repeat>
                         </tbody>
 
-                        <!-- Table Footer -->
                         <tfoot style="font-weight: bold;">
-                            <!-- Gross Total -->
                             <tr>
                                 <td colspan="6" style="padding: 4px;">Gross Total</td>
                                 <td style="padding: 4px; text-align: right;">
@@ -197,8 +190,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <h:panelGroup rendered="#{cc.attrs.ShowRetailValue}">
-                                    <td style="padding: 4px; text-align: right;"
-                                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue'}">
+                                    <td style="padding: 4px; text-align: right;">
                                         <h:outputLabel value="#{cc.attrs.bill.saleValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -206,7 +198,6 @@
                                 </h:panelGroup>
                             </tr>
 
-                            <!-- Expense Total -->
                             <tr rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
                                 <td colspan="6" style="padding: 4px;">Expense Total</td>
                                 <td style="padding: 4px; text-align: right;">
@@ -216,7 +207,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Expense Total considered for costing -->
                             <tr>
                                 <td colspan="6" style="padding: 4px;">Expense Total considered for costing</td>
                                 <td style="padding: 4px; text-align: right;">
@@ -226,7 +216,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Expense Total not considered for costing -->
                             <tr>
                                 <td colspan="6" style="padding: 4px;">Expense Total not considered for costing</td>
                                 <td style="padding: 4px; text-align: right;">
@@ -236,7 +225,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Tax -->
                             <tr>
                                 <td colspan="6" style="padding: 4px;">Tax</td>
                                 <td style="padding: 4px; text-align: right;">
@@ -246,7 +234,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Discount -->
                             <tr>
                                 <td colspan="6" style="padding: 4px;">Discount</td>
                                 <td style="padding: 4px; text-align: right;">
@@ -256,7 +243,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Net Total -->
                             <tr>
                                 <td colspan="6" style="padding: 4px;">Net Total</td>
                                 <td style="padding: 4px; text-align: right;">
