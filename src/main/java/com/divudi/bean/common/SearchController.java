@@ -19382,9 +19382,8 @@ public class SearchController implements Serializable {
         if (targetBundle == null) {
             return 0.0;
         }
-        double cached = targetBundle.getCashierGrandTotal();
-        if (cached > 0) {
-            return cached;
+        if (targetBundle.isCashierGrandTotalComputed()) {
+            return targetBundle.getCashierGrandTotal();
         }
         double total = 0.0;
         List<ReportTemplateRow> rows = targetBundle.getReportTemplateRows();
@@ -19406,9 +19405,8 @@ public class SearchController implements Serializable {
         if (targetBundle == null) {
             return 0.0;
         }
-        double cached = targetBundle.getCashierCollectionTotal();
-        if (cached > 0) {
-            return cached;
+        if (targetBundle.isCashierCollectionTotalComputed()) {
+            return targetBundle.getCashierCollectionTotal();
         }
         ensureCollectionMethodLists();
         double total = 0.0;
@@ -19433,9 +19431,8 @@ public class SearchController implements Serializable {
         if (targetBundle == null) {
             return 0.0;
         }
-        double cached = targetBundle.getCashierExcludedTotal();
-        if (cached > 0) {
-            return cached;
+        if (targetBundle.isCashierExcludedTotalComputed()) {
+            return targetBundle.getCashierExcludedTotal();
         }
         double excluded = bundleCashierGrandTotal(targetBundle) - bundleCashierCollectionTotal(targetBundle);
         if (targetBundle.getCashierExcludedPaymentMethods() == null

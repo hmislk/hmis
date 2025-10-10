@@ -155,6 +155,9 @@ public class ReportTemplateRowBundle implements Serializable {
     private double cashierGrandTotal;
     private double cashierCollectionTotal;
     private double cashierExcludedTotal;
+    private boolean cashierGrandTotalComputed;
+    private boolean cashierCollectionTotalComputed;
+    private boolean cashierExcludedTotalComputed;
     private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
     private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
 
@@ -245,6 +248,13 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        cashierGrandTotal = 0.0;
+        cashierCollectionTotal = 0.0;
+        cashierExcludedTotal = 0.0;
+        cashierGrandTotalComputed = false;
+        cashierCollectionTotalComputed = false;
+        cashierExcludedTotalComputed = false;
     }
 
     public void collectDepartments() {
@@ -2864,6 +2874,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setCashierGrandTotal(double cashierGrandTotal) {
         this.cashierGrandTotal = cashierGrandTotal;
+        this.cashierGrandTotalComputed = true;
     }
 
     public double getCashierCollectionTotal() {
@@ -2872,6 +2883,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setCashierCollectionTotal(double cashierCollectionTotal) {
         this.cashierCollectionTotal = cashierCollectionTotal;
+        this.cashierCollectionTotalComputed = true;
     }
 
     public double getCashierExcludedTotal() {
@@ -2880,6 +2892,40 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setCashierExcludedTotal(double cashierExcludedTotal) {
         this.cashierExcludedTotal = cashierExcludedTotal;
+        this.cashierExcludedTotalComputed = true;
+    }
+
+    public boolean isCashierGrandTotalComputed() {
+        return cashierGrandTotalComputed;
+    }
+
+    public void setCashierGrandTotalComputed(boolean cashierGrandTotalComputed) {
+        this.cashierGrandTotalComputed = cashierGrandTotalComputed;
+        if (!cashierGrandTotalComputed) {
+            this.cashierGrandTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierCollectionTotalComputed() {
+        return cashierCollectionTotalComputed;
+    }
+
+    public void setCashierCollectionTotalComputed(boolean cashierCollectionTotalComputed) {
+        this.cashierCollectionTotalComputed = cashierCollectionTotalComputed;
+        if (!cashierCollectionTotalComputed) {
+            this.cashierCollectionTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierExcludedTotalComputed() {
+        return cashierExcludedTotalComputed;
+    }
+
+    public void setCashierExcludedTotalComputed(boolean cashierExcludedTotalComputed) {
+        this.cashierExcludedTotalComputed = cashierExcludedTotalComputed;
+        if (!cashierExcludedTotalComputed) {
+            this.cashierExcludedTotal = 0.0;
+        }
     }
 
     public List<PaymentMethod> getCashierCollectionPaymentMethods() {
