@@ -60,6 +60,25 @@ public class CostingData {
     }
 
     /**
+     * Helper method to convert BigDecimal to Double
+     */
+    private Double toDouble(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Double) {
+            return (Double) value;
+        }
+        if (value instanceof java.math.BigDecimal) {
+            return ((java.math.BigDecimal) value).doubleValue();
+        }
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        return null;
+    }
+
+    /**
      * Get the last bill details without any parameters
      * Endpoint: /costing_data/last_bill
      */
@@ -230,11 +249,11 @@ public class CostingData {
     private BillFinanceDetailsDTO convertBillFinanceDetailsToDTO(BillFinanceDetails bfd) {
         BillFinanceDetailsDTO dto = new BillFinanceDetailsDTO();
         dto.setId(bfd.getId());
-        dto.setNetTotal(bfd.getNetTotal());
-        dto.setGrossTotal(bfd.getGrossTotal());
-        dto.setTotalCostValue(bfd.getTotalCostValue());
-        dto.setTotalPurchaseValue(bfd.getTotalPurchaseValue());
-        dto.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue());
+        dto.setNetTotal(toDouble(bfd.getNetTotal()));
+        dto.setGrossTotal(toDouble(bfd.getGrossTotal()));
+        dto.setTotalCostValue(toDouble(bfd.getTotalCostValue()));
+        dto.setTotalPurchaseValue(toDouble(bfd.getTotalPurchaseValue()));
+        dto.setTotalRetailSaleValue(toDouble(bfd.getTotalRetailSaleValue()));
         return dto;
     }
 
@@ -276,25 +295,25 @@ public class CostingData {
         BillItemFinanceDetailsDTO dto = new BillItemFinanceDetailsDTO();
         dto.setId(bifd.getId());
         dto.setCreatedAt(bifd.getCreatedAt());
-        dto.setQuantity(bifd.getQuantity());
-        dto.setQuantityByUnits(bifd.getQuantityByUnits());
-        dto.setLineNetRate(bifd.getLineNetRate());
-        dto.setGrossRate(bifd.getGrossRate());
-        dto.setLineGrossRate(bifd.getLineGrossRate());
-        dto.setCostRate(bifd.getCostRate());
-        dto.setPurchaseRate(bifd.getPurchaseRate());
-        dto.setRetailSaleRate(bifd.getRetailSaleRate());
-        dto.setLineCostRate(bifd.getLineCostRate());
-        dto.setBillCostRate(bifd.getBillCostRate());
-        dto.setTotalCostRate(bifd.getTotalCostRate());
-        dto.setLineGrossTotal(bifd.getLineGrossTotal());
-        dto.setGrossTotal(bifd.getGrossTotal());
-        dto.setLineCost(bifd.getLineCost());
-        dto.setBillCost(bifd.getBillCost());
-        dto.setTotalCost(bifd.getTotalCost());
-        dto.setValueAtCostRate(bifd.getValueAtCostRate());
-        dto.setValueAtPurchaseRate(bifd.getValueAtPurchaseRate());
-        dto.setValueAtRetailRate(bifd.getValueAtRetailRate());
+        dto.setQuantity(toDouble(bifd.getQuantity()));
+        dto.setQuantityByUnits(toDouble(bifd.getQuantityByUnits()));
+        dto.setLineNetRate(toDouble(bifd.getLineNetRate()));
+        dto.setGrossRate(toDouble(bifd.getGrossRate()));
+        dto.setLineGrossRate(toDouble(bifd.getLineGrossRate()));
+        dto.setCostRate(toDouble(bifd.getCostRate()));
+        dto.setPurchaseRate(toDouble(bifd.getPurchaseRate()));
+        dto.setRetailSaleRate(toDouble(bifd.getRetailSaleRate()));
+        dto.setLineCostRate(toDouble(bifd.getLineCostRate()));
+        dto.setBillCostRate(toDouble(bifd.getBillCostRate()));
+        dto.setTotalCostRate(toDouble(bifd.getTotalCostRate()));
+        dto.setLineGrossTotal(toDouble(bifd.getLineGrossTotal()));
+        dto.setGrossTotal(toDouble(bifd.getGrossTotal()));
+        dto.setLineCost(toDouble(bifd.getLineCost()));
+        dto.setBillCost(toDouble(bifd.getBillCost()));
+        dto.setTotalCost(toDouble(bifd.getTotalCost()));
+        dto.setValueAtCostRate(toDouble(bifd.getValueAtCostRate()));
+        dto.setValueAtPurchaseRate(toDouble(bifd.getValueAtPurchaseRate()));
+        dto.setValueAtRetailRate(toDouble(bifd.getValueAtRetailRate()));
         return dto;
     }
 
@@ -310,7 +329,7 @@ public class CostingData {
         dto.setQty(pbi.getQty());
         dto.setFreeQty(pbi.getFreeQty());
         dto.setRetailRate(pbi.getRetailRate());
-        dto.setPurchaseRate(pbi.getPurcahseRate()); // Note: typo in entity property name
+        dto.setPurchaseRate(pbi.getPurchaseRate());
         dto.setCostRate(pbi.getCostRate());
         dto.setPurchaseValue(pbi.getPurchaseValue());
         dto.setRetailValue(pbi.getRetailValue());
