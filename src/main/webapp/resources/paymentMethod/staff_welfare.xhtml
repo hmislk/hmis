@@ -19,7 +19,7 @@
                 <p:outputLabel value="Total Value:" class="form-label"/>
                 <p:inputText
                     autocomplete="off"
-                    value="#{cc.attrs.paymentMethodData.staffCredit.totalValue}"
+                    value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
                     id="txtVal"
                     class="form-control"
                     style="width: 10em;">
@@ -32,9 +32,9 @@
                 value="Select Staff"
                 class="form-label"></p:outputLabel>
             <p:autoComplete
-                minQueryLength="3"
+                minQueryLength="4"
                 forceSelection="true"
-                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}"
+                value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
                 id="welfareStaff"
                 completeMethod="#{staffController.completeStaff}"
                 var="mys"
