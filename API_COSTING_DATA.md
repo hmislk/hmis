@@ -112,8 +112,48 @@ Retrieves the most recent bill in the system.
 }
 ```
 
-### 2. Get Bill by Bill Number
-Retrieves all bills matching the specified bill number (deptId).
+### 2. Get Bill by Bill Number (Recommended)
+Retrieves all bills matching the specified bill number (deptId) using query parameter.
+
+**Endpoint:** `GET /api/costing_data/bill?number={bill_number}`
+
+**Query Parameters:**
+- `number` (string, required): The bill number (deptId) to search for
+
+**Authentication:** Required
+
+**Why Use This Endpoint:**
+- ✅ Works with bill numbers containing special characters like `/`, `-`, etc.
+- ✅ No URL encoding required
+- ✅ Handles bill numbers like `MP/OP/25/000074` without issues
+
+**Example Requests:**
+```
+GET /api/costing_data/bill?number=MP/OP/25/000074
+GET /api/costing_data/bill?number=PHARM-2025-001
+```
+
+**Response:**
+Returns an array of bills matching the bill number with the same structure as the Get Last Bill endpoint.
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 5661712,
+      "dtype": "BilledBill",
+      ...
+    }
+  ]
+}
+```
+
+### 2b. Get Bill by Bill Number (Alternative - Path Parameter)
+⚠️ **DEPRECATED**: Use the query parameter endpoint above for better compatibility.
+
+Retrieves all bills matching the specified bill number (deptId) using path parameter.
 
 **Endpoint:** `GET /api/costing_data/by_bill_number/{bill_number}`
 
@@ -122,7 +162,12 @@ Retrieves all bills matching the specified bill number (deptId).
 
 **Authentication:** Required
 
-**Example Request:**
+**⚠️ Limitations:**
+- Does NOT work with bill numbers containing forward slashes (`/`)
+- Requires URL encoding for special characters
+- Example: `MP/OP/25/000074` will fail
+
+**Example Request (Only for simple bill numbers):**
 ```
 GET /api/costing_data/by_bill_number/PHARM-2025-001
 ```
@@ -316,7 +361,14 @@ curl -X GET \
   -H 'Finance: your-api-key-here'
 ```
 
-#### Get Bill by Number
+#### Get Bill by Number (Recommended - Query Parameter)
+```bash
+curl -X GET \
+  'http://localhost:8080/hmis/api/costing_data/bill?number=MP/OP/25/000074' \
+  -H 'Finance: your-api-key-here'
+```
+
+#### Get Bill by Number (Alternative - Simple bill numbers only)
 ```bash
 curl -X GET \
   http://localhost:8080/hmis/api/costing_data/by_bill_number/PHARM-2025-001 \

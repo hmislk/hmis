@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -113,8 +114,54 @@ public class CostingData {
     }
 
     /**
-     * Get bill details by bill number (deptId)
+     * Get bill details by bill number using query parameter (Recommended for bill numbers with special characters)
+     * Endpoint: /costing_data/bill?number={bill_number}
+     * Example: /costing_data/bill?number=MP/OP/25/000074
+     */
+    @GET
+    @Path("/bill")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getBillByNumberQuery(@QueryParam("number") String billNumber) {
+        try {
+            // Validate API key
+            String key = requestContext.getHeader("Finance");
+            if (!isValidKey(key)) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            if (billNumber == null || billNumber.trim().isEmpty()) {
+                return errorResponse("Bill number is required", 400);
+            }
+
+            // Search bills by deptId (exact match)
+            String jpql = "SELECT b FROM Bill b WHERE b.deptId = :deptId ORDER BY b.id DESC";
+            Map<String, Object> params = new HashMap<>();
+            params.put("deptId", billNumber.trim());
+            List<Bill> bills = billFacade.findByJpql(jpql, params);
+
+            if (bills == null || bills.isEmpty()) {
+                return errorResponse("No bills found with bill number: " + billNumber, 404);
+            }
+
+            // Convert all matching bills to DTOs
+            List<BillDetailsDTO> billDTOs = new ArrayList<>();
+            for (Bill bill : bills) {
+                billDTOs.add(convertBillToDTO(bill));
+            }
+
+            return successResponse(billDTOs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get bill details by bill number (deptId) using path parameter
      * Endpoint: /costing_data/by_bill_number/{bill_number}
+     * NOTE: This endpoint does not work with bill numbers containing forward slashes (/)
+     * Use /costing_data/bill?number={bill_number} instead for such cases
+     * @deprecated Use getBillByNumberQuery with query parameter for better compatibility
      */
     @GET
     @Path("/by_bill_number/{bill_number}")
