@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
@@ -10,6 +11,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -106,6 +108,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadSecurityConfigurationDefaults();
             loadPharmacyAnalyticsConfigurationDefaults();
             loadReportMethodConfigurationDefaults();
+            loadAllCashierSummaryConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -1039,6 +1042,40 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
 
+    }
+
+    private void loadAllCashierSummaryConfigurationDefaults() {
+        for (PaymentMethod paymentMethod : PaymentMethod.values()) {
+            boolean defaultValue = shouldIncludePaymentMethodInCollection(paymentMethod);
+            getBooleanValueByKey(buildAllCashierCollectionOptionKey(paymentMethod), defaultValue);
+        }
+    }
+
+    private boolean shouldIncludePaymentMethodInCollection(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            return true;
+        }
+        if (paymentMethod == PaymentMethod.PatientDeposit || paymentMethod == PaymentMethod.None) {
+            return false;
+        }
+        return !isDeprecatedPaymentMethod(paymentMethod);
+    }
+
+    private boolean isDeprecatedPaymentMethod(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            return false;
+        }
+        try {
+            Field field = PaymentMethod.class.getField(paymentMethod.name());
+            return field.isAnnotationPresent(Deprecated.class);
+        } catch (NoSuchFieldException | SecurityException ex) {
+            return false;
+        }
+    }
+
+    private String buildAllCashierCollectionOptionKey(PaymentMethod paymentMethod) {
+        String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
+        return "Include " + label + " in Collection Total";
     }
 
     public ConfigOption getApplicationOption(String key) {

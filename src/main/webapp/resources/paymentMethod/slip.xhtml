@@ -35,9 +35,13 @@
                 <p:ajax process="@this" ></p:ajax>
             </p:calendar>
             <p:inputText value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
-                         placeholder="Referance No" class="w-100" style="width: 7rem!important"></p:inputText>
+                         placeholder="Reference No" class="w-100" style="width: 7rem!important">
+                <p:ajax process="@this" ></p:ajax>
+            </p:inputText>
 
-            <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Comments" class="w-100" style="width: 7rem!important"></p:inputText>
+            <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Comments" class="w-100" style="width: 7rem!important">
+                <p:ajax process="@this" ></p:ajax>
+            </p:inputText>
         </div>
     </cc:implementation>
 </html>

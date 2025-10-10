@@ -99,6 +99,7 @@ import com.divudi.service.PatientInvestigationService;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +107,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -250,6 +252,11 @@ public class SearchController implements Serializable {
     private BillTypeAtomic billTypeAtomic;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    private double allCashierSummaryGrandTotal;
+    private double allCashierSummaryCollectionTotal;
+    private double allCashierSummaryExcludedTotal;
+    private List<PaymentMethod> allCashierCollectionIncludedMethods = new ArrayList<>();
+    private List<PaymentMethod> allCashierCollectionExcludedMethods = new ArrayList<>();
     private List<Bill> bills;
     private List<Bill> filteredBills;
     // DTO list for pharmacy transfer requests
@@ -2316,6 +2323,53 @@ public class SearchController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public List<PaymentMethod> getAllCashierCollectionIncludedMethods() {
+        ensureCollectionMethodLists();
+        return Collections.unmodifiableList(allCashierCollectionIncludedMethods);
+    }
+
+    public List<PaymentMethod> getAllCashierCollectionExcludedMethods() {
+        ensureCollectionMethodLists();
+        return Collections.unmodifiableList(allCashierCollectionExcludedMethods);
+    }
+
+    public String getAllCashierCollectionIncludedLabels() {
+        ensureCollectionMethodLists();
+        if (allCashierCollectionIncludedMethods.isEmpty()) {
+            return "None";
+        }
+        return allCashierCollectionIncludedMethods.stream()
+                .map(PaymentMethod::getLabel)
+                .collect(Collectors.joining(", "));
+    }
+
+    public String getAllCashierCollectionExcludedLabels() {
+        ensureCollectionMethodLists();
+        if (allCashierCollectionExcludedMethods.isEmpty()) {
+            return "None";
+        }
+        return allCashierCollectionExcludedMethods.stream()
+                .map(PaymentMethod::getLabel)
+                .collect(Collectors.joining(", "));
+    }
+
+    public String formatPaymentMethodLabels(List<PaymentMethod> methods) {
+        if (methods == null || methods.isEmpty()) {
+            return "None";
+        }
+        return methods.stream()
+                .map(PaymentMethod::getLabel)
+                .collect(Collectors.joining(", "));
+    }
+
+    public List<PaymentMethod> collectionIncludedMethodsWithValues(ReportTemplateRowBundle targetBundle) {
+        return filterCollectionMethodsByValue(resolveCollectionMethods(targetBundle, true), targetBundle);
+    }
+
+    public List<PaymentMethod> collectionExcludedMethodsWithValues(ReportTemplateRowBundle targetBundle) {
+        return filterCollectionMethodsByValue(resolveCollectionMethods(targetBundle, false), targetBundle);
     }
 
     public WebUser getWebUser() {
@@ -15517,6 +15571,107 @@ public class SearchController implements Serializable {
         return b;
     }
 
+    private ReportTemplateRowBundle generatePharmacyCollectionWithPaymentBreakdown(List<BillTypeAtomic> billTypes, List<PaymentMethod> paymentMethodsForQuery) {
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(" 
+                + "bill.department, MIN(p.createdAt), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr "
+                + "AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpql += "AND bill.billTypeAtomic in :bts ";
+            parameters.put("bts", billTypes);
+        }
+
+        if (paymentMethodsForQuery != null && !paymentMethodsForQuery.isEmpty()) {
+            jpql += "AND p.paymentMethod in :pms ";
+            parameters.put("pms", paymentMethodsForQuery);
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department";
+
+        List<ReportTemplateRow> rows = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        pb.setReportTemplateRows(rows);
+        pb.calculateTotalsWithCredit();
+
+        ensureCollectionMethodLists();
+        double bundleGrand = 0.0;
+        double bundleCollection = 0.0;
+        if (rows != null) {
+            for (ReportTemplateRow row : rows) {
+                double grand = computeGrandTotal(row);
+                double collection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                double excluded = grand - collection;
+                row.setCashierGrandTotal(grand);
+                row.setCashierCollectionTotal(collection);
+                row.setCashierExcludedTotal(excluded);
+                bundleGrand += grand;
+                bundleCollection += collection;
+            }
+        }
+        double bundleExcluded = bundleGrand - bundleCollection;
+
+        pb.setCashierGrandTotal(bundleGrand);
+        pb.setCashierCollectionTotal(bundleCollection);
+        pb.setCashierExcludedTotal(bundleExcluded);
+        pb.setCashierCollectionPaymentMethods(new ArrayList<>(allCashierCollectionIncludedMethods));
+        pb.setCashierExcludedPaymentMethods(new ArrayList<>(allCashierCollectionExcludedMethods));
+        pb.setTotal(bundleGrand);
+
+        pb.setBundleType("pharmacyCollection");
+        pb.setName("Pharmacy Collection");
+        return pb;
+    }
+
     public void generateMyCashierSummary() {
         institution = null;
         department = null;
@@ -15625,7 +15780,8 @@ public class SearchController implements Serializable {
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
-            ReportTemplateRowBundle pharmacyCollection = generateTotalPaymentColumnByDepartment(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
+            List<PaymentMethod> pharmacyCollectionPaymentMethods = buildPharmacyCollectionPaymentMethods(nonCreditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollectionWithPaymentBreakdown(pharmacyCollectionBillTypes, pharmacyCollectionPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyCollection");
             pharmacyCollection.setName("Pharmacy Collection");
             bundle.getBundles().add(pharmacyCollection);
@@ -19015,6 +19171,402 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
         bundle.calculateTotalsWithCredit();
+        updateAllCashierSummaryTotalsWithConfiguration();
+    }
+
+    private void updateAllCashierSummaryTotalsWithConfiguration() {
+        Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
+
+        allCashierCollectionIncludedMethods = configuration.entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        allCashierCollectionExcludedMethods = configuration.entrySet().stream()
+                .filter(e -> !e.getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        double totalGrand = 0.0;
+        double totalCollection = 0.0;
+
+        if (bundle != null && bundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                if (row == null) {
+                    continue;
+                }
+                double rowGrand = computeGrandTotal(row);
+                double rowCollection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+
+                double rowExcluded = rowGrand - rowCollection;
+                row.setCashierGrandTotal(rowGrand);
+                row.setCashierCollectionTotal(rowCollection);
+                row.setCashierExcludedTotal(rowExcluded);
+
+                totalGrand += rowGrand;
+                totalCollection += rowCollection;
+            }
+        }
+
+        double totalExcluded = totalGrand - totalCollection;
+
+        allCashierSummaryGrandTotal = totalGrand;
+        allCashierSummaryCollectionTotal = totalCollection;
+        allCashierSummaryExcludedTotal = totalExcluded;
+
+        if (bundle != null) {
+            bundle.setCashierGrandTotal(totalGrand);
+            bundle.setCashierCollectionTotal(totalCollection);
+            bundle.setCashierExcludedTotal(totalExcluded);
+            bundle.setCashierCollectionPaymentMethods(allCashierCollectionIncludedMethods);
+            bundle.setCashierExcludedPaymentMethods(allCashierCollectionExcludedMethods);
+        }
+    }
+
+    private Map<PaymentMethod, Boolean> buildCashierCollectionConfiguration() {
+        Map<PaymentMethod, Boolean> configuration = new LinkedHashMap<>();
+        for (PaymentMethod paymentMethod : PaymentMethod.values()) {
+            boolean defaultValue = defaultIncludePaymentMethodInCollection(paymentMethod);
+            boolean configuredValue = defaultValue;
+            if (configOptionApplicationController != null) {
+                configuredValue = configOptionApplicationController.getBooleanValueByKey(
+                        buildCollectionConfigurationKey(paymentMethod), defaultValue);
+            }
+            configuration.put(paymentMethod, configuredValue);
+        }
+        return configuration;
+    }
+
+    private boolean defaultIncludePaymentMethodInCollection(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            return true;
+        }
+        if (paymentMethod == PaymentMethod.PatientDeposit || paymentMethod == PaymentMethod.None) {
+            return false;
+        }
+        return !isDeprecatedPaymentMethod(paymentMethod);
+    }
+
+    private boolean isDeprecatedPaymentMethod(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            return false;
+        }
+        try {
+            Field field = PaymentMethod.class.getField(paymentMethod.name());
+            return field.isAnnotationPresent(Deprecated.class);
+        } catch (NoSuchFieldException | SecurityException ex) {
+            return false;
+        }
+    }
+
+    private String buildCollectionConfigurationKey(PaymentMethod paymentMethod) {
+        String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
+        return "Include " + label + " in Collection Total";
+    }
+
+    private double getPaymentMethodValue(ReportTemplateRow row, PaymentMethod paymentMethod) {
+        if (row == null || paymentMethod == null) {
+            return 0.0;
+        }
+        switch (paymentMethod) {
+            case OnCall:
+                return row.getOnCallValue();
+            case Cash:
+                return row.getCashValue();
+            case Card:
+                return row.getCardValue();
+            case MultiplePaymentMethods:
+                return row.getMultiplePaymentMethodsValue();
+            case Staff:
+                return row.getStaffValue();
+            case Credit:
+                return row.getCreditValue();
+            case Staff_Welfare:
+                return row.getStaffWelfareValue();
+            case Voucher:
+                return row.getVoucherValue();
+            case IOU:
+                return row.getIouValue();
+            case Agent:
+                return row.getAgentValue();
+            case Cheque:
+                return row.getChequeValue();
+            case Slip:
+                return row.getSlipValue();
+            case ewallet:
+                return row.getEwalletValue();
+            case PatientDeposit:
+                return row.getPatientDepositValue();
+            case PatientPoints:
+                return row.getPatientPointsValue();
+            case OnlineSettlement:
+                return row.getOnlineSettlementValue();
+            default:
+                return 0.0;
+        }
+    }
+
+    private double calculateCollectionTotal(ReportTemplateRow row, List<PaymentMethod> includedMethods) {
+        if (row == null || includedMethods == null || includedMethods.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (PaymentMethod pm : includedMethods) {
+            total += getPaymentMethodValue(row, pm);
+        }
+        return total;
+    }
+
+    private double calculateCollectionTotal(ReportTemplateRowBundle bundle, List<PaymentMethod> methods) {
+        if (bundle == null || methods == null || methods.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (PaymentMethod pm : methods) {
+            total += bundlePaymentMethodValue(bundle, pm);
+        }
+        return total;
+    }
+
+    private double computeGrandTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        return row.getOnCallValue()
+                + row.getCashValue()
+                + row.getCardValue()
+                + row.getMultiplePaymentMethodsValue()
+                + row.getStaffValue()
+                + row.getCreditValue()
+                + row.getStaffWelfareValue()
+                + row.getVoucherValue()
+                + row.getIouValue()
+                + row.getAgentValue()
+                + row.getChequeValue()
+                + row.getSlipValue()
+                + row.getEwalletValue()
+                + row.getPatientDepositValue()
+                + row.getPatientPointsValue()
+                + row.getOnlineSettlementValue();
+    }
+
+    public double rowCashierGrandTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        double total = computeGrandTotal(row);
+        row.setCashierGrandTotal(total);
+        return total;
+    }
+
+    public double rowCashierCollectionTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        ensureCollectionMethodLists();
+        double total = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+        row.setCashierCollectionTotal(total);
+        return total;
+    }
+
+    public double rowCashierExcludedTotal(ReportTemplateRow row) {
+        if (row == null) {
+            return 0.0;
+        }
+        double excluded = rowCashierGrandTotal(row) - rowCashierCollectionTotal(row);
+        row.setCashierExcludedTotal(excluded);
+        return excluded;
+    }
+
+    public double bundleCashierGrandTotal(ReportTemplateRowBundle targetBundle) {
+        if (targetBundle == null) {
+            return 0.0;
+        }
+        if (targetBundle.isCashierGrandTotalComputed()) {
+            return targetBundle.getCashierGrandTotal();
+        }
+        double total = 0.0;
+        List<ReportTemplateRow> rows = targetBundle.getReportTemplateRows();
+        if (rows != null && !rows.isEmpty()) {
+            for (ReportTemplateRow row : rows) {
+                total += rowCashierGrandTotal(row);
+            }
+        } else {
+            List<PaymentMethod> included = resolveCollectionMethods(targetBundle, true);
+            List<PaymentMethod> excluded = resolveCollectionMethods(targetBundle, false);
+            total = calculateCollectionTotal(targetBundle, included)
+                    + calculateCollectionTotal(targetBundle, excluded);
+        }
+        targetBundle.setCashierGrandTotal(total);
+        return total;
+    }
+
+    public double bundleCashierCollectionTotal(ReportTemplateRowBundle targetBundle) {
+        if (targetBundle == null) {
+            return 0.0;
+        }
+        if (targetBundle.isCashierCollectionTotalComputed()) {
+            return targetBundle.getCashierCollectionTotal();
+        }
+        ensureCollectionMethodLists();
+        double total = 0.0;
+        List<ReportTemplateRow> rows = targetBundle.getReportTemplateRows();
+        if (rows != null && !rows.isEmpty()) {
+            for (ReportTemplateRow row : rows) {
+                total += calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+            }
+        } else {
+            List<PaymentMethod> included = resolveCollectionMethods(targetBundle, true);
+            total = calculateCollectionTotal(targetBundle, included);
+            if (targetBundle.getCashierCollectionPaymentMethods() == null
+                    || targetBundle.getCashierCollectionPaymentMethods().isEmpty()) {
+                targetBundle.setCashierCollectionPaymentMethods(new ArrayList<>(included));
+            }
+        }
+        targetBundle.setCashierCollectionTotal(total);
+        return total;
+    }
+
+    public double bundleCashierExcludedTotal(ReportTemplateRowBundle targetBundle) {
+        if (targetBundle == null) {
+            return 0.0;
+        }
+        if (targetBundle.isCashierExcludedTotalComputed()) {
+            return targetBundle.getCashierExcludedTotal();
+        }
+        double excluded = bundleCashierGrandTotal(targetBundle) - bundleCashierCollectionTotal(targetBundle);
+        if (targetBundle.getCashierExcludedPaymentMethods() == null
+                || targetBundle.getCashierExcludedPaymentMethods().isEmpty()) {
+            List<PaymentMethod> excludedMethods = resolveCollectionMethods(targetBundle, false);
+            targetBundle.setCashierExcludedPaymentMethods(new ArrayList<>(excludedMethods));
+        }
+        targetBundle.setCashierExcludedTotal(excluded);
+        return excluded;
+    }
+
+    public double getAllCashierSummaryGrandTotal() {
+        double total = 0.0;
+        if (bundle != null && bundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                total += rowCashierGrandTotal(row);
+            }
+        }
+        allCashierSummaryGrandTotal = total;
+        if (bundle != null) {
+            bundle.setCashierGrandTotal(total);
+        }
+        return total;
+    }
+
+    public double getAllCashierSummaryCollectionTotal() {
+        ensureCollectionMethodLists();
+        double total = 0.0;
+        if (bundle != null && bundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                total += rowCashierCollectionTotal(row);
+            }
+        }
+        allCashierSummaryCollectionTotal = total;
+        if (bundle != null) {
+            bundle.setCashierCollectionTotal(total);
+        }
+        return total;
+    }
+
+    public double getAllCashierSummaryExcludedTotal() {
+        double excluded = getAllCashierSummaryGrandTotal() - getAllCashierSummaryCollectionTotal();
+        allCashierSummaryExcludedTotal = excluded;
+        if (bundle != null) {
+            bundle.setCashierExcludedTotal(excluded);
+        }
+        return excluded;
+    }
+
+    private void ensureCollectionMethodLists() {
+        if (allCashierCollectionIncludedMethods != null && !allCashierCollectionIncludedMethods.isEmpty()) {
+            return;
+        }
+        Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
+        allCashierCollectionIncludedMethods = configuration.entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        allCashierCollectionExcludedMethods = configuration.entrySet().stream()
+                .filter(e -> !e.getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    private List<PaymentMethod> resolveCollectionMethods(ReportTemplateRowBundle targetBundle, boolean included) {
+        List<PaymentMethod> fromBundle = null;
+        if (targetBundle != null) {
+            fromBundle = included ? targetBundle.getCashierCollectionPaymentMethods() : targetBundle.getCashierExcludedPaymentMethods();
+        }
+        if (fromBundle != null && !fromBundle.isEmpty()) {
+            return new ArrayList<>(fromBundle);
+        }
+        ensureCollectionMethodLists();
+        return new ArrayList<>(included ? allCashierCollectionIncludedMethods : allCashierCollectionExcludedMethods);
+    }
+
+    private List<PaymentMethod> filterCollectionMethodsByValue(List<PaymentMethod> methods, ReportTemplateRowBundle targetBundle) {
+        if (methods == null || methods.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return methods.stream()
+                .filter(pm -> Math.abs(bundlePaymentMethodValue(targetBundle, pm)) > 0.0001)
+                .collect(Collectors.toList());
+    }
+
+    private List<PaymentMethod> buildPharmacyCollectionPaymentMethods(List<PaymentMethod> baseNonCreditMethods) {
+        List<PaymentMethod> combined = new ArrayList<>();
+        if (baseNonCreditMethods != null) {
+            combined.addAll(baseNonCreditMethods);
+        }
+        combined.addAll(PaymentMethod.getMethodsByType(PaymentType.CREDIT));
+        return combined.stream().distinct().collect(Collectors.toList());
+    }
+
+    public double bundlePaymentMethodValue(ReportTemplateRowBundle targetBundle, PaymentMethod paymentMethod) {
+        if (targetBundle == null || paymentMethod == null) {
+            return 0.0;
+        }
+        switch (paymentMethod) {
+            case OnCall:
+                return targetBundle.getOnCallValue();
+            case Cash:
+                return targetBundle.getCashValue();
+            case Card:
+                return targetBundle.getCardValue();
+            case MultiplePaymentMethods:
+                return targetBundle.getMultiplePaymentMethodsValue();
+            case Staff:
+                return targetBundle.getStaffValue();
+            case Credit:
+                return targetBundle.getCreditValue();
+            case Staff_Welfare:
+                return targetBundle.getStaffWelfareValue();
+            case Voucher:
+                return targetBundle.getVoucherValue();
+            case IOU:
+                return targetBundle.getIouValue();
+            case Agent:
+                return targetBundle.getAgentValue();
+            case Cheque:
+                return targetBundle.getChequeValue();
+            case Slip:
+                return targetBundle.getSlipValue();
+            case ewallet:
+                return targetBundle.getEwalletValue();
+            case PatientDeposit:
+                return targetBundle.getPatientDepositValue();
+            case PatientPoints:
+                return targetBundle.getPatientPointsValue();
+            case OnlineSettlement:
+                return targetBundle.getOnlineSettlementValue();
+            default:
+                return 0.0;
+        }
     }
 
     public void generateTotalCashierSummary() {
