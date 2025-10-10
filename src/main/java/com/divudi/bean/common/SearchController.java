@@ -2325,18 +2325,6 @@ public class SearchController implements Serializable {
         this.paymentMethods = paymentMethods;
     }
 
-    public double getAllCashierSummaryGrandTotal() {
-        return allCashierSummaryGrandTotal;
-    }
-
-    public double getAllCashierSummaryCollectionTotal() {
-        return allCashierSummaryCollectionTotal;
-    }
-
-    public double getAllCashierSummaryExcludedTotal() {
-        return allCashierSummaryExcludedTotal;
-    }
-
     public List<PaymentMethod> getAllCashierCollectionIncludedMethods() {
         ensureCollectionMethodLists();
         return Collections.unmodifiableList(allCashierCollectionIncludedMethods);
