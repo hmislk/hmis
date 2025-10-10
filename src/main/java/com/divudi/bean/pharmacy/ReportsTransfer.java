@@ -709,6 +709,7 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferIssueBillDTO(")
+                .append("TYPE(b), ")
                 .append("b.id, ")
                 .append("COALESCE(b.deptId, ''), ")
                 .append("b.createdAt, ")
