@@ -12,7 +12,6 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.StockQty;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -59,7 +58,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.event.RowEditEvent;
 
 /**
  *
@@ -258,7 +256,7 @@ public class TransferIssueController implements Serializable {
         for (BillItem b : getBillItems()) {
             b.setSearialNo(serialNo++);
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
     }
 
     public void makeNull() {
@@ -308,7 +306,7 @@ public class TransferIssueController implements Serializable {
         this.requestedBill = requestedBill;
         issuedBill = null;
         generateBillComponent();
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
     }
 
     public void createGrnIssueBillItems(Bill grn) {
@@ -645,7 +643,7 @@ public class TransferIssueController implements Serializable {
 
         if (stockWasNotSufficientToIssueFound) {
             JsfUtil.addErrorMessage("The Current Stock was not sufficient to issue some items. Other items issued except those items. Please check the bill and issue the migging items seperately in a new issue.");
-            pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+            calculateBillTotalsForTransferIssue(getIssuedBill());
         }
 
         getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
@@ -691,10 +689,13 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
         getIssuedBill().setCreater(getSessionController().getLoggedUser());
         getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
-        getIssuedBill().setNetTotal(calculateBillNetTotal());
+        double calculatedNetTotal = calculateBillNetTotal();
+        getIssuedBill().setNetTotal(calculatedNetTotal);
+        getIssuedBill().setTotal(calculatedNetTotal);
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyDirectIssueBill(getIssuedBill(), getBillItems());
+        updateBillFinanceDetailsForDirectIssue(getIssuedBill(), calculatedNetTotal);
 //        updateStockBillValues();
         notificationController.createNotification(issuedBill);
 
@@ -703,6 +704,26 @@ public class TransferIssueController implements Serializable {
         issuedBill = b;
         printPreview = true;
 
+    }
+
+    /**
+     * Updates the BillFinanceDetails with netTotal and grossTotal for Direct Issue.
+     * This method is specific to pharmacy_transfer_issue_direct_department.xhtml page.
+     *
+     * Sets:
+     * - BillFinanceDetails.netTotal to the calculated transfer value
+     * - BillFinanceDetails.grossTotal to the calculated transfer value
+     *
+     * @param bill The issued bill
+     * @param netTotal The calculated net total from calculateBillNetTotal()
+     */
+    private void updateBillFinanceDetailsForDirectIssue(Bill bill, double netTotal) {
+        if (bill == null || bill.getBillFinanceDetails() == null) {
+            return;
+        }
+        bill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
+        bill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
+        getBillFacade().edit(bill);
     }
 
     public void settle() {
@@ -882,6 +903,7 @@ public class TransferIssueController implements Serializable {
 
         getBillFacade().edit(getIssuedBill());
         createBillFinancialDetailsForPharmacyTransferIssueBill(getIssuedBill());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
         updateStockBillValues();
 
         //Update ReferenceBill
@@ -1107,6 +1129,11 @@ public class TransferIssueController implements Serializable {
     private void updateBillItemRateAndValueForDirectIssue(BillItem b) {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+
+        // Set BillItem.qty to negative for stock out (matching PharmaceuticalBillItem.qty sign)
+        if (b.getQty() > 0) {
+            b.setQty(0 - b.getQty());
+        }
 
         b.setRate(rate);
         b.setNetRate(rate); // Fix: Set NETRATE
@@ -1347,6 +1374,63 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(bill);
     }
 
+    /**
+     * Calculates bill totals for transfer issue.
+     * For transfer issue (stock goes out):
+     * - Bill revenue (netTotal, grossTotal) is POSITIVE (issuing dept receives money/value)
+     * - BillItem qty is NEGATIVE (stock goes out)
+     * - BillItem netValue is POSITIVE (revenue received)
+     *
+     * @param bill The transfer issue bill
+     */
+    private void calculateBillTotalsForTransferIssue(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return;
+        }
+
+        BigDecimal grossTotal = BigDecimal.ZERO;
+        BigDecimal netTotal = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+
+        int serialNo = 1;
+
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.isRetired()) {
+                continue;
+            }
+
+            bi.setSearialNo(serialNo++);
+
+            // For transfer issue: stock goes out so qty is negative
+            double absQty = Math.abs(bi.getQty());
+            bi.setQty(-absQty);
+
+            // Revenue is positive (we receive money/value for stock going out)
+            double netValue = absQty * bi.getRate();
+            bi.setNetValue(netValue);
+
+            grossTotal = grossTotal.add(BigDecimal.valueOf(netValue));
+            netTotal = netTotal.add(BigDecimal.valueOf(netValue));
+            lineGrossTotal = lineGrossTotal.add(BigDecimal.valueOf(netValue));
+            lineNetTotal = lineNetTotal.add(BigDecimal.valueOf(netValue));
+        }
+
+        // Set bill totals as positive (revenue)
+        bill.setTotal(grossTotal.doubleValue());
+        bill.setNetTotal(netTotal.doubleValue());
+
+        // Set bill finance details totals as positive (revenue)
+        if (bill.getBillFinanceDetails() != null) {
+            bill.getBillFinanceDetails().setGrossTotal(grossTotal);
+            bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
+            bill.getBillFinanceDetails().setNetTotal(netTotal);
+            bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
+        }
+
+        getBillFacade().edit(bill);
+    }
+
     public void addNewBillItem() {
         billItem = new BillItem();
         if (getTmpStock() == null) {
@@ -1438,7 +1522,7 @@ public class TransferIssueController implements Serializable {
         qty = null;
         tmpStock = null;
 
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
     }
 
     private BigDecimal determineTransferRate(ItemBatch itemBatch) {
@@ -1546,7 +1630,7 @@ public class TransferIssueController implements Serializable {
         }
 
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
     }
 
     public void onLineGrossRateChangeForTransferIssue(BillItem bi) {
@@ -1554,7 +1638,7 @@ public class TransferIssueController implements Serializable {
             return;
         }
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
     }
 
     public void onEditDepartmentTransfer(BillItem billItem) {
@@ -1660,7 +1744,7 @@ public class TransferIssueController implements Serializable {
         }
 
         updateFinancialsForTransferIssue(itemForSubstitution.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
 
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
