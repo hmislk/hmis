@@ -264,6 +264,7 @@
                                                     </p:commandButton>
                                                     <p:commandButton 
                                                         id="btnViewSettledBill"
+                                                        rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}"
                                                         title="View" 
                                                         icon="fa fa-eye" 
                                                         class="m-1 ui-button-info"

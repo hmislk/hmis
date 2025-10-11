@@ -23,6 +23,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BillFinanceDetails;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -101,6 +102,8 @@ public class TransferIssueCancellationController implements Serializable {
     private BillController billController;
     @Inject
     private UserStockController userStockController;
+    @Inject
+    private PharmacyController pharmacyController;
 
     // Properties
     private Bill originalBill;
@@ -237,7 +240,7 @@ public class TransferIssueCancellationController implements Serializable {
      * Creates the cancellation bill structure with metadata.
      */
     private void createCancellationBillStructure() {
-        cancellationBill = new BilledBill();
+        cancellationBill = new CancelledBill();
         cancellationBill.setBillType(BillType.PharmacyTransferIssue);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
         cancellationBill.setBillClassType(BillClassType.CancelledBill);
@@ -264,6 +267,7 @@ public class TransferIssueCancellationController implements Serializable {
 
         // Initialize collections
         cancellationBill.setBillItems(new ArrayList<>());
+        cancellationBill.setBilledBill(originalBill);
     }
 
     /**
@@ -668,6 +672,16 @@ public class TransferIssueCancellationController implements Serializable {
         cancellationBillItems = null;
         cancellationReason = null;
         printPreview = false;
+    }
+
+    public void displayItemDetails(BillItem billItem) {
+        if (billItem == null || billItem.getItem() == null) {
+            JsfUtil.addErrorMessage("No item selected");
+            return;
+        }
+        Item item = billItem.getItem();
+        pharmacyController.setPharmacyItem(item);
+        pharmacyController.fillDetails();
     }
 
     // Getters and Setters
