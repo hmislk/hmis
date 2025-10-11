@@ -2535,6 +2535,7 @@ public class PharmacyReportController implements Serializable {
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_ISSUE);
         retrieveBillItems(btasToGetBillItems);
         calculateStockConsumptionTotals(billItems);
