@@ -441,11 +441,14 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
             JsfUtil.addErrorMessage("This bill is already paid");
             return null;
         }
-        this.itemReturnBill = selecttedItemReturnBill;
-
         this.itemReturnBill = billService.reloadBill(selecttedItemReturnBill);
-        
-        Bill originalSaleBill = selecttedItemReturnBill.getReferenceBill();
+
+        if (this.itemReturnBill == null) {
+            JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
+            return null;
+        }
+
+        Bill originalSaleBill = this.itemReturnBill.getReferenceBill();
 
         if (originalSaleBill == null) {
             JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
@@ -456,13 +459,18 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         
         
 
+        Bill reloadedReturnBill = this.itemReturnBill;
+
         prepareForNewRefundForPharmacyReturnItems();
+
+        this.itemReturnBill = reloadedReturnBill;
+
         refundBill = new Bill();
-        refundBill.copy(selecttedItemReturnBill);
-        refundBill.copyValue(selecttedItemReturnBill);
+        refundBill.copy(this.itemReturnBill);
+        refundBill.copyValue(this.itemReturnBill);
         refundBill.setBillType(BillType.PharmacySale);
         refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-        refundBill.setReferenceBill(selecttedItemReturnBill);
+        refundBill.setReferenceBill(this.itemReturnBill);
 
         List<Payment> originalPayments = billService.fetchBillPayments(originalSaleBill);
 
