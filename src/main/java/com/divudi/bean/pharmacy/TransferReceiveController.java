@@ -166,10 +166,10 @@ public class TransferReceiveController implements Serializable {
         toDate = null;
         selectedBillItem = null;
 
-        // Refresh the issued list data to show updated fullyIssued status
-        if (searchController != null) {
-            searchController.createIssueTable();
-        }
+//        // Refresh the issued list data to show updated fullyIssued status
+//        if (searchController != null) {
+//            searchController.createIssueTable();
+//        }
     }
 
     public TransferReceiveController() {
