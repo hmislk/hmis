@@ -424,7 +424,7 @@
                               modal="true"
                               width="600"
                               rendered="#{pharmacyRefundForItemReturnsController.printPreview}">
-                        <h:form id="billRefundConfigForm">
+                        <h:panelGroup id="billRefundConfigForm" layout="block">
                             <p:panel header="Select Paper Format">
                                 <p:panelGrid columns="2" styleClass="w-100">
                                     <h:outputLabel value="A4 Paper Format:" />
@@ -452,7 +452,7 @@
                                                      class="ui-button-secondary ms-2" />
                                 </div>
                             </p:panel>
-                        </h:form>
+                        </h:panelGroup>
                     </p:dialog>
 
                 </h:form>

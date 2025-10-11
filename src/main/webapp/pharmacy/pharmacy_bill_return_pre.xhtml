@@ -262,7 +262,7 @@
                       modal="true"
                       width="600"
                       rendered="#{preReturnController.printPreview}">
-                <h:form id="billReturnConfigForm">
+                <h:panelGroup id="billReturnConfigForm" layout="block">
                     <p:panel header="Select Paper Format">
                         <p:panelGrid columns="2" styleClass="w-100">
                             <h:outputLabel value="5.5 Inch Custom Format:" />
@@ -290,7 +290,7 @@
                                              class="ui-button-secondary ms-2" />
                         </div>
                     </p:panel>
-                </h:form>
+                </h:panelGroup>
             </p:dialog>
 
         </h:form>
