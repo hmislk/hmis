@@ -1249,22 +1249,10 @@
 
                         <p:commandButton id="nullButton3" value="No Action"
                                          action="#" style="display: none;" ></p:commandButton>
-                        <!--<p:defaultCommand  target="btnPrint" />-->
+                        <div  class="row" >
+                            <div class="col-3">
 
-                        <div   >
-                            <div>
                                 <p:commandButton
-                                    accesskey="p"
-                                    id="btnPrint"
-                                    value="Print Bill"
-                                    style="width: 10em;"
-                                    class="ui-button-info"
-                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                    ajax="false"  >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton
-
                                     id="btnLabelPrint"
                                     value="Print Labels"
                                     style="width: 10em;"
@@ -1272,9 +1260,7 @@
                                     class="ui-button-info mx-3"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}"
                                     >
-
                                 </p:commandButton>
-
                                 <p:dialog
                                     id="PrintLableSectionAfterSettleBill"
                                     widgetVar="PrintLables"
@@ -1309,15 +1295,6 @@
 
                                     </p:commandButton>
                                 </p:dialog>
-
-                                <p:commandButton
-                                    accesskey="n"
-                                    value="New Bill"
-                                    icon="fa fa-plus"
-                                    ajax="false"
-                                    action="pharmacy_bill_retail_sale"
-                                    class="ui-button-warning mx-2"
-                                    actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
                                 <p:commandButton
                                     rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                     value="Settings"
@@ -1325,11 +1302,37 @@
                                     class="ui-button-secondary mx-1"
                                     type="button"
                                     onclick="PF('retailSaleConfigDialog').show();" />
-                                <p:spacer width="20em" ></p:spacer>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            </div>
+                            <div class="col-6 text-center">
+                                <div  >
+                                    <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="float-end" >
+                                    <p:commandButton
+                                        accesskey="n"
+                                        value="New Pharmacy Retail Sale"
+                                        icon="fa fa-plus"
+                                        ajax="false"
+                                        action="pharmacy_bill_retail_sale"
+                                        class="ui-button-success mx-2"
+                                        actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                                    <p:commandButton
+                                        accesskey="p"
+                                        id="btnPrint"
+                                        icon="fas fa-print"
+                                        value="Print Bill"
+                                        style="width: 10em;"
+                                        class="ui-button-success"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        ajax="false"  >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
 
                             </div>
 
