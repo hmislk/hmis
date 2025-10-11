@@ -128,191 +128,165 @@
 
                                     <h:panelGroup id="paymentDetails"  >
                                         <h:panelGroup
-                                            class="row my-1"
                                             layout="block"
                                             rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Credit'}" >
-                                            <div class="my-1" id="credit">
-                                                <div class="row">
+                                            <div class="my-2">
+                                                <div class="row g-2">
                                                     <div class="col-12">
-                                                        <div class="d-flex gap-2">
-                                                            <p:autoComplete
-                                                                id="creditCompany"
-                                                                class="w-100 -mx-2"
-                                                                inputStyleClass="form-control"
-                                                                forceSelection="true"
-                                                                value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.institution}"
-                                                                completeMethod="#{institutionController.completeCreditCompany}"
-                                                                var="ix"
-                                                                minQueryLength="4"
-                                                                placeholder="Company (Type at least 4 letters to search)"
-                                                                itemLabel="#{ix.name}"
-                                                                itemValue="#{ix}"
-                                                                size="10"  >
-                                                            </p:autoComplete>
-
-                                                            <p:inputText
-                                                                id="polNo"
-                                                                style="width: 100px;"
-                                                                value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.referralNo}"
-                                                                placeholder="Policy NO" >
-                                                            </p:inputText>
-
-                                                            <p:inputText
-                                                                id="refNo"
-                                                                style="width: 100px;"
-                                                                value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.referenceNo}"
-                                                                placeholder="Reference NO" >
-                                                            </p:inputText>
-
-                                                            <p:inputText
-                                                                id="memo"
-                                                                style="width: 300px;"
-                                                                value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.comment}"
-                                                                placeholder="Memo" >
-                                                            </p:inputText>
-
-                                                            <p:commandLink
-                                                                id="btnAddNewCreditCom"
-                                                                value="(+)"
-                                                                class="mx-3 mt-1"
-                                                                title="Add New Credit Company"
-                                                                ajax="false"
-                                                                action="#{navigationController.navigateToCreditCompany()}"
-                                                                actionListener="#{creditCompanyController.prepareAdd()}" />
-                                                        </div>
+                                                        <p:autoComplete
+                                                            id="creditCompany"
+                                                            class="w-100"
+                                                            inputStyleClass="form-control"
+                                                            forceSelection="true"
+                                                            value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.institution}"
+                                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                                            var="ix"
+                                                            minQueryLength="4"
+                                                            placeholder="Company (Type at least 4 letters to search)"
+                                                            itemLabel="#{ix.name}"
+                                                            itemValue="#{ix}"
+                                                            size="10"  >
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <p:inputText
+                                                            id="polNo"
+                                                            class="w-100"
+                                                            value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.referralNo}"
+                                                            placeholder="Policy NO" >
+                                                        </p:inputText>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <p:inputText
+                                                            id="refNo"
+                                                            class="w-100"
+                                                            value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.referenceNo}"
+                                                            placeholder="Reference NO" >
+                                                        </p:inputText>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <p:inputText
+                                                            id="memo"
+                                                            class="w-100"
+                                                            value="#{pharmacyRefundForItemReturnsController.paymentMethodData.credit.comment}"
+                                                            placeholder="Memo" >
+                                                        </p:inputText>
                                                     </div>
                                                 </div>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup
-                                            class="row my-1"
                                             layout="block"
                                             rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Staff'}" >
-                                            <div class="my-1" id="staffCredit">
-                                                <div class="row mt-1">
-                                                    <div class="col-12">
-                                                        <p:autoComplete
-                                                            minQueryLength="2"
-                                                            forceSelection="true"
-                                                            value="#{pharmacyRefundForItemReturnsController.toStaff}"
-                                                            id="creditStaff"
-                                                            completeMethod="#{staffController.completeStaff}"
-                                                            var="mys"
-                                                            class="w-100"
-                                                            placeholder="Staff (Type at least 4 letters to search)"
-                                                            inputStyleClass="form-control"
-                                                            itemLabel="#{mys.person.name}"
-                                                            itemValue="#{mys}"
-                                                            size="10">
-                                                            <p:column headerText="Name" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="EPF" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Credit Entitlement" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.creditLimitQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:column  headerText="Credit Utilized" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.currentCreditValue}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                        </p:autoComplete>
-                                                    </div>
-                                                </div>
+                                            <div class="my-2">
+                                                <p:autoComplete
+                                                    minQueryLength="2"
+                                                    forceSelection="true"
+                                                    value="#{pharmacyRefundForItemReturnsController.toStaff}"
+                                                    id="creditStaff"
+                                                    completeMethod="#{staffController.completeStaff}"
+                                                    var="mys"
+                                                    class="w-100"
+                                                    placeholder="Staff (Type at least 2 letters to search)"
+                                                    inputStyleClass="form-control"
+                                                    itemLabel="#{mys.person.name}"
+                                                    itemValue="#{mys}"
+                                                    size="10">
+                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.creditLimitQualified}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                    <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.currentCreditValue}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                </p:autoComplete>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup
-                                            class="row my-1"
                                             layout="block"
                                             rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Staff_Welfare'}" >
-                                            <div class="my-1" id="credit">
-                                                <div class="row mt-1">
-                                                    <div class="col-12">
-                                                        <p:autoComplete
-                                                            minQueryLength="1"
-                                                            forceSelection="true"
-                                                            value="#{pharmacyRefundForItemReturnsController.toStaff}"
-                                                            id="welfareStaff"
-                                                            completeMethod="#{staffController.completeStaff}"
-                                                            var="mys"
-                                                            class="w-100"
-                                                            placeholder="Staff (Type Name, Code or EPF No to search)"
-                                                            inputStyleClass="form-control"
-                                                            itemLabel="#{mys.person.name}"
-                                                            itemValue="#{mys}"
-                                                            size="10">
-                                                            <p:column headerText="Name" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Code" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.staffCode}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="EPF" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Welfare Entitlement" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.annualWelfareQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:column  headerText="Welfare Utilized" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.annualWelfareUtilized}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                        </p:autoComplete>
-                                                    </div>
-                                                </div>
+                                            <div class="my-2">
+                                                <p:autoComplete
+                                                    minQueryLength="1"
+                                                    forceSelection="true"
+                                                    value="#{pharmacyRefundForItemReturnsController.toStaff}"
+                                                    id="welfareStaff"
+                                                    completeMethod="#{staffController.completeStaff}"
+                                                    var="mys"
+                                                    class="w-100"
+                                                    placeholder="Staff (Type Name, Code or EPF No to search)"
+                                                    inputStyleClass="form-control"
+                                                    itemLabel="#{mys.person.name}"
+                                                    itemValue="#{mys}"
+                                                    size="10">
+                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Code" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                    <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                        <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                </p:autoComplete>
                                             </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"
-                                            id="creditCard" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                        <h:panelGroup layout="block" id="creditCard" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Card'}" >
+                                            <div class="my-2">
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"
-                                            id="ptdeposit" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'PatientDeposit'}">
-                                            <pa:patient_deposit paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                        <h:panelGroup layout="block" id="ptdeposit" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'PatientDeposit'}">
+                                            <div class="my-2">
+                                                <pa:patient_deposit paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"
-                                            id="ewallet"  rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                        <h:panelGroup layout="block" id="ewallet" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'ewallet'}" >
+                                            <div class="my-2">
+                                                <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"
-                                            id="cheque"  rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                        <h:panelGroup layout="block" id="cheque" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Cheque'}" >
+                                            <div class="my-2">
+                                                <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"
-                                            id="slip"  rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                        <h:panelGroup layout="block" id="slip" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Slip'}">
+                                            <div class="my-2">
+                                                <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1 w-100"
-                                            layout="block"
-                                            id="multiplePaymentMethods"  rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'MultiplePaymentMethods'}"
-                                            >
-                                            <pa:multiple_payment_methods class="w-100" controller="#{pharmacyRefundForItemReturnsController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
+                                        <h:panelGroup layout="block" id="multiplePaymentMethods" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'MultiplePaymentMethods'}">
+                                            <div class="my-2">
+                                                <pa:multiple_payment_methods class="w-100" controller="#{pharmacyRefundForItemReturnsController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
+                                            </div>
                                         </h:panelGroup>
                                     </h:panelGroup>
                                 </p:panel>
@@ -328,7 +302,7 @@
                                     </f:facet>
                                     <p:dataTable 
                                         id="billItems"
-                                        value="#{pharmacyRefundForItemReturnsController.refundBill.billItems}" 
+                                        value="#{pharmacyRefundForItemReturnsController.itemReturnBill.billItems}" 
                                         var="bip"
                                         rowKey="#{bip.id}"
                                         styleClass="table table-sm">

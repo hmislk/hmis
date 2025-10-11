@@ -421,47 +421,51 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return true;
     }
 
-    public String toSettleReturn(Bill itemReturnBill) {
+    public String toSettleReturn(Bill selecttedItemReturnBill) {
         System.out.println("toSettleReturn");
-        System.out.println("args = " + itemReturnBill);
+        System.out.println("args = " + selecttedItemReturnBill);
 
-        if (itemReturnBill == null) {
+        if (selecttedItemReturnBill == null) {
             JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
             return null;
         }
-        if (itemReturnBill.getBillTypeAtomic() == null) {
+        if (selecttedItemReturnBill.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
             return null;
         }
-        if (itemReturnBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY) {
+        if (selecttedItemReturnBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY) {
             JsfUtil.addErrorMessage("Wrong Bill Type. Programmatic Error. Inform system administrator.");
             return null;
         }
-        if (alreadyPaid(itemReturnBill)) {
+        if (alreadyPaid(selecttedItemReturnBill)) {
             JsfUtil.addErrorMessage("This bill is already paid");
             return null;
         }
-        this.itemReturnBill = itemReturnBill;
+        this.itemReturnBill = selecttedItemReturnBill;
 
-        Bill originalSaleBill = itemReturnBill.getReferenceBill();
-        Bill originalSalePreBill = originalSaleBill.getReferenceBill();
-        System.out.println("originalSaleBill = " + originalSaleBill);
+        this.itemReturnBill = billService.reloadBill(selecttedItemReturnBill);
+        
+        Bill originalSaleBill = selecttedItemReturnBill.getReferenceBill();
 
         if (originalSaleBill == null) {
             JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
             return null;
         }
 
+        Bill originalSalePreBill = originalSaleBill.getReferenceBill();
+        
+        
+
         prepareForNewRefundForPharmacyReturnItems();
         refundBill = new Bill();
-        refundBill.copy(itemReturnBill);
-        refundBill.copyValue(itemReturnBill);
+        refundBill.copy(selecttedItemReturnBill);
+        refundBill.copyValue(selecttedItemReturnBill);
         refundBill.setBillType(BillType.PharmacySale);
         refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-        refundBill.setReferenceBill(itemReturnBill);
+        refundBill.setReferenceBill(selecttedItemReturnBill);
 
         List<Payment> originalPayments = billService.fetchBillPayments(originalSaleBill);
-        
+
         if (originalPayments == null || originalPayments.isEmpty()) {
             originalPayments = billService.fetchBillPayments(originalSalePreBill);
         }
@@ -2245,6 +2249,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 case PatientDeposit:
                     getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getPatient_deposit().setPatient(getRefundBill().getPatient());
+                    getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
                     break;
                 case Credit:
                     System.out.println("Credit Company: " + (originalPayment.getCreditCompany() != null ? originalPayment.getCreditCompany().getName() : "NULL"));
@@ -2305,6 +2310,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     case PatientDeposit:
                         cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(getRefundBill().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
                         break;
                     case Credit:
                         cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
