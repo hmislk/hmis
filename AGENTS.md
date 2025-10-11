@@ -27,6 +27,7 @@
 For comprehensive implementation details, see:
 - **Branch & PR Management**: [Branch workflow details](developer_docs/git/branch-management.md)
 - **QA Deployment Guide**: [Bot-Friendly QA Deployment](developer_docs/deployment/qa-deployment-guide.md)
+- **UI Development Handbook**: [Complete Reference](developer_docs/ui/comprehensive-ui-guidelines.md)
 - **Icon & UI Standards**: [UI guidelines](developer_docs/ui/icon-management.md)
 - **Privilege Implementation**: [Security patterns](developer_docs/security/privilege-system.md)
 - **Configuration Patterns**: [Config usage](developer_docs/configuration/application-options.md)

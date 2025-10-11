@@ -48,16 +48,18 @@
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Select Institution" />      
+                                        <p:outputLabel value="Select Credit Company" />      
                                     </div>
                                     <div class="col-md-8">
-                                        <p:autoComplete widgetVar="aIx" id="acIx"  
-                                                        forceSelection="true" 
-                                                        inputStyleClass="w-100"
-                                                        value="#{cashRecieveBillController.institution}" 
-                                                        completeMethod="#{institutionController.completeCreditCompany}" 
-                                                        var="ix" itemLabel="#{ix.name}"
-                                                        itemValue="#{ix}" class="w-100">
+                                        <p:autoComplete 
+                                            widgetVar="varCreditCompany" 
+                                            id="acCreditCompany"  
+                                            forceSelection="true" 
+                                            inputStyleClass="w-100"
+                                            value="#{cashRecieveBillController.institution}" 
+                                            completeMethod="#{institutionController.completeCreditCompany}" 
+                                            var="ix" itemLabel="#{ix.name}"
+                                            itemValue="#{ix}" class="w-100">
                                             <p:column>
                                                 <h:outputLabel value="#{ix.name}"/>
                                             </p:column>                                  

@@ -1397,7 +1397,7 @@
                           maximizable="true"
                           closeOnEscape="true">
 
-                    <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="retailSaleConfigForm" />
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="retailSaleConfigForm" />
 
                     <h:form id="retailSaleConfigForm">
                         <div class="row">
@@ -1413,56 +1413,56 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="posPaper"
-                                                value="#{pharmacyRetailConfigController.posPaper}" />
+                                                value="#{pharmacyConfigController.posPaper}" />
                                             <p:outputLabel for="posPaper" value="POS Paper (Default)" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard POS paper format for retail sales</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="posPaperCustom1"
-                                                value="#{pharmacyRetailConfigController.posPaperCustom1}" />
+                                                value="#{pharmacyConfigController.posPaperCustom1}" />
                                             <p:outputLabel for="posPaperCustom1" value="POS Paper Custom 1" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom POS paper format version 1</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="fiveFivePaper"
-                                                value="#{pharmacyRetailConfigController.fiveFivePaper}" />
+                                                value="#{pharmacyConfigController.fiveFivePaper}" />
                                             <p:outputLabel for="fiveFivePaper" value="5.5 Inch Paper" class="ms-2" />
                                             <small class="form-text text-muted d-block">5.5 inch paper format without header space</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="posHeaderPaper"
-                                                value="#{pharmacyRetailConfigController.posHeaderPaper}" />
+                                                value="#{pharmacyConfigController.posHeaderPaper}" />
                                             <p:outputLabel for="posHeaderPaper" value="POS Paper with Header" class="ms-2" />
                                             <small class="form-text text-muted d-block">POS paper format with header section</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="custom1Paper"
-                                                value="#{pharmacyRetailConfigController.custom1Paper}" />
+                                                value="#{pharmacyConfigController.custom1Paper}" />
                                             <p:outputLabel for="custom1Paper" value="Custom Format 1" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom paper format 1</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="custom2Paper"
-                                                value="#{pharmacyRetailConfigController.custom2Paper}" />
+                                                value="#{pharmacyConfigController.custom2Paper}" />
                                             <p:outputLabel for="custom2Paper" value="Custom Format 2" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom paper format 2</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="custom3Paper"
-                                                value="#{pharmacyRetailConfigController.custom3Paper}" />
+                                                value="#{pharmacyConfigController.custom3Paper}" />
                                             <p:outputLabel for="custom3Paper" value="Custom Format 3" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom paper format 3</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="posHeaderPaperGeneral"
-                                                value="#{pharmacyRetailConfigController.posHeaderPaperGeneral}" />
+                                                value="#{pharmacyConfigController.posHeaderPaperGeneral}" />
                                             <p:outputLabel for="posHeaderPaperGeneral" value="POS Header Paper (General)" class="ms-2" />
                                             <small class="form-text text-muted d-block">General POS header paper format</small>
                                         </div>
@@ -1483,7 +1483,7 @@
                                                     icon="fas fa-save"
                                                     class="ui-button-success"
                                                     ajax="false"
-                                                    action="#{pharmacyRetailConfigController.saveRetailSaleConfig}" />
+                                                    action="#{pharmacyConfigController.saveRetailSaleConfig}" />
                                                 <p:commandButton
                                                     value="Cancel"
                                                     icon="fas fa-times"

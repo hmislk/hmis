@@ -111,6 +111,7 @@ public class CreditCompanyDueController implements Serializable {
     private Institution site;
 
     private String billType;
+    private String visitType;
 
     Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
     private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
@@ -233,7 +234,13 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void setInstitutionOfDepartment(Institution institutionOfDepartment) {
-        this.institutionOfDepartment = institutionOfDepartment;
+        if (!Objects.equals(this.institutionOfDepartment, institutionOfDepartment)) {
+            this.institutionOfDepartment = institutionOfDepartment;
+            setSite(null);
+            setDepartment(null);
+        } else {
+            this.institutionOfDepartment = institutionOfDepartment;
+        }
     }
 
     public Department getDepartment() {
@@ -250,6 +257,15 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public void resetLocationFilters() {
+        setSite(null);
+        setDepartment(null);
+    }
+
+    public void resetDepartment() {
+        setDepartment(null);
     }
 
     public int nextRowCounter() {
@@ -311,6 +327,11 @@ public class CreditCompanyDueController implements Serializable {
         institutionEncounters = null;
         creditCompanyAge = null;
         filteredList = null;
+        visitType = null;
+        institutionOfDepartment = null;
+        site = null;
+        department = null;
+        institution = null;
     }
 
     public void createAgeTable() {
@@ -1338,12 +1359,33 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createPharmacyCreditDue() {
-        Date startTime = new Date();
+        List<BillType> billTypes = Arrays.asList(BillType.PharmacyWholeSale, BillType.PharmacySale);
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionPharmacy(Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
+        List<Institution> creditCompanies = getCreditBean().getCreditInstitutionPharmacy(
+                billTypes,
+                getFromDate(),
+                getToDate(),
+                true,
+                getInstitutionOfDepartment(),
+                getSite(),
+                getDepartment(),
+                getVisitType(),
+                getInstitution());
+
         items = new ArrayList<>();
-        for (Institution ins : setIns) {
-            List<Bill> bills = getCreditBean().getCreditBillsPharmacy(ins, Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
+
+        for (Institution ins : creditCompanies) {
+            List<Bill> bills = getCreditBean().getCreditBillsPharmacy(
+                    ins,
+                    billTypes,
+                    getFromDate(),
+                    getToDate(),
+                    true,
+                    getInstitutionOfDepartment(),
+                    getSite(),
+                    getDepartment(),
+                    getVisitType());
+
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);
@@ -1355,7 +1397,6 @@ public class CreditCompanyDueController implements Serializable {
 
             items.add(newIns);
         }
-
     }
 
     public void createOpdCreditDueBillItem() {
@@ -3512,6 +3553,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setManagePharmacyDueAndAccessIndex(int managePharmacyDueAndAccessIndex) {
         this.managePharmacyDueAndAccessIndex = managePharmacyDueAndAccessIndex;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
     }
 
     public String getBillType() {

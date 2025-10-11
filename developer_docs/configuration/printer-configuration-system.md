@@ -1,14 +1,14 @@
-# Pharmacy Printer Configuration System
+# Printer Configuration System
 
 ## Overview
 
-The Pharmacy Printer Configuration System provides a unified interface for managing paper formats and printer settings across various pharmacy operations. This system centralizes printer configurations for receipts, bills, and reports, making it easier for administrators to control paper types without code changes.
+The Printer Configuration System provides a unified interface for managing paper formats and printer settings across various operations. This system centralizes printer configurations for receipts, bills, and reports, making it easier for administrators to control paper types without code changes.
 
 ## Architecture
 
 ### Core Components
 
-1. **PharmacyRetailConfigController** (`src/main/java/com/divudi/bean/pharmacy/PharmacyRetailConfigController.java`)
+1. **PharmacyRetailConfigController** (`src/main/java/com/divudi/bean/pharmacy/PharmacyConfigController.java`)
    - Manages all pharmacy printer configuration settings
    - Handles loading and saving of configuration options
    - Provides getter/setter methods for UI binding
@@ -30,12 +30,12 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 
 5. **Settings Button Integration**
    - Permission-based access control
-   - Uniform settings button placement
+   - Uniform settings button placement at the left
    - Standard icon and styling
 
-## Supported Modules
+## Samples
 
-### 1. Transfer Issue Configuration
+### Transfer Issue Configuration
 
 **Pages:**
 - `pharmacy_transfer_issue.xhtml` - Main transfer issue page
@@ -62,7 +62,7 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 </h:panelGroup>
 ```
 
-### 2. GRN Configuration
+### GRN Configuration
 
 **Configuration Options:**
 - A4 Paper Format
@@ -74,7 +74,7 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 - `GRN Receipt Paper is Custom 1`
 - `GRN Receipt Paper is Custom 2`
 
-### 3. Transfer Receive Configuration
+### Transfer Receive Configuration
 
 **Configuration Options:**
 - A4 Paper Format
@@ -90,128 +90,6 @@ The Pharmacy Printer Configuration System provides a unified interface for manag
 - `Pharmacy Transfer Receive Receipt is A4 Custom 1`
 - `Pharmacy Transfer Receive Receipt is A4 Custom 2`
 
-### 4. Transfer Request Configuration
-
-**Configuration Options:**
-- A4 Paper Format
-- Custom Format 1
-- Custom Format 2
-
-**Configuration Keys:**
-- `Pharmacy Transfer Request Receipt is A4`
-- `Pharmacy Transfer Request Receipt is Custom 1`
-- `Pharmacy Transfer Request Receipt is Custom 2`
-
-### 5. Direct Purchase Configuration
-
-**Pages:**
-- `direct_purchase.xhtml` - Main direct purchase page
-
-**Configuration Options:**
-- A4 Paper Format (direct_purhcase component)
-- A4 Paper Format with Details (direct_purhcase_detailed component)
-- Custom Format 1 (direct_purhcase_with_costing_custom_1 component)
-- Custom Format 2 (direct_purhcase_with_costing_custom_2 component)
-
-**Configuration Keys (Department-specific via ConfigOptionController):**
-- `Direct Purchase Bill Print - A4` (default: true)
-- `Direct Purchase Bill Print - A4 Details` (default: false)
-- `Direct Purchase Bill Print - Custom 1` (default: false)
-- `Direct Purchase Bill Print - Custom 2` (default: false)
-
-**Settings Button Location:**
-Settings button is placed in the print preview section (`printPreview = true`) alongside the Print and New Bill buttons, allowing users to configure print formats while reviewing the output.
-
-### 6. Pharmacy Retail Sale Configuration
-
-**Pages:**
-- `pharmacy_bill_retail_sale.xhtml` - Main retail sale page
-
-**Configuration Options:**
-- POS Paper Format (saleBill component)
-- POS Paper Custom 1 (saleBill_Retail_Pos_paper_Custom_1 component)
-- 5.5 Inch Paper (saleBill_five_five component)
-- POS Paper with Header (saleBill_Header component)
-- Custom Format 1, 2, 3 (various custom components)
-- POS Header Paper General (saleBill_Header component)
-
-**Configuration Keys (Department-specific via ConfigOptionController):**
-- `Pharmacy Retail Sale Bill Paper is POS Paper` (default: true)
-- `Pharmacy Retail Sale Bill Paper is POS Paper Custom 1` (default: false)
-- `Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header` (default: true)
-- `Pharmacy Retail Sale Bill Paper is POS paper with header` (default: true)
-- `Pharmacy Retail Sale Bill Paper is Custom 1` (default: true)
-- `Pharmacy Retail Sale Bill Paper is Custom 2` (default: true)
-- `Pharmacy Retail Sale Bill Paper is Custom 3` (default: true)
-- `Pharmacy Retail Sale Bill is PosHeaderPaper` (default: true)
-
-**Settings Button Location:**
-Settings button is placed in the print preview section alongside Print Bill, Print Labels, and New Bill buttons.
-
-**Rendering Example:**
-```xhtml
-<h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper',true)}">
-    <phi:saleBill bill="#{pharmacySaleController.printBill}"/>
-</h:panelGroup>
-```
-
-### 7. Pharmacy Retail Sale Reprint Configuration
-
-**Pages:**
-- `pharmacy_reprint_bill_sale.xhtml` - Reprint retail sale page
-
-**Configuration Approach:**
-This page **reuses** the same configuration keys and settings dialog as the main Pharmacy Retail Sale (Section 6 above). No separate configuration is needed.
-
-**Configuration Keys:**
-Uses the same keys as Pharmacy Retail Sale:
-- `Pharmacy Retail Sale Bill Paper is POS Paper`
-- `Pharmacy Retail Sale Bill Paper is POS Paper Custom 1`
-- `Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header`
-- `Pharmacy Retail Sale Bill Paper is POS paper with header`
-- `Pharmacy Retail Sale Bill Paper is Custom 1`
-- `Pharmacy Retail Sale Bill Paper is Custom 2`
-- `Pharmacy Retail Sale Bill Paper is Custom 3`
-- `Pharmacy Retail Sale Bill is PosHeaderPaper`
-
-**Settings Button Location:**
-Settings button is placed in the header alongside Reprint, Print Labels, and To Cancel buttons.
-
-**Rendering Example:**
-```xhtml
-<h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper',true)}">
-    <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-</h:panelGroup>
-```
-
-### 8. Pharmacy Cancel Bill Configuration
-
-**Pages:**
-- `pharmacy_cancel_bill_retail.xhtml` - Cancel retail sale bill page
-
-**Configuration Options:**
-- POS Paper Format (saleBill component)
-- POS Paper Custom 1 (saleBill_Retail_Pos_paper_Custom_1 component)
-- 5.5 Inch Paper (saleBill_five_five component)
-- POS Header Paper (saleBill_Header_Cancel component)
-- Custom Format 3 (sale_bill_cancellation_five_five_custom_3 component)
-
-**Configuration Keys (Department-specific via ConfigOptionController):**
-- `Pharmacy Cancel Bill Paper is POS Paper` (default: true)
-- `Pharmacy Cancel Bill Paper is POS Paper Custom 1` (default: false)
-- `Pharmacy Cancel Bill Paper is FiveFive Paper` (default: true)
-- `Pharmacy Cancel Bill Paper is POS Header Paper` (default: true)
-- `Pharmacy Cancel Bill Paper is Custom 3` (default: true)
-
-**Settings Button Location:**
-Settings button is placed in the print preview section alongside Print Cancellation Bill and navigation buttons.
-
-**Rendering Example:**
-```xhtml
-<h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Paper',true)}">
-    <pharmacy:saleBill bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-</h:panelGroup>
-```
 
 ## Implementation Guide
 
@@ -324,7 +202,7 @@ Settings button is placed in the print preview section alongside Print Cancellat
 
 #### 2. Backend Implementation (Java)
 
-**Step 1: Add Properties to PharmacyRetailConfigController**
+**Step 1: Add Properties to PharmacyConfigController**
 ```java
 // Your Module Settings
 private boolean yourModuleOption1;
@@ -425,7 +303,7 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 ### 1. UI Consistency
 - Use standard dialog structure with card layouts
 - Include descriptive help text for each option
-- Use consistent button styling (`ui-button-secondary` for settings)
+- Use consistent button styling (`ui-button-secondary` for settings, at the left of the page)
 - Place settings buttons in the right button area
 
 ### 2. Backend Consistency
@@ -478,22 +356,6 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 2. Enable debug logging for configuration changes
 3. Use browser developer tools to inspect AJAX calls
 4. Verify EL expressions in XHTML are correctly referencing controller properties
-
-## Future Enhancements
-
-1. **Global Configuration Management**
-   - Add master configuration page for all printer settings
-   - Implement configuration import/export functionality
-
-2. **Advanced Features**
-   - Preview functionality for different paper formats
-   - Printer-specific configuration profiles
-   - Bulk configuration updates
-
-3. **User Experience**
-   - Configuration wizards for new installations
-   - Template-based configuration setup
-   - Real-time preview of configuration changes
 
 ## Related Documentation
 

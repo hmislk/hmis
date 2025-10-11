@@ -177,7 +177,7 @@
                               maximizable="true"
                               closeOnEscape="true">
 
-                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="cancelBillConfigForm" />
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="cancelBillConfigForm" />
 
                         <h:form id="cancelBillConfigForm">
                             <div class="row">
@@ -193,35 +193,35 @@
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="cancelPosPaper"
-                                                    value="#{pharmacyRetailConfigController.cancelBillPosPaper}" />
+                                                    value="#{pharmacyConfigController.cancelBillPosPaper}" />
                                                 <p:outputLabel for="cancelPosPaper" value="POS Paper (Default)" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Standard POS paper format for cancelled bills</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="cancelPosPaperCustom1"
-                                                    value="#{pharmacyRetailConfigController.cancelBillPosPaperCustom1}" />
+                                                    value="#{pharmacyConfigController.cancelBillPosPaperCustom1}" />
                                                 <p:outputLabel for="cancelPosPaperCustom1" value="POS Paper Custom 1" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom POS paper format version 1</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="cancelFiveFivePaper"
-                                                    value="#{pharmacyRetailConfigController.cancelBillFiveFivePaper}" />
+                                                    value="#{pharmacyConfigController.cancelBillFiveFivePaper}" />
                                                 <p:outputLabel for="cancelFiveFivePaper" value="5.5 Inch Paper" class="ms-2" />
                                                 <small class="form-text text-muted d-block">5.5 inch paper format for cancelled bills</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="cancelPosHeaderPaper"
-                                                    value="#{pharmacyRetailConfigController.cancelBillPosHeaderPaper}" />
+                                                    value="#{pharmacyConfigController.cancelBillPosHeaderPaper}" />
                                                 <p:outputLabel for="cancelPosHeaderPaper" value="POS Paper with Header" class="ms-2" />
                                                 <small class="form-text text-muted d-block">POS paper format with header section</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="cancelCustom3"
-                                                    value="#{pharmacyRetailConfigController.cancelBillCustom3}" />
+                                                    value="#{pharmacyConfigController.cancelBillCustom3}" />
                                                 <p:outputLabel for="cancelCustom3" value="Custom Format 3" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom paper format 3 for cancelled bills</small>
                                             </div>
@@ -242,7 +242,7 @@
                                                         icon="fas fa-save"
                                                         class="ui-button-success"
                                                         ajax="false"
-                                                        action="#{pharmacyRetailConfigController.saveCancelBillConfig}" />
+                                                        action="#{pharmacyConfigController.saveCancelBillConfig}" />
                                                     <p:commandButton
                                                         value="Cancel"
                                                         icon="fas fa-times"
