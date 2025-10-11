@@ -272,6 +272,7 @@
                                 </ui:fragment>
                                 <h:outputLabel 
                                     class="w-100 text-end"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
                                     value="#{transferIssueController.issuedBill.billFinanceDetails.totalCostValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>

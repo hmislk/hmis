@@ -1,0 +1,227 @@
+{
+    "code": 200,
+    "data": {
+        "id": 5661288,
+        "dtype": "BilledBill",
+        "createdAt": "2025-10-11 21:52:56",
+        "fromDepartmentId": 90094,
+        "toDepartmentId": 485,
+        "departmentId": 90094,
+        "fromInstitutionId": 2,
+        "toInstitutionId": 2,
+        "billTypeAtomic": "PHARMACY_TRANSFER_REQUEST",
+        "billType": "PharmacyTransferRequest",
+        "discount": 0.0,
+        "tax": 0.0,
+        "expenseTotal": 0.0,
+        "netTotal": -31.5,
+        "total": -31.5,
+        "billFinanceDetailsId": 5661289,
+        "billFinanceDetails": {
+            "id": 5661289,
+            "netTotal": -31.5,
+            "grossTotal": -31.5,
+            "totalCostValue": 0.0,
+            "totalPurchaseValue": 0.0,
+            "totalRetailSaleValue": 0.0
+        },
+        "billItems": [
+            {
+                "id": 5661285,
+                "createdAt": "2025-10-11 21:52:56",
+                "billId": 5661288,
+                "itemId": 115945,
+                "billItemFinanceDetailsId": 5661286,
+                "qty": 10.0,
+                "rate": 0.0,
+                "netRate": 0.0,
+                "grossValue": 0.0,
+                "netValue": -0.0,
+                "retired": false,
+                "billItemFinanceDetails": {
+                    "id": 5661286,
+                    "createdAt": "2025-10-11 21:52:42",
+                    "quantity": 10.0,
+                    "quantityByUnits": 10.0,
+                    "lineNetRate": 3.15,
+                    "lineGrossRate": 3.15,
+                    "retailSaleRate": 3.15,
+                    "lineCostRate": 3.15,
+                    "lineGrossTotal": 31.5,
+                    "grossTotal": 31.5,
+                    "lineCost": 31.5,
+                    "totalCost": 0.0
+                },
+                "pharmaceuticalBillItem": {
+                    "id": 5661287,
+                    "billItemId": 5661285,
+                    "qty": 10.0,
+                    "freeQty": 0.0,
+                    "retailRate": 3.15,
+                    "purchaseRate": 3.15,
+                    "costRate": 0.0,
+                    "purchaseValue": 31.5,
+                    "retailValue": 31.5,
+                    "costValue": 0.0
+                }
+            }
+        ]
+    },
+    "status": "success"
+}
+
+{
+    "code": 200,
+    "data": {
+        "id": 5661297,
+        "dtype": "BilledBill",
+        "createdAt": "2025-10-11 22:09:45",
+        "fromDepartmentId": 485,
+        "toDepartmentId": 90094,
+        "departmentId": 485,
+        "fromInstitutionId": 2,
+        "toInstitutionId": 2,
+        "institutionId": 2,
+        "billTypeAtomic": "PHARMACY_ISSUE",
+        "billType": "PharmacyTransferIssue",
+        "discount": 0.0,
+        "tax": 0.0,
+        "expenseTotal": 0.0,
+        "netTotal": 31.5,
+        "total": 31.5,
+        "billFinanceDetailsId": 5661298,
+        "billFinanceDetails": {
+            "id": 5661298,
+            "netTotal": 31.5,
+            "grossTotal": 31.5,
+            "totalCostValue": -18.18182,
+            "totalPurchaseValue": -25.5,
+            "totalRetailSaleValue": -31.5
+        },
+        "billItems": [
+            {
+                "id": 5661299,
+                "createdAt": "2025-10-11 22:09:44",
+                "billId": 5661297,
+                "itemId": 115945,
+                "billItemFinanceDetailsId": 5661300,
+                "qty": -10.0,
+                "rate": 3.15,
+                "netRate": 3.15,
+                "grossValue": 31.5,
+                "netValue": 31.5,
+                "retired": false,
+                "billItemFinanceDetails": {
+                    "id": 5661300,
+                    "createdAt": "2025-10-11 22:08:57",
+                    "quantity": -10.0,
+                    "quantityByUnits": -10.0,
+                    "lineNetRate": 3.15,
+                    "grossRate": 3.15,
+                    "lineGrossRate": 3.15,
+                    "costRate": 1.818182,
+                    "purchaseRate": 2.55,
+                    "retailSaleRate": 3.15,
+                    "lineCostRate": 1.818182,
+                    "totalCostRate": 1.818182,
+                    "lineGrossTotal": 31.5,
+                    "lineCost": -18.18182,
+                    "totalCost": -18.18182,
+                    "valueAtCostRate": -18.18182,
+                    "valueAtPurchaseRate": -25.5,
+                    "valueAtRetailRate": -31.5
+                },
+                "pharmaceuticalBillItem": {
+                    "id": 5661301,
+                    "billItemId": 5661299,
+                    "qty": -10.0,
+                    "freeQty": 0.0,
+                    "retailRate": 3.15,
+                    "purchaseRate": 2.55,
+                    "costRate": 1.818182,
+                    "purchaseValue": -25.5,
+                    "retailValue": -31.5,
+                    "costValue": -18.18182
+                }
+            }
+        ]
+    },
+    "status": "success"
+}
+
+{
+    "code": 200,
+    "data": {
+        "id": 5661306,
+        "dtype": "BilledBill",
+        "createdAt": "2025-10-11 22:13:32",
+        "fromDepartmentId": 485,
+        "toDepartmentId": 90094,
+        "departmentId": 90094,
+        "fromInstitutionId": 2,
+        "toInstitutionId": 2,
+        "institutionId": 2,
+        "billTypeAtomic": "PHARMACY_RECEIVE",
+        "billType": "PharmacyTransferReceive",
+        "discount": 0.0,
+        "tax": 0.0,
+        "expenseTotal": 0.0,
+        "netTotal": -31.5,
+        "total": -31.5,
+        "billFinanceDetailsId": 5661307,
+        "billFinanceDetails": {
+            "id": 5661307,
+            "netTotal": -31.5,
+            "grossTotal": -31.5,
+            "totalCostValue": 18.18182,
+            "totalPurchaseValue": 25.5,
+            "totalRetailSaleValue": 31.5
+        },
+        "billItems": [
+            {
+                "id": 5661308,
+                "billId": 5661306,
+                "itemId": 115945,
+                "billItemFinanceDetailsId": 5661309,
+                "qty": 10.0,
+                "rate": 3.15,
+                "netRate": 3.15,
+                "grossValue": -31.5,
+                "netValue": -31.5,
+                "retired": false,
+                "billItemFinanceDetails": {
+                    "id": 5661309,
+                    "createdAt": "2025-10-11 22:12:35",
+                    "quantity": 10.0,
+                    "quantityByUnits": 10.0,
+                    "lineNetRate": 3.15,
+                    "grossRate": 3.15,
+                    "lineGrossRate": 3.15,
+                    "retailSaleRate": 3.15,
+                    "lineCostRate": 1.818182,
+                    "totalCostRate": 1.818182,
+                    "lineGrossTotal": -31.5,
+                    "grossTotal": -31.5,
+                    "lineCost": 18.18182,
+                    "totalCost": 18.18182,
+                    "valueAtCostRate": 18.18182,
+                    "valueAtPurchaseRate": 25.5,
+                    "valueAtRetailRate": 31.5
+                },
+                "pharmaceuticalBillItem": {
+                    "id": 5661310,
+                    "billItemId": 5661308,
+                    "qty": 10.0,
+                    "freeQty": 0.0,
+                    "retailRate": 3.15,
+                    "purchaseRate": 2.55,
+                    "costRate": 1.818182,
+                    "purchaseValue": 25.5,
+                    "retailValue": 31.5,
+                    "costValue": 18.18182
+                }
+            }
+        ]
+    },
+    "status": "success"
+}

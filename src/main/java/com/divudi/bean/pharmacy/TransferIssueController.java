@@ -642,7 +642,7 @@ public class TransferIssueController implements Serializable {
         }
 
         if (stockWasNotSufficientToIssueFound) {
-            JsfUtil.addErrorMessage("The Current Stock was not sufficient to issue some items. Other items issued except those items. Please check the bill and issue the migging items seperately in a new issue.");
+            JsfUtil.addErrorMessage("The Current Stock was not sufficient to issue some items. Other items issued except those items. Please check the bill and issue the missing items separately in a new issue.");
             calculateBillTotalsForTransferIssue(getIssuedBill());
         }
 
@@ -904,7 +904,6 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(getIssuedBill());
         createBillFinancialDetailsForPharmacyTransferIssueBill(getIssuedBill());
         calculateBillTotalsForTransferIssue(getIssuedBill());
-        updateStockBillValues();
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());

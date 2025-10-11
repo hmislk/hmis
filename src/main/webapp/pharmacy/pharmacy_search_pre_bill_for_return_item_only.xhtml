@@ -9,11 +9,11 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
+                <h:form id="formReturnItemsOnly">
                     <p:panel header="Search Bill for Return Item">
                         <div class="row">
                             <div class="col-md-2">
-                                <h:outputLabel value="From Date"/>
+                                <h:outputLabel value="From Date*"/>
                                 <p:calendar 
                                     styleClass="dateTimePicker" 
                                     id="fromDate" 
@@ -53,6 +53,7 @@
                                     id="tblBills" 
                                     value="#{searchController.bills}" 
                                     var="bill"  
+                                    rowKey="#{bill.id}"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     rows="10"
