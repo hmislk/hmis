@@ -1,0 +1,373 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}">
+                        <div class="alert alert-danger" role="alert">
+                            <h:outputText value="Pharmacy Transfer Receives can NOT be cancelled as per the configuration. Please search and enable the following configuration:" styleClass="text-danger fw-bold"/>
+                            <br/>
+                            <h:outputText value="Configuration Key: Pharmacy Transfer Receives can be Cancelled" styleClass="text-info fw-bold"/>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}">
+
+                        <!-- Cancellation Preview Panel -->
+                        <p:panel rendered="#{!transferReceiveCancellationController.printPreview}">
+
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-ban" />
+                                <h:outputLabel value="Cancel Pharmacy Transfer Receive" class="mx-4" />
+                            </f:facet>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:panel header="Original Bill Details" styleClass="mb-3">
+                                        <h:panelGrid columns="4" cellpadding="5" class="w-100">
+                                            <h:outputLabel value="Bill Number" styleClass="font-weight-bold" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.insId}" />
+                                            <h:outputText value="" />
+
+                                            <h:outputLabel value="Bill Date" styleClass="font-weight-bold" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                            <h:outputText value="" />
+
+                                            <h:outputLabel value="From Department" styleClass="font-weight-bold" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.fromDepartment.name}" />
+                                            <h:outputText value="" />
+
+                                            <h:outputLabel value="To Department" styleClass="font-weight-bold" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.toDepartment.name}" />
+                                            <h:outputText value="" />
+
+                                            <h:outputLabel value="To Staff" styleClass="font-weight-bold" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.toStaff.person.nameWithTitle}"
+                                                          rendered="#{transferReceiveCancellationController.originalReceiveBill.toStaff != null}" />
+                                            <h:outputText value="N/A"
+                                                          rendered="#{transferReceiveCancellationController.originalReceiveBill.toStaff == null}" />
+                                            <h:outputText value="" />
+
+                                            <h:outputLabel value="Bill Total" styleClass="font-weight-bold" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.netTotal}"
+                                                          styleClass="text-end font-weight-bold">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                            <h:outputText value="" />
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:panel header="Items to be Cancelled" styleClass="mb-3">
+                                        <p:dataTable
+                                            value="#{transferReceiveCancellationController.cancellationBillItems}"
+                                            var="item"
+                                            rowIndexVar="rowIndex"
+                                            styleClass="noBorder"
+                                            scrollable="true"
+                                            paginator="false"
+                                            emptyMessage="No items found">
+
+                                            <p:column headerText="#" width="3em" class="text-center">
+                                                <h:outputText value="#{rowIndex + 1}" />
+                                            </p:column>
+
+                                            <p:column headerText="Item Name" style="min-width: 15em">
+                                                <h:outputText value="#{item.item.name}" />
+                                                <p:commandButton
+                                                    icon="pi pi-search"
+                                                    id="btnViewSelectedItemDetails"
+                                                    title="View Item Details"
+                                                    action="#{transferReceiveCancellationController.displayItemDetails(item)}"
+                                                    update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                    process="@this"
+                                                    class="ui-button-icon-only mx-3"/>
+                                            </p:column>
+
+                                            <p:column headerText="Batch No" width="8em">
+                                                <h:outputText value="#{item.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                            </p:column>
+
+                                            <p:column headerText="Expiry Date" width="8em" class="text-center">
+                                                <h:outputText value="#{item.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Quantity" width="8em" class="text-end">
+                                                <h:outputText value="#{item.qty}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Rate" width="8em" class="text-end">
+                                                <h:outputText value="#{item.rate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Value" width="10em" class="text-end">
+                                                <h:outputText value="#{item.netValue}" styleClass="font-weight-bold text-danger">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:panel header="Cancellation Details" styleClass="mb-3">
+                                        <h:panelGrid columns="2" cellpadding="5" class="w-100">
+                                            <h:outputLabel value="Cancellation Total" styleClass="font-weight-bold" />
+                                            <h:outputText value="#{transferReceiveCancellationController.cancellationBill.netTotal}"
+                                                          styleClass="text-end font-weight-bold text-danger"
+                                                          style="font-size: 1.2em;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Cancellation Reason *" styleClass="font-weight-bold" />
+                                            <p:inputTextarea
+                                                value="#{transferReceiveCancellationController.cancellationReason}"
+                                                rows="4"
+                                                cols="80"
+                                                required="true"
+                                                requiredMessage="Cancellation reason is required"
+                                                maxlength="500"
+                                                placeholder="Please provide a detailed reason for cancelling this transfer receive..."
+                                                styleClass="w-100" />
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <p:commandButton
+                                            value="Back to List"
+                                            icon="fas fa-arrow-left"
+                                            action="pharmacy_transfer_receive_summary"
+                                            actionListener="#{transferReceiveCancellationController.makeNull()}"
+                                            ajax="false"
+                                            class="ui-button-secondary m-2" />
+
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Cancel Bill"
+                                                icon="fas fa-ban"
+                                                action="#{transferReceiveCancellationController.confirmCancellation()}"
+                                                onclick="if (!confirm('Are you sure you want to CANCEL this Transfer Receive Bill?\n\nThis action will:\n- Reverse stock movements\n- Reverse cost accounting\n- Mark the original bill as cancelled\n\nThis cannot be undone!')) return false;"
+                                                ajax="false"
+                                                class="ui-button-danger m-2"
+                                                update="@form"
+                                                style="font-size: 1.1em; padding: 0.5em 1.5em;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ph:history/>
+
+                        </p:panel>
+
+                        <!-- Print Preview Panel -->
+                        <p:panel rendered="#{transferReceiveCancellationController.printPreview}">
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Back to List"
+                                        icon="fas fa-list"
+                                        action="pharmacy_transfer_receive_summary"
+                                        actionListener="#{transferReceiveCancellationController.makeNull()}"
+                                        ajax="false"
+                                        class="ui-button-warning m-2" />
+
+                                    <p:commandButton
+                                        value="New Cancellation"
+                                        icon="fas fa-plus"
+                                        action="#{transferReceiveCancellationController.makeNull()}"
+                                        ajax="false"
+                                        class="ui-button-info m-2" />
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fas fa-print"
+                                        class="ui-button-info m-1"
+                                        ajax="false"
+                                        action="#">
+                                        <p:printer target="gpCancellationBillPreview" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <h:panelGroup id="gpCancellationBillPreview">
+                                <div class="card">
+                                    <div class="card-header bg-danger text-white">
+                                        <h:outputText value="TRANSFER RECEIVE CANCELLATION BILL" styleClass="font-weight-bold" style="font-size: 1.5em;" />
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <h:outputText value="Cancellation Bill Number" styleClass="font-weight-bold" />
+                                                <br/>
+                                                <h:outputText value="#{transferReceiveCancellationController.cancellationBill.insId}"
+                                                              styleClass="text-primary"
+                                                              style="font-size: 1.2em;" />
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <h:outputText value="Cancellation Date" styleClass="font-weight-bold" />
+                                                <br/>
+                                                <h:outputText value="#{transferReceiveCancellationController.cancellationBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <hr/>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputText value="Original Receive Bill Reference" styleClass="font-weight-bold" />
+                                                <br/>
+                                                <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.insId}" />
+                                                <br/>
+                                                <h:outputText value="Date: " styleClass="font-weight-bold" />
+                                                <h:outputText value="#{transferReceiveCancellationController.originalReceiveBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <h:outputText value="From Department" styleClass="font-weight-bold" />
+                                                <br/>
+                                                <h:outputText value="#{transferReceiveCancellationController.cancellationBill.fromDepartment.name}" />
+                                            </div>
+                                            <div class="col-6">
+                                                <h:outputText value="To Department" styleClass="font-weight-bold" />
+                                                <br/>
+                                                <h:outputText value="#{transferReceiveCancellationController.cancellationBill.toDepartment.name}" />
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputText value="Cancellation Reason" styleClass="font-weight-bold" />
+                                                <br/>
+                                                <p:inputTextarea
+                                                    value="#{transferReceiveCancellationController.cancellationBill.comments}"
+                                                    rows="3"
+                                                    disabled="true"
+                                                    styleClass="w-100" />
+                                            </div>
+                                        </div>
+
+                                        <h:outputText value="Cancelled Items" styleClass="font-weight-bold" style="font-size: 1.1em;" />
+                                        <p:dataTable
+                                            value="#{transferReceiveCancellationController.cancellationBill.billItems}"
+                                            var="item"
+                                            rowIndexVar="rowIndex"
+                                            styleClass="noBorder mt-2"
+                                            scrollable="true"
+                                            paginator="false">
+
+                                            <p:column headerText="#" width="3em" class="text-center">
+                                                <h:outputText value="#{rowIndex + 1}" />
+                                            </p:column>
+
+                                            <p:column headerText="Item Name">
+                                                <h:outputText value="#{item.item.name}" />
+                                            </p:column>
+
+                                            <p:column headerText="Batch No" width="10em">
+                                                <h:outputText value="#{item.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                            </p:column>
+
+                                            <p:column headerText="Quantity" width="8em" class="text-end">
+                                                <h:outputText value="#{item.qty}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Rate" width="8em" class="text-end">
+                                                <h:outputText value="#{item.rate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Value" width="10em" class="text-end">
+                                                <h:outputText value="#{item.netValue}" styleClass="text-danger">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                        </p:dataTable>
+
+                                        <hr/>
+
+                                        <div class="row mt-3">
+                                            <div class="col-6 offset-6">
+                                                <h:panelGrid columns="2" cellpadding="5" class="w-100">
+                                                    <h:outputText value="Cancellation Total" styleClass="font-weight-bold" />
+                                                    <h:outputText value="#{transferReceiveCancellationController.cancellationBill.netTotal}"
+                                                                  styleClass="text-end font-weight-bold text-danger"
+                                                                  style="font-size: 1.3em;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGrid>
+                                            </div>
+                                        </div>
+
+                                        <hr/>
+
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <h:outputText value="Cancelled By: " styleClass="font-weight-bold" />
+                                                <h:outputText value="#{transferReceiveCancellationController.cancellationBill.creater.webUserPerson.name}" />
+                                                <br/>
+                                                <h:outputText value="Department: " styleClass="font-weight-bold" />
+                                                <h:outputText value="#{transferReceiveCancellationController.cancellationBill.department.name}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                        </p:panel>
+
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

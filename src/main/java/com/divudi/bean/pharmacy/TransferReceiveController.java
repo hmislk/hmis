@@ -166,10 +166,10 @@ public class TransferReceiveController implements Serializable {
         toDate = null;
         selectedBillItem = null;
 
-        // Refresh the issued list data to show updated fullyIssued status
-        if (searchController != null) {
-            searchController.createIssueTable();
-        }
+//        // Refresh the issued list data to show updated fullyIssued status
+//        if (searchController != null) {
+//            searchController.createIssueTable();
+//        }
     }
 
     public TransferReceiveController() {
@@ -665,9 +665,15 @@ public class TransferReceiveController implements Serializable {
 
         inputBill.setSaleValue(retailFree + retailNonFree);
         inputBill.setFreeValue(retailFree);
+
+        // Transfer receive represents money going out, so bill totals should be negative
         inputBill.setNetTotal(netTotal);
         inputBill.setGrantTotal(netTotal);
         inputBill.setTotal(netTotal);
+
+        // Also negate BillFinanceDetails totals to match
+        inputBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
+        inputBill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
 
 
     }
@@ -949,9 +955,10 @@ public class TransferReceiveController implements Serializable {
         }
         
         fd.setLineGrossRate(grossRate);
-        
 
-        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+
+        // Transfer receive represents money going out, so totals should be negative
+        BigDecimal lineGrossTotal = grossRate.multiply(qty).negate();
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
 
@@ -1034,7 +1041,8 @@ public class TransferReceiveController implements Serializable {
         BigDecimal grossRate = Optional.ofNullable(fd.getLineGrossRate()).orElse(determineTransferRate(ph.getItemBatch()).multiply(unitsPerPack));
         fd.setLineGrossRate(grossRate);
 
-        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+        // Transfer receive represents money going out, so totals should be negative
+        BigDecimal lineGrossTotal = grossRate.multiply(qty).negate();
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
 
