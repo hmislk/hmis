@@ -1,0 +1,168 @@
+I have given a pharmacy receive and pharmacy receive cancellation
+Cancellation should have opposite values of the received one
+but there are differences
+can you please fix them
+Ex. 
+
+cancellation is done in this page http://localhost:8080/rh/faces/pharmacy/pharmacy_cancel_transfer_receive.xhtml
+
+
+Receive
+{
+    "code": 200,
+    "data": {
+        "billFinanceDetails": {
+            "grossTotal": -124.8,
+            "id": 5660990,
+            "netTotal": -124.8,
+            "totalCostValue": 130,
+            "totalPurchaseValue": 107.499,
+            "totalRetailSaleValue": 124.80000000000001
+        },
+        "billFinanceDetailsId": 5660990,
+        "billItems": [
+            {
+                "billId": 5660989,
+                "billItemFinanceDetails": {
+                    "billCost": 0,
+                    "billCostRate": 0,
+                    "createdAt": "2025-10-11 15:28:27",
+                    "grossRate": 12.48,
+                    "grossTotal": -124.8,
+                    "id": 5660992,
+                    "lineCost": 130,
+                    "lineCostRate": 13,
+                    "lineGrossRate": 12.48,
+                    "lineGrossTotal": -124.8,
+                    "lineNetRate": 12.48,
+                    "quantity": 10,
+                    "quantityByUnits": 10,
+                    "retailSaleRate": 12.48,
+                    "totalCost": 130,
+                    "totalCostRate": 13,
+                    "valueAtCostRate": 130,
+                    "valueAtPurchaseRate": 107.499,
+                    "valueAtRetailRate": 124.8
+                },
+                "billItemFinanceDetailsId": 5660992,
+                "grossValue": -124.80000000000001,
+                "id": 5660991,
+                "itemId": 117323,
+                "netRate": 12.48,
+                "netValue": -124.80000000000001,
+                "pharmaceuticalBillItem": {
+                    "billItemId": 5660991,
+                    "costRate": 13,
+                    "costValue": 130,
+                    "freeQty": 0,
+                    "id": 5660993,
+                    "purchaseRate": 10.7499,
+                    "purchaseValue": 107.499,
+                    "qty": 10,
+                    "retailRate": 12.48,
+                    "retailValue": 124.8
+                },
+                "qty": 10,
+                "rate": 12.48,
+                "retired": false
+            }
+        ],
+        "billType": "PharmacyTransferReceive",
+        "billTypeAtomic": "PHARMACY_RECEIVE",
+        "createdAt": "2025-10-11 15:28:37",
+        "departmentId": 90094,
+        "discount": 0,
+        "dtype": "BilledBill",
+        "expenseTotal": 0,
+        "fromDepartmentId": 485,
+        "id": 5660989,
+        "institutionId": 2,
+        "netTotal": -124.8,
+        "tax": 0,
+        "toDepartmentId": 90094,
+        "toInstitutionId": 2,
+        "total": -124.8
+    },
+    "status": "success"
+}
+
+
+this is cancellation
+{
+    "code": 200,
+    "data": {
+        "billFinanceDetails": {
+            "grossTotal": -124.8,
+            "id": 5661012,
+            "netTotal": -124.8,
+            "totalCostValue": 130,
+            "totalPurchaseValue": 107.499,
+            "totalRetailSaleValue": 124.80000000000001
+        },
+        "billFinanceDetailsId": 5661012,
+        "billItems": [
+            {
+                "billId": 5661011,
+                "billItemFinanceDetails": {
+                    "billCost": 0,
+                    "billCostRate": 0,
+                    "createdAt": "2025-10-11 15:31:05",
+                    "grossRate": 12.48,
+                    "grossTotal": -124.8,
+                    "id": 5661015,
+                    "lineCost": 130,
+                    "lineCostRate": 13,
+                    "lineGrossRate": 12.48,
+                    "lineGrossTotal": -124.8,
+                    "lineNetRate": 12.48,
+                    "quantity": 10,
+                    "quantityByUnits": 10,
+                    "retailSaleRate": 12.48,
+                    "totalCost": 130,
+                    "totalCostRate": 13,
+                    "valueAtCostRate": 130,
+                    "valueAtPurchaseRate": 107.499,
+                    "valueAtRetailRate": 124.8
+                },
+                "billItemFinanceDetailsId": 5661015,
+                "createdAt": "2025-10-11 15:31:05",
+                "grossValue": 124.80000000000001,
+                "id": 5661014,
+                "itemId": 117323,
+                "netRate": -12.48,
+                "netValue": 124.80000000000001,
+                "pharmaceuticalBillItem": {
+                    "billItemId": 5661014,
+                    "costRate": 0,
+                    "costValue": 0,
+                    "freeQty": 0,
+                    "id": 5661016,
+                    "purchaseRate": 10.7499,
+                    "purchaseValue": 0,
+                    "qty": -10,
+                    "retailRate": 12.48,
+                    "retailValue": 0
+                },
+                "qty": -10,
+                "rate": -12.48,
+                "retired": false
+            }
+        ],
+        "billType": "PharmacyTransferReceive",
+        "billTypeAtomic": "PHARMACY_RECEIVE_CANCELLED",
+        "createdAt": "2025-10-11 15:31:04",
+        "departmentId": 90094,
+        "discount": 0,
+        "dtype": "CancelledBill",
+        "expenseTotal": 0,
+        "fromDepartmentId": 485,
+        "id": 5661011,
+        "institutionId": 2,
+        "netTotal": 124.8,
+        "tax": 0,
+        "toDepartmentId": 90094,
+        "toInstitutionId": 2,
+        "total": 124.8
+    },
+    "status": "success"
+}

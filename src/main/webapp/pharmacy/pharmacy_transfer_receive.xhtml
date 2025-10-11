@@ -121,9 +121,6 @@
                                     <h:outputLabel value="Issued To" ></h:outputLabel>
                                     <h:outputLabel value="#{transferReceiveController.receivedBill.toDepartment.name}" ></h:outputLabel>
 
-                                    <h:outputLabel value="Staff" ></h:outputLabel>
-                                    <h:outputLabel value="#{transferReceiveController.receivedBill.staff.person.nameWithTitle}" ></h:outputLabel>
-
                                     <h:outputLabel value="Issued Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" ></h:outputLabel>
                                     <h:outputLabel value="#{transferReceiveController.receivedBill.referenceBill.absoluteNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -137,7 +134,7 @@
                                     <h:outputLabel value="Staff" ></h:outputLabel>
                                     <p:outputLabel value="#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                                    <h:outputLabel value="Comments *" />
+                                    <h:outputLabel value="Comments" />
                                     <p:inputTextarea
                                         class="w-100"
                                         rows="3"
