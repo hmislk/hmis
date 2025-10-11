@@ -1123,8 +1123,9 @@ public class PharmacyCostingService {
             totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
         }
 
-        bill.setTotal(BigDecimalUtil.valueOrZero(grossTotal).doubleValue());
-        bill.setNetTotal(BigDecimalUtil.valueOrZero(netTotal).doubleValue());
+        // Transfer out operations (Issue and Receive) represent money going out, so totals should be negative
+        bill.setTotal(BigDecimalUtil.valueOrZero(grossTotal.negate()).doubleValue());
+        bill.setNetTotal(BigDecimalUtil.valueOrZero(netTotal.negate()).doubleValue());
         bill.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
 
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
@@ -1175,10 +1176,11 @@ public class PharmacyCostingService {
         bfd.setTotalFreeQuantity(totalFreeQty);
         bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
         bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
-        bfd.setGrossTotal(grossTotal);
-        bfd.setLineGrossTotal(lineGrossTotal);
-        bfd.setNetTotal(netTotal);
-        bfd.setLineNetTotal(lineNetTotal);
+        // Transfer out operations (Issue and Receive) represent money going out, so totals should be negative
+        bfd.setGrossTotal(grossTotal.negate());
+        bfd.setLineGrossTotal(lineGrossTotal.negate());
+        bfd.setNetTotal(netTotal.negate());
+        bfd.setLineNetTotal(lineNetTotal.negate());
 
     }
 
