@@ -2250,6 +2250,17 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getPatient_deposit().setPatient(getRefundBill().getPatient());
                     getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                    // Load and set the PatientDeposit object for displaying balance
+                    if (getRefundBill().getPatient() != null) {
+                        PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                            getRefundBill().getPatient(),
+                            sessionController.getDepartment()
+                        );
+                        if (pd != null && pd.getId() != null) {
+                            getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                            getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                        }
+                    }
                     break;
                 case Credit:
                     System.out.println("Credit Company: " + (originalPayment.getCreditCompany() != null ? originalPayment.getCreditCompany().getName() : "NULL"));
@@ -2311,6 +2322,17 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(getRefundBill().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                        // Load and set the PatientDeposit object for displaying balance
+                        if (getRefundBill().getPatient() != null) {
+                            PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                getRefundBill().getPatient(),
+                                sessionController.getDepartment()
+                            );
+                            if (pd != null && pd.getId() != null) {
+                                cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                                cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                            }
+                        }
                         break;
                     case Credit:
                         cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
