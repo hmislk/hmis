@@ -32,15 +32,19 @@
                                     ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton
-                                    ajax="false"
-                                    value="To Cancel"
-                                    icon="fas fa-cancel"
-                                    class="ui-button-danger mx-1"
-                                    action="pharmacy_cancel_transfer_receive"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}"
-                                    disabled="#{pharmacyBillSearch.bill.cancelled}">
-                                </p:commandButton>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}" >
+                                    <p:commandButton
+                                        id="btnToCancel"
+                                        ajax="false"
+                                        value="To Cancel"
+                                        icon="fas fa-ban"
+                                        class="ui-button-danger mx-1"
+                                        action="#{transferReceiveCancellationController.navigateToCancellationPreviewById()}"
+                                        rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">
+                                        <f:setPropertyActionListener target="#{transferReceiveCancellationController.originalReceiveBillId}" value="#{pharmacyBillSearch.bill.id}" />
+                                    </p:commandButton>
+                                </h:panelGroup>
                                 <p:commandButton
                                     value="Back"
                                     icon="fas fa-arrow-left"

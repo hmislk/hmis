@@ -330,21 +330,48 @@ public class PharmaceuticalBillItem implements Serializable {
         if (ph == null) {
             return;
         }
+        // Invert quantities (stock goes out)
         qty = 0 - ph.qty;
         qtyPacks = 0 - ph.qtyPacks;
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
         completedQty = 0 - ph.completedQty;
         completedFreeQty = 0 - ph.completedFreeQty;
+
+        // Invert values (stock valuation reduces)
+        purchaseValue = 0 - ph.purchaseValue;
+        retailValue = 0 - ph.retailValue;
+        costValue = 0 - ph.costValue;
+
+        // Rates remain the same (they are unit prices, not values)
+        purchaseRate = ph.purchaseRate;
+        retailRate = ph.retailRate;
+        costRate = ph.costRate;
+        purchaseRatePack = ph.purchaseRatePack;
+        retailRatePack = ph.retailRatePack;
+        costRatePack = ph.costRatePack;
+        wholesaleRate = ph.wholesaleRate;
+        wholesaleRatePack = ph.wholesaleRatePack;
+        lastPurchaseRate = ph.lastPurchaseRate;
+        lastPurchaseRatePack = ph.lastPurchaseRatePack;
     }
 
     public void invertValue() {
+        // Invert quantities (stock goes out)
         qty = 0 - qty;
         qtyPacks = 0 - qtyPacks;
         freeQty = 0 - freeQty;
         freeQtyPacks = 0 - freeQtyPacks;
         completedQty = 0 - completedQty;
         completedFreeQty = 0 - completedFreeQty;
+
+        // Invert values (stock valuation reduces)
+        purchaseValue = 0 - purchaseValue;
+        retailValue = 0 - retailValue;
+        costValue = 0 - costValue;
+
+        // Rates remain the same (they are unit prices, not values)
+        // Do not invert: purchaseRate, retailRate, costRate, etc.
     }
 
     public Stock getStock() {
