@@ -904,7 +904,6 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(getIssuedBill());
         createBillFinancialDetailsForPharmacyTransferIssueBill(getIssuedBill());
         calculateBillTotalsForTransferIssue(getIssuedBill());
-        updateStockBillValues();
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
