@@ -289,7 +289,7 @@
                     <h:outputText value="2 Examples for How to manage the case" style="color:red;font-weight:bold;" />
 
                     <p:panel header="Case 01 - Positive Variance Items" style="margin-bottom:1em;">
-                        <ui:repeat value="#{pharmacyReportController.positiveVarianceMap.entrySet().toArray()}" var="entry">
+                        <ui:repeat value="#{pharmacyReportController.positiveVarianceMap.entrySet()}" var="entry">
                             <h:outputText value="#{entry.key}" style="font-weight:bold; font-size:1.1em; display:block; margin-top:1em; margin-bottom:0.5em;" />
                             <h:outputText value="Opening Stock" style="font-weight:bold; display:block; margin-top:0.5em;" />
                             <p:dataTable value="#{entry.value}" var="row" 
@@ -309,7 +309,7 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Value">
-                                    <h:outputText value="#{row.oldRate}">
+                                    <h:outputText value="#{row.beforeAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
@@ -328,27 +328,27 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Old Rate">
-                                    <h:outputText value="#{row.costRate}">
+                                    <h:outputText value="#{row.beforeAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Old Value">
-                                    <h:outputText value="#{row.oldRate}">
+                                    <h:outputText value="#{row.beforeAdjustment}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="New Rate">
-                                    <h:outputText value="#{row.retailRate}">
+                                    <h:outputText value="#{row.afterAdjustment}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="New Value">
-                                    <h:outputText value="#{row.newRate}">
+                                    <h:outputText value="#{row.afterAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Variance">
-                                    <h:outputText value="#{row.newRate - row.oldRate}" 
+                                    <h:outputText value="#{(row.afterAdjustment - row.beforeAdjustment) * row.quantity}" 
                                                   style="color: green; font-weight:bold;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
@@ -373,7 +373,7 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Value">
-                                    <h:outputText value="#{row.newRate}">
+                                    <h:outputText value="#{row.afterAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
@@ -384,7 +384,7 @@
                     </p:panel>
 
                     <p:panel header="Case 02 - Negative Variance Items" style="margin-bottom:2em;">
-                        <ui:repeat value="#{pharmacyReportController.negativeVarianceMap.entrySet().toArray()}" var="entry">
+                        <ui:repeat value="#{pharmacyReportController.negativeVarianceMap.entrySet()}" var="entry">
                             <h:outputText value="#{entry.key}" style="font-weight:bold; font-size:1.1em; display:block; margin-top:1em; margin-bottom:0.5em;" />
 
                             <h:outputText value="Opening Stock" style="font-weight:bold; display:block; margin-top:0.5em;" />
@@ -405,7 +405,7 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Value">
-                                    <h:outputText value="#{row.oldRate}">
+                                    <h:outputText value="#{row.beforeAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
@@ -424,27 +424,27 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Old Rate">
-                                    <h:outputText value="#{row.costRate}">
+                                    <h:outputText value="#{row.beforeAdjustment}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Old Value">
-                                    <h:outputText value="#{row.oldRate}">
+                                    <h:outputText value="#{row.beforeAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="New Rate">
-                                    <h:outputText value="#{row.retailRate}">
+                                    <h:outputText value="#{row.afterAdjustment}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="New Value">
-                                    <h:outputText value="#{row.newRate}">
+                                    <h:outputText value="#{row.afterAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Variance">
-                                    <h:outputText value="#{row.newRate - row.oldRate}" 
+                                    <h:outputText value="#{(row.afterAdjustment - row.beforeAdjustment) * row.quantity}" 
                                                   style="color: red; font-weight:bold;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
@@ -464,12 +464,12 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Rate">
-                                    <h:outputText value="#{row.retailRate}">
+                                    <h:outputText value="#{row.afterAdjustment}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Value">
-                                    <h:outputText value="#{row.newRate}">
+                                    <h:outputText value="#{row.afterAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>

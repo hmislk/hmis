@@ -1901,6 +1901,8 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.department", "dep", department);
 
             stockCorrectionRows = (List<StockCorrectionRow>) billItemFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            positiveVarianceMap = new HashMap<>();
+            negativeVarianceMap = new HashMap<>();
 
             for (StockCorrectionRow row : stockCorrectionRows) {
                 // Calculate variance
