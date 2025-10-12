@@ -896,6 +896,43 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
      * @return The remaining amount (bill total - sum of all payment method
      * values)
      */
+    private double componentTotal(ComponentDetail detail) {
+        if (detail == null) {
+            return 0.0;
+        }
+        return detail.getTotalValue();
+    }
+
+    private double multiplePaymentComponentValue(ComponentDetail componentDetail) {
+        if (componentDetail == null) {
+            return 0.0;
+        }
+
+        PaymentMethodData data = componentDetail.getPaymentMethodData();
+        if (data == null) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+        total += componentTotal(data.getCash());
+        total += componentTotal(data.getCreditCard());
+        total += componentTotal(data.getCheque());
+        total += componentTotal(data.getSlip());
+        total += componentTotal(data.getEwallet());
+        total += componentTotal(data.getPatient_deposit());
+        total += componentTotal(data.getCredit());
+        total += componentTotal(data.getStaffCredit());
+        total += componentTotal(data.getStaffWelfare());
+        total += componentTotal(data.getOnlineSettlement());
+        total += componentTotal(data.getIou());
+
+        if (total == 0.0) {
+            total = Math.abs(componentDetail.getTotalValue());
+        }
+
+        return total;
+    }
+
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
         double total = getReturnBill().getNetTotal();
@@ -903,12 +940,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += multiplePaymentComponentValue(cd);
             }
         }
 
