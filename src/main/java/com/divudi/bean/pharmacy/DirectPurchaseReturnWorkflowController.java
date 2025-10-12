@@ -887,6 +887,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // Also set the legacy total fields for backward compatibility
         currentBill.setTotal(returnTotal.doubleValue());
         currentBill.setNetTotal(returnTotal.doubleValue());
+
+        // Calculate net value adjustment after updating net total
+        calculateNetValueAdjustment();
     }
 
     // Event handlers (with comprehensive validation)
@@ -1044,6 +1047,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             // Also set legacy fields for backward compatibility
             newDirectPurchaseReturnBill.setTotal(returnTotal.doubleValue());
             newDirectPurchaseReturnBill.setNetTotal(returnTotal.doubleValue());
+
+            // Calculate net value adjustment after updating net total
+            if (newDirectPurchaseReturnBill.equals(currentBill)) {
+                calculateNetValueAdjustment();
+            }
         }
     }
 
@@ -2033,6 +2041,30 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         validateReturnQuantities(bi);
         calculateLineTotal(bi);
         calculateTotal();
+    }
+
+    /**
+     * Calculates the net value adjustment based on actual net value entered by user
+     * Adjustment = Net Total (calculated) - Actual Net Value
+     * Positive adjustment means calculated is higher than actual
+     * Negative adjustment means calculated is lower than actual
+     */
+    public void calculateNetValueAdjustment() {
+        if (currentBill == null || currentBill.getBillFinanceDetails() == null) {
+            return;
+        }
+
+        BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
+
+        BigDecimal actualNetValue = bfd.getActualNetValue();
+        BigDecimal netTotal = bfd.getNetTotal();
+
+        if (actualNetValue != null && netTotal != null) {
+            BigDecimal adjustment = netTotal.subtract(actualNetValue);
+            bfd.setNetValueAdjustment(adjustment);
+        } else {
+            bfd.setNetValueAdjustment(null);
+        }
     }
 
     /**

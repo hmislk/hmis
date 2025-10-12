@@ -2088,7 +2088,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
     /**
      * Calculates the net value adjustment based on actual net value entered by user
-     * Adjustment = Actual Net Value - Net Total (calculated)
+     * Adjustment = Net Total (calculated) - Actual Net Value
+     * Positive adjustment means calculated is higher than actual
+     * Negative adjustment means calculated is lower than actual
      */
     public void calculateNetValueAdjustment() {
         if (currentBill == null || currentBill.getBillFinanceDetails() == null) {
@@ -2101,7 +2103,7 @@ public class GrnReturnWorkflowController implements Serializable {
         BigDecimal netTotal = bfd.getNetTotal();
 
         if (actualNetValue != null && netTotal != null) {
-            BigDecimal adjustment = actualNetValue.subtract(netTotal);
+            BigDecimal adjustment = netTotal.subtract(actualNetValue);
             bfd.setNetValueAdjustment(adjustment);
         } else {
             bfd.setNetValueAdjustment(null);

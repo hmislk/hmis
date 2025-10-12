@@ -9,4 +9,4 @@ SELECT ID, BILL_ID, PAIDVALUE, PAYMENTMETHOD FROM PAYMENT where BILL_ID in (1945
 -- select `ID`, `QTY`, `FREEQTY` from pharmaceuticalbillitem order by id desc limit 10;
 -- 
 -- select * from stockhistory order by id desc limit 50;
--- 
+--  1947669

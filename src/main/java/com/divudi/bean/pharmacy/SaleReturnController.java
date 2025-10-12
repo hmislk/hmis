@@ -128,7 +128,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
                 return null;
             }
-            if (paymentBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE) {
+            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE) {
                 JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
                 return null;
             }
@@ -138,7 +138,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
                 return null;
             }
-            if (paymentBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
+            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
                 JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
                 return null;
             }
