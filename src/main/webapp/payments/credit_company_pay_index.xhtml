@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:head>
+        <title>Credit Company Payment Management</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <p:panel header="Credit Company Management">
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <h:panelGroup layout="block" styleClass="px-2">
+                                <h:form id="creditCompanyMenuForm">
+                                    <p:accordionPanel
+                                        activeIndex="#{searchController.manageCreditCompanyPaymentIndex}" 
+                                        styleClass="w-100 credit-company-tabs">
+                                        <p:ajax process="@this"/>
+                                        <p:tab title="Payment Vouchers">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-success"
+                                                    ajax="false"
+                                                    icon="pi pi-credit-card"
+                                                    value="Credit Company Payment Voucher"
+                                                    title="Create a new payment voucher for a credit company"
+                                                    action="/credit/credit_compnay_bill_opd_all_voucher?faces-redirect=true"
+                                                    actionListener="#{cashRecieveBillController.prepareNewBill()}"/>
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="pi pi-search"
+                                                    value="Credit Company Payment Voucher Search"
+                                                    title="Search and approve credit company payment vouchers"
+                                                    action="/credit/credit_compnay_bill_opd_all_voucher_approve?faces-redirect=true"
+                                                    actionListener="#{searchController.createCreditCompanyPaymentToApproveTable()}"/>
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-success ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="pi pi-wallet"
+                                                    value="Credit Company Payment by Voucher"
+                                                    title="Settle payments using an issued voucher"
+                                                    action="/credit/credit_compnay_bill_opd_all_by_voucher?faces-redirect=true"
+                                                    actionListener="#{cashRecieveBillController.prepareNewBill()}"/>
+                                            </div>
+                                        </p:tab>
+
+                                        <p:tab title="OPD Credit">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="OPD Due Search" title="List outstanding OPD dues for credit companies" action="/credit/credit_company_opd_due?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="OPD Due Age" title="View aged OPD dues" action="/credit/credit_company_opd_due_age?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-check-square" value="Settle Credit for OPD Batch Bills" title="Settle outstanding OPD batch bills" action="/credit/credit_compnay_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-briefcase" value="Settle Credit for OPD Package Bills" title="Settle outstanding OPD package bills" action="/credit/credit_compnay_package_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info" ajax="false" icon="pi pi-check" value="OPD Done Search" title="Review completed OPD settlements" action="/credit/company_opd_credit_settle_bills?faces-redirect=true"/>
+                                            </div>
+                                        </p:tab>
+
+                                        <p:tab title="Inward Credit">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="Inward Due Search" title="List outstanding inward dues for credit companies" action="/credit/inward_due_search_credit_company?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="Inward Due Age" title="View aged inward dues" action="/credit/inward_due_age_credit_company?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-id-card" value="Inward Payment by BHT" title="Process inward payments by BHT" action="/credit/credit_compnay_bill_inward?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-building" value="Inward Payment by Company" title="Process inward payments by company" action="/credit/credit_compnay_bill_payment_inward?faces-redirect=true"/>
+                                            </div>
+                                        </p:tab>
+
+                                        <p:tab title="Pharmacy Credit">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="Pharmacy Due Search" title="List outstanding pharmacy dues" action="/credit/credit_company_pharmacy_due?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="Pharmacy Due Age" title="View aged pharmacy dues" action="/credit/credit_company_pharmacy_due_age?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-receipt" value="Pharmacy Payment by Bill" title="Settle pharmacy bills individually" action="/credit/credit_compnay_bill_pharmacy?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-briefcase" value="Pharmacy Payment by Company" title="Settle pharmacy bills company-wide" action="/credit/credit_compnay_bill_pharmacy_all?faces-redirect=true"/>
+                                            </div>
+                                        </p:tab>
+
+                                        <p:tab title="Reports &amp; Audits">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton styleClass="w-100 ui-button-help ui-button-outlined" ajax="false" icon="pi pi-chart-bar" value="Credit Reports" title="Open the credit company reports dashboard" action="/credit/credit_reports?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-search" value="Payment Done Search" title="Search completed credit company payments" action="/credit/credit_company_bill_search?faces-redirect=true" actionListener="#{searchController.makeListNull}"/>
+                                            </div>
+                                        </p:tab>
+                                    </p:accordionPanel>
+                                </h:form>
+                            </h:panelGroup>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="admin"/>
+                        </div>
+                    </div>
+
+                </p:panel>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -282,7 +282,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="transferReceiveConfigForm" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferReceiveConfigForm" />
 
                 <h:form id="transferReceiveConfigForm">
 
@@ -296,7 +296,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferReceiveA4"
-                                            value="#{pharmacyRetailConfigController.transferReceiveA4}" />
+                                            value="#{pharmacyConfigController.transferReceiveA4}" />
                                         <p:outputLabel for="transferReceiveA4" value="A4 Receipt Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Standard A4 size paper format for transfer receive receipts</small>
                                     </div>
@@ -304,7 +304,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferReceiveTemplate"
-                                            value="#{pharmacyRetailConfigController.transferReceiveTemplate}" />
+                                            value="#{pharmacyConfigController.transferReceiveTemplate}" />
                                         <p:outputLabel for="transferReceiveTemplate" value="Template Bill Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Template-based receipt format for transfer receive bills</small>
                                     </div>
@@ -312,7 +312,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferReceiveCustom1"
-                                            value="#{pharmacyRetailConfigController.transferReceiveCustom1}" />
+                                            value="#{pharmacyConfigController.transferReceiveCustom1}" />
                                         <p:outputLabel for="transferReceiveCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom letter size receipt format for transfer receive bills</small>
                                     </div>
@@ -320,7 +320,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferReceiveA4Detailed"
-                                            value="#{pharmacyRetailConfigController.transferReceiveA4Detailed}" />
+                                            value="#{pharmacyConfigController.transferReceiveA4Detailed}" />
                                         <p:outputLabel for="transferReceiveA4Detailed" value="A4 Detailed Receipt" class="ms-2" />
                                         <small class="form-text text-muted d-block">Detailed A4 format with comprehensive transfer information</small>
                                     </div>
@@ -328,7 +328,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferReceiveA4Custom1"
-                                            value="#{pharmacyRetailConfigController.transferReceiveA4Custom1}" />
+                                            value="#{pharmacyConfigController.transferReceiveA4Custom1}" />
                                         <p:outputLabel for="transferReceiveA4Custom1" value="A4 Custom Format 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom A4 transfer receive receipt template design 1</small>
                                     </div>
@@ -336,7 +336,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferReceiveA4Custom2"
-                                            value="#{pharmacyRetailConfigController.transferReceiveA4Custom2}" />
+                                            value="#{pharmacyConfigController.transferReceiveA4Custom2}" />
                                         <p:outputLabel for="transferReceiveA4Custom2" value="A4 Custom Format 2" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom A4 transfer receive receipt template design 2</small>
                                     </div>
@@ -357,7 +357,7 @@
                                                 icon="fas fa-save"
                                                 class="ui-button-success"
                                                 ajax="false"
-                                                action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                action="#{pharmacyConfigController.saveConfig}" />
                                             <p:commandButton
                                                 value="Cancel"
                                                 icon="fas fa-times"

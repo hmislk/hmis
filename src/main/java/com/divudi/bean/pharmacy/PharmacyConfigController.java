@@ -14,7 +14,7 @@ import java.io.Serializable;
  */
 @Named
 @ViewScoped
-public class PharmacyRetailConfigController implements Serializable {
+public class PharmacyConfigController implements Serializable {
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -125,7 +125,7 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean retailSaleReturnRefundBillA4Paper;
     private boolean retailSaleReturnRefundBillPosPaper;
 
-    public PharmacyRetailConfigController() {
+    public PharmacyConfigController() {
     }
     
 
