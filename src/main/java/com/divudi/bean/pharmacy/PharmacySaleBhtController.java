@@ -28,6 +28,7 @@ import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
@@ -44,6 +45,7 @@ import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -119,6 +121,8 @@ public class PharmacySaleBhtController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyService pharmacyService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;            
@@ -149,6 +153,7 @@ public class PharmacySaleBhtController implements Serializable {
     List<BillItem> billItems;
     /////////////////////////
     private UserStockContainer userStockContainer;
+    private List<ClinicalFindingValue> allergyListOfPatient;
 
     private Bill batchBill;
     @Inject
@@ -173,6 +178,9 @@ public class PharmacySaleBhtController implements Serializable {
         }
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+            return;
+        }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
             return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
@@ -213,6 +221,7 @@ public class PharmacySaleBhtController implements Serializable {
         itemsWithoutStocks = null;
         patientEncounter = null;
         batchBill = null;
+        allergyListOfPatient = null;
     }
 
     public void makeNullWithFill() {
@@ -777,6 +786,9 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
+        }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
         Department matrixDept = null;
@@ -841,6 +853,9 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
+        if (hasAllergyConflicts(getBillItems())) {
+            return;
+        }
         BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
         BillType bt = BillType.PharmacyBhtPre;
         
@@ -855,12 +870,18 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
+        }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
 
     }
 
     public void settleStoreBhtIssue() {
         if (errorCheck()) {
+            return;
+        }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
             return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD;
@@ -924,16 +945,47 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
+    private boolean hasAllergyConflicts(List<BillItem> items) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            return false;
+        }
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        PatientEncounter encounter = getPatientEncounter();
+        Patient patient = encounter != null ? encounter.getPatient() : null;
+        if (patient == null) {
+            return false;
+        }
+        if (pharmacyService == null) {
+            return false;
+        }
+        if (allergyListOfPatient == null) {
+            allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+        }
+        String allergyMsg = pharmacyService.isAllergyForPatient(patient, items, allergyListOfPatient);
+        if (!allergyMsg.isEmpty()) {
+            JsfUtil.addErrorMessage(allergyMsg);
+            return true;
+        }
+        return false;
+    }
+
     private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
 
+        List<BillItem> itemsToIssue = getPreBill().getBillItems();
+        if (hasAllergyConflicts(itemsToIssue)) {
+            return;
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        List<BillItem> tmpBillItems = itemsToIssue;
         getPreBill().setBillItems(null);
 
         savePreBillFinally(pt, matrixDepartment, btp, bta);
@@ -955,10 +1007,15 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        List<BillItem> itemsToIssue = getPreBill().getBillItems();
+        if (hasAllergyConflicts(itemsToIssue)) {
+            return;
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        List<BillItem> tmpBillItems = itemsToIssue;
         getPreBill().setBillItems(null);
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
@@ -989,6 +1046,10 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         List<BillItem> tmpBillItems = getBillItems();
+
+        if (hasAllergyConflicts(tmpBillItems)) {
+            return;
+        }
 
         if (!getBillItems().isEmpty()) {
             getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
@@ -1273,9 +1334,9 @@ public class PharmacySaleBhtController implements Serializable {
         errorMessage = null;
 
         billItem = new BillItem();
-        if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
-        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
+        pharmaceuticalBillItem.setBillItem(billItem);
+        billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
         if (getTmpStock() == null) {
             errorMessage = "Item?";
             JsfUtil.addErrorMessage("Item?");
@@ -1936,6 +1997,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+        this.allergyListOfPatient = null;
     }
 
     public BillFeeFacade getBillFeeFacade() {
