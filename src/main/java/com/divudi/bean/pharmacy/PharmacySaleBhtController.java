@@ -59,7 +59,6 @@ import com.divudi.core.facade.StockHistoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -67,11 +66,10 @@ import java.util.Map;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -123,14 +121,11 @@ public class PharmacySaleBhtController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     BillService billService;
-
     @EJB
     private PharmacyService pharmacyService;
 
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private VmpController vmpController;
+    ConfigOptionApplicationController configOptionApplicationController;            
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -145,7 +140,6 @@ public class PharmacySaleBhtController implements Serializable {
     Double qty;
     Stock stock;
     StockDTO stockDto;
-    private List<StockDTO> cachedStockDtos;
     private Item item;
     private PatientEncounter patientEncounter;
     int activeIndex;
@@ -159,18 +153,13 @@ public class PharmacySaleBhtController implements Serializable {
     List<BillItem> billItems;
     /////////////////////////
     private UserStockContainer userStockContainer;
-
     private List<ClinicalFindingValue> allergyListOfPatient;
-    private Long allergyListCachedPatientId;
 
     private Bill batchBill;
     @Inject
     private BillBeanController billBean;
     private Stock tmpStock;
     private Double billItemTotal;
-    private List<Stock> substituteStocks;
-    private Stock selectedSubstituteStock;
-    private BillItem itemForSubstitution;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -191,16 +180,8 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getBatchBill().getPatientEncounter() != null ? getBatchBill().getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
@@ -233,12 +214,14 @@ public class PharmacySaleBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         stock = null;
+        stockDto = null;
         activeIndex = 0;
         billPreview = false;
         replaceableStocks = null;
         itemsWithoutStocks = null;
         patientEncounter = null;
         batchBill = null;
+        allergyListOfPatient = null;
     }
 
     public void makeNullWithFill() {
@@ -421,28 +404,6 @@ public class PharmacySaleBhtController implements Serializable {
         this.stock = stock;
     }
 
-    public StockDTO getStockDto() {
-        return stockDto;
-    }
-
-    public void setStockDto(StockDTO stockDto) {
-        this.stockDto = stockDto;
-        // Sync with entity for business logic
-        if (stockDto != null && stockDto.getId() != null) {
-            this.stock = stockFacade.find(stockDto.getId());
-        } else {
-            this.stock = null;
-        }
-    }
-
-    public List<StockDTO> getCachedStockDtos() {
-        return cachedStockDtos;
-    }
-
-    public void setCachedStockDtos(List<StockDTO> cachedStockDtos) {
-        this.cachedStockDtos = cachedStockDtos;
-    }
-
     public void setReplaceableStocks(List<Stock> replaceableStocks) {
         this.replaceableStocks = replaceableStocks;
     }
@@ -523,110 +484,6 @@ public class PharmacySaleBhtController implements Serializable {
                 + "and amp<>:a "
                 + "order by i.itemBatch.item.name";
         replaceableStocks = getStockFacade().findByJpql(sql, m);
-    }
-
-    public void prepareSubstitute(BillItem bi) {
-        itemForSubstitution = bi;
-        selectedSubstituteStock = null;
-        substituteStocks = new ArrayList<>();
-        if (bi != null && bi.getItem() instanceof Amp) {
-            Amp amp = (Amp) bi.getItem();
-            if (amp.getVmp() != null) {
-                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
-                for (Amp substituteAmp : amps) {
-                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
-                    if (stocks != null) {
-                        for (Stock s : stocks) {
-                            if (s.getStock() > 0 && s.getItemBatch() != null && s.getItemBatch().getDateOfExpire() != null) {
-                                Date now = new Date();
-                                if (s.getItemBatch().getDateOfExpire().after(now)) {
-                                    substituteStocks.add(s);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Warning when no substitute stocks are available
-        if (substituteStocks == null || substituteStocks.isEmpty()) {
-            if (bi != null && bi.getItem() != null) {
-                JsfUtil.addErrorMessage("No substitute stocks available for " + bi.getItem().getName() + 
-                                         ". Please check stock availability or contact the pharmacy department.");
-            } else {
-                JsfUtil.addErrorMessage("No substitute stocks available for the selected item.");
-            }
-        }
-    }
-
-    public void replaceSelectedSubstitute() {
-        if (itemForSubstitution == null || selectedSubstituteStock == null) {
-            JsfUtil.addErrorMessage("Please select a substitute stock.");
-            return;
-        }
-
-        if (selectedSubstituteStock.getItemBatch() != null && selectedSubstituteStock.getItemBatch().getDateOfExpire() != null) {
-            Date now = new Date();
-            if (!selectedSubstituteStock.getItemBatch().getDateOfExpire().after(now)) {
-                JsfUtil.addErrorMessage("Cannot use expired stock.");
-                return;
-            }
-        }
-
-        // Guard clause: Check if quantity is null or non-positive
-        if (itemForSubstitution.getQty() == null || itemForSubstitution.getQty() <= 0) {
-            JsfUtil.addErrorMessage("Invalid quantity for substitution. Quantity must be a positive number.");
-            return;
-        }
-
-        // CodeRabbit Fix: Check if substitute stock has sufficient quantity
-        double requiredQty = Math.abs(itemForSubstitution.getQty());
-        if (selectedSubstituteStock.getStock() < requiredQty) {
-            JsfUtil.addErrorMessage("Insufficient stock available. Required: " + requiredQty + 
-                                   ", Available: " + selectedSubstituteStock.getStock());
-            return;
-        }
-
-        // CodeRabbit Fix: Check if substitute stock is available for this user (concurrency check)
-        if (!userStockController.isStockAvailable(selectedSubstituteStock, requiredQty, getSessionController().getLoggedUser())) {
-            JsfUtil.addErrorMessage("Sorry, another user is currently billing this substitute stock. Please select a different substitute.");
-            return;
-        }
-        
-        // CodeRabbit Fix: Update transUserStock to handle the new substitute stock
-        if (itemForSubstitution.getTransUserStock() != null) {
-            userStockController.removeUserStock(itemForSubstitution.getTransUserStock(), getSessionController().getLoggedUser());
-        }
-
-        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
-
-        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
-        if (phItem == null) {
-            phItem = new PharmaceuticalBillItem();
-            phItem.setBillItem(itemForSubstitution);
-            itemForSubstitution.setPharmaceuticalBillItem(phItem);
-        }
-        
-        phItem.setStock(selectedSubstituteStock);
-        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
-        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
-        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
-        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
-        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
-        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
-        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
-        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
-
-        // CodeRabbit Fix: Create new user stock reservation for substitute stock
-        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock newUserStock = userStockController.saveUserStock(itemForSubstitution, getSessionController().getLoggedUser(), usc);
-        itemForSubstitution.setTransUserStock(newUserStock);
-
-        calculateRates(itemForSubstitution);
-        calCurrentBillItemTotal(getBillItems());
-        calTotal();
-        JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -741,58 +598,6 @@ public class PharmacySaleBhtController implements Serializable {
         //  itemsWithoutStocks = completeRetailSaleItems(qry);
         //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
-    }
-
-    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-        parameters.put("depTp", DepartmentType.Store);
-
-        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by item code", true);
-        boolean searchByBarcode = qry.length() > 6
-                ? configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", true)
-                : configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", false);
-        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by generic name(VMP)", false);
-
-        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
-                .append("FROM Stock i ")
-                .append("WHERE i.stock > :stockMin ")
-                .append("AND i.department = :department ")
-                .append("AND (i.itemBatch.item.departmentType IS NULL OR i.itemBatch.item.departmentType != :depTp) ")
-                .append("AND (");
-
-        sql.append("i.itemBatch.item.name LIKE :query ");
-
-        if (searchByItemCode) {
-            sql.append("OR i.itemBatch.item.code LIKE :query ");
-        }
-
-        if (searchByBarcode) {
-            sql.append("OR i.itemBatch.item.barcode = :query ");
-        }
-
-        if (searchByGeneric) {
-            sql.append("OR i.itemBatch.item.vmp.name LIKE :query ");
-        }
-
-        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
-
-        List<StockDTO> dtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
-        cachedStockDtos = dtos;
-        return dtos;
     }
 
     public BillItem getBillItem() {
@@ -981,16 +786,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.isAllergyForPatient(p, getPreBill().getBillItems(), allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
@@ -1020,6 +817,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         settleBhtIssue(bt, bta, matrixDept);
+
     }
     
     private Department determineMatrixDepartment() {
@@ -1051,19 +849,11 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing To Settle.");
+            return;
+        }
+        if (hasAllergyConflicts(getBillItems())) {
             return;
         }
         BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
@@ -1080,16 +870,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
         }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
 
@@ -1099,16 +881,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.isAllergyForPatient(p, getBillItems(), allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD;
         BillType bt = BillType.StoreBhtPre;
@@ -1171,16 +945,47 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
+    private boolean hasAllergyConflicts(List<BillItem> items) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            return false;
+        }
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        PatientEncounter encounter = getPatientEncounter();
+        Patient patient = encounter != null ? encounter.getPatient() : null;
+        if (patient == null) {
+            return false;
+        }
+        if (pharmacyService == null) {
+            return false;
+        }
+        if (allergyListOfPatient == null) {
+            allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+        }
+        String allergyMsg = pharmacyService.isAllergyForPatient(patient, items, allergyListOfPatient);
+        if (!allergyMsg.isEmpty()) {
+            JsfUtil.addErrorMessage(allergyMsg);
+            return true;
+        }
+        return false;
+    }
+
     private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
 
+        List<BillItem> itemsToIssue = getPreBill().getBillItems();
+        if (hasAllergyConflicts(itemsToIssue)) {
+            return;
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        List<BillItem> tmpBillItems = itemsToIssue;
         getPreBill().setBillItems(null);
 
         savePreBillFinally(pt, matrixDepartment, btp, bta);
@@ -1202,10 +1007,15 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        List<BillItem> itemsToIssue = getPreBill().getBillItems();
+        if (hasAllergyConflicts(itemsToIssue)) {
+            return;
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        List<BillItem> tmpBillItems = itemsToIssue;
         getPreBill().setBillItems(null);
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
@@ -1236,6 +1046,10 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         List<BillItem> tmpBillItems = getBillItems();
+
+        if (hasAllergyConflicts(tmpBillItems)) {
+            return;
+        }
 
         if (!getBillItems().isEmpty()) {
             getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
@@ -1437,19 +1251,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         calculateRates(billItem);
 
-        // Check for allergies after billItem is fully populated
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null && billItem != null && billItem.getItem() != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
-
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
@@ -1533,11 +1334,9 @@ public class PharmacySaleBhtController implements Serializable {
         errorMessage = null;
 
         billItem = new BillItem();
-        if (billItem.getPharmaceuticalBillItem() == null) {
-            PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
-            pbi.setBillItem(billItem);
-            billItem.setPharmaceuticalBillItem(pbi);
-        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
+        pharmaceuticalBillItem.setBillItem(billItem);
+        billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
         if (getTmpStock() == null) {
             errorMessage = "Item?";
             JsfUtil.addErrorMessage("Item?");
@@ -1592,20 +1391,6 @@ public class PharmacySaleBhtController implements Serializable {
 //        billItem.setBill(getPreBill());
         billItem.setSearialNo(getBillItems().size() + 1);
         calculateRates(billItem);
-        
-        // Check for allergies after billItem is fully populated
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            Patient p = getPatientEncounter() != null ? getPatientEncounter().getPatient() : null;
-            if (p != null && billItem != null && billItem.getItem() != null) {
-                refreshAllergiesIfPatientChanged(p);
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(p, billItem, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
-        
         getBillItems().add(billItem);
         
         calCurrentBillItemTotal(getBillItems());
@@ -2211,12 +1996,8 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
-        // Clear allergy cache when patient encounter changes
-        if (this.patientEncounter != patientEncounter) {
-            allergyListOfPatient = null;
-            allergyListCachedPatientId = null;
-        }
         this.patientEncounter = patientEncounter;
+        this.allergyListOfPatient = null;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -2323,58 +2104,81 @@ public class PharmacySaleBhtController implements Serializable {
         this.billItemTotal = billItemTotal;
     }
 
-    public List<Stock> getSubstituteStocks() {
-        return substituteStocks;
+    // DTO-based properties and methods for improved performance
+    public StockDTO getStockDto() {
+        return stockDto;
     }
 
-    public void setSubstituteStocks(List<Stock> substituteStocks) {
-        this.substituteStocks = substituteStocks;
-    }
-
-    public Stock getSelectedSubstituteStock() {
-        return selectedSubstituteStock;
-    }
-
-    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
-        this.selectedSubstituteStock = selectedSubstituteStock;
-    }
-
-    public BillItem getItemForSubstitution() {
-        return itemForSubstitution;
-    }
-
-    public void setItemForSubstitution(BillItem itemForSubstitution) {
-        this.itemForSubstitution = itemForSubstitution;
-    }
-
-    /**
-     * Refreshes the allergy list cache if the patient has changed.
-     * Clears both fields when patient is null.
-     */
-    private void refreshAllergiesIfPatientChanged(Patient p) {
-        if (p == null) {
-            allergyListOfPatient = null;
-            allergyListCachedPatientId = null;
-            return;
-        }
-        
-        Long currentPatientId = p.getId();
-        if (allergyListCachedPatientId == null || !allergyListCachedPatientId.equals(currentPatientId)) {
-            allergyListOfPatient = pharmacyService.getAllergyListForPatient(p);
-            allergyListCachedPatientId = currentPatientId;
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
+        if (stockDto != null) {
+            this.stock = convertStockDtoToEntity(stockDto);
         }
     }
 
-    public List<ClinicalFindingValue> getAllergyListOfPatient() {
-        return allergyListOfPatient;
+    public Stock convertStockDtoToEntity(StockDTO stockDto) {
+        if (stockDto == null || stockDto.getId() == null) {
+            return null;
+        }
+        return stockFacade.find(stockDto.getId());
     }
 
-    public void setAllergyListOfPatient(List<ClinicalFindingValue> allergyListOfPatient) {
-        this.allergyListOfPatient = allergyListOfPatient;
+    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+        parameters.put("barcodeQuery", qry);
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :barcodeQuery ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
-    @FacesConverter("stockDtoConverterBht")
-    public static class StockDtoConverterBht implements Converter {
+    // Getter method for JSF to access the converter
+    public StockDtoConverter getStockDtoConverter() {
+        return new StockDtoConverter();
+    }
+
+    // StockDTO Converter for JSF
+    public static class StockDtoConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -2382,18 +2186,9 @@ public class PharmacySaleBhtController implements Serializable {
                 return null;
             }
             try {
-                Long id = Long.valueOf(value);
-                PharmacySaleBhtController controller = (PharmacySaleBhtController) facesContext.getApplication().getELResolver()
-                        .getValue(facesContext.getELContext(), null, "pharmacySaleBhtController");
-                if (controller != null && controller.getCachedStockDtos() != null) {
-                    for (StockDTO dto : controller.getCachedStockDtos()) {
-                        if (dto != null && id.equals(dto.getId())) {
-                            return dto;
-                        }
-                    }
-                }
-                // Stock not found in cache - return null to indicate conversion failed
-                return null;
+                StockDTO dto = new StockDTO();
+                dto.setId(Long.valueOf(value));
+                return dto;
             } catch (NumberFormatException e) {
                 return null;
             }
@@ -2405,10 +2200,11 @@ public class PharmacySaleBhtController implements Serializable {
                 return "";
             }
             if (value instanceof StockDTO) {
-                StockDTO dto = (StockDTO) value;
-                return dto.getId() != null ? dto.getId().toString() : "";
+                StockDTO stockDto = (StockDTO) value;
+                return stockDto.getId() != null ? stockDto.getId().toString() : "";
             }
-            return "";
+            return value.toString();
         }
     }
+
 }
