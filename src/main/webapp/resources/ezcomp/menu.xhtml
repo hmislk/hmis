@@ -1504,6 +1504,15 @@
 
                     <p:menuitem  
                         ajax="false"  
+                        action="/payments/credit_company_pay_index?faces-redirect=true"
+                        value="Credit Company Payments" 
+                        icon="pi pi-credit-card"
+                        title="Manage credit company settlements and reports"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
+                    <p:menuitem  
+                        ajax="false"  
                         action="/collecting_centre/index?faces-redirect=true"
                         value="Collecting Centre Management" 
                         icon="pi pi-briefcase"

@@ -14,7 +14,7 @@ import java.io.Serializable;
  */
 @Named
 @ViewScoped
-public class PharmacyRetailConfigController implements Serializable {
+public class PharmacyConfigController implements Serializable {
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -117,7 +117,15 @@ public class PharmacyRetailConfigController implements Serializable {
     private boolean cancelBillPosHeaderPaper;
     private boolean cancelBillCustom3;
 
-    public PharmacyRetailConfigController() {
+    // Retail Sale Return Items Only Settings (no payment)
+    private boolean retailSaleReturnItemsBillFiveFiveCustom3;
+    private boolean retailSaleReturnItemsBillPosHeaderPaper;
+
+    // Retail Sale Return with Refund Payment Settings
+    private boolean retailSaleReturnRefundBillA4Paper;
+    private boolean retailSaleReturnRefundBillPosPaper;
+
+    public PharmacyConfigController() {
     }
     
 
@@ -216,6 +224,14 @@ public class PharmacyRetailConfigController implements Serializable {
         cancelBillFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", true);
         cancelBillPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", true);
         cancelBillCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", true);
+
+        // Retail Sale Return Items Only Settings (no payment)
+        retailSaleReturnItemsBillFiveFiveCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Items Bill is FiveFiveCustom3", true);
+        retailSaleReturnItemsBillPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Items Bill is PosHeaderPaper", false);
+
+        // Retail Sale Return with Refund Payment Settings
+        retailSaleReturnRefundBillA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", true);
+        retailSaleReturnRefundBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", false);
     }
 
     /**
@@ -454,6 +470,44 @@ public class PharmacyRetailConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Pharmacy Cancel Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Pharmacy Retail Sale Return Items Bill configuration changes specifically (no payment)
+     */
+    public void saveRetailSaleReturnItemsBillConfig() {
+        try {
+            // Retail Sale Return Items Bill Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Items Bill is FiveFiveCustom3", retailSaleReturnItemsBillFiveFiveCustom3);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Items Bill is PosHeaderPaper", retailSaleReturnItemsBillPosHeaderPaper);
+
+            JsfUtil.addSuccessMessage("Return Items Bill configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Return Items Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Pharmacy Retail Sale Return Refund Bill configuration changes specifically (with payment)
+     */
+    public void saveRetailSaleReturnRefundBillConfig() {
+        try {
+            // Retail Sale Return Refund Bill Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", retailSaleReturnRefundBillA4Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", retailSaleReturnRefundBillPosPaper);
+
+            JsfUtil.addSuccessMessage("Return Refund Bill configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Return Refund Bill configuration: " + e.getMessage());
         }
     }
 
@@ -958,6 +1012,40 @@ public class PharmacyRetailConfigController implements Serializable {
 
     public void setDirectPurchaseReturnCustom2(boolean directPurchaseReturnCustom2) {
         this.directPurchaseReturnCustom2 = directPurchaseReturnCustom2;
+    }
+
+    // Retail Sale Return Items Bill Getters and Setters
+    public boolean isRetailSaleReturnItemsBillFiveFiveCustom3() {
+        return retailSaleReturnItemsBillFiveFiveCustom3;
+    }
+
+    public void setRetailSaleReturnItemsBillFiveFiveCustom3(boolean retailSaleReturnItemsBillFiveFiveCustom3) {
+        this.retailSaleReturnItemsBillFiveFiveCustom3 = retailSaleReturnItemsBillFiveFiveCustom3;
+    }
+
+    public boolean isRetailSaleReturnItemsBillPosHeaderPaper() {
+        return retailSaleReturnItemsBillPosHeaderPaper;
+    }
+
+    public void setRetailSaleReturnItemsBillPosHeaderPaper(boolean retailSaleReturnItemsBillPosHeaderPaper) {
+        this.retailSaleReturnItemsBillPosHeaderPaper = retailSaleReturnItemsBillPosHeaderPaper;
+    }
+
+    // Retail Sale Return Refund Bill Getters and Setters
+    public boolean isRetailSaleReturnRefundBillA4Paper() {
+        return retailSaleReturnRefundBillA4Paper;
+    }
+
+    public void setRetailSaleReturnRefundBillA4Paper(boolean retailSaleReturnRefundBillA4Paper) {
+        this.retailSaleReturnRefundBillA4Paper = retailSaleReturnRefundBillA4Paper;
+    }
+
+    public boolean isRetailSaleReturnRefundBillPosPaper() {
+        return retailSaleReturnRefundBillPosPaper;
+    }
+
+    public void setRetailSaleReturnRefundBillPosPaper(boolean retailSaleReturnRefundBillPosPaper) {
+        this.retailSaleReturnRefundBillPosPaper = retailSaleReturnRefundBillPosPaper;
     }
 
 }

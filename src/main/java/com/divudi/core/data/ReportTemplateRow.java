@@ -130,6 +130,10 @@ public class ReportTemplateRow implements Serializable {
     private double onlineSettlementValue;
     private double otherIncomeValue;
 
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
+
     private Double grossTotal;
     private Double discount;
     private Double total;
@@ -1012,6 +1016,30 @@ public class ReportTemplateRow implements Serializable {
 
     public void setOnlineSettlementValue(double onlineSettlementValue) {
         this.onlineSettlementValue = onlineSettlementValue;
+    }
+
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
     }
 
     public List<Bill> getCashHnadovers() {

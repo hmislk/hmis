@@ -154,7 +154,8 @@
                                 <p:column 
                                     width="6em"
                                     headerText="Transfer Rate"  
-                                    class="text-end">
+                                    class="text-end"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                     <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -257,18 +258,21 @@
                                     </p:column>
                                 </p:autoComplete>
 
-                                <h:outputLabel value="Transfer Value" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <h:outputLabel 
-                                    class="w-100 text-end"
-                                    value="#{transferIssueController.issuedBill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                    <h:outputLabel value="Transfer Value" />
+                                    <h:outputLabel value=": &amp;nbsp;"/>
+                                    <h:outputLabel 
+                                        class="w-100 text-end"
+                                        value="#{transferIssueController.issuedBill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
 
-                                <h:outputLabel value="Transfer Cost Value" />
-                                <h:outputLabel value=": &nbsp;"/>
+                                    <h:outputLabel value="Transfer Cost Value" />
+                                    <h:outputLabel value=": &amp;nbsp;"/>
+                                </ui:fragment>
                                 <h:outputLabel 
                                     class="w-100 text-end"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
                                     value="#{transferIssueController.issuedBill.billFinanceDetails.totalCostValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>

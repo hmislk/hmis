@@ -391,10 +391,11 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItem.getQty() != null) {
             qty = 0 - billItem.getQty();
         }
-        Rate = 0 - billItem.getRate();
+        // Rates should remain positive - they are unit prices, not values
+        Rate = billItem.getRate();
         discount = 0 - billItem.getDiscount();
-        netRate = 0 - billItem.getNetRate();
-        marginRate = 0 - billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        marginRate = billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
         marginValue = 0 - billItem.getMarginValue();
         netValue = 0 - billItem.getNetValue();
@@ -413,9 +414,10 @@ public class BillItem implements Serializable, RetirableEntity {
         if (getQty() != null) {
             qty = 0 - getQty();
         }
-        Rate = 0 - getRate();
+        // Rates should remain positive - they are unit prices, not values
+        // Rate = 0 - getRate(); // Do not invert rates
         discount = 0 - getDiscount();
-        netRate = 0 - getNetRate();
+        // netRate = 0 - getNetRate(); // Do not invert rates
         grossValue = 0 - getGrossValue();
         marginValue = 0 - getMarginValue();
         netValue = 0 - getNetValue();
