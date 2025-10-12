@@ -116,7 +116,6 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         generateBillComponent();
 
-        System.out.println("bill = " + bill);
         List<Payment> originalPayments;
         Bill paymentBill = null;
         if (bill.getBillTypeAtomic() == null) {
