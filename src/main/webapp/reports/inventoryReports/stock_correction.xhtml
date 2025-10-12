@@ -288,76 +288,195 @@
 
                     <h:outputText value="2 Examples for How to manage the case" style="color:red;font-weight:bold;" />
 
-                    <p:panel header="Case 01" style="margin-bottom:1em;">
-                        <h:outputText value="Opening Stock" style="font-weight:bold;" />
-                        <p:dataTable value="" var="os">
-                            <p:column headerText="Item"><h:outputText value="" /></p:column>
-                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
-                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="Value"><h:outputText value="" /></p:column>
-                        </p:dataTable>
-                        <h:outputText value="Adjustments +" style="font-weight:bold; margin-top:1em;" />
-                        <p:dataTable value="" var="adj">
-                            <p:column headerText="Item"><h:outputText value="" /></p:column>
-                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
-                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="Value"><h:outputText value="" /></p:column>
-                            <p:column headerText="New Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="New Value"><h:outputText value="" /></p:column>
-                            <p:column headerText="Variance"><h:outputText value="" /></p:column>
-                        </p:dataTable>
-                        <h:outputText value="Closing Stock" style="font-weight:bold; margin-top:1em;" />
-                        <p:dataTable value="" var="cs">
-                            <p:column headerText="Item"><h:outputText value="" /></p:column>
-                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
-                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="Value"><h:outputText value="" /></p:column>
-                        </p:dataTable>
-                        <h:outputText value="Cost of Sold" style="font-weight:bold; margin-top:1em;" />
-                        <h:panelGrid columns="2">
-                            <h:outputText value="Opening Stock" />
-                            <h:outputText value="" />
-                            <h:outputText value="Stock Correction" />
-                            <h:outputText value="" />
-                            <h:outputText value="Closing Stock" />
-                            <h:outputText value="" />
-                        </h:panelGrid>
+                    <p:panel header="Case 01 - Positive Variance Items" style="margin-bottom:1em;">
+                        <ui:repeat value="#{pharmacyReportController.positiveVarianceMap.entrySet().toArray()}" var="entry">
+                            <h:outputText value="#{entry.key}" style="font-weight:bold; font-size:1.1em; display:block; margin-top:1em; margin-bottom:0.5em;" />
+                            <h:outputText value="Opening Stock" style="font-weight:bold; display:block; margin-top:0.5em;" />
+                            <p:dataTable value="#{entry.value}" var="row" 
+                                         rendered="#{not empty entry.value}"
+                                         style="margin-bottom:1em;">
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{row.itemName}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="#{row.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Purchase Rate">
+                                    <h:outputText value="#{row.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <h:outputText value="#{row.oldRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <h:outputText value="Adjustments +" style="font-weight:bold; display:block; margin-top:0.5em;" />
+                            <p:dataTable value="#{entry.value}" var="row" 
+                                         rendered="#{not empty entry.value}"
+                                         style="margin-bottom:1em;">
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{row.itemName}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="#{row.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Old Rate">
+                                    <h:outputText value="#{row.costRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Old Value">
+                                    <h:outputText value="#{row.oldRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="New Rate">
+                                    <h:outputText value="#{row.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="New Value">
+                                    <h:outputText value="#{row.newRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Variance">
+                                    <h:outputText value="#{row.newRate - row.oldRate}" 
+                                                  style="color: green; font-weight:bold;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <h:outputText value="Closing Stock" style="font-weight:bold; display:block; margin-top:0.5em;" />
+                            <p:dataTable value="#{entry.value}" var="row" 
+                                         rendered="#{not empty entry.value}"
+                                         style="margin-bottom:1em;">
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{row.itemName}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="#{row.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Rate">
+                                    <h:outputText value="#{row.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <h:outputText value="#{row.newRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:separator style="margin-top:1.5em; margin-bottom:1.5em;" />
+                        </ui:repeat>
                     </p:panel>
 
-                    <p:panel header="Case 02" style="margin-bottom:2em;">
-                        <h:outputText value="Opening Stock" style="font-weight:bold;" />
-                        <p:dataTable value="" var="os">
-                            <p:column headerText="Item"><h:outputText value="" /></p:column>
-                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
-                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="Value"><h:outputText value="" /></p:column>
-                        </p:dataTable>
-                        <h:outputText value="Adjustments -" style="font-weight:bold; margin-top:1em;" />
-                        <p:dataTable value="" var="adj">
-                            <p:column headerText="Item"><h:outputText value="" /></p:column>
-                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
-                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="Value"><h:outputText value="" /></p:column>
-                            <p:column headerText="New Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="New Value"><h:outputText value="" /></p:column>
-                            <p:column headerText="Variance"><h:outputText value="" /></p:column>
-                        </p:dataTable>
-                        <h:outputText value="Closing Stock" style="font-weight:bold; margin-top:1em;" />
-                        <p:dataTable value="" var="cs">
-                            <p:column headerText="Item"><h:outputText value="" /></p:column>
-                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
-                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
-                            <p:column headerText="Value"><h:outputText value="" /></p:column>
-                        </p:dataTable>
-                        <h:outputText value="Cost of Sold" style="font-weight:bold; margin-top:1em;" />
-                        <h:panelGrid columns="2">
-                            <h:outputText value="Opening Stock" />
-                            <h:outputText value="" />
-                            <h:outputText value="Stock Correction" />
-                            <h:outputText value="" />
-                            <h:outputText value="Closing Stock" />
-                            <h:outputText value="" />
-                        </h:panelGrid>
+                    <p:panel header="Case 02 - Negative Variance Items" style="margin-bottom:2em;">
+                        <ui:repeat value="#{pharmacyReportController.negativeVarianceMap.entrySet().toArray()}" var="entry">
+                            <h:outputText value="#{entry.key}" style="font-weight:bold; font-size:1.1em; display:block; margin-top:1em; margin-bottom:0.5em;" />
+
+                            <h:outputText value="Opening Stock" style="font-weight:bold; display:block; margin-top:0.5em;" />
+                            <p:dataTable value="#{entry.value}" var="row" 
+                                         rendered="#{not empty entry.value}"
+                                         style="margin-bottom:1em;">
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{row.itemName}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="#{row.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Purchase Rate">
+                                    <h:outputText value="#{row.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <h:outputText value="#{row.oldRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <h:outputText value="Adjustments -" style="font-weight:bold; display:block; margin-top:0.5em;" />
+                            <p:dataTable value="#{entry.value}" var="row" 
+                                         rendered="#{not empty entry.value}"
+                                         style="margin-bottom:1em;">
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{row.itemName}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="#{row.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Old Rate">
+                                    <h:outputText value="#{row.costRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Old Value">
+                                    <h:outputText value="#{row.oldRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="New Rate">
+                                    <h:outputText value="#{row.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="New Value">
+                                    <h:outputText value="#{row.newRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Variance">
+                                    <h:outputText value="#{row.newRate - row.oldRate}" 
+                                                  style="color: red; font-weight:bold;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <h:outputText value="Closing Stock" style="font-weight:bold; display:block; margin-top:0.5em;" />
+                            <p:dataTable value="#{entry.value}" var="row" 
+                                         rendered="#{not empty entry.value}"
+                                         style="margin-bottom:1em;">
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{row.itemName}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="#{row.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Rate">
+                                    <h:outputText value="#{row.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <h:outputText value="#{row.newRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:separator style="margin-top:1.5em; margin-bottom:1.5em;" />
+                        </ui:repeat>
                     </p:panel>
 
                 </h:form>
