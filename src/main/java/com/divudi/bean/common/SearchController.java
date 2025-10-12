@@ -399,6 +399,7 @@ public class SearchController implements Serializable {
     private double billCount;
     private Token token;
     private int managePaymentIndex = -1;
+    private int manageCreditCompanyPaymentIndex = -1;
 
     private double hosTotal;
     private double staffTotal;
@@ -2676,6 +2677,8 @@ public class SearchController implements Serializable {
     public void setSelectedOpdPackageBillSelector(String selectedOpdPackageBillSelector) {
         this.selectedOpdPackageBillSelector = selectedOpdPackageBillSelector;
     }
+    
+    
 
     public List<String> getOpdPackageBillSelector() {
         if (OpdPackageBillSelector == null) {
@@ -2728,6 +2731,14 @@ public class SearchController implements Serializable {
 
     public void setRefunded(boolean refunded) {
         this.refunded = refunded;
+    }
+
+    public int getManageCreditCompanyPaymentIndex() {
+        return manageCreditCompanyPaymentIndex;
+    }
+
+    public void setManageCreditCompanyPaymentIndex(int manageCreditCompanyPaymentIndex) {
+        this.manageCreditCompanyPaymentIndex = manageCreditCompanyPaymentIndex;
     }
 
     public class billsWithbill {
@@ -3017,6 +3028,10 @@ public class SearchController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public void clearDepartmentSelection() {
+        department = null;
     }
 
     public List<Bill> getPrescreptionBills() {
@@ -19673,6 +19688,10 @@ public class SearchController implements Serializable {
         public Item getItm() {
             return itm;
         }
+        
+        
+        
+        
 
         public void setItm(Item itm) {
             this.itm = itm;

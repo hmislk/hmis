@@ -99,7 +99,7 @@
                           maximizable="true"
                           closeOnEscape="true">
 
-                    <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseReprintConfigForm" />
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="directPurchaseReprintConfigForm" />
 
                     <h:form id="directPurchaseReprintConfigForm">
 
@@ -113,14 +113,14 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="directPurchaseA4Paper"
-                                                value="#{pharmacyRetailConfigController.directPurchaseA4Paper}" />
+                                                value="#{pharmacyConfigController.directPurchaseA4Paper}" />
                                             <p:outputLabel for="directPurchaseA4Paper" value="A4 Paper Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard A4 paper format for direct purchase bill reprint</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="directPurchaseCustomLetter"
-                                                value="#{pharmacyRetailConfigController.directPurchaseCustomLetter}" />
+                                                value="#{pharmacyConfigController.directPurchaseCustomLetter}" />
                                             <p:outputLabel for="directPurchaseCustomLetter" value="Custom Letter Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom letter size paper format with costing details reprint</small>
                                         </div>
@@ -141,7 +141,7 @@
                                                     icon="fas fa-save"
                                                     class="ui-button-success"
                                                     ajax="false"
-                                                    action="#{pharmacyRetailConfigController.saveDirectPurchaseConfig}" />
+                                                    action="#{pharmacyConfigController.saveDirectPurchaseConfig}" />
                                                 <p:commandButton
                                                     value="Cancel"
                                                     icon="fas fa-times"

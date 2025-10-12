@@ -504,7 +504,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="grnReturnConfigForm" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="grnReturnConfigForm" />
 
                 <h:form id="grnReturnConfigForm">
 
@@ -518,7 +518,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="grnReturnCustom1Paper"
-                                            value="#{pharmacyRetailConfigController.grnReturnReceiptCustom1}" />
+                                            value="#{pharmacyConfigController.grnReturnReceiptCustom1}" />
                                         <p:outputLabel for="grnReturnCustom1Paper" value="Custom Format 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom GRN Return receipt template design 1</small>
                                     </div>
@@ -526,7 +526,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="grnReturnCustom2Paper"
-                                            value="#{pharmacyRetailConfigController.grnReturnReceiptCustom2}" />
+                                            value="#{pharmacyConfigController.grnReturnReceiptCustom2}" />
                                         <p:outputLabel for="grnReturnCustom2Paper" value="Custom Format 2" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom GRN Return receipt template design 2</small>
                                     </div>
@@ -547,7 +547,7 @@
                                                 icon="fas fa-save"
                                                 class="ui-button-success"
                                                 ajax="false"
-                                                action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                action="#{pharmacyConfigController.saveConfig}" />
                                             <p:commandButton
                                                 value="Cancel"
                                                 icon="fas fa-times"
