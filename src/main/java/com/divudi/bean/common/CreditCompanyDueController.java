@@ -1366,7 +1366,7 @@ public class CreditCompanyDueController implements Serializable {
                 getFromDate(),
                 getToDate(),
                 true,
-                getInstitutionOfDepartment(),
+                getInstitution(),
                 getSite(),
                 getDepartment(),
                 getVisitType(),
@@ -1381,7 +1381,7 @@ public class CreditCompanyDueController implements Serializable {
                     getFromDate(),
                     getToDate(),
                     true,
-                    getInstitutionOfDepartment(),
+                    getInstitution(),
                     getSite(),
                     getDepartment(),
                     getVisitType());

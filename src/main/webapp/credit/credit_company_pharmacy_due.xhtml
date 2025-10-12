@@ -67,7 +67,7 @@
                             <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
-                                value="#{creditCompanyDueController.institutionOfDepartment}"
+                                value="#{creditCompanyDueController.institution}"
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="All Institutions" itemValue="#{null}" noSelectionOption="true"/>
@@ -102,7 +102,7 @@
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
-                                    rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
+                                    rendered="#{creditCompanyDueController.institution eq null and creditCompanyDueController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
@@ -117,7 +117,7 @@
 
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
-                                    rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
+                                    rendered="#{creditCompanyDueController.institution eq null and creditCompanyDueController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
@@ -132,14 +132,14 @@
 
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
-                                    rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
+                                    rendered="#{creditCompanyDueController.institution ne null and creditCompanyDueController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institution)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -147,14 +147,14 @@
 
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
-                                    rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
+                                    rendered="#{creditCompanyDueController.institution ne null and creditCompanyDueController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institution, creditCompanyDueController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
