@@ -2071,6 +2071,7 @@ public class PharmacySaleBhtController implements Serializable {
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
+        parameters.put("barcodeQuery", qry);
 
         boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by item code", true);
@@ -2097,7 +2098,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (searchByBarcode) {
-            sql.append("OR i.itemBatch.item.barcode = :query ");
+            sql.append("OR i.itemBatch.item.barcode = :barcodeQuery ");
         }
 
         if (searchByGeneric) {
