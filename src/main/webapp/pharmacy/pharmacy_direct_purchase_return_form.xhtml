@@ -329,13 +329,41 @@
                                 </p:outputLabel>
 
                                 <p:outputLabel
+                                    for="txtActualNetValue"
+                                    value="Actual Net Value : " />
+                                <h:panelGroup>
+                                    <p:inputText
+                                        id="txtActualNetValue"
+                                        class="w-100 text-end"
+                                        value="#{directPurchaseReturnWorkflowController.currentBill.billFinanceDetails.actualNetValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                        <p:ajax
+                                            event="change"
+                                            process="@this"
+                                            update="lblNetValueAdjustment"
+                                            listener="#{directPurchaseReturnWorkflowController.calculateNetValueAdjustment()}" />
+                                    </p:inputText>
+                                    <p:message for="txtActualNetValue" />
+                                </h:panelGroup>
+
+                                <p:outputLabel value="Net Value Adjustment : " />
+                                <h:panelGroup>
+                                    <h:outputText
+                                        id="lblNetValueAdjustment"
+                                        class="h5 #{directPurchaseReturnWorkflowController.currentBill.billFinanceDetails.netValueAdjustment lt 0 ? 'text-danger' : 'text-success'}"
+                                        value="#{directPurchaseReturnWorkflowController.currentBill.billFinanceDetails.netValueAdjustment}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+
+                                <p:outputLabel
                                     for="txtReturnComments"
                                     value="Return Comments: " />
                                 <h:panelGroup>
-                                    <p:inputTextarea 
+                                    <p:inputTextarea
                                         id="txtReturnComments"
                                         class="w-100"
-                                        value="#{directPurchaseReturnWorkflowController.currentBill.comments}" 
+                                        value="#{directPurchaseReturnWorkflowController.currentBill.comments}"
                                         placeholder="Enter reason for returning these items..."
                                         ></p:inputTextarea>
                                     <p:message for="txtReturnComments" />
@@ -504,7 +532,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="directPurchaseReturnConfigForm" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="directPurchaseReturnConfigForm" />
 
                 <h:form id="directPurchaseReturnConfigForm">
 
@@ -518,7 +546,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="directPurchaseReturnCustom1Paper"
-                                            value="#{pharmacyRetailConfigController.directPurchaseReturnCustom1}" />
+                                            value="#{pharmacyConfigController.directPurchaseReturnCustom1}" />
                                         <p:outputLabel for="directPurchaseReturnCustom1Paper" value="Custom Format 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom Direct Purchase Return receipt template design 1</small>
                                     </div>
@@ -526,7 +554,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="directPurchaseReturnCustom2Paper"
-                                            value="#{pharmacyRetailConfigController.directPurchaseReturnCustom2}" />
+                                            value="#{pharmacyConfigController.directPurchaseReturnCustom2}" />
                                         <p:outputLabel for="directPurchaseReturnCustom2Paper" value="Custom Format 2" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom Direct Purchase Return receipt template design 2</small>
                                     </div>
@@ -547,7 +575,7 @@
                                                 icon="fas fa-save"
                                                 class="ui-button-success"
                                                 ajax="false"
-                                                action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                action="#{pharmacyConfigController.saveConfig}" />
                                             <p:commandButton
                                                 value="Cancel"
                                                 icon="fas fa-times"

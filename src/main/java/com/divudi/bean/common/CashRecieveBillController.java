@@ -713,7 +713,9 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(billType);
         getCurrent().setBillTypeAtomic(billTypeAtomic);
-        getCurrent().setCreditCompany(creditCompany);
+        if (creditCompany != null) {
+            getCurrent().setCreditCompany(creditCompany);
+        }
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getCurrent().setComments(comment);
@@ -889,6 +891,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void settleBill() {
+        // Validate creditCompany first
+        if (creditCompany == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+
         if (errorCheck()) {
             return;
         }

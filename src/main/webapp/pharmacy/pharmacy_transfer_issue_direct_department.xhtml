@@ -379,7 +379,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="transferIssueDirectDepartmentConfigForm" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferIssueDirectDepartmentConfigForm" />
 
                 <h:form id="transferIssueDirectDepartmentConfigForm">
                     <div class="row">
@@ -390,32 +390,32 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiA4" value="#{pharmacyRetailConfigController.transferIssueA4Paper}" />
+                                        <p:selectBooleanCheckbox id="tiA4" value="#{pharmacyConfigController.transferIssueA4Paper}" />
                                         <p:outputLabel for="tiA4" value="A4 Paper Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Standard A4 paper format (transferIssue component)</small>
                                     </div>
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiA4Detailed" value="#{pharmacyRetailConfigController.transferIssueA4PaperDetailed}" />
+                                        <p:selectBooleanCheckbox id="tiA4Detailed" value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
                                         <p:outputLabel for="tiA4Detailed" value="A4 Paper Format Detailed" class="ms-2" />
                                         <small class="form-text text-muted d-block">A4 detailed format (transferIssue_detailed component)</small>
                                     </div>
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiCustom1" value="#{pharmacyRetailConfigController.transferIssueCustom1}" />
+                                        <p:selectBooleanCheckbox id="tiCustom1" value="#{pharmacyConfigController.transferIssueCustom1}" />
                                         <p:outputLabel for="tiCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
                                     </div>
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiPos" value="#{pharmacyRetailConfigController.transferIssuePosPaper}" />
+                                        <p:selectBooleanCheckbox id="tiPos" value="#{pharmacyConfigController.transferIssuePosPaper}" />
                                         <p:outputLabel for="tiPos" value="POS Paper Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
                                     </div>
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiPosHeader" value="#{pharmacyRetailConfigController.transferIssuePosHeaderPaper}" />
+                                        <p:selectBooleanCheckbox id="tiPosHeader" value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
                                         <p:outputLabel for="tiPosHeader" value="POS Paper with Header" class="ms-2" />
                                         <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
                                     </div>
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiTemplate" value="#{pharmacyRetailConfigController.transferIssueTemplate}" />
+                                        <p:selectBooleanCheckbox id="tiTemplate" value="#{pharmacyConfigController.transferIssueTemplate}" />
                                         <p:outputLabel for="tiTemplate" value="Template Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
                                     </div>
@@ -436,7 +436,7 @@
                                                 icon="fas fa-save"
                                                 class="ui-button-success"
                                                 ajax="false"
-                                                action="#{pharmacyRetailConfigController.saveTransferIssueConfig}" />
+                                                action="#{pharmacyConfigController.saveTransferIssueConfig}" />
                                             <p:commandButton
                                                 value="Cancel"
                                                 icon="fas fa-times"

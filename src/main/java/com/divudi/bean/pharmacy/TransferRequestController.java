@@ -1132,7 +1132,12 @@ public class TransferRequestController implements Serializable {
     }
 
     private void recalculateTransferRequestBillTotals() {
-        calculateBillTotalsFromItemsForTransferRequests(getTransferRequestBillPre(), getBillItems());
+        if (transferRequestBillPre != null) {
+            calculateBillTotalsFromItemsForTransferRequests(transferRequestBillPre, getBillItems());
+        }
+        if (bill != null) {
+            calculateBillTotalsFromItemsForTransferRequests(bill, getBillItems());
+        }
     }
 
     private void calculateBillTotalsFromItemsForTransferRequests(Bill billForRequest, List<BillItem> requestBillItems) {
