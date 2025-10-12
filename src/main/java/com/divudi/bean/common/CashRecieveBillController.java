@@ -891,6 +891,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void settleBill() {
+        // Validate creditCompany first
+        if (creditCompany == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+
         if (errorCheck()) {
             return;
         }
