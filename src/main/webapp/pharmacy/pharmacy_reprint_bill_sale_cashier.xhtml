@@ -215,7 +215,7 @@
                           maximizable="true"
                           closeOnEscape="true">
 
-                    <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="settleConfigForm" />
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="settleConfigForm" />
 
                     <h:form id="settleConfigForm">
 
@@ -229,7 +229,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="settlePosPaper"
-                                                value="#{pharmacyRetailConfigController.settlePaymentPosPaper}" />
+                                                value="#{pharmacyConfigController.settlePaymentPosPaper}" />
                                             <p:outputLabel for="settlePosPaper" value="POS Paper with Items" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard thermal printer paper format with item details</small>
                                         </div>
@@ -237,7 +237,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="settlePosPaperCustom1"
-                                                value="#{pharmacyRetailConfigController.settlePaymentPosPaperCustom1}" />
+                                                value="#{pharmacyConfigController.settlePaymentPosPaperCustom1}" />
                                             <p:outputLabel for="settlePosPaperCustom1" value="POS Paper Custom 1 with Items" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom thermal printer paper format with item details</small>
                                         </div>
@@ -245,7 +245,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="settleCustom1"
-                                                value="#{pharmacyRetailConfigController.settlePaymentCustom1}" />
+                                                value="#{pharmacyConfigController.settlePaymentCustom1}" />
                                             <p:outputLabel for="settleCustom1" value="Custom Format 1" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom settle payment template design 1</small>
                                         </div>
@@ -253,7 +253,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="settleCustom2"
-                                                value="#{pharmacyRetailConfigController.settlePaymentCustom2}" />
+                                                value="#{pharmacyConfigController.settlePaymentCustom2}" />
                                             <p:outputLabel for="settleCustom2" value="Custom Format 2" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom settle payment template design 2</small>
                                         </div>
@@ -261,7 +261,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="settleCustom3"
-                                                value="#{pharmacyRetailConfigController.settlePaymentCustom3}" />
+                                                value="#{pharmacyConfigController.settlePaymentCustom3}" />
                                             <p:outputLabel for="settleCustom3" value="Custom Format 3" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom settle payment template design 3</small>
                                         </div>
@@ -269,7 +269,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="settlePosHeaderPaper"
-                                                value="#{pharmacyRetailConfigController.settlePaymentPosHeaderPaper}" />
+                                                value="#{pharmacyConfigController.settlePaymentPosHeaderPaper}" />
                                             <p:outputLabel for="settlePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
                                             <small class="form-text text-muted d-block">POS paper with pre-printed header space</small>
                                         </div>
@@ -290,7 +290,7 @@
                                                     icon="fas fa-save"
                                                     class="ui-button-success"
                                                     ajax="false"
-                                                    action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                    action="#{pharmacyConfigController.saveConfig}" />
                                                 <p:commandButton
                                                     value="Cancel"
                                                     icon="fas fa-times"

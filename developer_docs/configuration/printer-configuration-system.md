@@ -8,7 +8,7 @@ The Printer Configuration System provides a unified interface for managing paper
 
 ### Core Components
 
-1. **PharmacyRetailConfigController** (`src/main/java/com/divudi/bean/pharmacy/PharmacyConfigController.java`)
+1. **PharmacyConfigController** (`src/main/java/com/divudi/bean/pharmacy/PharmacyConfigController.java`)
    - Manages all pharmacy printer configuration settings
    - Handles loading and saving of configuration options
    - Provides getter/setter methods for UI binding
@@ -148,7 +148,7 @@ The Printer Configuration System provides a unified interface for managing paper
           maximizable="true"
           closeOnEscape="true">
 
-    <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="yourModuleConfigForm" />
+    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="yourModuleConfigForm" />
 
     <h:form id="yourModuleConfigForm">
         <div class="row">
@@ -161,7 +161,7 @@ The Printer Configuration System provides a unified interface for managing paper
                         <div class="mb-3">
                             <p:selectBooleanCheckbox
                                 id="yourOptionId"
-                                value="#{pharmacyRetailConfigController.yourProperty}" />
+                                value="#{pharmacyConfigController.yourProperty}" />
                             <p:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
                             <small class="form-text text-muted d-block">Description of what this option does</small>
                         </div>
@@ -183,7 +183,7 @@ The Printer Configuration System provides a unified interface for managing paper
                                     icon="fas fa-save"
                                     class="ui-button-success"
                                     ajax="false"
-                                    action="#{pharmacyRetailConfigController.saveYourModuleConfig}" />
+                                    action="#{pharmacyConfigController.saveYourModuleConfig}" />
                                 <p:commandButton
                                     value="Cancel"
                                     icon="fas fa-times"
