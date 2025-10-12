@@ -6,127 +6,192 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
-
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
             <ui:define name="admin">
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
                             <h:outputLabel value="Pharmacy Credit Due"/>
                         </f:facet>
-                        <div class="row g-3 my-2">
-                            <div class="col-lg-2 col-md-4">
-                                <h:outputLabel for="fromDate" value="From" styleClass="form-label"/>
-                                <p:calendar id="fromDate"
-                                            value="#{creditCompanyDueController.fromDate}"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            navigator="false"
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{creditCompanyDueController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                navigator="false">
+                                <f:ajax event="dateSelect" execute="toDate @this" render="lst"/>
+                            </p:calendar>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{creditCompanyDueController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                navigator="false">
+                                <f:ajax event="dateSelect" execute="@this fromDate" render="lst"/>
+                            </p:calendar>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0a0;" styleClass="fa mr-2" /> <!-- FontAwesome plus-square icon -->
+                                <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="visitType"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.visitType}">
+                                <f:selectItem itemLabel="All Visit Types" itemValue="#{null}"/>
+                                <f:selectItem itemLabel="Out Patients (OP)" itemValue="OP"/>
+                                <f:selectItem itemLabel="In Patients (IP)" itemValue="IP"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.institutionOfDepartment}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.site}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+
+
+                            </h:panelGroup>
+
+                            <h:outputLabel for="acCreditCompany" value="Credit Company" />
+                            <p:autoComplete id="acCreditCompany"
+                                            value="#{creditCompanyDueController.creditCompany}"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            forceSelection="true"
+                                            var="ins"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
                                             styleClass="w-100"
                                             inputStyleClass="w-100">
-                                    <f:ajax event="dateSelect" execute="toDate @this" render="lst"/>
-                                </p:calendar>
-                            </div>
-                            <div class="col-lg-2 col-md-4">
-                                <h:outputLabel for="toDate" value="To" styleClass="form-label"/>
-                                <p:calendar id="toDate"
-                                            value="#{creditCompanyDueController.toDate}"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            navigator="false"
-                                            styleClass="w-100"
-                                            inputStyleClass="w-100">
-                                    <f:ajax event="dateSelect" execute="@this fromDate" render="lst"/>
-                                </p:calendar>
-                            </div>
-                            <div class="col-lg-2 col-md-4">
-                                <h:outputLabel for="visitType" value="Visit Type" styleClass="form-label"/>
-                                <p:selectOneMenu id="visitType"
-                                                 value="#{creditCompanyDueController.visitType}"
-                                                 styleClass="w-100">
-                                    <f:selectItem itemLabel="All Visit Types" itemValue="#{null}"/>
-                                    <f:selectItem itemLabel="Out Patients (OP)" itemValue="OP"/>
-                                    <f:selectItem itemLabel="In Patients (IP)" itemValue="IP"/>
-                                </p:selectOneMenu>
-                            </div>
-                            <div class="col-lg-3 col-md-6">
-                                <h:outputLabel for="acCreditCompany" value="Institution" styleClass="form-label"/>
-                                <p:autoComplete id="acCreditCompany"
-                                                value="#{creditCompanyDueController.institutionOfDepartment}"
-                                                completeMethod="#{institutionController.completeCompany}"
-                                                forceSelection="true"
-                                                var="ins"
-                                                itemLabel="#{ins.name}"
-                                                itemValue="#{ins}"
-                                                styleClass="w-100"
-                                                inputStyleClass="w-100">
-                                    <p:column>
-                                        <h:outputText value="#{ins.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText value="#{ins.institutionCode}"/>
-                                    </p:column>
-                                    <p:ajax event="itemSelect"
-                                            listener="#{creditCompanyDueController.resetLocationFilters}"
-                                            update="deptPanel siteMenu"
-                                            process="@this"/>
-                                </p:autoComplete>
-                            </div>
-                            <div class="col-lg-2 col-md-6">
-                                <h:outputLabel for="siteMenu" value="Site" styleClass="form-label"/>
-                                <p:selectOneMenu id="siteMenu"
-                                                 value="#{creditCompanyDueController.site}"
-                                                 styleClass="w-100"
-                                                 filter="true"
-                                                 filterMatchMode="contains">
-                                    <f:selectItem itemLabel="All Sites"/>
-                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
-                                    <p:ajax process="@this" listener="#{creditCompanyDueController.resetDepartment}" update="deptPanel"/>
-                                </p:selectOneMenu>
-                            </div>
-                            <div class="col-lg-3 col-md-6">
-                                <h:outputLabel value="Department" styleClass="form-label"/>
-                                <h:panelGroup id="deptPanel">
-                                    <p:selectOneMenu id="deptSelectAll"
-                                                     rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
-                                                     value="#{creditCompanyDueController.department}"
-                                                     styleClass="w-100"
-                                                     filter="true"
-                                                     filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu id="deptSelectSite"
-                                                     rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
-                                                     value="#{creditCompanyDueController.department}"
-                                                     styleClass="w-100"
-                                                     filter="true"
-                                                     filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu id="deptSelectInstitution"
-                                                     rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
-                                                     value="#{creditCompanyDueController.department}"
-                                                     styleClass="w-100"
-                                                     filter="true"
-                                                     filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu id="deptSelectFull"
-                                                     rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
-                                                     value="#{creditCompanyDueController.department}"
-                                                     styleClass="w-100"
-                                                     filter="true"
-                                                     filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    </p:selectOneMenu>
-                                </h:panelGroup>
-                            </div>
-                        </div>
+                                <p:column>
+                                    <h:outputText value="#{ins.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{ins.institutionCode}"/>
+                                </p:column>
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+
+
                         <h:panelGrid columns="3" class="my-2">
-                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{creditCompanyDueController.createPharmacyCreditDue}" />
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-cogs"
+                                ajax="false" 
+                                value="Process" 
+                                action="#{creditCompanyDueController.createPharmacyCreditDue}" />
                             <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
                                 <p:printer target="panIx" />
                             </p:commandButton>

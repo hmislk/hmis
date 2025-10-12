@@ -1370,7 +1370,7 @@ public class CreditCompanyDueController implements Serializable {
                 getSite(),
                 getDepartment(),
                 getVisitType(),
-                getInstitution());
+                getCreditCompany());
 
         items = new ArrayList<>();
 
