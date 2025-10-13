@@ -2395,7 +2395,7 @@ public class PatientInvestigationController implements Serializable {
             }
 
             if (!ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is not in your Department. You Cant't Reject.");
+                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is not in your Department. You Can't Reject.");
                 return;
             }
 
