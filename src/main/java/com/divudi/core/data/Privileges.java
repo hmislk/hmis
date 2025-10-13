@@ -786,6 +786,7 @@ public enum Privileges {
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
             case AccessLabTestHistory:
+            case DoctorDashBoardMenu:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:

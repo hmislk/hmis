@@ -2071,9 +2071,6 @@ public class PatientReportController implements Serializable {
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
-                System.out.println("Logged User ID = " + sessionController.getLoggedUser().getStaff().getId());
-                System.out.println("Item User ID = " + currentPatientReport.getPatientInvestigation().getInvestigation().getStaff().getId());
-
                 if (!(sessionController.getLoggedUser().getStaff().getId().equals(currentPatientReport.getPatientInvestigation().getInvestigation().getStaff().getId()))) {
                     JsfUtil.addErrorMessage("You can't access to Approve this Report");
                     return;

@@ -403,8 +403,6 @@ public class LaboratoryManagementController implements Serializable {
     LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
 
     public String navigateToBackFormPatientReportEditingView() {
-        System.out.println("WebUser= " + sessionController.getLoggedUser());
-        System.out.println("Login Page= " + sessionController.getLoggedUser().getLoginPage());
         if (sessionController.getLoggedUser().getLoginPage() == null) {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
                 listingEntity = ListingEntity.PATIENT_REPORTS;
@@ -1191,6 +1189,8 @@ public class LaboratoryManagementController implements Serializable {
                 } catch (NumberFormatException e) {
                     searchPatientInvestigationsWithoutSampleId();
                 }
+            } else {
+                searchPatientInvestigationsWithoutSampleId();
             }
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigations", sessionController.getLoggedUser());
     }
