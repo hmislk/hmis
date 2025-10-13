@@ -354,8 +354,10 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                             return null;
                         } else {
                             PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
-
-                            if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                            
+                            if(currentPatientSample == null){
+                                //can Refund Item
+                            }else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                                 returningStarted.set(false);
                                 JsfUtil.addErrorMessage("This Item can't Refund. This Investigation Sample Send to Out Lab.");
                                 return null;
