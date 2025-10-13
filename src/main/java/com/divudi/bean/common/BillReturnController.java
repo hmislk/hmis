@@ -560,6 +560,78 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted.set(false);
             return null;
         }
+        
+        for (BillItem bi : originalBillItemsToSelectedToReturn) {
+            if (bi.getItem() instanceof Investigation) {
+                PatientInvestigation pi = getPatientInvestigationsFromBillItem(bi);
+                if (pi == null) {
+                    returningStarted.set(false);
+                    JsfUtil.addErrorMessage("Patient Investigation not found for this item.");
+                    return null;
+                }
+                if (pi.getStatus() != PatientInvestigationStatus.ORDERED) {
+
+                    String investigationjpql = "select psc from PatientSampleComponant psc "
+                            + " where psc.patientInvestigation = :pi "
+                            + " and psc.separated = :sept and psc.retired = :ret "
+                            + " and psc.patientSample.sampleRejected = :rej";
+
+                    Map params = new HashMap();
+                    params.put("pi", pi);
+                    params.put("sept", false);
+                    params.put("ret", false);
+                    params.put("rej", false);
+
+                    PatientSampleComponant psc = patientSampleComponantFacade.findFirstByJpql(investigationjpql, params);
+
+                    if (psc == null) {
+                        //can Refund Item
+                    }
+                    
+                    if (psc != null) {
+                        String jpql = "select psc from PatientSampleComponant psc where "
+                                + " psc.patientSample = :sample"
+                                + " and psc.separated = :sept "
+                                + " and psc.retired = :ret "
+                                + " and psc.patientSample.sampleRejected = :rej";
+
+                        Map params2 = new HashMap();
+                        params2.put("sample", psc.getPatientSample());
+                        params2.put("sept", false);
+                        params2.put("ret", false);
+                        params2.put("rej", false);
+
+                        List<PatientSampleComponant> patientSampleComponants = patientSampleComponantFacade.findByJpql(jpql, params2);
+
+                        if (patientSampleComponants == null || patientSampleComponants.isEmpty()) {
+                            //can Refund Item
+                        } else if (patientSampleComponants.size() > 1) {
+                            returningStarted.set(false);
+                            JsfUtil.addErrorMessage("This item can't be refunded. First separate this investigation sample.");
+                            return null;
+                        } else {
+                            PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
+                            
+                            if(currentPatientSample == null){
+                                //can Refund Item
+                            }else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to an external lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to the lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample is currently in the lab.");
+                                return null;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         calculateRefundingAmount();
 
