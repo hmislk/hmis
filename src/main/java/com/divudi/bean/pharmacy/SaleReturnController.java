@@ -11,6 +11,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -47,7 +48,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class SaleReturnController implements Serializable {
+public class SaleReturnController implements Serializable, com.divudi.bean.common.ControllerWithMultiplePayments {
 
     private Bill bill;
     private Bill returnBill;
@@ -72,6 +73,8 @@ public class SaleReturnController implements Serializable {
     DrawerController drawerController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private com.divudi.bean.common.PatientDepositController patientDepositController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
@@ -107,8 +110,53 @@ public class SaleReturnController implements Serializable {
         printPreview = false;
         billItems = null;
         paymentMethodData = new PaymentMethodData();
+
+        // Copy patient from original bill to return bill BEFORE generating components
+        getReturnBill().setPatient(bill.getPatient());
+
         generateBillComponent();
-        returnPaymentMethod = bill.getPaymentMethod();
+
+        List<Payment> originalPayments;
+        Bill paymentBill = null;
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+            return null;
+        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE) {
+            paymentBill = bill.getReferenceBill();
+            if (paymentBill.getBillTypeAtomic() == null) {
+                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+                return null;
+            }
+            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE) {
+                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+                return null;
+            }
+        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
+            paymentBill = bill.getReferenceBill();
+            if (paymentBill.getBillTypeAtomic() == null) {
+                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+                return null;
+            }
+            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
+                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+                return null;
+            }
+        } else {
+            JsfUtil.addErrorMessage("Programming Error. Not a suitable bill type atomic. Inform the system administrator.");
+            return null;
+        }
+
+        // Fetch and initialize payment data from original bill
+        originalPayments = billService.fetchBillPayments(paymentBill);
+
+        if (originalPayments != null && !originalPayments.isEmpty()) {
+            // Initialize payment method data based on original payments
+            initializeRefundPaymentFromOriginalPayments(originalPayments);
+        } else {
+            // Fallback: just set payment method enum if no payment details found
+            returnPaymentMethod = bill.getPaymentMethod();
+        }
+
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
     }
 
@@ -487,6 +535,164 @@ public class SaleReturnController implements Serializable {
         }
     }
 
+    /**
+     * Initializes refund payment data from the original bill's payment records.
+     * This method populates payment method details (card numbers, reference
+     * numbers, etc.) based on how the original sale was paid.
+     *
+     * @param originalPayments List of Payment objects from the original sale
+     * bill
+     */
+    private void initializeRefundPaymentFromOriginalPayments(List<Payment> originalPayments) {
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return;
+        }
+
+        // If single payment method
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+            returnPaymentMethod = originalPayment.getPaymentMethod();
+
+            // Initialize paymentMethodData based on payment method
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    break;
+                case ewallet:
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    break;
+                case PatientDeposit:
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getPatient_deposit().setPatient(getReturnBill().getPatient());
+                    getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                    // Load and set the PatientDeposit object for displaying balance
+                    if (getReturnBill().getPatient() != null) {
+                        com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                getReturnBill().getPatient(),
+                                sessionController.getDepartment()
+                        );
+                        if (pd != null && pd.getId() != null) {
+                            getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                            getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                        }
+                    }
+                    break;
+                case Credit:
+                    getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff:
+                case Staff_Welfare:
+                    // Staff information is stored in bill.toStaff, not in payment
+                    if (bill != null && bill.getToStaff() != null) {
+                        toStaff = bill.getToStaff();
+                        getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
+                        getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    }
+                    break;
+                default:
+                    // For other payment methods, just set the total value
+                    break;
+            }
+        } // If multiple payment methods
+        else {
+            returnPaymentMethod = PaymentMethod.MultiplePaymentMethods;
+
+            // Clear any existing multiple payment details
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+
+            for (Payment originalPayment : originalPayments) {
+                ComponentDetail cd = new ComponentDetail();
+                cd.setPaymentMethod(originalPayment.getPaymentMethod());
+
+                // Set payment details based on method - use absolute value for refunds
+                double refundAmount = Math.abs(originalPayment.getPaidValue());
+
+                switch (originalPayment.getPaymentMethod()) {
+                    case Cash:
+                        cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
+                        break;
+                    case Card:
+                        cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                        cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
+                        break;
+                    case Cheque:
+                        cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                        cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
+                        break;
+                    case Slip:
+                        cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
+                        break;
+                    case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                        break;
+                    case PatientDeposit:
+                        cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(getReturnBill().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                        // Load and set the PatientDeposit object for displaying balance
+                        if (getReturnBill().getPatient() != null) {
+                            com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                    getReturnBill().getPatient(),
+                                    sessionController.getDepartment()
+                            );
+                            if (pd != null && pd.getId() != null) {
+                                cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                                cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                            }
+                        }
+                        break;
+                    case Credit:
+                        cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff:
+                    case Staff_Welfare:
+                        // Staff information is stored in bill.toStaff
+                        if (bill != null && bill.getToStaff() != null) {
+                            cd.getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
+                            cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        }
+                        break;
+                    default:
+                        // For other payment methods
+                        break;
+                }
+
+                getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
+            }
+        }
+    }
+
     private void calTotal() {
         double grossTotal = 0.0;
         double discount = 0;
@@ -665,6 +871,135 @@ public class SaleReturnController implements Serializable {
 
     public void setFinalReturnBill(Bill finalReturnBill) {
         this.finalReturnBill = finalReturnBill;
+    }
+
+    /**
+     * Retrieves the original bill's payments for display on the return page.
+     * This allows users to see how the original bill was paid before processing
+     * the refund.
+     *
+     * @return List of Payment objects from the original sale bill, or empty
+     * list if not available
+     */
+    public List<Payment> getOriginalBillPayments() {
+        if (bill != null && bill.getPayments() != null && !bill.getPayments().isEmpty()) {
+            return bill.getPayments();
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Calculates the remaining amount for multiple payment method total.
+     * Required by ControllerWithMultiplePayments interface.
+     *
+     * @return The remaining amount (bill total - sum of all payment method
+     * values)
+     */
+    private double componentTotal(ComponentDetail detail) {
+        if (detail == null) {
+            return 0.0;
+        }
+        return detail.getTotalValue();
+    }
+
+    private double multiplePaymentComponentValue(ComponentDetail componentDetail) {
+        if (componentDetail == null) {
+            return 0.0;
+        }
+
+        PaymentMethodData data = componentDetail.getPaymentMethodData();
+        if (data == null) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+        total += componentTotal(data.getCash());
+        total += componentTotal(data.getCreditCard());
+        total += componentTotal(data.getCheque());
+        total += componentTotal(data.getSlip());
+        total += componentTotal(data.getEwallet());
+        total += componentTotal(data.getPatient_deposit());
+        total += componentTotal(data.getCredit());
+        total += componentTotal(data.getStaffCredit());
+        total += componentTotal(data.getStaffWelfare());
+        total += componentTotal(data.getOnlineSettlement());
+        total += componentTotal(data.getIou());
+
+        if (total == 0.0) {
+            total = Math.abs(componentDetail.getTotalValue());
+        }
+
+        return total;
+    }
+
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+        double total = getReturnBill().getNetTotal();
+        double multiplePaymentMethodTotalValue = 0;
+
+        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += multiplePaymentComponentValue(cd);
+            }
+        }
+
+        return total - multiplePaymentMethodTotalValue;
+    }
+
+    /**
+     * Automatically receives the remaining amount for the last payment method
+     * in multiple payments. Required by ControllerWithMultiplePayments
+     * interface.
+     */
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+
+        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            if (arrSize == 0) {
+                return;
+            }
+
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                if (getReturnBill().getPatient() == null || getReturnBill().getPatient().getId() == null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                    return;
+                }
+                pm.getPaymentMethodData().getPatient_deposit().setPatient(getReturnBill().getPatient());
+                com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                        getReturnBill().getPatient(),
+                        sessionController.getDepartment()
+                );
+                if (pd != null && pd.getId() != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                    pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                    double availableBalance = pd.getBalance();
+                    if (availableBalance >= remainAmount) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                    }
+                } else {
+                    pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+        }
     }
 
 }

@@ -328,13 +328,41 @@
                                 </p:outputLabel>
 
                                 <p:outputLabel
+                                    for="txtActualNetValue"
+                                    value="Actual Net Value : " />
+                                <h:panelGroup>
+                                    <p:inputText
+                                        id="txtActualNetValue"
+                                        class="w-100 text-end"
+                                        value="#{grnReturnWorkflowController.currentBill.billFinanceDetails.actualNetValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                        <p:ajax
+                                            event="change"
+                                            process="@this"
+                                            update="lblNetValueAdjustment"
+                                            listener="#{grnReturnWorkflowController.calculateNetValueAdjustment()}" />
+                                    </p:inputText>
+                                    <p:message for="txtActualNetValue" />
+                                </h:panelGroup>
+
+                                <p:outputLabel value="Net Value Adjustment : " />
+                                <h:panelGroup>
+                                    <h:outputText
+                                        id="lblNetValueAdjustment"
+                                        class="h5 #{grnReturnWorkflowController.currentBill.billFinanceDetails.netValueAdjustment lt 0 ? 'text-danger' : 'text-success'}"
+                                        value="#{grnReturnWorkflowController.currentBill.billFinanceDetails.netValueAdjustment}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+
+                                <p:outputLabel
                                     for="txtReturnComments"
                                     value="Return Comments: " />
                                 <h:panelGroup>
-                                    <p:inputTextarea 
+                                    <p:inputTextarea
                                         id="txtReturnComments"
                                         class="w-100"
-                                        value="#{grnReturnWorkflowController.currentBill.comments}" 
+                                        value="#{grnReturnWorkflowController.currentBill.comments}"
                                         placeholder="Enter reason for returning these items..."
                                         ></p:inputTextarea>
                                     <p:message for="txtReturnComments" />

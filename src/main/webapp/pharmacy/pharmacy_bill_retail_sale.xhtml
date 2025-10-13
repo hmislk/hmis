@@ -50,9 +50,9 @@
                                 itemLabel="#{vt.name}"
                                 itemValue="#{vt}" >
 
-                                <p:column headerText="ID" style="padding: 6px;width: 4em;" rendered="#{webUserController.hasPrivilege('Developers')}">
+<!--                                <p:column headerText="ID" style="padding: 6px;width: 4em;" rendered="#{webUserController.hasPrivilege('Developers')}">
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                </p:column>
+                                </p:column>-->
 
                                 <p:column headerText="Code" style="padding: 6px;width: 4em;">
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
@@ -62,7 +62,7 @@
                                     <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Dept. Stock" style="padding: 6px; text-align: center;width: 5em;">
+                                <p:column headerText="Stock" style="padding: 6px; text-align: center;width: 5em;">
                                     <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                     </p:outputLabel>
@@ -142,12 +142,11 @@
                                                 <h:panelGroup id="acStock" >
                                                     <p:autoComplete
                                                         accesskey="i"
-                                                        rendered="#{not configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Retail Sale',true)}"
                                                         id="acStockWithoutTotalStock"
                                                         inputStyleClass="w-100"
                                                         minQueryLength="3"
                                                         maxResults="10"
-                                                        class="w-100"
+                                                        styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stockDto}"
                                                         completeMethod="#{pharmacySaleController.completeAvailableStockOptimizedDto}"
@@ -155,89 +154,51 @@
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
-                                                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+<!--                                                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
                                                             <h:outputLabel value="#{i.id}"></h:outputLabel>
-                                                        </p:column>
+                                                        </p:column>-->
                                                         <p:column 
                                                             headerText="Item" 
+                                                            width="400"
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
-                                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
+                                                            <h:outputText value="#{i.itemName}" >
                                                             </h:outputText>
+                                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expiring Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
                                                         </p:column>
                                                         <p:column
+                                                            width="20em"
                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
-                                                            headerText="Code"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
+                                                            headerText="Code"  
+                                                            styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputText value="#{i.code}" ></h:outputText>
                                                         </p:column>
-                                                        <p:column headerText="Generic"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
+                                                        <p:column 
+                                                            width="20em"
+                                                            headerText="Generic" 
+                                                            styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputText value="#{i.genericName}" ></h:outputText>
                                                         </p:column>
                                                         <p:column
-                                                            headerText="Rate"  styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
+                                                            width="20em"
+                                                            headerText="Rate"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.retailRate}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Stocks"  styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                        <p:column 
+                                                            width="20em"
+                                                            headerText="Stocks"  
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.stockQty}" >
                                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Expiry"  class="w-100" styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions" ></p:ajax>
-                                                        <p:ajax event="query" process="acStock"></p:ajax>
-                                                    </p:autoComplete>
-                                                    <p:autoComplete
-                                                        accesskey="i"
-                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Retail Sale',true)}"
-                                                        id="acStockWithTotalStock"
-                                                        inputStyleClass="w-100"
-                                                        minQueryLength="3"
-                                                        maxResults="20"
-                                                        class="w-100"
-                                                        forceSelection="true"
-                                                        value="#{pharmacySaleController.stockDto}"
-                                                        completeMethod="#{stockController.completeAvailableStocksWithItemStockDto}"
-                                                        converter="#{pharmacySaleController.stockDtoConverter}"
-                                                        scrollHeight="400"
-                                                        var="i"
-                                                        itemLabel="#{i.itemName}"
-                                                        itemValue="#{i}">
-                                                        <p:column headerText="ID"  rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                            <h:outputLabel value="#{i.code}"></h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Item*"  styleClass="table-success">
-                                                            <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
-                                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
-                                                            </h:outputText>
-                                                            <h:outputLabel value=" (" ></h:outputLabel>
-                                                            <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
-                                                            <h:outputLabel value=") - " ></h:outputLabel>
-                                                            <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
-                                                        </p:column>
-                                                        <p:column headerText="Rate"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Stocks"  styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.stockQty}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Total Stock"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.totalStockQty}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Expiry"  class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
+                                                        <p:column 
+                                                            width="20em"
+                                                            headerText="Expiry" 
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.dateOfExpire}" >
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                             </h:outputLabel>
                                                         </p:column>
