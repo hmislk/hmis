@@ -78,10 +78,14 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Named
 @SessionScoped
 public class PharmacySaleBhtController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PharmacySaleBhtController.class.getName());
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -686,6 +690,12 @@ public class PharmacySaleBhtController implements Serializable {
             getPreBill().setBillItems(new ArrayList<>());
         }
 
+        // Note: PharmacyBean.deductFromStock() is a @Singleton EJB method with container-managed transactions.
+        // Each call to deductFromStock runs in its own transaction boundary, so a failure here
+        // will roll back individual stock deductions. However, the bill item saves above have already
+        // been committed. This is acceptable as the RuntimeException will prevent the overall bill
+        // from being finalized (caught in settleBhtIssue's try-catch), and the UI will show the error.
+
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -697,19 +707,41 @@ public class PharmacySaleBhtController implements Serializable {
                 getBillItemFacade().edit(tbi);
             }
             double qtyL = tbi.getPharmaceuticalBillItem().getQty() + tbi.getPharmaceuticalBillItem().getFreeQty();
-            //Deduct Stock
+
+            // Deduct Stock - runs in CMT (Container Managed Transaction) via @Singleton EJB
             boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
                     Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+
             if (!returnFlag) {
-                // Stock deduction failed - log and throw exception with clear message
+                // Stock deduction failed - log with proper logger and throw exception
                 String itemName = tbi.getItem() != null ? tbi.getItem().getName() : "Unknown Item";
-                String errorMsg = "Failed to deduct stock for item: " + itemName + ". Stock may be insufficient or locked by another user.";
-                System.err.println(errorMsg);
+                Long itemId = tbi.getItem() != null ? tbi.getItem().getId() : null;
+                Long stockId = tbi.getPharmaceuticalBillItem().getStock() != null
+                        ? tbi.getPharmaceuticalBillItem().getStock().getId() : null;
+
+                String errorMsg = String.format(
+                    "Failed to deduct stock for item: %s (ID: %s, Stock ID: %s, Qty: %.2f). " +
+                    "Stock may be insufficient or locked by another user.",
+                    itemName, itemId, stockId, qtyL);
+
+                // Log with proper severity and context for audit trail
+                LOGGER.log(Level.SEVERE, "Stock deduction failure during BHT settlement: {0}", errorMsg);
+                LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
+                        new Object[]{
+                            getPreBill().getId(),
+                            getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
+                            getSessionController().getLoggedUser() != null
+                                ? getSessionController().getLoggedUser().getName() : "unknown"
+                        });
+
+                // Show user-friendly error message
                 JsfUtil.addErrorMessage(errorMsg);
 
                 // Throw exception to trigger rollback and prevent partial save
+                // This will be caught by the try-catch in settleBhtIssue(), preventing clearBill()
                 throw new RuntimeException(errorMsg);
             }
+
             // Add saved item back to PreBill
             getPreBill().getBillItems().add(tbi);
         }
@@ -1009,9 +1041,10 @@ public class PharmacySaleBhtController implements Serializable {
             clearBillItem();
             billPreview = true;
         } catch (Exception e) {
-            // Log the error for debugging
-            System.err.println("Error during BHT settlement: " + e.getMessage());
-            e.printStackTrace();
+            // Log the error for debugging and audit trail
+            LOGGER.log(Level.SEVERE, "Error during BHT settlement for patient encounter: {0}",
+                    new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
+            LOGGER.log(Level.SEVERE, "Settlement failure details", e);
 
             // Show error message to user
             JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
