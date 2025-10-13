@@ -701,7 +701,14 @@ public class PharmacySaleBhtController implements Serializable {
             boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
                     Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
             if (!returnFlag) {
-                getBillItemFacade().edit(tbi);
+                // Stock deduction failed - log and throw exception with clear message
+                String itemName = tbi.getItem() != null ? tbi.getItem().getName() : "Unknown Item";
+                String errorMsg = "Failed to deduct stock for item: " + itemName + ". Stock may be insufficient or locked by another user.";
+                System.err.println(errorMsg);
+                JsfUtil.addErrorMessage(errorMsg);
+
+                // Throw exception to trigger rollback and prevent partial save
+                throw new RuntimeException(errorMsg);
             }
             // Add saved item back to PreBill
             getPreBill().getBillItems().add(tbi);
@@ -990,15 +997,27 @@ public class PharmacySaleBhtController implements Serializable {
         // Create a proper copy of the list to avoid reference issues
         List<BillItem> tmpBillItems = new ArrayList<>(itemsToIssue);
 
-        savePreBillFinally(pt, matrixDepartment, btp, bta);
-        savePreBillItemsFinally(tmpBillItems);
+        try {
+            savePreBillFinally(pt, matrixDepartment, btp, bta);
+            savePreBillItemsFinally(tmpBillItems);
 
 //        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+            setPrintBill(getBillFacade().find(getPreBill().getId()));
 
-        clearBill();
-        clearBillItem();
-        billPreview = true;
+            // Only clear if settlement was successful
+            clearBill();
+            clearBillItem();
+            billPreview = true;
+        } catch (Exception e) {
+            // Log the error for debugging
+            System.err.println("Error during BHT settlement: " + e.getMessage());
+            e.printStackTrace();
+
+            // Show error message to user
+            JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
+
+            // DO NOT clear the bill - keep items visible so user doesn't lose their work
+        }
 
     }
 
