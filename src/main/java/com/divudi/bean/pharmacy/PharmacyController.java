@@ -2161,10 +2161,10 @@ public class PharmacyController implements Serializable {
                 PharmacyRow row = new PharmacyRow();
                 row.setBill(b);
 
-                totalPurchase +=  b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-                totalCostValue +=  b.getBillFinanceDetails().getTotalCostValue().doubleValue();
+                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                totalCostValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
                 totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
-                
+
                 pharmacyRows.add(row);
 
             }
@@ -5882,6 +5882,11 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    /**
+     * Creates a table of GRN return items for the selected pharmacy item.
+     * Uses BillItem and PharmaceuticalBillItem fields directly instead of BillItemFinanceDetails
+     * because GRN return bills do not have finance details populated.
+     */
     public void createGrnReturnTable() {
 
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
@@ -5902,22 +5907,19 @@ public class PharmacyController implements Serializable {
                 + "bi.bill.createdAt, "
                 + "bi.bill.toInstitution.name, "
                 + "bi.item.name, "
-                + "COALESCE(fd.quantity, 0), "
-                + "COALESCE(fd.freeQuantity, 0), "
-                + "pbi.purchaseRate, "
-                + "fd.retailSaleRate, "
-                + "COALESCE(fd.lineGrossRate, 0), "
-                + "COALESCE(fd.lineNetTotal, 0) "
+                + "bi.pharmaceuticalBillItem.qty, "
+                + "bi.pharmaceuticalBillItem.freeQty, "
+                + "bi.pharmaceuticalBillItem.purchaseRate, "
+                + "bi.pharmaceuticalBillItem.retailRate, "
+                + "bi.netRate, "
+                + "bi.netValue "
                 + ") "
                 + "FROM BillItem bi "
-                + "LEFT JOIN bi.billItemFinanceDetails fd "
-                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
                 + "WHERE (bi.bill.retired IS NULL OR bi.bill.retired = FALSE) "
                 + "AND (bi.retired IS NULL OR bi.retired = FALSE) "
                 + "AND bi.item IN :relatedItems "
                 + "AND bi.bill.billTypeAtomic IN :btas "
-                + "AND bi.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY bi.id DESC";
+                + "AND bi.createdAt BETWEEN :frm AND :to ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -5925,10 +5927,17 @@ public class PharmacyController implements Serializable {
         params.put("to", getToDate());
         params.put("btas", btas);
 
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getSessionController().getDepartment());
+            jpql += "AND bi.bill.department=:department ";
+        }
+
+        jpql += "ORDER BY bi.id DESC";
         try {
             grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
             if (grnReturnDtos != null && !grnReturnDtos.isEmpty()) {
+            } else {
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -6001,7 +6010,7 @@ public class PharmacyController implements Serializable {
         params.put("frm", getFromDate());
         params.put("to", getToDate());
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            params.put("department", getDepartment());
+            params.put("department", getSessionController().getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         params.put("btas", btas);
@@ -6085,7 +6094,7 @@ public class PharmacyController implements Serializable {
         params.put("to", getToDate());
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            params.put("department", getDepartment());
+            params.put("department", getSessionController().getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         jpql += "ORDER BY b.id DESC";
@@ -6152,11 +6161,10 @@ public class PharmacyController implements Serializable {
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
 
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            params.put("department", getDepartment());
+            params.put("department", getSessionController().getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         jpql += "ORDER BY b.id DESC";
-
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets

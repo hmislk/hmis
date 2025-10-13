@@ -70,6 +70,31 @@ public class PharmacyGrnReturnItemDTO implements Serializable {
         this.returnValue = billItemNetValue != null ? BigDecimal.valueOf(billItemNetValue) : null;
     }
 
+    // Constructor for JPQL queries using PharmaceuticalBillItem and BillItem fields directly (all double types)
+    public PharmacyGrnReturnItemDTO(String grnReturnNo,
+                                    String departmentName,
+                                    Date createdAt,
+                                    String supplierName,
+                                    String itemName,
+                                    Double qty,
+                                    Double freeQty,
+                                    Double purchaseRate,
+                                    Double retailRate,
+                                    Double netRate,
+                                    Double netValue) {
+        this.grnReturnNo = grnReturnNo;
+        this.departmentName = departmentName;
+        this.createdAt = createdAt;
+        this.supplierName = supplierName;
+        this.itemName = itemName;
+        this.quantityReturned = qty != null ? BigDecimal.valueOf(qty) : null;
+        this.freeQuantityReturned = freeQty != null ? BigDecimal.valueOf(freeQty) : null;
+        this.purchaseRate = purchaseRate;
+        this.saleRate = retailRate != null ? BigDecimal.valueOf(retailRate) : null;
+        this.returnedRate = netRate != null ? BigDecimal.valueOf(netRate) : null;
+        this.returnValue = netValue != null ? BigDecimal.valueOf(netValue) : null;
+    }
+
     public String getGrnReturnNo() {
         return grnReturnNo;
     }
