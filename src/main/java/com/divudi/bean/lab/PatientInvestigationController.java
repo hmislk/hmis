@@ -511,9 +511,9 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(currentPatientSample.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + currentPatientSample.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
                     return;
                 }
             }
@@ -2071,9 +2071,9 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(currentPatientSample.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + currentPatientSample.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
                     return;
                 }
             }
@@ -2164,9 +2164,9 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(currentPatientSample.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + currentPatientSample.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
                     return;
                 }
             }
@@ -2355,9 +2355,9 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
             
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(currentPatientSample.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + currentPatientSample.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
                     return;
                 }
             }
@@ -2483,9 +2483,9 @@ public class PatientInvestigationController implements Serializable {
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(currentPatientSample.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + currentPatientSample.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
                     return;
                 }
             }
