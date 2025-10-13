@@ -350,7 +350,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                             //can Refund Item
                         } else if (patientSampleComponants.size() > 1) {
                             returningStarted.set(false);
-                            JsfUtil.addErrorMessage("This Item can't Refund. First Separate this Investigation Sample.");
+                            JsfUtil.addErrorMessage("This item can't be refunded. First separate this investigation sample.");
                             return null;
                         } else {
                             PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
@@ -359,15 +359,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                                 //can Refund Item
                             }else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                                 returningStarted.set(false);
-                                JsfUtil.addErrorMessage("This Item can't Refund. This Investigation Sample Send to Out Lab.");
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to an external lab.");
                                 return null;
                             } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
                                 returningStarted.set(false);
-                                JsfUtil.addErrorMessage("This Item can't Refund. This Investigation Sample Send to Lab.");
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to the lab.");
                                 return null;
                             } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
                                 returningStarted.set(false);
-                                JsfUtil.addErrorMessage("This Item can't Refund. This Investigation Sample now in the Lab.");
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample is currently in the lab.");
                                 return null;
                             }
                         }
