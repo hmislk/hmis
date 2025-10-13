@@ -19499,12 +19499,14 @@ public class SearchController implements Serializable {
     }
 
     private List<PaymentMethod> buildPharmacyCollectionPaymentMethods(List<PaymentMethod> baseNonCreditMethods) {
-        List<PaymentMethod> combined = new ArrayList<>();
+        // Return only non-credit methods. Credit is handled separately in "Pharmacy Collection Bills - Credit" bundle
+        // to prevent double-counting in Net Collection totals
+        // TODO: Investigate if there are other collections without credit that may be lost with this approach
+        // Need to verify all collection types are properly accounted for in separate bundles
         if (baseNonCreditMethods != null) {
-            combined.addAll(baseNonCreditMethods);
+            return new ArrayList<>(baseNonCreditMethods);
         }
-        combined.addAll(PaymentMethod.getMethodsByType(PaymentType.CREDIT));
-        return combined.stream().distinct().collect(Collectors.toList());
+        return new ArrayList<>();
     }
 
     public double bundlePaymentMethodValue(ReportTemplateRowBundle targetBundle, PaymentMethod paymentMethod) {
