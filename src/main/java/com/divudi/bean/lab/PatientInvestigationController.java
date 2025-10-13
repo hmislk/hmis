@@ -1958,6 +1958,14 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already colleted.");
                 return;
             }
+            
+            for(PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))){
+                if(pi.getBillItem().isRefunded()){
+                    JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already Refunded.");
+                    return;
+                }
+            }
+            
             if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_REGENERATED || ps.getStatus() == PatientInvestigationStatus.SEPARATE_AND_SAMPLE_GENERATED) {
                 canCollectSamples.add(ps);
             }
