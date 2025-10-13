@@ -3,11 +3,9 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ReportTimerController;
-import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.data.PatientReportLight;
 import com.divudi.core.data.ReportType;
 import com.divudi.core.data.dto.LaboratoryDashboardDTO;
-import com.divudi.core.data.lab.BillBarcode;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.Bill;
@@ -18,7 +16,6 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
-import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientReportFacade;
@@ -124,10 +121,10 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         }
         PatientInvestigation pi = patientInvestigationFacade.find(patientInvestigation.getId());
         items.add(pi);
-        listingEntity = ListingEntity.REPORT_PRINT;
+        listingEntity = ListingEntity.PATIENT_REPORTS;
 
     }
-
+    
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Function">
