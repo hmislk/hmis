@@ -322,43 +322,44 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
                     PatientSampleComponant psc = patientSampleComponantFacade.findFirstByJpql(investigationjpql, params);
 
-                    String jpql = "select psc from PatientSampleComponant psc where "
-                            + " psc.patientSample = :sample"
-                            + " and psc.separated = :sept "
-                            + " and psc.retired = :ret "
-                            + " and psc.patientSample.sampleRejected = :rej";
+                    if (psc != null) {
+                        String jpql = "select psc from PatientSampleComponant psc where "
+                                + " psc.patientSample = :sample"
+                                + " and psc.separated = :sept "
+                                + " and psc.retired = :ret "
+                                + " and psc.patientSample.sampleRejected = :rej";
 
-                    Map params2 = new HashMap();
-                    params2.put("sample", psc.getPatientSample());
-                    params2.put("sept", false);
-                    params2.put("ret", false);
-                    params2.put("rej", false);
+                        Map params2 = new HashMap();
+                        params2.put("sample", psc.getPatientSample());
+                        params2.put("sept", false);
+                        params2.put("ret", false);
+                        params2.put("rej", false);
 
-                    List<PatientSampleComponant> patientSampleComponants = patientSampleComponantFacade.findByJpql(jpql, params2);
+                        List<PatientSampleComponant> patientSampleComponants = patientSampleComponantFacade.findByJpql(jpql, params2);
 
-                    if(patientSampleComponants == null || patientSampleComponants.isEmpty()){
-                    
-                    }else if (patientSampleComponants.size() > 1) {
-                        returningStarted.set(false);
-                        JsfUtil.addErrorMessage("This Item cant't Refund. First Separate this Investigation Sample.");
-                        return null;
-                    }else{
-                        PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
-                        
-                        if(currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB){
+                        if (patientSampleComponants == null || patientSampleComponants.isEmpty()) {
+
+                        } else if (patientSampleComponants.size() > 1) {
                             returningStarted.set(false);
-                            JsfUtil.addErrorMessage("This Item cant't Refund. This Investigation Sample Send to Out Lab.");
+                            JsfUtil.addErrorMessage("This Item cant't Refund. First Separate this Investigation Sample.");
                             return null;
-                        }else if(currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB){
-                            returningStarted.set(false);
-                            JsfUtil.addErrorMessage("This Item cant't Refund. This Investigation Sample Send to Lab.");
-                            return null;
-                        }else if(currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED){
-                            returningStarted.set(false);
-                            JsfUtil.addErrorMessage("This Item cant't Refund. This Investigation Sample now in the Lab.");
-                            return null;
+                        } else {
+                            PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
+
+                            if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This Item cant't Refund. This Investigation Sample Send to Out Lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This Item cant't Refund. This Investigation Sample Send to Lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This Item cant't Refund. This Investigation Sample now in the Lab.");
+                                return null;
+                            }
                         }
-                        
                     }
                 }
             }
