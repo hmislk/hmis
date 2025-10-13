@@ -765,7 +765,7 @@
                   maximizable="true"
                   closeOnEscape="true">
 
-            <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="grnConfigForm" />
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="grnConfigForm" />
 
             <h:form id="grnConfigForm">
 
@@ -779,7 +779,7 @@
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
                                         id="grnReceiptA4"
-                                        value="#{pharmacyRetailConfigController.grnReceiptA4}" />
+                                        value="#{pharmacyConfigController.grnReceiptA4}" />
                                     <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
                                     <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
                                 </div>
@@ -787,7 +787,7 @@
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
                                         id="grnReceiptCustom1"
-                                        value="#{pharmacyRetailConfigController.grnReceiptCustom1}" />
+                                        value="#{pharmacyConfigController.grnReceiptCustom1}" />
                                     <p:outputLabel for="grnReceiptCustom1" value="Custom Format 1" class="ms-2" />
                                     <small class="form-text text-muted d-block">Custom GRN receipt format 1</small>
                                 </div>
@@ -795,7 +795,7 @@
                                  <div class="mb-3">
                                     <p:selectBooleanCheckbox
                                         id="grnReceiptCustom2"
-                                        value="#{pharmacyRetailConfigController.grnReceiptCustom2}" />
+                                        value="#{pharmacyConfigController.grnReceiptCustom2}" />
                                     <p:outputLabel for="grnReceiptCustom2" value="Custom Format 2" class="ms-2" />
                                     <small class="form-text text-muted d-block">Custom GRN receipt format 2</small>
                                 </div>
@@ -817,7 +817,7 @@
                                             icon="fas fa-save"
                                             class="ui-button-success"
                                             ajax="false"
-                                            action="#{pharmacyRetailConfigController.saveConfig}" />
+                                            action="#{pharmacyConfigController.saveConfig}" />
                                         <p:commandButton
                                             value="Cancel"
                                             icon="fas fa-times"

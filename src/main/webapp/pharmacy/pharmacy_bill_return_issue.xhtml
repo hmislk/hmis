@@ -352,7 +352,7 @@
                               maximizable="true"
                               closeOnEscape="true">
 
-                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="billReturnIssueConfigForm" />
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="billReturnIssueConfigForm" />
 
                         <h:form id="billReturnIssueConfigForm">
                             <div class="row">
@@ -365,21 +365,21 @@
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="billReturnIssueA4"
-                                                    value="#{pharmacyRetailConfigController.billReturnIssueA4Paper}" />
+                                                    value="#{pharmacyConfigController.billReturnIssueA4Paper}" />
                                                 <p:outputLabel for="billReturnIssueA4" value="A4 Paper Format" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Standard A4 paper format for bill return issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="billReturnIssueCustom1"
-                                                    value="#{pharmacyRetailConfigController.billReturnIssueCustom1}" />
+                                                    value="#{pharmacyConfigController.billReturnIssueCustom1}" />
                                                 <p:outputLabel for="billReturnIssueCustom1" value="Custom Format 1" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom format 1 for bill return issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="billReturnIssueCustom2"
-                                                    value="#{pharmacyRetailConfigController.billReturnIssueCustom2}" />
+                                                    value="#{pharmacyConfigController.billReturnIssueCustom2}" />
                                                 <p:outputLabel for="billReturnIssueCustom2" value="Custom Format 2" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom format 2 for bill return issue receipts</small>
                                             </div>
@@ -400,7 +400,7 @@
                                                         icon="fas fa-save"
                                                         class="ui-button-success"
                                                         ajax="false"
-                                                        action="#{pharmacyRetailConfigController.saveBillReturnIssueConfig}" />
+                                                        action="#{pharmacyConfigController.saveBillReturnIssueConfig}" />
                                                     <p:commandButton
                                                         value="Cancel"
                                                         icon="fas fa-times"

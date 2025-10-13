@@ -261,9 +261,16 @@
                             </p:column>
 
                             <p:column headerText="QTY" width="5em">
-                                <h:outputText value="#{f.qty}" >
-                                    <f:convertNumber pattern="#,##0"/>
-                                </h:outputText>
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_RETURN' }">
+                                    <h:outputText value="#{0.0 - (f.qty)}" >
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE' or f.bill.billTypeAtomic eq 'PHARMACY_ISSUE_CANCELLED'}">
+                                    <h:outputText value="#{f.qty}" >
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </h:panelGroup>
                             </p:column>
 
                             <p:column headerText="Code" width="5em">
@@ -277,12 +284,12 @@
                             </p:column>
 
                             <p:column headerText="Purchase Value" width="5em">
-                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_RETURN'}">
                                     <h:outputText value="#{0.0 - (f.pharmaceuticalBillItem.purchaseRate * f.qty)}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE_RETURN'}">
                                     <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -299,12 +306,12 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Cost Value" width="5em">
-                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_RETURN'}">
                                     <h:outputText value="#{0.0 - (f.pharmaceuticalBillItem.itemBatch.costRate * f.qty)}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE_RETURN'}">
                                     <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
@@ -321,12 +328,12 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Retail Value" width="5em">
-                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_RETURN'}">
                                     <h:outputText value="#{0.0 - (f.pharmaceuticalBillItem.itemBatch.retailsaleRate * f.qty)}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE'}">
+                                <h:panelGroup rendered="#{f.bill.billTypeAtomic ne 'PHARMACY_DISPOSAL_ISSUE_RETURN'}">
                                     <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.retailsaleRate * f.qty}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>

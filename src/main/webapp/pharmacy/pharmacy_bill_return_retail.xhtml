@@ -103,7 +103,29 @@
                         </div>
                         <div class="col-4" >
 
+                            <p:panel rendered="#{not empty saleReturnController.originalBillPayments}" class="mb-2">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-check-alt me-2"></h:outputText>
+                                    <h:outputLabel value="Original Payment Details"></h:outputLabel>
+                                </f:facet>
+                                <p:dataTable
+                                    value="#{saleReturnController.originalBillPayments}"
+                                    var="op"
+                                    styleClass="table table-sm"
+                                    emptyMessage="No original payments found">
 
+                                    <p:column headerText="Method">
+                                        <h:outputText value="#{op.paymentMethod}" />
+                                    </p:column>
+
+                                    <p:column headerText="Amount" styleClass="text-end">
+                                        <h:outputText value="#{op.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
 
                             <p:panel header="Repayment" >
                                 <h:panelGroup id="totalPanel">
