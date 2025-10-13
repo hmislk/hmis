@@ -585,7 +585,7 @@
                     </p:submenu>
 
                 </p:submenu>
-
+                
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
 
                     <p:submenu
@@ -738,6 +738,17 @@
                         width="28" 
                         height="28" 
                         src="https://img.icons8.com/external-kmg-design-detailed-outline-kmg-design/64/external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design.png" alt="external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design"/>
+                </p:menuitem>
+                
+                <p:menuitem 
+                    id="smLabDocDashboard"
+                    ajax="false"
+                    style="zoom: 1.2;"
+                    action="#{laboratoryDoctorDashboardController.navigateToDoctorDashboard()}"
+                    rendered="#{webUserController.hasPrivilege('DoctorDashBoardMenu')}"
+                    actionListener="#{laboratoryDoctorDashboardController.makeNull()}"
+                    icon="fa fa-microscope fa-2xl"
+                    title="Lab Doctor Dashboard">
                 </p:menuitem>
 
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">

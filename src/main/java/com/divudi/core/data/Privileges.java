@@ -193,6 +193,10 @@ public enum Privileges {
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
     AccessLabTestHistory("Access Lab Test History"),
+    
+    DoctorDashBoardMenu("Doctor DashBoard Menu"),
+    
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
