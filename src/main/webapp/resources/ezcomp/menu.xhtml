@@ -745,6 +745,7 @@
                     ajax="false"
                     style="zoom: 1.2;"
                     action="#{laboratoryDoctorDashboardController.navigateToDoctorDashboard()}"
+                    rendered="#{webUserController.hasPrivilege('DoctorDashBoardMenu')}"
                     actionListener="#{laboratoryDoctorDashboardController.makeNull()}"
                     icon="fa fa-microscope fa-2xl"
                     title="Lab Doctor Dashboard">
