@@ -510,6 +510,13 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
+            
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(currentPatientSample.getId()))) {
+                if (pi.getBillItem().isRefunded()) {
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + currentPatientSample.getId() + ") has already been refunded.");
+                    return;
+                }
+            }
 
             if (!ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
                 JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
