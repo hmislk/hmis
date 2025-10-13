@@ -328,12 +328,12 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Old Rate">
-                                    <h:outputText value="#{row.beforeAdjustment * row.quantity}">
+                                    <h:outputText value="#{row.beforeAdjustment}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Old Value">
-                                    <h:outputText value="#{row.beforeAdjustment}">
+                                    <h:outputText value="#{row.beforeAdjustment * row.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
