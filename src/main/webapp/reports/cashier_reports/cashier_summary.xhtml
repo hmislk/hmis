@@ -286,8 +286,10 @@
 
                                     <!-- Pharmacy Credit Sections -->
 
-                                    <ez:pharmacyBilled id="pharmacyBilledCredit" bundle="#{myBundle}"
-                                                       rendered="#{myBundle.bundleType eq 'cashierSummaryPharmacyCredit'}"/>
+                                    <ez:pharmacyBilled 
+                                        id="pharmacyBilledCredit" 
+                                        bundle="#{myBundle}"
+                                        rendered="#{myBundle.bundleType eq 'cashierSummaryPharmacyCredit'}"/>
                                     <ez:pharmacyCancellations id="pharmacyCancellationsCredit" bundle="#{myBundle}"
                                                               rendered="#{myBundle.bundleType eq 'pharmacyCancellationsCredit'}"/>
                                     <ez:pharmacyRefunds 

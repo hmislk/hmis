@@ -8311,39 +8311,41 @@ public class SearchController implements Serializable {
 
     public void createPreBillsForReturn(BillType billType, BillType refBillType) {
         bills = null;
-        String sql;
-        Map<String, Object> temMap = new HashMap<>();
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
         if (getSearchKeyword().getItem() == null) {
-            sql = "select b from PreBill b where b.billType = :billType and "
+            System.out.println("item is null");
+            jpql = "select b from PreBill b where b.billType = :billType and "
                     + "b.institution = :ins and b.billedBill is null and "
                     + "b.department = :dept and b.referenceBill.billType = :refBillType and "
                     + "b.createdAt between :fromDate and :toDate and b.retired = false and "
                     + "b.referenceBill.cancelled = false ";
 
             if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-                sql += "and b.deptId like :billNo ";
-                temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+                jpql += "and b.deptId like :billNo ";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                sql += "and b.netTotal = :netTotal ";
-                temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+                jpql += "and b.netTotal = :netTotal ";
+                params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
             }
 
-            sql += "order by b.createdAt desc ";
+            jpql += "order by b.createdAt desc ";
 
-            temMap.put("billType", billType);
-            temMap.put("refBillType", refBillType);
-            temMap.put("toDate", toDate);
-            temMap.put("fromDate", fromDate);
-            temMap.put("ins", getSessionController().getInstitution());
-            temMap.put("dept", getSessionController().getLoggedUser().getDepartment());
-
-            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+            params.put("billType", billType);
+            params.put("refBillType", refBillType);
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+            params.put("ins", getSessionController().getInstitution());
+            params.put("dept", getSessionController().getLoggedUser().getDepartment());
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         } else {
-
-            sql = "select DISTINCT(bi.bill) from BillItem bi where bi.bill.billType = :billType and "
+            System.out.println("Items not null" );
+            jpql = "select DISTINCT(bi.bill) from BillItem bi where bi.bill.billType = :billType and "
                     + " bi.bill.institution=:ins and (bi.bill.billedBill is null) and "
                     + " bi.item=:item and "
                     + " bi.bill.department=:dept and "
@@ -8353,26 +8355,27 @@ public class SearchController implements Serializable {
                     + " and bi.bill.referenceBill.cancelled=false ";
 
             if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-                sql += " and  ((bi.bill.deptId) like :billNo )";
-                temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+                jpql += " and  ((bi.bill.deptId) like :billNo )";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                sql += " and  ((bi.bill.netTotal) = :netTotal )";
-                temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+                jpql += " and  ((bi.bill.netTotal) = :netTotal )";
+                params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
             }
 
-            sql += " order by bi.createdAt desc  ";
+            jpql += " order by bi.createdAt desc  ";
 
-            temMap.put("billType", billType);
-            temMap.put("refBillType", refBillType);
-            temMap.put("toDate", toDate);
-            temMap.put("fromDate", fromDate);
-            temMap.put("item", getSearchKeyword().getItem());
-            temMap.put("ins", getSessionController().getInstitution());
-            temMap.put("dept", getSessionController().getLoggedUser().getDepartment());
-
-            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+            params.put("billType", billType);
+            params.put("refBillType", refBillType);
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+            params.put("item", getSearchKeyword().getItem());
+            params.put("ins", getSessionController().getInstitution());
+            params.put("dept", getSessionController().getLoggedUser().getDepartment());
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         }
     }
